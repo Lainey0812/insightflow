@@ -1,0 +1,542 @@
+{
+  "$defs": {
+    "AnalysisStep": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "step_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "pattern": "\\S"
+            },
+            "operation": {
+              "type": "string",
+              "enum": [
+                "filter"
+              ]
+            },
+            "params": {
+              "additionalProperties": false,
+              "properties": {
+                "conditions": {
+                  "items": {
+                    "$ref": "#/$defs/Condition"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Conditions",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "conditions"
+              ],
+              "title": "FilterParams",
+              "type": "object"
+            }
+          },
+          "required": [
+            "step_id",
+            "operation",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "step_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "pattern": "\\S"
+            },
+            "operation": {
+              "type": "string",
+              "enum": [
+                "group_aggregate"
+              ]
+            },
+            "params": {
+              "additionalProperties": false,
+              "properties": {
+                "metrics": {
+                  "items": {
+                    "$ref": "#/$defs/Metric"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Metrics",
+                  "type": "array"
+                },
+                "dimensions": {
+                  "items": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "pattern": "\\S",
+                    "type": "string"
+                  },
+                  "maxItems": 10,
+                  "minItems": 1,
+                  "title": "Dimensions",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "metrics",
+                "dimensions"
+              ],
+              "title": "GroupParams",
+              "type": "object"
+            }
+          },
+          "required": [
+            "step_id",
+            "operation",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "step_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "pattern": "\\S"
+            },
+            "operation": {
+              "type": "string",
+              "enum": [
+                "aggregate"
+              ]
+            },
+            "params": {
+              "additionalProperties": false,
+              "properties": {
+                "metrics": {
+                  "items": {
+                    "$ref": "#/$defs/Metric"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Metrics",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "metrics"
+              ],
+              "title": "AggregateParams",
+              "type": "object"
+            }
+          },
+          "required": [
+            "step_id",
+            "operation",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "step_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "pattern": "\\S"
+            },
+            "operation": {
+              "type": "string",
+              "enum": [
+                "sort"
+              ]
+            },
+            "params": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "direction": {
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "title": "Direction",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "field",
+                "direction"
+              ],
+              "title": "SortParams",
+              "type": "object"
+            }
+          },
+          "required": [
+            "step_id",
+            "operation",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "step_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "pattern": "\\S"
+            },
+            "operation": {
+              "type": "string",
+              "enum": [
+                "top_n"
+              ]
+            },
+            "params": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "direction": {
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "title": "Direction",
+                  "type": "string"
+                },
+                "n": {
+                  "maximum": 1000,
+                  "minimum": 1,
+                  "title": "N",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "field",
+                "direction",
+                "n"
+              ],
+              "title": "TopNParams",
+              "type": "object"
+            }
+          },
+          "required": [
+            "step_id",
+            "operation",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "step_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "pattern": "\\S"
+            },
+            "operation": {
+              "type": "string",
+              "enum": [
+                "derive"
+              ]
+            },
+            "params": {
+              "additionalProperties": false,
+              "properties": {
+                "function": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Function",
+                  "type": "string"
+                },
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "alias": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Alias",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "function",
+                "field",
+                "alias"
+              ],
+              "title": "DeriveParams",
+              "type": "object"
+            }
+          },
+          "required": [
+            "step_id",
+            "operation",
+            "params"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "AnalysisTask": {
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        },
+        "business_question": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Business Question",
+          "type": "string"
+        },
+        "priority": {
+          "enum": [
+            "P0",
+            "P1",
+            "P2"
+          ],
+          "title": "Priority",
+          "type": "string"
+        },
+        "priority_reason": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Priority Reason",
+          "type": "string"
+        },
+        "requirement_ids": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Requirement Ids",
+          "type": "array"
+        },
+        "depends_on": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Depends On",
+          "type": "array"
+        },
+        "missing_inputs": {
+          "items": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Missing Inputs",
+          "type": "array"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/AnalysisStep"
+          },
+          "maxItems": 20,
+          "title": "Steps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "task_id",
+        "title",
+        "business_question",
+        "priority",
+        "priority_reason",
+        "requirement_ids",
+        "depends_on",
+        "missing_inputs",
+        "steps"
+      ],
+      "title": "AnalysisTask",
+      "type": "object"
+    },
+    "Condition": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Field",
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "not_null"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "field",
+        "operator",
+        "value"
+      ],
+      "title": "Condition",
+      "type": "object"
+    },
+    "Metric": {
+      "additionalProperties": false,
+      "properties": {
+        "function": {
+          "enum": [
+            "count",
+            "sum",
+            "avg",
+            "median",
+            "min",
+            "max",
+            "distinct_count"
+          ],
+          "title": "Function",
+          "type": "string"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Field"
+        },
+        "alias": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Alias",
+          "type": "string"
+        }
+      },
+      "required": [
+        "function",
+        "field",
+        "alias"
+      ],
+      "title": "Metric",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "tasks": {
+      "items": {
+        "$ref": "#/$defs/AnalysisTask"
+      },
+      "maxItems": 10,
+      "minItems": 1,
+      "title": "Tasks",
+      "type": "array"
+    }
+  },
+  "required": [
+    "tasks"
+  ],
+  "title": "PlannerDraft",
+  "type": "object"
+}

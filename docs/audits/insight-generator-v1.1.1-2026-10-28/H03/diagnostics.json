@@ -1,0 +1,359 @@
+{
+  "case_id": "H03",
+  "query": "比较批次耗时的小额差异，不据此确定瓶颈原因",
+  "split": "holdout",
+  "historical_report_error": {
+    "code": "REPORT_UNVERIFIED_FACT",
+    "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+    "node_name": null,
+    "retryable": false,
+    "details": {}
+  },
+  "candidates": [
+    {
+      "candidate_number": 1,
+      "raw_candidate": {
+        "primary_evidence_id": "E0012",
+        "evidence_refs": [
+          "E0012",
+          "E0007",
+          "E0002",
+          "E0003"
+        ],
+        "finding_type": "difference",
+        "implication": "早批与午批的耗时存在微小差额，需结合参与记录规模评估其实际业务影响，当前数据不足以判断原因。",
+        "recommendation": "比较这两个批次的记录数量及单条记录耗时分布，核查该差额是否与样本规模或处理复杂度相关；补充分析尚未执行。",
+        "limitations": [
+          "结论仅适用于当前返回范围，不能外推整体市场。"
+        ]
+      },
+      "references": [
+        {
+          "evidence_id": "E0012",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "在当前返回结果中，早批的耗时合计比午批高 0.0001，相对午批领先约 3.4%。",
+          "source_row_indices": [
+            0,
+            1
+          ],
+          "value": {
+            "metric_field": "value",
+            "dimension_field": "field_0001",
+            "source_scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。",
+            "unit": "%",
+            "rounding": "half_up_1_decimal",
+            "left": "早批",
+            "right": "午批",
+            "left_value": "0.003",
+            "right_value": "0.0029",
+            "difference": "0.0001",
+            "formula": "(left_value - right_value) / right_value * 100",
+            "comparison_kind": "relative_lead",
+            "numerator": "0.0001",
+            "denominator": "0.0029",
+            "percent": "3.4"
+          }
+        },
+        {
+          "evidence_id": "E0007",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "在该任务完整分组结果中，早批与午批的耗时 · 合计差值为 0.0001。",
+          "source_row_indices": [
+            0,
+            1
+          ],
+          "value": {
+            "left": "早批",
+            "right": "午批",
+            "left_value": 0.003,
+            "right_value": 0.0029,
+            "difference": 0.0001
+          }
+        },
+        {
+          "evidence_id": "E0002",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "在该任务完整分组结果中，早批的耗时 · 合计为 0.003，并列值采用同一名次，排名 1。",
+          "source_row_indices": [
+            0
+          ],
+          "value": {
+            "category": "早批",
+            "value": 0.003,
+            "rank": 1
+          }
+        },
+        {
+          "evidence_id": "E0003",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "在该任务完整分组结果中，午批的耗时 · 合计为 0.0029，并列值采用同一名次，排名 2。",
+          "source_row_indices": [
+            1
+          ],
+          "value": {
+            "category": "午批",
+            "value": 0.0029,
+            "rank": 2
+          }
+        }
+      ],
+      "actual_candidate_outcome": "rejected",
+      "actual_first_error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {}
+      },
+      "text_diagnostics": [
+        {
+          "role": "implication",
+          "original_text": "早批与午批的耗时存在微小差额，需结合参与记录规模评估其实际业务影响，当前数据不足以判断原因。",
+          "outcome": "accepted"
+        },
+        {
+          "role": "recommendation",
+          "original_text": "比较这两个批次的记录数量及单条记录耗时分布，核查该差额是否与样本规模或处理复杂度相关；补充分析尚未执行。",
+          "normalized_checked_text": "比较这两个批次的记录数量及单条记录耗时分布，核查该差额待核查关联；补充分析尚未执行。",
+          "matches": [
+            {
+              "rule": "NUMERIC",
+              "match": "两个",
+              "span": [
+                3,
+                5
+              ],
+              "pattern": "[0-9０-９]|[零〇一二三四五六七八九十百千万亿两点]{2,}|第[一二三四五六七八九十百千万两]+|[一二三四五六七八九十两](?:成|倍|条|个|名|位|年|月)|百分之|半数|一半"
+            }
+          ],
+          "outcome": "rejected",
+          "error": {
+            "code": "REPORT_UNVERIFIED_FACT",
+            "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+            "node_name": null,
+            "retryable": false,
+            "details": {}
+          }
+        },
+        {
+          "role": "limitation",
+          "original_text": "结论仅适用于当前返回范围，不能外推整体市场。",
+          "outcome": "accepted"
+        }
+      ]
+    },
+    {
+      "candidate_number": 2,
+      "raw_candidate": {
+        "primary_evidence_id": "E0014",
+        "evidence_refs": [
+          "E0014",
+          "E0011",
+          "E0008",
+          "E0009"
+        ],
+        "finding_type": "concentration",
+        "implication": "主要批次在返回结果中占据较高比重，提示关注点应集中在这些分组，但未反映未返回分组的情况。",
+        "recommendation": "核实数据完整性，确认是否存在未返回的低耗时分组影响总体结构；检查高占比分组的内部波动情况；补充分析尚未执行。",
+        "limitations": [
+          "分母仅为本次完整返回的分组合计，不代表全部筛选范围或整体市场占比。"
+        ]
+      },
+      "references": [
+        {
+          "evidence_id": "E0014",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "早批和午批合计占本次返回 3 个分组耗时合计合计的约 93.7%；分母仅为返回分组合计，不代表全部筛选范围或整体市场占比。",
+          "source_row_indices": [
+            0,
+            1,
+            2
+          ],
+          "value": {
+            "metric_field": "value",
+            "dimension_field": "field_0001",
+            "source_scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。",
+            "unit": "%",
+            "rounding": "half_up_1_decimal",
+            "left": "早批",
+            "right": "午批",
+            "left_value": "0.003",
+            "right_value": "0.0029",
+            "returned_group_count": 3,
+            "denominator_scope": "returned_groups_only",
+            "formula": "(left_value + right_value) / returned_group_sum * 100",
+            "comparison_kind": "returned_concentration",
+            "numerator": "0.0059",
+            "denominator": "0.0063",
+            "percent": "93.7"
+          }
+        },
+        {
+          "evidence_id": "E0011",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "本次返回的 3 个分组的耗时 · 合计合计为 0.0063。",
+          "source_row_indices": [
+            0,
+            1,
+            2
+          ],
+          "value": {
+            "value": 0.0063,
+            "unit": null,
+            "label": "本次返回分组合计（耗时 · 合计）"
+          }
+        },
+        {
+          "evidence_id": "E0008",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "早批的耗时 · 合计占该任务同口径总体约 47.619%。",
+          "source_row_indices": [
+            0
+          ],
+          "value": {
+            "category": "早批",
+            "numerator": 0.003,
+            "denominator": 0.0063,
+            "percent": 47.61904761904762
+          }
+        },
+        {
+          "evidence_id": "E0009",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "午批的耗时 · 合计占该任务同口径总体约 46.0317%。",
+          "source_row_indices": [
+            1
+          ],
+          "value": {
+            "category": "午批",
+            "numerator": 0.0029,
+            "denominator": 0.0063,
+            "percent": 46.03174603174603
+          }
+        }
+      ],
+      "actual_candidate_outcome": "rejected",
+      "actual_first_error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {}
+      },
+      "text_diagnostics": [
+        {
+          "role": "implication",
+          "original_text": "主要批次在返回结果中占据较高比重，提示关注点应集中在这些分组，但未反映未返回分组的情况。",
+          "outcome": "accepted"
+        },
+        {
+          "role": "recommendation",
+          "original_text": "核实数据完整性，确认是否存在未返回的低耗时分组影响总体结构；检查高占比分组的内部波动情况；补充分析尚未执行。",
+          "normalized_checked_text": "核实数据完整性，确认是否存在未返回的低耗时分组影响总体结构；检查高占比分组的内部波动情况；补充分析尚未执行。",
+          "matches": [
+            {
+              "rule": "UNSUPPORTED_ASSERTION",
+              "match": "占比",
+              "span": [
+                33,
+                35
+              ],
+              "pattern": "导致|造成|归因于|证明|必然|保证|因果|显著|最高|最低|排名|占比|翻倍|全部|所有|超过.*半|大多数"
+            }
+          ],
+          "outcome": "rejected",
+          "error": {
+            "code": "REPORT_UNVERIFIED_FACT",
+            "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+            "node_name": null,
+            "retryable": false,
+            "details": {}
+          }
+        },
+        {
+          "role": "limitation",
+          "original_text": "分母仅为本次完整返回的分组合计，不代表全部筛选范围或整体市场占比。",
+          "normalized_checked_text": "分母仅为本次完整返回的分组合计，或整体市场占比。",
+          "matches": [
+            {
+              "rule": "UNSUPPORTED_ASSERTION",
+              "match": "占比",
+              "span": [
+                21,
+                23
+              ],
+              "pattern": "导致|造成|归因于|证明|必然|保证|因果|显著|最高|最低|排名|占比|翻倍|全部|所有|超过.*半|大多数"
+            }
+          ],
+          "outcome": "rejected",
+          "error": {
+            "code": "REPORT_UNVERIFIED_FACT",
+            "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+            "node_name": null,
+            "retryable": false,
+            "details": {}
+          }
+        }
+      ]
+    }
+  ],
+  "assembly_replay": {
+    "status": "rejected",
+    "error": {
+      "code": "REPORT_UNVERIFIED_FACT",
+      "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+      "node_name": null,
+      "retryable": false,
+      "details": {}
+    }
+  },
+  "historical_error_reproduced": true
+}

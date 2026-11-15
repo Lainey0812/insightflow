@@ -1,0 +1,53 @@
+.....................F.................................................. [ 81%]
+................                                                         [100%]
+=================================== FAILURES ===================================
+_ test_request_body_unchanged_from_frozen_preimplementation_capture[report-R01-imported] _
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-225/test_request_body_unchanged_fr2')
+node = 'report', baseline = 'R01-imported'
+
+    @pytest.mark.parametrize('node,baseline',[('intent','I01-first'),('planner','P01-first'),('report','R01-imported')])
+    def test_request_body_unchanged_from_frozen_preimplementation_capture(tmp_path,node,baseline):
+        from app.domain.intent import ParsedIntent
+        historical=Path(__file__).resolve().parents[2]/'docs/audits/prompt-loading-paths-2026-10-29/captures-v3'
+        expected=json.loads((historical/(baseline+'.json')).read_text())['calls'][0]['request']
+        good=intent_payload(business_goal='比较城市岗位数量',analysis_object='招聘数据')
+        output=good if node=='intent' else ({'tasks':[task()]} if node=='planner' else report_output)
+        llm,repo,bodies=provider(tmp_path,[output])
+        if node=='intent':
+            asyncio.run(IntentParserService(llm,enable_thinking=False).parse('比较城市岗位数量',recruiting_profile(),['保留全部城市']))
+        elif node=='planner':
+            asyncio.run(AnalysisPlannerService(llm,CapabilityRegistry()).plan(ParsedIntent.model_validate(good),recruiting_profile()))
+        else:
+            asyncio.run(AnalysisReportService(llm,CapabilityRegistry()).generate(*report_case()))
+        if node != 'report':
+            assert bodies == [expected]
+        else:
+            # REQ-0090 deliberately versions the Report prompt and dynamic schema.
+            # Keep the historical capture intact; verify the exact authorized delta
+            # and that Registry captured the actual request, not a reconstruction.
+            from app.reporting.prompt import SYSTEM_PROMPT
+            current = bodies[0]
+            assert current['model'] == expected['model']
+            assert current['enable_thinking'] == expected['enable_thinking']
+            assert current['messages'][0] == {'role': 'system', 'content': SYSTEM_PROMPT}
+            old_input = json.loads(expected['messages'][1]['content'])
+            new_input = json.loads(current['messages'][1]['content'])
+            assert set(new_input) == set(old_input) | {'required_core_groups', 'allowed_limitations', 'draft_schema_version', 'recommendation_options', 'limitation_pool'}
+            for key in set(old_input) - {'limitations'}:
+>               assert new_input[key] == old_input[key]
+E               AssertionError: assert [{'task_id': ...按记录数从高到低排列']}] == [{'task_id': ...按记录数从高到低排列']}]
+E                 
+E                 At index 0 diff: {'task_id': 'A01', 'approved_steps': ['按城市分组', '拟用统计口径：记录数', '按上传记录逐行计数，不代表去重后的业务实体数量。', '按记录数从高到低排列']} != {'task_id': 'A01', 'approved_steps': ['按城市分组', '拟用统计口径：记录数', '按记录数从高到低排列']}
+E                 Use -v to get more diff
+
+backend/tests/test_prompt_registry.py:335: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_prompt_registry.py::test_request_body_unchanged_from_frozen_preimplementation_capture[report-R01-imported]
+1 failed, 87 passed, 1 warning in 6.65s

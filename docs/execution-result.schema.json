@@ -1,0 +1,815 @@
+{
+  "$defs": {
+    "ExecutedTask": {
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "success",
+            "failed",
+            "skipped"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ResultTable"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "effective_row_count": {
+          "minimum": 0,
+          "title": "Effective Row Count",
+          "type": "integer"
+        },
+        "valid_sample_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Valid Sample Count"
+        },
+        "sample_definition": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Sample Definition",
+          "type": "string"
+        },
+        "scope": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Scope",
+          "type": "string"
+        },
+        "calculation": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Calculation",
+          "type": "string"
+        },
+        "failure_reason": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Failure Reason"
+        },
+        "result_id": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Result Id"
+        },
+        "result_ref": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Result Ref"
+        },
+        "row_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Row Count"
+        },
+        "execution_metadata": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TaskExecutionMetadata"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExecutionError"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "task_id",
+        "status",
+        "result",
+        "effective_row_count",
+        "valid_sample_count",
+        "sample_definition",
+        "scope",
+        "calculation",
+        "failure_reason"
+      ],
+      "title": "ExecutedTask",
+      "type": "object"
+    },
+    "ExecutionError": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Message",
+          "type": "string"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Task Id"
+        },
+        "step_id": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Step Id"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "ExecutionError",
+      "type": "object"
+    },
+    "LogicalType": {
+      "enum": [
+        "empty",
+        "boolean",
+        "integer",
+        "number",
+        "date",
+        "datetime",
+        "time",
+        "text",
+        "mixed"
+      ],
+      "title": "LogicalType",
+      "type": "string"
+    },
+    "Provenance": {
+      "properties": {
+        "source": {
+          "default": "mock",
+          "enum": [
+            "mock",
+            "uploaded",
+            "llm",
+            "input_guard"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "dataset": {
+          "default": "insightflow-demo-v1",
+          "title": "Dataset",
+          "type": "string"
+        },
+        "dataset_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dataset Version"
+        },
+        "plan_version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plan Version"
+        },
+        "notice": {
+          "default": "Mock 示例，非上传文件分析结果",
+          "title": "Notice",
+          "type": "string"
+        }
+      },
+      "title": "Provenance",
+      "type": "object"
+    },
+    "ResultColumn": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Field",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Label",
+          "type": "string"
+        },
+        "logical_type": {
+          "$ref": "#/$defs/LogicalType"
+        },
+        "role": {
+          "enum": [
+            "dimension",
+            "metric"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "maxLength": 40,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Unit"
+        }
+      },
+      "required": [
+        "field",
+        "label",
+        "logical_type",
+        "role",
+        "unit"
+      ],
+      "title": "ResultColumn",
+      "type": "object"
+    },
+    "ResultTable": {
+      "additionalProperties": false,
+      "properties": {
+        "result_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Result Id",
+          "type": "string"
+        },
+        "columns": {
+          "items": {
+            "$ref": "#/$defs/ResultColumn"
+          },
+          "maxItems": 276,
+          "minItems": 1,
+          "title": "Columns",
+          "type": "array"
+        },
+        "rows": {
+          "items": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "maxLength": 10485760,
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object"
+          },
+          "maxItems": 5000,
+          "title": "Rows",
+          "type": "array"
+        },
+        "truncated": {
+          "title": "Truncated",
+          "type": "boolean"
+        },
+        "total_result_rows": {
+          "minimum": 0,
+          "title": "Total Result Rows",
+          "type": "integer"
+        },
+        "row_offset": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Row Offset",
+          "type": "integer"
+        },
+        "total_refs": {
+          "items": {
+            "$ref": "#/$defs/TotalReference"
+          },
+          "maxItems": 20,
+          "title": "Total Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "result_id",
+        "columns",
+        "rows",
+        "truncated",
+        "total_result_rows"
+      ],
+      "title": "ResultTable",
+      "type": "object"
+    },
+    "StepExecutionLog": {
+      "additionalProperties": false,
+      "properties": {
+        "step_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Step Id",
+          "type": "string"
+        },
+        "operation": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Operation",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "success",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "input_row_count": {
+          "minimum": 0,
+          "title": "Input Row Count",
+          "type": "integer"
+        },
+        "output_row_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Output Row Count"
+        },
+        "duration_ms": {
+          "minimum": 0,
+          "title": "Duration Ms",
+          "type": "number"
+        },
+        "warnings": {
+          "items": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExecutionError"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "step_id",
+        "operation",
+        "status",
+        "input_row_count",
+        "output_row_count",
+        "duration_ms"
+      ],
+      "title": "StepExecutionLog",
+      "type": "object"
+    },
+    "TaskExecutionMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "input_row_count": {
+          "minimum": 0,
+          "title": "Input Row Count",
+          "type": "integer"
+        },
+        "started_at": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Started At",
+          "type": "string"
+        },
+        "finished_at": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Finished At",
+          "type": "string"
+        },
+        "duration_ms": {
+          "minimum": 0,
+          "title": "Duration Ms",
+          "type": "number"
+        },
+        "preview_row_count": {
+          "minimum": 0,
+          "title": "Preview Row Count",
+          "type": "integer"
+        },
+        "metric_valid_counts": {
+          "additionalProperties": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "title": "Metric Valid Counts",
+          "type": "object"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/StepExecutionLog"
+          },
+          "title": "Steps",
+          "type": "array"
+        },
+        "warnings": {
+          "items": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "input_row_count",
+        "started_at",
+        "finished_at",
+        "duration_ms",
+        "preview_row_count"
+      ],
+      "title": "TaskExecutionMetadata",
+      "type": "object"
+    },
+    "TotalReference": {
+      "additionalProperties": false,
+      "properties": {
+        "metric_field": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Metric Field",
+          "type": "string"
+        },
+        "result_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Result Id",
+          "type": "string"
+        },
+        "result_field": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Result Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metric_field",
+        "result_id",
+        "result_field"
+      ],
+      "title": "TotalReference",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "dataset_id": {
+      "minLength": 1,
+      "title": "Dataset Id",
+      "type": "string"
+    },
+    "dataset_version": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Dataset Version",
+      "type": "string"
+    },
+    "execution_id": {
+      "maxLength": 120,
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Execution Id",
+      "type": "string"
+    },
+    "plan_id": {
+      "maxLength": 120,
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Plan Id",
+      "type": "string"
+    },
+    "plan_version": {
+      "minimum": 1,
+      "title": "Plan Version",
+      "type": "integer"
+    },
+    "approved_plan_version": {
+      "minimum": 1,
+      "title": "Approved Plan Version",
+      "type": "integer"
+    },
+    "execution_status": {
+      "enum": [
+        "success",
+        "partial_success",
+        "failed"
+      ],
+      "title": "Execution Status",
+      "type": "string"
+    },
+    "source": {
+      "enum": [
+        "engine",
+        "imported",
+        "mock"
+      ],
+      "title": "Source",
+      "type": "string"
+    },
+    "producer": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Producer",
+      "type": "string"
+    },
+    "session_id": {
+      "anyOf": [
+        {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Session Id"
+    },
+    "execution_request_id": {
+      "anyOf": [
+        {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Execution Request Id"
+    },
+    "approval_id": {
+      "anyOf": [
+        {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Approval Id"
+    },
+    "started_at": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Started At"
+    },
+    "finished_at": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Finished At"
+    },
+    "duration_ms": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Duration Ms"
+    },
+    "result_view": {
+      "anyOf": [
+        {
+          "enum": [
+            "preview",
+            "complete"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Result View"
+    },
+    "provenance": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Provenance"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "errors": {
+      "items": {
+        "$ref": "#/$defs/ExecutionError"
+      },
+      "title": "Errors",
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "maxLength": 2000,
+        "minLength": 1,
+        "pattern": "\\S",
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    },
+    "tasks": {
+      "items": {
+        "$ref": "#/$defs/ExecutedTask"
+      },
+      "maxItems": 10,
+      "title": "Tasks",
+      "type": "array"
+    }
+  },
+  "required": [
+    "dataset_id",
+    "dataset_version",
+    "execution_id",
+    "plan_id",
+    "plan_version",
+    "approved_plan_version",
+    "execution_status",
+    "source",
+    "producer",
+    "tasks"
+  ],
+  "title": "ExecutionResultV1",
+  "type": "object"
+}

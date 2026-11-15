@@ -1,0 +1,1364 @@
+{
+  "workflow_id": "wf_e62928f3d6074f84a6f299071eb6a147",
+  "root_run_id": "run_62186f2f0bd845bc95678e660f2adb11",
+  "id": "50327f6417294c0b80bd3bed9f63b539",
+  "title": "帮我探索这份销售数据的主要特征和差异。",
+  "status": "COMPLETED",
+  "revision": 14,
+  "created_at": "2026-11-04T10:45:43.855791+00:00",
+  "updated_at": "2026-11-04T10:46:18.396107+00:00",
+  "data_source": "uploaded",
+  "workflow_kind": "real_v1",
+  "profile_options": {
+    "header_row": 1,
+    "sheet_name": null,
+    "encoding": "utf-8-sig",
+    "delimiter": ","
+  },
+  "planner_result": {
+    "plan": {
+      "dataset_id": "76d2e5b786bd4c5e8e244ca0d91627d0",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "plan_id": "plan_73d3ec53f1964588b30d755653c383cf",
+      "plan_version": 1,
+      "tasks": [
+        {
+          "task_id": "T1",
+          "title": "销售数据整体概况统计",
+          "business_question": "销售数据的总订单数、总销售额及平均单笔销售额是多少？",
+          "priority": "P0",
+          "priority_reason": "删除此任务将无法了解数据集的基本规模和价值总量，无法回答探索性分析中的核心特征问题。",
+          "requirement_ids": [
+            "C01"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1_1",
+              "operation": "aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "total_orders"
+                  },
+                  {
+                    "function": "sum",
+                    "field": "field_0005",
+                    "alias": "total_sales_amount"
+                  },
+                  {
+                    "function": "avg",
+                    "field": "field_0005",
+                    "alias": "avg_sales_per_order"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "task_id": "T2",
+          "title": "按地区维度的销售差异分析",
+          "business_question": "不同地区的订单数量和销售额分布有何差异？",
+          "priority": "P0",
+          "priority_reason": "探索“主要差异”需要识别关键维度上的表现对比，地区是销售数据中常见的核心分组维度，缺失将导致无法评估地域性差异。",
+          "requirement_ids": [
+            "C01"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S2_1",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "orders_by_region"
+                  },
+                  {
+                    "function": "sum",
+                    "field": "field_0005",
+                    "alias": "sales_sum_by_region"
+                  }
+                ],
+                "dimensions": [
+                  "field_0002"
+                ]
+              }
+            },
+            {
+              "step_id": "S2_2",
+              "operation": "sort",
+              "params": {
+                "field": "sales_sum_by_region",
+                "direction": "desc"
+              }
+            }
+          ]
+        },
+        {
+          "task_id": "T3",
+          "title": "按产品类别的销售贡献分析",
+          "business_question": "各产品类别的销售额和订单数量分别是多少？",
+          "priority": "P0",
+          "priority_reason": "产品类别是理解销售结构的主要特征之一，有助于识别高价值品类，符合探索主要特征的需求。",
+          "requirement_ids": [
+            "C01"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S3_1",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0005",
+                    "alias": "sales_sum_by_category"
+                  },
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "orders_by_category"
+                  }
+                ],
+                "dimensions": [
+                  "field_0007"
+                ]
+              }
+            },
+            {
+              "step_id": "S3_2",
+              "operation": "sort",
+              "params": {
+                "field": "sales_sum_by_category",
+                "direction": "desc"
+              }
+            }
+          ]
+        },
+        {
+          "task_id": "T4",
+          "title": "按订单状态的交易质量概览",
+          "business_question": "不同订单状态的记录数量分布如何？",
+          "priority": "P1",
+          "priority_reason": "虽然不直接涉及金额差异，但订单状态反映了交易的有效性或异常比例，属于数据主要特征的补充视角，有助于全面理解数据构成。",
+          "requirement_ids": [
+            "C01"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S4_1",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "order_count_by_status"
+                  }
+                ],
+                "dimensions": [
+                  "field_0004"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "探索销售数据的主要特征和差异"
+        }
+      ]
+    },
+    "validation_results": [
+      {
+        "task_id": "T1",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      },
+      {
+        "task_id": "T2",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      },
+      {
+        "task_id": "T3",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      },
+      {
+        "task_id": "T4",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      }
+    ],
+    "unmet_core_requirements": [],
+    "coverage_status": "complete",
+    "executable_task_ids": [
+      "T1",
+      "T2",
+      "T3",
+      "T4"
+    ],
+    "blocked_task_ids": [],
+    "fully_executable": true,
+    "validation_version": "1.0",
+    "registry_version": "1.0",
+    "approval_required": true,
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "76d2e5b786bd4c5e8e244ca0d91627d0",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "plan_version": 1,
+      "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+    },
+    "intent_snapshot": {
+      "analysis_mode": "exploratory",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "销售数据",
+        "business_goal": "探索销售数据的主要特征和差异",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    }
+  },
+  "workflow_events": [
+    {
+      "status": "CREATED",
+      "recorded_at": "2026-11-04T10:45:43.856412+00:00"
+    },
+    {
+      "status": "PROFILING",
+      "recorded_at": "2026-11-04T10:45:43.894479+00:00"
+    },
+    {
+      "status": "PARSING_INTENT",
+      "recorded_at": "2026-11-04T10:45:43.902144+00:00"
+    },
+    {
+      "status": "PLANNING",
+      "recorded_at": "2026-11-04T10:45:46.320634+00:00"
+    },
+    {
+      "status": "VALIDATING",
+      "recorded_at": "2026-11-04T10:46:02.068631+00:00"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "recorded_at": "2026-11-04T10:46:02.074328+00:00"
+    },
+    {
+      "status": "APPROVED",
+      "recorded_at": "2026-11-04T10:46:02.120654+00:00"
+    },
+    {
+      "status": "RUNNING",
+      "recorded_at": "2026-11-04T10:46:02.136789+00:00"
+    },
+    {
+      "status": "COMPLETED",
+      "recorded_at": "2026-11-04T10:46:02.150205+00:00"
+    }
+  ],
+  "file": {
+    "id": "76d2e5b786bd4c5e8e244ca0d91627d0",
+    "name": "sales.csv",
+    "size": 605,
+    "extension": ".csv",
+    "content_sha256": "ab26d151610f84c760e61c0f78ae78d421415ba0cb87ff424a346d346d242c3d"
+  },
+  "user_goal": "帮我探索这份销售数据的主要特征和差异。",
+  "analysis_mode": "exploratory",
+  "intent": {
+    "analysis_mode": "exploratory",
+    "next_action": "proceed",
+    "analysis_goal": {
+      "analysis_object": "销售数据",
+      "business_goal": "探索销售数据的主要特征和差异",
+      "decision_goal": null
+    },
+    "constraints": {
+      "time_range": null,
+      "filters": [],
+      "metric_requirements": [],
+      "analysis_limits": []
+    },
+    "uncertainties": [],
+    "clarification_questions": [],
+    "user_query": "帮我探索这份销售数据的主要特征和差异。",
+    "clarification_answers": [],
+    "dataset_ref": {
+      "dataset_id": "76d2e5b786bd4c5e8e244ca0d91627d0",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106"
+    },
+    "parse_origin": "llm",
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "76d2e5b786bd4c5e8e244ca0d91627d0",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "plan_version": null,
+      "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+    },
+    "parser_version": "1.1",
+    "prompt_version": "intent-v1.3.3",
+    "llm_attempts": 1,
+    "parse_id": "d307650234c34edfa3c2ebbc9baf29a4"
+  },
+  "intent_history": [
+    {
+      "analysis_mode": "exploratory",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "销售数据",
+        "business_goal": "探索销售数据的主要特征和差异",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "帮我探索这份销售数据的主要特征和差异。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "76d2e5b786bd4c5e8e244ca0d91627d0",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "76d2e5b786bd4c5e8e244ca0d91627d0",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "d307650234c34edfa3c2ebbc9baf29a4"
+    }
+  ],
+  "clarification_answers": [],
+  "profile": {
+    "dataset_id": "76d2e5b786bd4c5e8e244ca0d91627d0",
+    "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+    "schema_version": "1.0",
+    "profiler_version": "1.1.0",
+    "content_sha256": "ab26d151610f84c760e61c0f78ae78d421415ba0cb87ff424a346d346d242c3d",
+    "file_name": "sales.csv",
+    "file_format": "csv",
+    "sheet_name": null,
+    "available_sheets": [],
+    "options": {
+      "header_row": 1,
+      "sheet_name": null,
+      "encoding": "utf-8-sig",
+      "delimiter": ","
+    },
+    "row_count": 10,
+    "column_count": 7,
+    "total_cell_count": 70,
+    "missing_cell_count": 0,
+    "missing_cell_rate": 0.0,
+    "duplicate_row_count": 0,
+    "duplicate_row_rate": 0.0,
+    "fields": [
+      {
+        "field_id": "field_0001",
+        "position": 1,
+        "original_name": "订单日期",
+        "display_name": "订单日期",
+        "physical_type": "string",
+        "logical_type": "date",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 10,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "date": 10
+        },
+        "samples": [
+          {
+            "value": "2026-01-03",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-02-04",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-01-05",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-03-06",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-02-07",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0002",
+        "position": 2,
+        "original_name": "地区",
+        "display_name": "地区",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 2,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "text": 10
+        },
+        "samples": [
+          {
+            "value": "华东",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "华北",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0003",
+        "position": 3,
+        "original_name": "城市",
+        "display_name": "城市",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 5,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "text": 10
+        },
+        "samples": [
+          {
+            "value": "济南",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "南京",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "上海",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "杭州",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "北京",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0004",
+        "position": 4,
+        "original_name": "订单状态",
+        "display_name": "订单状态",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "text": 10
+        },
+        "samples": [
+          {
+            "value": "已完成",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "已取消",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "待付款",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0005",
+        "position": 5,
+        "original_name": "销售额",
+        "display_name": "销售额",
+        "physical_type": "string",
+        "logical_type": "integer",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 10,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "integer": 10
+        },
+        "samples": [
+          {
+            "value": "15000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "6250",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "20000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "250",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "5760",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0006",
+        "position": 6,
+        "original_name": "订单编号",
+        "display_name": "订单编号",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 10,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "text": 10
+        },
+        "samples": [
+          {
+            "value": "S01",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "S02",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "S03",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "S04",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "S05",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0007",
+        "position": 7,
+        "original_name": "产品类别",
+        "display_name": "产品类别",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 2,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "text": 10
+        },
+        "samples": [
+          {
+            "value": "软件",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "服务",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      }
+    ],
+    "quality_issues": [],
+    "provenance": {
+      "source": "uploaded",
+      "dataset": "76d2e5b786bd4c5e8e244ca0d91627d0",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "plan_version": null,
+      "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+    }
+  },
+  "dataset_ref": {
+    "dataset_id": "76d2e5b786bd4c5e8e244ca0d91627d0",
+    "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106"
+  },
+  "plans": [],
+  "current_plan_version": 1,
+  "approved_plan_version": 1,
+  "node_runs": [
+    {
+      "run_id": "546cd1b00d1b43fb891f559d366e473f",
+      "node_name": "data_profiler",
+      "status": "success",
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "76d2e5b786bd4c5e8e244ca0d91627d0",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_version": null,
+        "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T10:45:43.899558+00:00"
+    },
+    {
+      "run_id": "dd55420ec4a84c869ee356d67819a517",
+      "node_name": "intent_parser",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "76d2e5b786bd4c5e8e244ca0d91627d0",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T10:45:46.317803+00:00"
+    },
+    {
+      "run_id": "f06dc19d6594498cbaabecaad2af12cb",
+      "node_name": "analysis_planner_v1",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "76d2e5b786bd4c5e8e244ca0d91627d0",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T10:46:02.065798+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "id": "526a33e90644461184d3d05b77fc071d",
+      "role": "user",
+      "kind": "text",
+      "content": "帮我探索这份销售数据的主要特征和差异。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:45:43.855777+00:00"
+    },
+    {
+      "id": "ff27e42f6cbe4376a9cc16146642d888",
+      "role": "assistant",
+      "kind": "status",
+      "content": "正在解析上传文件并计算真实数据画像。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:45:43.894472+00:00"
+    },
+    {
+      "id": "feae46d43b2c4059af2df26060359762",
+      "role": "assistant",
+      "kind": "status",
+      "content": "真实画像完成：10行、7列；正在理解分析需求。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:45:43.902138+00:00"
+    },
+    {
+      "id": "b1b978468d47467aa3588a9f929c7640",
+      "role": "assistant",
+      "kind": "status",
+      "content": "需求已理解，正在生成受控分析计划。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:45:46.320629+00:00"
+    },
+    {
+      "id": "2d73df9d66b746329f7e2c729a3640d2",
+      "role": "assistant",
+      "kind": "plan",
+      "content": "真实计划已保存，目标覆盖：complete。请审核任务、未满足需求和约束；批准前不会计算。",
+      "plan_version": 1,
+      "created_at": "2026-11-04T10:46:02.074323+00:00"
+    },
+    {
+      "id": "af79ea1a215749abae9c322a44b009f6",
+      "role": "user",
+      "kind": "text",
+      "content": "确认真实计划 v1 并执行；已确认限制：无。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:46:02.120648+00:00"
+    },
+    {
+      "id": "beb2a2c2057d4bca8ee2835e6bccf693",
+      "role": "assistant",
+      "kind": "status",
+      "content": "已核对批准版本，正在执行真实上传数据。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:46:02.136806+00:00"
+    },
+    {
+      "id": "227349689e274c0baae2cecba37999b0",
+      "role": "assistant",
+      "kind": "status",
+      "content": "真实计算已结束，执行结果与步骤记录已保存；本阶段不自动生成报告。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:46:02.150220+00:00"
+    }
+  ],
+  "review_plan": {
+    "session_id": "50327f6417294c0b80bd3bed9f63b539",
+    "plan_id": "plan_73d3ec53f1964588b30d755653c383cf",
+    "plan_version": 1,
+    "dataset_id": "76d2e5b786bd4c5e8e244ca0d91627d0",
+    "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+    "validation_version": "1.0",
+    "created_at": "2026-11-04T10:46:02.074230+00:00",
+    "change_type": "created",
+    "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "76d2e5b786bd4c5e8e244ca0d91627d0",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_id": "plan_73d3ec53f1964588b30d755653c383cf",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "销售数据整体概况统计",
+            "business_question": "销售数据的总订单数、总销售额及平均单笔销售额是多少？",
+            "priority": "P0",
+            "priority_reason": "删除此任务将无法了解数据集的基本规模和价值总量，无法回答探索性分析中的核心特征问题。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1_1",
+                "operation": "aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "total_orders"
+                    },
+                    {
+                      "function": "sum",
+                      "field": "field_0005",
+                      "alias": "total_sales_amount"
+                    },
+                    {
+                      "function": "avg",
+                      "field": "field_0005",
+                      "alias": "avg_sales_per_order"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "task_id": "T2",
+            "title": "按地区维度的销售差异分析",
+            "business_question": "不同地区的订单数量和销售额分布有何差异？",
+            "priority": "P0",
+            "priority_reason": "探索“主要差异”需要识别关键维度上的表现对比，地区是销售数据中常见的核心分组维度，缺失将导致无法评估地域性差异。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S2_1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "orders_by_region"
+                    },
+                    {
+                      "function": "sum",
+                      "field": "field_0005",
+                      "alias": "sales_sum_by_region"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S2_2",
+                "operation": "sort",
+                "params": {
+                  "field": "sales_sum_by_region",
+                  "direction": "desc"
+                }
+              }
+            ]
+          },
+          {
+            "task_id": "T3",
+            "title": "按产品类别的销售贡献分析",
+            "business_question": "各产品类别的销售额和订单数量分别是多少？",
+            "priority": "P0",
+            "priority_reason": "产品类别是理解销售结构的主要特征之一，有助于识别高价值品类，符合探索主要特征的需求。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S3_1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "sum",
+                      "field": "field_0005",
+                      "alias": "sales_sum_by_category"
+                    },
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "orders_by_category"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0007"
+                  ]
+                }
+              },
+              {
+                "step_id": "S3_2",
+                "operation": "sort",
+                "params": {
+                  "field": "sales_sum_by_category",
+                  "direction": "desc"
+                }
+              }
+            ]
+          },
+          {
+            "task_id": "T4",
+            "title": "按订单状态的交易质量概览",
+            "business_question": "不同订单状态的记录数量分布如何？",
+            "priority": "P1",
+            "priority_reason": "虽然不直接涉及金额差异，但订单状态反映了交易的有效性或异常比例，属于数据主要特征的补充视角，有助于全面理解数据构成。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S4_1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "order_count_by_status"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0004"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "探索销售数据的主要特征和差异"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        },
+        {
+          "task_id": "T2",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        },
+        {
+          "task_id": "T3",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        },
+        {
+          "task_id": "T4",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T1",
+        "T2",
+        "T3",
+        "T4"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "76d2e5b786bd4c5e8e244ca0d91627d0",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_version": 1,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "exploratory",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "销售数据",
+          "business_goal": "探索销售数据的主要特征和差异",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    }
+  },
+  "review_status": "completed",
+  "engine_approval": {
+    "approval_id": "approval_28a7d9fffd134462ae797ccf45fc9852",
+    "approved_at": "2026-11-04T10:46:02.119866+00:00",
+    "status": "approved",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "76d2e5b786bd4c5e8e244ca0d91627d0",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_id": "plan_73d3ec53f1964588b30d755653c383cf",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "销售数据整体概况统计",
+            "business_question": "销售数据的总订单数、总销售额及平均单笔销售额是多少？",
+            "priority": "P0",
+            "priority_reason": "删除此任务将无法了解数据集的基本规模和价值总量，无法回答探索性分析中的核心特征问题。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1_1",
+                "operation": "aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "total_orders"
+                    },
+                    {
+                      "function": "sum",
+                      "field": "field_0005",
+                      "alias": "total_sales_amount"
+                    },
+                    {
+                      "function": "avg",
+                      "field": "field_0005",
+                      "alias": "avg_sales_per_order"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "task_id": "T2",
+            "title": "按地区维度的销售差异分析",
+            "business_question": "不同地区的订单数量和销售额分布有何差异？",
+            "priority": "P0",
+            "priority_reason": "探索“主要差异”需要识别关键维度上的表现对比，地区是销售数据中常见的核心分组维度，缺失将导致无法评估地域性差异。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S2_1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "orders_by_region"
+                    },
+                    {
+                      "function": "sum",
+                      "field": "field_0005",
+                      "alias": "sales_sum_by_region"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S2_2",
+                "operation": "sort",
+                "params": {
+                  "field": "sales_sum_by_region",
+                  "direction": "desc"
+                }
+              }
+            ]
+          },
+          {
+            "task_id": "T3",
+            "title": "按产品类别的销售贡献分析",
+            "business_question": "各产品类别的销售额和订单数量分别是多少？",
+            "priority": "P0",
+            "priority_reason": "产品类别是理解销售结构的主要特征之一，有助于识别高价值品类，符合探索主要特征的需求。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S3_1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "sum",
+                      "field": "field_0005",
+                      "alias": "sales_sum_by_category"
+                    },
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "orders_by_category"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0007"
+                  ]
+                }
+              },
+              {
+                "step_id": "S3_2",
+                "operation": "sort",
+                "params": {
+                  "field": "sales_sum_by_category",
+                  "direction": "desc"
+                }
+              }
+            ]
+          },
+          {
+            "task_id": "T4",
+            "title": "按订单状态的交易质量概览",
+            "business_question": "不同订单状态的记录数量分布如何？",
+            "priority": "P1",
+            "priority_reason": "虽然不直接涉及金额差异，但订单状态反映了交易的有效性或异常比例，属于数据主要特征的补充视角，有助于全面理解数据构成。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S4_1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "order_count_by_status"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0004"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "探索销售数据的主要特征和差异"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        },
+        {
+          "task_id": "T2",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        },
+        {
+          "task_id": "T3",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        },
+        {
+          "task_id": "T4",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T1",
+        "T2",
+        "T3",
+        "T4"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "76d2e5b786bd4c5e8e244ca0d91627d0",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_version": 1,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "exploratory",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "销售数据",
+          "business_goal": "探索销售数据的主要特征和差异",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "intent": {
+      "analysis_mode": "exploratory",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "销售数据",
+        "business_goal": "探索销售数据的主要特征和差异",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    },
+    "resolved_uncertainty_ids": [],
+    "constraints_confirmed": false,
+    "session_id": "50327f6417294c0b80bd3bed9f63b539",
+    "acknowledged_warnings": []
+  },
+  "engine_execution_ids": [
+    "exec_c91252b71f7946fc8514b854d15ff846"
+  ],
+  "report_generations": [
+    {
+      "workflow_binding": {
+        "session_id": "50327f6417294c0b80bd3bed9f63b539",
+        "execution_id": "exec_c91252b71f7946fc8514b854d15ff846",
+        "approval_id": "approval_28a7d9fffd134462ae797ccf45fc9852",
+        "dataset_id": "76d2e5b786bd4c5e8e244ca0d91627d0",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_id": "plan_73d3ec53f1964588b30d755653c383cf",
+        "plan_version": 1,
+        "workflow_id": "wf_e62928f3d6074f84a6f299071eb6a147",
+        "root_run_id": "run_62186f2f0bd845bc95678e660f2adb11",
+        "plan_version_id": "wpv_468517f7692aeae7bbb58d0d930df09745bf0de60a84a0c7cb3fa306fc45485b",
+        "report_attempt": 1,
+        "active_key": "exec_c91252b71f7946fc8514b854d15ff846:1",
+        "commit_request_id": "exec_c91252b71f7946fc8514b854d15ff846:1",
+        "authorized_revision": 13,
+        "revision_authority": "session_single_flow",
+        "branch_sha256": "d36bacb48401a09c6f79eb6c2b4b6c7f9c51e99c162811d565f973e94feee4ab"
+      },
+      "execution_id": "exec_c91252b71f7946fc8514b854d15ff846",
+      "session_id": "50327f6417294c0b80bd3bed9f63b539",
+      "status": "completed",
+      "attempt": 1,
+      "report_id": "report_20113523a549468b824227d3e7c6fc57",
+      "error": null,
+      "queued_at": "2026-11-04T10:46:02.156446+00:00",
+      "started_at": "2026-11-04T10:46:02.188421+00:00",
+      "finished_at": "2026-11-04T10:46:18.395826+00:00"
+    }
+  ],
+  "execution_result": null,
+  "report": null,
+  "error": null
+}

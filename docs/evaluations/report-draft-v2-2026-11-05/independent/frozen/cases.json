@@ -1,0 +1,68 @@
+[
+  {
+    "case_id": "W01",
+    "domain": "sales",
+    "query": "只看已完成订单，按城市比较销售额总和，按销售额降序排名，取前两名。",
+    "dimension": "城市",
+    "metric_field": "销售额",
+    "function": "sum",
+    "filters": [
+      [
+        "订单状态",
+        "eq",
+        "已完成"
+      ]
+    ],
+    "order": "desc",
+    "top_n": 2,
+    "kind": "numeric",
+    "split": "independent_unseen"
+  },
+  {
+    "case_id": "W02",
+    "domain": "recruitment",
+    "query": "只看本科岗位，按城市比较薪资元的中位数。",
+    "dimension": "城市",
+    "metric_field": "薪资元",
+    "function": "median",
+    "filters": [
+      [
+        "学历",
+        "eq",
+        "本科"
+      ]
+    ],
+    "kind": "numeric",
+    "split": "independent_unseen"
+  },
+  {
+    "case_id": "W03",
+    "domain": "support",
+    "query": "按团队统计响应分钟平均值，并按平均值降序排列；不要推断人员绩效。",
+    "dimension": "团队",
+    "metric_field": "响应分钟",
+    "function": "avg",
+    "filters": [],
+    "order": "desc",
+    "kind": "numeric",
+    "split": "independent_unseen"
+  },
+  {
+    "case_id": "W04",
+    "domain": "projects",
+    "query": "仅分析已完成任务，按项目统计任务数量，按数量降序排列。",
+    "dimension": "项目",
+    "metric_field": null,
+    "function": "count",
+    "filters": [
+      [
+        "状态",
+        "eq",
+        "已完成"
+      ]
+    ],
+    "order": "desc",
+    "kind": "numeric",
+    "split": "independent_unseen"
+  }
+]

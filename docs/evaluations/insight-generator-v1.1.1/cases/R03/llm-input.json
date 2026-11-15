@@ -1,0 +1,223 @@
+{
+  "analysis_goal": {
+    "analysis_object": "recruiting数据",
+    "business_goal": "比较城市岗位数量，存在并列时不编造唯一名次",
+    "decision_goal": null
+  },
+  "goal_coverage": "complete",
+  "original_query": "比较城市岗位数量，存在并列时不编造唯一名次",
+  "constraints": {
+    "time_range": null,
+    "filters": [],
+    "metric_requirements": [],
+    "analysis_limits": []
+  },
+  "constraints_confirmed": false,
+  "scope_context": [
+    {
+      "task_id": "A01",
+      "approved_steps": [
+        "按城市分组",
+        "拟用统计口径：记录数",
+        "按记录数从高到低排列，取前 3 名"
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "field_id": "field_0001",
+      "name": "城市",
+      "logical_type": "text",
+      "upload_missing_count": 0
+    },
+    {
+      "field_id": "field_0002",
+      "name": "岗位",
+      "logical_type": "text",
+      "upload_missing_count": 0
+    }
+  ],
+  "uncompleted_tasks": [],
+  "task_sample_context": [
+    {
+      "task_id": "A01",
+      "status": "success",
+      "valid_sample_count": 3,
+      "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+      "metric_valid_counts": {}
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "A01",
+      "priority": "P0",
+      "business_question": "城市岗位数量与并列"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E0007",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "difference",
+      "value": {
+        "left": "甲",
+        "right": "乙",
+        "left_value": 1,
+        "right_value": 1,
+        "difference": 0
+      },
+      "scope": "比较城市岗位数量，存在并列时不编造唯一名次；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算值相减：value[0] - value[1]；不是因果或显著性检验。",
+      "statement": "在当前返回结果中，甲与乙的记录 · 数量差值为 0条。",
+      "source_row_indices": [
+        0,
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0002",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "甲",
+        "value": 1,
+        "rank": 1
+      },
+      "scope": "比较城市岗位数量，存在并列时不编造唯一名次；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在当前返回结果中，甲的记录 · 数量为 1条，并列值采用同一名次，排名 1。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0003",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "乙",
+        "value": 1,
+        "rank": 1
+      },
+      "scope": "比较城市岗位数量，存在并列时不编造唯一名次；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在当前返回结果中，乙的记录 · 数量为 1条，并列值采用同一名次，排名 1。",
+      "source_row_indices": [
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0004",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "丙",
+        "value": 1,
+        "rank": 1
+      },
+      "scope": "比较城市岗位数量，存在并列时不编造唯一名次；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在当前返回结果中，丙的记录 · 数量为 1条，并列值采用同一名次，排名 1。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0008",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "metric",
+      "value": {
+        "value": 3,
+        "unit": "条",
+        "label": "本次返回分组合计（记录 · 数量）"
+      },
+      "scope": "比较城市岗位数量，存在并列时不编造唯一名次；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；仅将当前完整返回表中的可加指标相加；含 Top N 时只代表所选分组，不作为总体占比分母。",
+      "statement": "本次返回的 3 个分组的记录 · 数量合计为 3条。",
+      "source_row_indices": [
+        0,
+        1,
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0005",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "maximum",
+      "value": {
+        "value": 1,
+        "category": "甲",
+        "tie_count": 3
+      },
+      "scope": "比较城市岗位数量，存在并列时不编造唯一名次；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；读取 value 的最大值，保留并列来源行。",
+      "statement": "当前返回结果的记录 · 数量最大值为 1条，对应 甲等 3 个分组。",
+      "source_row_indices": [
+        0,
+        1,
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0006",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "minimum",
+      "value": {
+        "value": 1,
+        "category": "甲",
+        "tie_count": 3
+      },
+      "scope": "比较城市岗位数量，存在并列时不编造唯一名次；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；读取 value 的最小值，保留并列来源行。",
+      "statement": "当前返回结果的记录 · 数量最小值为 1条，对应 甲等 3 个分组。",
+      "source_row_indices": [
+        0,
+        1,
+        2
+      ],
+      "related_result_refs": []
+    }
+  ],
+  "evidence_groups": [
+    {
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_ids": [
+        "E0007",
+        "E0002",
+        "E0003",
+        "E0004",
+        "E0008",
+        "E0005",
+        "E0006"
+      ]
+    }
+  ],
+  "limitations": [
+    "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+    "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+    "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。",
+    "城市岗位数量与并列：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。"
+  ]
+}

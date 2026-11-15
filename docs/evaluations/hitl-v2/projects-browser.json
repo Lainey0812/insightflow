@@ -1,0 +1,2145 @@
+{
+  "session": {
+    "id": "5d200987f56a48758b0dbb984e6b126f",
+    "title": "开始日期为2026年，任务状态为已完成，按城市汇总工时总",
+    "status": "COMPLETED",
+    "revision": 11,
+    "created_at": "2026-10-27T10:58:46.452562+00:00",
+    "updated_at": "2026-10-27T11:00:47.641253+00:00",
+    "data_source": "uploaded",
+    "workflow_kind": "real_v1",
+    "profile_options": {
+      "header_row": 1,
+      "sheet_name": null,
+      "encoding": "utf-8-sig",
+      "delimiter": ","
+    },
+    "planner_result": {
+      "plan": {
+        "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+        "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+        "plan_id": "plan_c1271675df7b46dab0cc0c6123b8cdf7",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "2026年已完成任务城市工时Top3汇总",
+            "business_question": "在开始日期为2026年的范围内，统计任务状态为“已完成”的记录，按城市汇总工时总和，并按工时降序排列取前三名。",
+            "priority": "P0",
+            "priority_reason": "直接回答核心业务目标（按城市汇总已完成任务的工时总和并取前三），若删除则无法完成决策支持。涉及时间筛选、状态过滤、分组聚合及排序限制，均为必要步骤。",
+            "requirement_ids": [
+              "C01",
+              "C02",
+              "C03",
+              "C04",
+              "C05"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "derive",
+                "params": {
+                  "function": "extract_year",
+                  "field": "field_0001",
+                  "alias": "year_start"
+                }
+              },
+              {
+                "step_id": "S2",
+                "operation": "filter",
+                "params": {
+                  "conditions": [
+                    {
+                      "field": "year_start",
+                      "operator": "eq",
+                      "value": 2026
+                    },
+                    {
+                      "field": "field_0003",
+                      "operator": "eq",
+                      "value": "已完成"
+                    }
+                  ]
+                }
+              },
+              {
+                "step_id": "S3",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "sum",
+                      "field": "field_0004",
+                      "alias": "total_hours"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S4",
+                "operation": "top_n",
+                "params": {
+                  "field": "total_hours",
+                  "direction": "desc",
+                  "n": 3
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "按城市汇总已完成任务的工时总和，并按工时降序取前三名"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "time_range：开始日期为2026年"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "filters：任务状态为已完成"
+          },
+          {
+            "requirement_id": "C04",
+            "description": "metric_requirements：工时总和"
+          },
+          {
+            "requirement_id": "C05",
+            "description": "analysis_limits：按工时降序排名；取前三名"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F1",
+          "reason_code": "REQUIRES_TRANSFORMATION",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T1"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "c86e6d69cde24f1ba73e2700ed085380",
+        "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "已完成任务的城市工时汇总",
+          "business_goal": "按城市汇总已完成任务的工时总和，并按工时降序取前三名",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "开始日期为2026年",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "任务状态为已完成",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "工时总和",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按工时降序排名",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "取前三名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "workflow_events": [
+      {
+        "status": "CREATED",
+        "recorded_at": "2026-10-27T10:58:46.452579+00:00"
+      },
+      {
+        "status": "PROFILING",
+        "recorded_at": "2026-10-27T10:58:46.456352+00:00"
+      },
+      {
+        "status": "PARSING_INTENT",
+        "recorded_at": "2026-10-27T10:58:46.468663+00:00"
+      },
+      {
+        "status": "PLANNING",
+        "recorded_at": "2026-10-27T10:58:52.444744+00:00"
+      },
+      {
+        "status": "VALIDATING",
+        "recorded_at": "2026-10-27T10:59:00.675030+00:00"
+      },
+      {
+        "status": "AWAITING_APPROVAL",
+        "recorded_at": "2026-10-27T10:59:00.678481+00:00"
+      },
+      {
+        "status": "APPROVED",
+        "recorded_at": "2026-10-27T11:00:47.614725+00:00"
+      },
+      {
+        "status": "RUNNING",
+        "recorded_at": "2026-10-27T11:00:47.634011+00:00"
+      },
+      {
+        "status": "COMPLETED",
+        "recorded_at": "2026-10-27T11:00:47.641249+00:00"
+      }
+    ],
+    "file": {
+      "id": "c86e6d69cde24f1ba73e2700ed085380",
+      "name": "projects.csv",
+      "size": 195,
+      "extension": ".csv",
+      "content_sha256": "9e0aa65e68a6c39435fca72b9208e7ad1be65f90650c22a284a7fee6829551de"
+    },
+    "user_goal": "开始日期为2026年，任务状态为已完成，按城市汇总工时总和，按工时降序排名，取前三名。",
+    "analysis_mode": "goal_driven",
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "已完成任务的城市工时汇总",
+        "business_goal": "按城市汇总已完成任务的工时总和，并按工时降序取前三名",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": {
+          "raw_text": "开始日期为2026年",
+          "validation_status": "unverified"
+        },
+        "filters": [
+          {
+            "raw_text": "任务状态为已完成",
+            "validation_status": "unverified"
+          }
+        ],
+        "metric_requirements": [
+          {
+            "raw_text": "工时总和",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "按工时降序排名",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "取前三名",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "开始日期为2026年，任务状态为已完成，按城市汇总工时总和，按工时降序排名，取前三名。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+        "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "c86e6d69cde24f1ba73e2700ed085380",
+        "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "0a939fffd5224d4da4fe4b87c406c032"
+    },
+    "intent_history": [
+      {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "已完成任务的城市工时汇总",
+          "business_goal": "按城市汇总已完成任务的工时总和，并按工时降序取前三名",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "开始日期为2026年",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "任务状态为已完成",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "工时总和",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按工时降序排名",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "取前三名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": [],
+        "user_query": "开始日期为2026年，任务状态为已完成，按城市汇总工时总和，按工时降序排名，取前三名。",
+        "clarification_answers": [],
+        "dataset_ref": {
+          "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+          "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c"
+        },
+        "parse_origin": "llm",
+        "llm": {
+          "provider": "compatible",
+          "model": "qwen3.8-flash",
+          "is_mock": false
+        },
+        "provenance": {
+          "source": "llm",
+          "dataset": "c86e6d69cde24f1ba73e2700ed085380",
+          "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+          "plan_version": null,
+          "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+        },
+        "parser_version": "1.1",
+        "prompt_version": "intent-v1.3.3",
+        "llm_attempts": 1,
+        "parse_id": "0a939fffd5224d4da4fe4b87c406c032"
+      }
+    ],
+    "clarification_answers": [],
+    "profile": {
+      "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+      "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+      "schema_version": "1.0",
+      "profiler_version": "1.1.0",
+      "content_sha256": "9e0aa65e68a6c39435fca72b9208e7ad1be65f90650c22a284a7fee6829551de",
+      "file_name": "projects.csv",
+      "file_format": "csv",
+      "sheet_name": null,
+      "available_sheets": [],
+      "options": {
+        "header_row": 1,
+        "sheet_name": null,
+        "encoding": "utf-8-sig",
+        "delimiter": ","
+      },
+      "row_count": 5,
+      "column_count": 4,
+      "total_cell_count": 20,
+      "missing_cell_count": 0,
+      "missing_cell_rate": 0.0,
+      "duplicate_row_count": 0,
+      "duplicate_row_rate": 0.0,
+      "fields": [
+        {
+          "field_id": "field_0001",
+          "position": 1,
+          "original_name": "开始日期",
+          "display_name": "开始日期",
+          "physical_type": "string",
+          "logical_type": "date",
+          "missing_count": 0,
+          "missing_rate": 0.0,
+          "non_missing_count": 5,
+          "unique_count": 5,
+          "physical_type_counts": {
+            "string": 5
+          },
+          "logical_type_counts": {
+            "date": 5
+          },
+          "samples": [
+            {
+              "value": "2026-01-02",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "2026-02-01",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "2026-03-01",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "2025-02-01",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "2026-04-01",
+              "physical_type": "string",
+              "truncated": false
+            }
+          ]
+        },
+        {
+          "field_id": "field_0002",
+          "position": 2,
+          "original_name": "城市",
+          "display_name": "城市",
+          "physical_type": "string",
+          "logical_type": "text",
+          "missing_count": 0,
+          "missing_rate": 0.0,
+          "non_missing_count": 5,
+          "unique_count": 4,
+          "physical_type_counts": {
+            "string": 5
+          },
+          "logical_type_counts": {
+            "text": 5
+          },
+          "samples": [
+            {
+              "value": "上海",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "北京",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "杭州",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "广州",
+              "physical_type": "string",
+              "truncated": false
+            }
+          ]
+        },
+        {
+          "field_id": "field_0003",
+          "position": 3,
+          "original_name": "任务状态",
+          "display_name": "任务状态",
+          "physical_type": "string",
+          "logical_type": "text",
+          "missing_count": 0,
+          "missing_rate": 0.0,
+          "non_missing_count": 5,
+          "unique_count": 2,
+          "physical_type_counts": {
+            "string": 5
+          },
+          "logical_type_counts": {
+            "text": 5
+          },
+          "samples": [
+            {
+              "value": "已完成",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "未完成",
+              "physical_type": "string",
+              "truncated": false
+            }
+          ]
+        },
+        {
+          "field_id": "field_0004",
+          "position": 4,
+          "original_name": "工时",
+          "display_name": "工时",
+          "physical_type": "string",
+          "logical_type": "integer",
+          "missing_count": 0,
+          "missing_rate": 0.0,
+          "non_missing_count": 5,
+          "unique_count": 5,
+          "physical_type_counts": {
+            "string": 5
+          },
+          "logical_type_counts": {
+            "integer": 5
+          },
+          "samples": [
+            {
+              "value": "10",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "30",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "20",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "90",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "80",
+              "physical_type": "string",
+              "truncated": false
+            }
+          ]
+        }
+      ],
+      "quality_issues": [],
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "c86e6d69cde24f1ba73e2700ed085380",
+        "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+        "plan_version": null,
+        "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+      }
+    },
+    "dataset_ref": {
+      "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+      "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c"
+    },
+    "plans": [],
+    "current_plan_version": 1,
+    "approved_plan_version": 1,
+    "node_runs": [
+      {
+        "run_id": "b691a795e3d6420b83f3ee0c357ded58",
+        "node_name": "data_profiler",
+        "status": "success",
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "c86e6d69cde24f1ba73e2700ed085380",
+          "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+          "plan_version": null,
+          "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+        },
+        "error": null,
+        "finished_at": "2026-10-27T10:58:46.467789+00:00"
+      },
+      {
+        "run_id": "283cb1f8729641c18f703c2d96f68511",
+        "node_name": "intent_parser",
+        "status": "success",
+        "provenance": {
+          "source": "llm",
+          "dataset": "c86e6d69cde24f1ba73e2700ed085380",
+          "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+          "plan_version": null,
+          "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+        },
+        "error": null,
+        "finished_at": "2026-10-27T10:58:52.442629+00:00"
+      },
+      {
+        "run_id": "297397c369284c399b06fd33813f8eea",
+        "node_name": "analysis_planner_v1",
+        "status": "success",
+        "provenance": {
+          "source": "llm",
+          "dataset": "c86e6d69cde24f1ba73e2700ed085380",
+          "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+          "plan_version": 1,
+          "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+        },
+        "error": null,
+        "finished_at": "2026-10-27T10:59:00.672887+00:00"
+      }
+    ],
+    "messages": [
+      {
+        "id": "d313b8dd3ea1440e84406d05ae8bd5c1",
+        "role": "user",
+        "kind": "text",
+        "content": "开始日期为2026年，任务状态为已完成，按城市汇总工时总和，按工时降序排名，取前三名。",
+        "plan_version": null,
+        "created_at": "2026-10-27T10:58:46.452545+00:00"
+      },
+      {
+        "id": "7885f09a53e340cba0421c49c6328dd9",
+        "role": "assistant",
+        "kind": "status",
+        "content": "正在解析上传文件并计算真实数据画像。",
+        "plan_version": null,
+        "created_at": "2026-10-27T10:58:46.456337+00:00"
+      },
+      {
+        "id": "e604f5cf906c4f9b820d3f563243fee9",
+        "role": "assistant",
+        "kind": "status",
+        "content": "真实画像完成：5行、4列；正在理解分析需求。",
+        "plan_version": null,
+        "created_at": "2026-10-27T10:58:46.468658+00:00"
+      },
+      {
+        "id": "a105c1945ef648eea16f1c3f09f6cbe7",
+        "role": "assistant",
+        "kind": "status",
+        "content": "需求已理解，正在生成受控分析计划。",
+        "plan_version": null,
+        "created_at": "2026-10-27T10:58:52.444732+00:00"
+      },
+      {
+        "id": "e84536bd939c4a288c51a15429767dbd",
+        "role": "assistant",
+        "kind": "plan",
+        "content": "真实计划已保存，目标覆盖：complete。请审核任务、未满足需求和约束；批准前不会计算。",
+        "plan_version": 1,
+        "created_at": "2026-10-27T10:59:00.678471+00:00"
+      },
+      {
+        "id": "c6790647165c429caaa350b48521c0d7",
+        "role": "user",
+        "kind": "text",
+        "content": "确认真实计划 v1 并执行；已确认限制：无。",
+        "plan_version": null,
+        "created_at": "2026-10-27T11:00:47.614719+00:00"
+      },
+      {
+        "id": "418253f1b0e648a3afed08211fe60943",
+        "role": "assistant",
+        "kind": "status",
+        "content": "已核对批准版本，正在执行真实上传数据。",
+        "plan_version": null,
+        "created_at": "2026-10-27T11:00:47.634031+00:00"
+      },
+      {
+        "id": "438454bd85624171b7249c74edd2333c",
+        "role": "assistant",
+        "kind": "status",
+        "content": "真实计算已结束，执行结果与步骤记录已保存；本阶段不自动生成报告。",
+        "plan_version": null,
+        "created_at": "2026-10-27T11:00:47.641263+00:00"
+      }
+    ],
+    "review_plan": {
+      "session_id": "5d200987f56a48758b0dbb984e6b126f",
+      "plan_id": "plan_c1271675df7b46dab0cc0c6123b8cdf7",
+      "plan_version": 1,
+      "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+      "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+      "validation_version": "1.0",
+      "created_at": "2026-10-27T10:59:00.678316+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+          "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+          "plan_id": "plan_c1271675df7b46dab0cc0c6123b8cdf7",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T1",
+              "title": "2026年已完成任务城市工时Top3汇总",
+              "business_question": "在开始日期为2026年的范围内，统计任务状态为“已完成”的记录，按城市汇总工时总和，并按工时降序排列取前三名。",
+              "priority": "P0",
+              "priority_reason": "直接回答核心业务目标（按城市汇总已完成任务的工时总和并取前三），若删除则无法完成决策支持。涉及时间筛选、状态过滤、分组聚合及排序限制，均为必要步骤。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03",
+                "C04",
+                "C05"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S1",
+                  "operation": "derive",
+                  "params": {
+                    "function": "extract_year",
+                    "field": "field_0001",
+                    "alias": "year_start"
+                  }
+                },
+                {
+                  "step_id": "S2",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "year_start",
+                        "operator": "eq",
+                        "value": 2026
+                      },
+                      {
+                        "field": "field_0003",
+                        "operator": "eq",
+                        "value": "已完成"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S3",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0004",
+                        "alias": "total_hours"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0002"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S4",
+                  "operation": "top_n",
+                  "params": {
+                    "field": "total_hours",
+                    "direction": "desc",
+                    "n": 3
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "按城市汇总已完成任务的工时总和，并按工时降序取前三名"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "time_range：开始日期为2026年"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "filters：任务状态为已完成"
+            },
+            {
+              "requirement_id": "C04",
+              "description": "metric_requirements：工时总和"
+            },
+            {
+              "requirement_id": "C05",
+              "description": "analysis_limits：按工时降序排名；取前三名"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T1",
+            "feasibility": "F1",
+            "reason_code": "REQUIRES_TRANSFORMATION",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T1"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "c86e6d69cde24f1ba73e2700ed085380",
+          "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "已完成任务的城市工时汇总",
+            "business_goal": "按城市汇总已完成任务的工时总和，并按工时降序取前三名",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": {
+              "raw_text": "开始日期为2026年",
+              "validation_status": "unverified"
+            },
+            "filters": [
+              {
+                "raw_text": "任务状态为已完成",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "工时总和",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按工时降序排名",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "取前三名",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "review_status": "completed",
+    "engine_approval": {
+      "approval_id": "approval_f00be0fe24dd4069aafad909ccd30485",
+      "approved_at": "2026-10-27T11:00:47.614565+00:00",
+      "status": "approved",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+          "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+          "plan_id": "plan_c1271675df7b46dab0cc0c6123b8cdf7",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T1",
+              "title": "2026年已完成任务城市工时Top3汇总",
+              "business_question": "在开始日期为2026年的范围内，统计任务状态为“已完成”的记录，按城市汇总工时总和，并按工时降序排列取前三名。",
+              "priority": "P0",
+              "priority_reason": "直接回答核心业务目标（按城市汇总已完成任务的工时总和并取前三），若删除则无法完成决策支持。涉及时间筛选、状态过滤、分组聚合及排序限制，均为必要步骤。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03",
+                "C04",
+                "C05"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S1",
+                  "operation": "derive",
+                  "params": {
+                    "function": "extract_year",
+                    "field": "field_0001",
+                    "alias": "year_start"
+                  }
+                },
+                {
+                  "step_id": "S2",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "year_start",
+                        "operator": "eq",
+                        "value": 2026
+                      },
+                      {
+                        "field": "field_0003",
+                        "operator": "eq",
+                        "value": "已完成"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S3",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0004",
+                        "alias": "total_hours"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0002"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S4",
+                  "operation": "top_n",
+                  "params": {
+                    "field": "total_hours",
+                    "direction": "desc",
+                    "n": 3
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "按城市汇总已完成任务的工时总和，并按工时降序取前三名"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "time_range：开始日期为2026年"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "filters：任务状态为已完成"
+            },
+            {
+              "requirement_id": "C04",
+              "description": "metric_requirements：工时总和"
+            },
+            {
+              "requirement_id": "C05",
+              "description": "analysis_limits：按工时降序排名；取前三名"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T1",
+            "feasibility": "F1",
+            "reason_code": "REQUIRES_TRANSFORMATION",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T1"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "c86e6d69cde24f1ba73e2700ed085380",
+          "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "已完成任务的城市工时汇总",
+            "business_goal": "按城市汇总已完成任务的工时总和，并按工时降序取前三名",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": {
+              "raw_text": "开始日期为2026年",
+              "validation_status": "unverified"
+            },
+            "filters": [
+              {
+                "raw_text": "任务状态为已完成",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "工时总和",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按工时降序排名",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "取前三名",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      },
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "已完成任务的城市工时汇总",
+          "business_goal": "按城市汇总已完成任务的工时总和，并按工时降序取前三名",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "开始日期为2026年",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "任务状态为已完成",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "工时总和",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按工时降序排名",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "取前三名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "resolved_uncertainty_ids": [],
+      "constraints_confirmed": true,
+      "session_id": "5d200987f56a48758b0dbb984e6b126f",
+      "acknowledged_warnings": []
+    },
+    "engine_execution_ids": [
+      "exec_725e02e486ab44a89eb9b911149c3d45"
+    ],
+    "execution_result": null,
+    "report": null,
+    "error": null
+  },
+  "view": {
+    "session_id": "5d200987f56a48758b0dbb984e6b126f",
+    "revision": 11,
+    "plan_id": "plan_c1271675df7b46dab0cc0c6123b8cdf7",
+    "plan_version": 1,
+    "goal": "按城市汇总已完成任务的工时总和，并按工时降序取前三名",
+    "coverage": "已安排核心问题的分析",
+    "conditions": [
+      {
+        "label": "时间范围",
+        "text": "开始日期为2026年",
+        "verification": "已核对分析步骤",
+        "source": "intent.constraints.time_range"
+      },
+      {
+        "label": "筛选范围",
+        "text": "任务状态为已完成",
+        "verification": "已核对分析步骤",
+        "source": "intent.constraints.filters[0]"
+      },
+      {
+        "label": "统计指标",
+        "text": "工时总和",
+        "verification": "已核对分析步骤",
+        "source": "intent.constraints.metric_requirements[0]"
+      },
+      {
+        "label": "分析要求",
+        "text": "按工时降序排名",
+        "verification": "已核对分析步骤",
+        "source": "intent.constraints.analysis_limits[0]"
+      },
+      {
+        "label": "分析要求",
+        "text": "取前三名",
+        "verification": "已核对分析步骤",
+        "source": "intent.constraints.analysis_limits[1]"
+      },
+      {
+        "label": "拟用分组维度",
+        "text": "按城市分组",
+        "verification": "来自当前方案，请结合待确认事项核对",
+        "source": "plan.tasks.T1.steps.S3"
+      },
+      {
+        "label": "拟用统计口径",
+        "text": "拟用统计口径：工时 · 合计",
+        "verification": "来自当前方案，请结合待确认事项核对",
+        "source": "plan.tasks.T1.steps.S3"
+      },
+      {
+        "label": "拟用排序与展示",
+        "text": "按工时 · 合计从高到低排列，取前 3 名",
+        "verification": "来自当前方案，请结合待确认事项核对",
+        "source": "plan.tasks.T1.steps.S4"
+      }
+    ],
+    "directions": [
+      {
+        "task_id": "T1",
+        "title": "2026年已完成任务城市工时Top3汇总",
+        "question": "在开始日期为2026年的范围内，统计任务状态为“已完成”的记录，按城市汇总工时总和，并按工时降序排列取前三名。",
+        "importance": "核心分析",
+        "reason": "直接回答核心业务目标（按城市汇总已完成任务的工时总和并取前三），若删除则无法完成决策支持。涉及时间筛选、状态过滤、分组聚合及排序限制，均为必要步骤。",
+        "readiness": "完成已支持的数据转换后可分析",
+        "executable": true,
+        "details": [
+          "从开始日期提取年份，再分析",
+          "开始日期的年份 为 2026",
+          "任务状态 为 已完成",
+          "按城市分组",
+          "拟用统计口径：工时 · 合计",
+          "按工时 · 合计从高到低排列，取前 3 名"
+        ],
+        "gaps": [],
+        "can_remove": true
+      }
+    ],
+    "issues": [],
+    "warnings": [],
+    "can_approve": false,
+    "can_execute": false,
+    "audit": {
+      "audit_version": "2.0",
+      "binding": {
+        "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+        "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+        "plan_id": "plan_c1271675df7b46dab0cc0c6123b8cdf7",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "736de17675dd8c372cd2abb8f65d47ec0c573acc51ae5801819249271e966690",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.constraints.time_range",
+          "raw_text": "开始日期为2026年",
+          "status": "verified",
+          "category": "time_range",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0001"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "derive",
+              "params": {
+                "function": "extract_year",
+                "field": "field_0001",
+                "alias": "year_start"
+              }
+            },
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "filter",
+              "condition": {
+                "field": "year_start",
+                "operator": "eq",
+                "value": 2026
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "任务状态为已完成",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0003",
+                "operator": "eq",
+                "value": "已完成"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "工时总和",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S3",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "sum",
+                "field": "field_0004",
+                "alias": "total_hours"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "按工时降序排名",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S4",
+              "operation": "top_n",
+              "metric": {
+                "function": "sum",
+                "field": "field_0004",
+                "alias": "total_hours"
+              },
+              "params": {
+                "field": "total_hours",
+                "direction": "desc",
+                "n": 3
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[1]",
+          "raw_text": "取前三名",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S4",
+              "operation": "top_n",
+              "metric": {
+                "function": "sum",
+                "field": "field_0004",
+                "alias": "total_hours"
+              },
+              "params": {
+                "field": "total_hours",
+                "direction": "desc",
+                "n": 3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "technical_details": {
+      "record": {
+        "session_id": "5d200987f56a48758b0dbb984e6b126f",
+        "plan_id": "plan_c1271675df7b46dab0cc0c6123b8cdf7",
+        "plan_version": 1,
+        "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+        "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+        "validation_version": "1.0",
+        "created_at": "2026-10-27T10:59:00.678316+00:00",
+        "change_type": "created",
+        "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+        "validated_plan": {
+          "plan": {
+            "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+            "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+            "plan_id": "plan_c1271675df7b46dab0cc0c6123b8cdf7",
+            "plan_version": 1,
+            "tasks": [
+              {
+                "task_id": "T1",
+                "title": "2026年已完成任务城市工时Top3汇总",
+                "business_question": "在开始日期为2026年的范围内，统计任务状态为“已完成”的记录，按城市汇总工时总和，并按工时降序排列取前三名。",
+                "priority": "P0",
+                "priority_reason": "直接回答核心业务目标（按城市汇总已完成任务的工时总和并取前三），若删除则无法完成决策支持。涉及时间筛选、状态过滤、分组聚合及排序限制，均为必要步骤。",
+                "requirement_ids": [
+                  "C01",
+                  "C02",
+                  "C03",
+                  "C04",
+                  "C05"
+                ],
+                "depends_on": [],
+                "missing_inputs": [],
+                "steps": [
+                  {
+                    "step_id": "S1",
+                    "operation": "derive",
+                    "params": {
+                      "function": "extract_year",
+                      "field": "field_0001",
+                      "alias": "year_start"
+                    }
+                  },
+                  {
+                    "step_id": "S2",
+                    "operation": "filter",
+                    "params": {
+                      "conditions": [
+                        {
+                          "field": "year_start",
+                          "operator": "eq",
+                          "value": 2026
+                        },
+                        {
+                          "field": "field_0003",
+                          "operator": "eq",
+                          "value": "已完成"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "step_id": "S3",
+                    "operation": "group_aggregate",
+                    "params": {
+                      "metrics": [
+                        {
+                          "function": "sum",
+                          "field": "field_0004",
+                          "alias": "total_hours"
+                        }
+                      ],
+                      "dimensions": [
+                        "field_0002"
+                      ]
+                    }
+                  },
+                  {
+                    "step_id": "S4",
+                    "operation": "top_n",
+                    "params": {
+                      "field": "total_hours",
+                      "direction": "desc",
+                      "n": 3
+                    }
+                  }
+                ]
+              }
+            ],
+            "core_requirements": [
+              {
+                "requirement_id": "C01",
+                "description": "按城市汇总已完成任务的工时总和，并按工时降序取前三名"
+              },
+              {
+                "requirement_id": "C02",
+                "description": "time_range：开始日期为2026年"
+              },
+              {
+                "requirement_id": "C03",
+                "description": "filters：任务状态为已完成"
+              },
+              {
+                "requirement_id": "C04",
+                "description": "metric_requirements：工时总和"
+              },
+              {
+                "requirement_id": "C05",
+                "description": "analysis_limits：按工时降序排名；取前三名"
+              }
+            ]
+          },
+          "validation_results": [
+            {
+              "task_id": "T1",
+              "feasibility": "F1",
+              "reason_code": "REQUIRES_TRANSFORMATION",
+              "validation_issues": [],
+              "executable": true
+            }
+          ],
+          "unmet_core_requirements": [],
+          "coverage_status": "complete",
+          "executable_task_ids": [
+            "T1"
+          ],
+          "blocked_task_ids": [],
+          "fully_executable": true,
+          "validation_version": "1.0",
+          "registry_version": "1.0",
+          "approval_required": true,
+          "llm": null,
+          "provenance": {
+            "source": "uploaded",
+            "dataset": "c86e6d69cde24f1ba73e2700ed085380",
+            "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+            "plan_version": 1,
+            "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+          },
+          "intent_snapshot": {
+            "analysis_mode": "goal_driven",
+            "next_action": "proceed",
+            "analysis_goal": {
+              "analysis_object": "已完成任务的城市工时汇总",
+              "business_goal": "按城市汇总已完成任务的工时总和，并按工时降序取前三名",
+              "decision_goal": null
+            },
+            "constraints": {
+              "time_range": {
+                "raw_text": "开始日期为2026年",
+                "validation_status": "unverified"
+              },
+              "filters": [
+                {
+                  "raw_text": "任务状态为已完成",
+                  "validation_status": "unverified"
+                }
+              ],
+              "metric_requirements": [
+                {
+                  "raw_text": "工时总和",
+                  "validation_status": "unverified"
+                }
+              ],
+              "analysis_limits": [
+                {
+                  "raw_text": "按工时降序排名",
+                  "validation_status": "unverified"
+                },
+                {
+                  "raw_text": "取前三名",
+                  "validation_status": "unverified"
+                }
+              ]
+            },
+            "uncertainties": [],
+            "clarification_questions": []
+          }
+        }
+      },
+      "constraint_audit": {
+        "audit_version": "2.0",
+        "binding": {
+          "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+          "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+          "plan_id": "plan_c1271675df7b46dab0cc0c6123b8cdf7",
+          "plan_version": 1,
+          "validation_version": "1.0",
+          "registry_version": "1.0"
+        },
+        "digest": "736de17675dd8c372cd2abb8f65d47ec0c573acc51ae5801819249271e966690",
+        "all_verified": true,
+        "items": [
+          {
+            "source": "intent.constraints.time_range",
+            "raw_text": "开始日期为2026年",
+            "status": "verified",
+            "category": "time_range",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0001"
+            ],
+            "matches": [
+              {
+                "task_id": "T1",
+                "step_id": "S1",
+                "operation": "derive",
+                "params": {
+                  "function": "extract_year",
+                  "field": "field_0001",
+                  "alias": "year_start"
+                }
+              },
+              {
+                "task_id": "T1",
+                "step_id": "S2",
+                "operation": "filter",
+                "condition": {
+                  "field": "year_start",
+                  "operator": "eq",
+                  "value": 2026
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.filters[0]",
+            "raw_text": "任务状态为已完成",
+            "status": "verified",
+            "category": "filters",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0003"
+            ],
+            "matches": [
+              {
+                "task_id": "T1",
+                "step_id": "S2",
+                "operation": "filter",
+                "condition": {
+                  "field": "field_0003",
+                  "operator": "eq",
+                  "value": "已完成"
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.metric_requirements[0]",
+            "raw_text": "工时总和",
+            "status": "verified",
+            "category": "metric_requirements",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0004"
+            ],
+            "matches": [
+              {
+                "task_id": "T1",
+                "step_id": "S3",
+                "operation": "group_aggregate",
+                "metric": {
+                  "function": "sum",
+                  "field": "field_0004",
+                  "alias": "total_hours"
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.analysis_limits[0]",
+            "raw_text": "按工时降序排名",
+            "status": "verified",
+            "category": "analysis_limits",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0004"
+            ],
+            "matches": [
+              {
+                "task_id": "T1",
+                "step_id": "S4",
+                "operation": "top_n",
+                "metric": {
+                  "function": "sum",
+                  "field": "field_0004",
+                  "alias": "total_hours"
+                },
+                "params": {
+                  "field": "total_hours",
+                  "direction": "desc",
+                  "n": 3
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.analysis_limits[1]",
+            "raw_text": "取前三名",
+            "status": "verified",
+            "category": "analysis_limits",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [],
+            "matches": [
+              {
+                "task_id": "T1",
+                "step_id": "S4",
+                "operation": "top_n",
+                "metric": {
+                  "function": "sum",
+                  "field": "field_0004",
+                  "alias": "total_hours"
+                },
+                "params": {
+                  "field": "total_hours",
+                  "direction": "desc",
+                  "n": 3
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "session_status": "COMPLETED",
+      "revision": 11
+    }
+  },
+  "approvals": [
+    {
+      "approval_id": "approval_f00be0fe24dd4069aafad909ccd30485",
+      "approval_request_id": "8820963d-5776-4b8a-8b5e-2ead37886d83",
+      "session_id": "5d200987f56a48758b0dbb984e6b126f",
+      "plan_id": "plan_c1271675df7b46dab0cc0c6123b8cdf7",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+      "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+      "approved_at": "2026-10-27T11:00:47.614565+00:00",
+      "approval_status": "approved",
+      "acknowledged_warnings": [],
+      "snapshot": {
+        "approval_id": "approval_f00be0fe24dd4069aafad909ccd30485",
+        "approved_at": "2026-10-27T11:00:47.614565+00:00",
+        "status": "approved",
+        "validated_plan": {
+          "plan": {
+            "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+            "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+            "plan_id": "plan_c1271675df7b46dab0cc0c6123b8cdf7",
+            "plan_version": 1,
+            "tasks": [
+              {
+                "task_id": "T1",
+                "title": "2026年已完成任务城市工时Top3汇总",
+                "business_question": "在开始日期为2026年的范围内，统计任务状态为“已完成”的记录，按城市汇总工时总和，并按工时降序排列取前三名。",
+                "priority": "P0",
+                "priority_reason": "直接回答核心业务目标（按城市汇总已完成任务的工时总和并取前三），若删除则无法完成决策支持。涉及时间筛选、状态过滤、分组聚合及排序限制，均为必要步骤。",
+                "requirement_ids": [
+                  "C01",
+                  "C02",
+                  "C03",
+                  "C04",
+                  "C05"
+                ],
+                "depends_on": [],
+                "missing_inputs": [],
+                "steps": [
+                  {
+                    "step_id": "S1",
+                    "operation": "derive",
+                    "params": {
+                      "function": "extract_year",
+                      "field": "field_0001",
+                      "alias": "year_start"
+                    }
+                  },
+                  {
+                    "step_id": "S2",
+                    "operation": "filter",
+                    "params": {
+                      "conditions": [
+                        {
+                          "field": "year_start",
+                          "operator": "eq",
+                          "value": 2026
+                        },
+                        {
+                          "field": "field_0003",
+                          "operator": "eq",
+                          "value": "已完成"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "step_id": "S3",
+                    "operation": "group_aggregate",
+                    "params": {
+                      "metrics": [
+                        {
+                          "function": "sum",
+                          "field": "field_0004",
+                          "alias": "total_hours"
+                        }
+                      ],
+                      "dimensions": [
+                        "field_0002"
+                      ]
+                    }
+                  },
+                  {
+                    "step_id": "S4",
+                    "operation": "top_n",
+                    "params": {
+                      "field": "total_hours",
+                      "direction": "desc",
+                      "n": 3
+                    }
+                  }
+                ]
+              }
+            ],
+            "core_requirements": [
+              {
+                "requirement_id": "C01",
+                "description": "按城市汇总已完成任务的工时总和，并按工时降序取前三名"
+              },
+              {
+                "requirement_id": "C02",
+                "description": "time_range：开始日期为2026年"
+              },
+              {
+                "requirement_id": "C03",
+                "description": "filters：任务状态为已完成"
+              },
+              {
+                "requirement_id": "C04",
+                "description": "metric_requirements：工时总和"
+              },
+              {
+                "requirement_id": "C05",
+                "description": "analysis_limits：按工时降序排名；取前三名"
+              }
+            ]
+          },
+          "validation_results": [
+            {
+              "task_id": "T1",
+              "feasibility": "F1",
+              "reason_code": "REQUIRES_TRANSFORMATION",
+              "validation_issues": [],
+              "executable": true
+            }
+          ],
+          "unmet_core_requirements": [],
+          "coverage_status": "complete",
+          "executable_task_ids": [
+            "T1"
+          ],
+          "blocked_task_ids": [],
+          "fully_executable": true,
+          "validation_version": "1.0",
+          "registry_version": "1.0",
+          "approval_required": true,
+          "llm": null,
+          "provenance": {
+            "source": "uploaded",
+            "dataset": "c86e6d69cde24f1ba73e2700ed085380",
+            "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+            "plan_version": 1,
+            "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+          },
+          "intent_snapshot": {
+            "analysis_mode": "goal_driven",
+            "next_action": "proceed",
+            "analysis_goal": {
+              "analysis_object": "已完成任务的城市工时汇总",
+              "business_goal": "按城市汇总已完成任务的工时总和，并按工时降序取前三名",
+              "decision_goal": null
+            },
+            "constraints": {
+              "time_range": {
+                "raw_text": "开始日期为2026年",
+                "validation_status": "unverified"
+              },
+              "filters": [
+                {
+                  "raw_text": "任务状态为已完成",
+                  "validation_status": "unverified"
+                }
+              ],
+              "metric_requirements": [
+                {
+                  "raw_text": "工时总和",
+                  "validation_status": "unverified"
+                }
+              ],
+              "analysis_limits": [
+                {
+                  "raw_text": "按工时降序排名",
+                  "validation_status": "unverified"
+                },
+                {
+                  "raw_text": "取前三名",
+                  "validation_status": "unverified"
+                }
+              ]
+            },
+            "uncertainties": [],
+            "clarification_questions": []
+          }
+        },
+        "intent": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "已完成任务的城市工时汇总",
+            "business_goal": "按城市汇总已完成任务的工时总和，并按工时降序取前三名",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": {
+              "raw_text": "开始日期为2026年",
+              "validation_status": "unverified"
+            },
+            "filters": [
+              {
+                "raw_text": "任务状态为已完成",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "工时总和",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按工时降序排名",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "取前三名",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        },
+        "resolved_uncertainty_ids": [],
+        "constraints_confirmed": true,
+        "session_id": "5d200987f56a48758b0dbb984e6b126f",
+        "acknowledged_warnings": []
+      }
+    }
+  ],
+  "constraint_audits": [
+    {
+      "approval_id": "approval_f00be0fe24dd4069aafad909ccd30485",
+      "session_id": "5d200987f56a48758b0dbb984e6b126f",
+      "approved_at": "2026-10-27T11:00:47.614565+00:00",
+      "audit": {
+        "audit_version": "2.0",
+        "binding": {
+          "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+          "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+          "plan_id": "plan_c1271675df7b46dab0cc0c6123b8cdf7",
+          "plan_version": 1,
+          "validation_version": "1.0",
+          "registry_version": "1.0"
+        },
+        "digest": "736de17675dd8c372cd2abb8f65d47ec0c573acc51ae5801819249271e966690",
+        "all_verified": true,
+        "items": [
+          {
+            "source": "intent.constraints.time_range",
+            "raw_text": "开始日期为2026年",
+            "status": "verified",
+            "category": "time_range",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0001"
+            ],
+            "matches": [
+              {
+                "task_id": "T1",
+                "step_id": "S1",
+                "operation": "derive",
+                "params": {
+                  "function": "extract_year",
+                  "field": "field_0001",
+                  "alias": "year_start"
+                }
+              },
+              {
+                "task_id": "T1",
+                "step_id": "S2",
+                "operation": "filter",
+                "condition": {
+                  "field": "year_start",
+                  "operator": "eq",
+                  "value": 2026
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.filters[0]",
+            "raw_text": "任务状态为已完成",
+            "status": "verified",
+            "category": "filters",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0003"
+            ],
+            "matches": [
+              {
+                "task_id": "T1",
+                "step_id": "S2",
+                "operation": "filter",
+                "condition": {
+                  "field": "field_0003",
+                  "operator": "eq",
+                  "value": "已完成"
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.metric_requirements[0]",
+            "raw_text": "工时总和",
+            "status": "verified",
+            "category": "metric_requirements",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0004"
+            ],
+            "matches": [
+              {
+                "task_id": "T1",
+                "step_id": "S3",
+                "operation": "group_aggregate",
+                "metric": {
+                  "function": "sum",
+                  "field": "field_0004",
+                  "alias": "total_hours"
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.analysis_limits[0]",
+            "raw_text": "按工时降序排名",
+            "status": "verified",
+            "category": "analysis_limits",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0004"
+            ],
+            "matches": [
+              {
+                "task_id": "T1",
+                "step_id": "S4",
+                "operation": "top_n",
+                "metric": {
+                  "function": "sum",
+                  "field": "field_0004",
+                  "alias": "total_hours"
+                },
+                "params": {
+                  "field": "total_hours",
+                  "direction": "desc",
+                  "n": 3
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.analysis_limits[1]",
+            "raw_text": "取前三名",
+            "status": "verified",
+            "category": "analysis_limits",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [],
+            "matches": [
+              {
+                "task_id": "T1",
+                "step_id": "S4",
+                "operation": "top_n",
+                "metric": {
+                  "function": "sum",
+                  "field": "field_0004",
+                  "alias": "total_hours"
+                },
+                "params": {
+                  "field": "total_hours",
+                  "direction": "desc",
+                  "n": 3
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "executions": [
+    {
+      "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+      "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+      "execution_id": "exec_725e02e486ab44a89eb9b911149c3d45",
+      "plan_id": "plan_c1271675df7b46dab0cc0c6123b8cdf7",
+      "plan_version": 1,
+      "approved_plan_version": 1,
+      "execution_status": "success",
+      "source": "engine",
+      "producer": "insightflow-analysis-engine-v1",
+      "session_id": "5d200987f56a48758b0dbb984e6b126f",
+      "execution_request_id": "89b90ca5-5672-493c-af20-168d67374a24",
+      "approval_id": "approval_f00be0fe24dd4069aafad909ccd30485",
+      "started_at": "2026-10-27T11:00:47.633946+00:00",
+      "finished_at": "2026-10-27T11:00:47.640568+00:00",
+      "duration_ms": 5.752665980253369,
+      "result_view": "complete",
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "c86e6d69cde24f1ba73e2700ed085380",
+        "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+        "plan_version": 1,
+        "notice": "从指定版本上传文件读取，复用受控统计内核计算；完整结果与预览分开保存。"
+      },
+      "errors": [],
+      "warnings": [],
+      "tasks": [
+        {
+          "task_id": "T1",
+          "status": "success",
+          "result": {
+            "result_id": "result_2df348f7fb1b46db8d0df85e2c5b8bca",
+            "columns": [
+              {
+                "field": "field_0002",
+                "label": "城市",
+                "logical_type": "text",
+                "role": "dimension",
+                "unit": null
+              },
+              {
+                "field": "total_hours",
+                "label": "工时 · 合计",
+                "logical_type": "integer",
+                "role": "metric",
+                "unit": null
+              }
+            ],
+            "rows": [
+              {
+                "field_0002": "北京",
+                "total_hours": 30
+              },
+              {
+                "field_0002": "杭州",
+                "total_hours": 20
+              },
+              {
+                "field_0002": "上海",
+                "total_hours": 10
+              }
+            ],
+            "truncated": false,
+            "total_result_rows": 3,
+            "row_offset": 0,
+            "total_refs": []
+          },
+          "effective_row_count": 3,
+          "valid_sample_count": 3,
+          "sample_definition": "聚合前各最终指标的非缺失参与数；指标样本数不同时不提供统一有效样本量。",
+          "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "calculation": "批准操作链：derive → filter → group_aggregate → top_n",
+          "failure_reason": null,
+          "result_id": "result_2df348f7fb1b46db8d0df85e2c5b8bca",
+          "result_ref": "result_2df348f7fb1b46db8d0df85e2c5b8bca",
+          "row_count": 3,
+          "execution_metadata": {
+            "input_row_count": 5,
+            "started_at": "2026-10-27T11:00:47.634815+00:00",
+            "finished_at": "2026-10-27T11:00:47.638534+00:00",
+            "duration_ms": 3.7219999940134585,
+            "preview_row_count": 3,
+            "metric_valid_counts": {
+              "total_hours": 3
+            },
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "derive",
+                "status": "success",
+                "input_row_count": 5,
+                "output_row_count": 5,
+                "duration_ms": 1.123916998039931,
+                "warnings": [],
+                "error": null
+              },
+              {
+                "step_id": "S2",
+                "operation": "filter",
+                "status": "success",
+                "input_row_count": 5,
+                "output_row_count": 3,
+                "duration_ms": 1.089457975467667,
+                "warnings": [],
+                "error": null
+              },
+              {
+                "step_id": "S3",
+                "operation": "group_aggregate",
+                "status": "success",
+                "input_row_count": 3,
+                "output_row_count": 3,
+                "duration_ms": 0.894374999916181,
+                "warnings": [],
+                "error": null
+              },
+              {
+                "step_id": "S4",
+                "operation": "top_n",
+                "status": "success",
+                "input_row_count": 3,
+                "output_row_count": 3,
+                "duration_ms": 0.19933297880925238,
+                "warnings": [],
+                "error": null
+              }
+            ],
+            "warnings": []
+          },
+          "error": null
+        }
+      ]
+    }
+  ]
+}

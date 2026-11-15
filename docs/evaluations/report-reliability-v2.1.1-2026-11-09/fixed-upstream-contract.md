@@ -1,0 +1,3 @@
+# Fixed-upstream real-model substudy
+
+Before real calls, select all four originally diagnosed problem cases: T01/P03/R05/T05. Reuse exact saved Intent, approved ValidatedAnalysisPlan, Approval, ExecutionResult and DatasetProfile from frozen-baseline-01. No new planning, no new execution, no edits to values, no model repair/retry loop. Generate one report per original input using the new report-only service and the same configured qwen3.8-flash. Record all raw HTTP calls and request/template IDs in isolated Registry storage; no fabricated Workflow/Run association for these standalone calls. Full workflow tracing is evaluated separately by the ten-case run. This is a targeted known-bad-case substudy, not an independent holdout. Preserve every outcome.

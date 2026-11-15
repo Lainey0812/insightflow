@@ -1,0 +1,73 @@
+[
+  {
+    "case_id": "V01",
+    "domain": "sales",
+    "query": "仅看已完成订单，按照城市汇总销售额总和，按销售额升序排列。",
+    "kind": "numeric",
+    "split": "holdout",
+    "dimension": "城市",
+    "metric_field": "销售额",
+    "function": "sum",
+    "filters": [
+      [
+        "订单状态",
+        "eq",
+        "已完成"
+      ]
+    ],
+    "order": "asc"
+  },
+  {
+    "case_id": "V02",
+    "domain": "support",
+    "query": "按团队汇总响应分钟中位数，并按响应分钟中位数降序排列。",
+    "kind": "numeric",
+    "split": "holdout",
+    "dimension": "团队",
+    "metric_field": "响应分钟",
+    "function": "median",
+    "filters": [],
+    "order": "desc"
+  },
+  {
+    "case_id": "V03",
+    "domain": "projects",
+    "query": "只看甲和丙，按项目统计任务数量。",
+    "kind": "numeric",
+    "split": "holdout",
+    "dimension": "项目",
+    "metric_field": null,
+    "function": "count",
+    "filters": [
+      [
+        "项目",
+        "in",
+        [
+          "甲",
+          "丙"
+        ]
+      ]
+    ]
+  },
+  {
+    "case_id": "V04",
+    "domain": "recruitment",
+    "query": "只看上海与杭州，按城市比较薪资元平均值，按薪资元平均值降序排名。",
+    "kind": "numeric",
+    "split": "holdout",
+    "dimension": "城市",
+    "metric_field": "薪资元",
+    "function": "avg",
+    "filters": [
+      [
+        "城市",
+        "in",
+        [
+          "上海",
+          "杭州"
+        ]
+      ]
+    ],
+    "order": "desc"
+  }
+]

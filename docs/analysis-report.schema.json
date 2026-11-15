@@ -1,0 +1,1110 @@
+{
+  "$defs": {
+    "AnalysisStep": {
+      "additionalProperties": false,
+      "properties": {
+        "step_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Step Id",
+          "type": "string"
+        },
+        "operation": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Operation",
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": true,
+          "title": "Params",
+          "type": "object"
+        }
+      },
+      "required": [
+        "step_id",
+        "operation",
+        "params"
+      ],
+      "title": "AnalysisStep",
+      "type": "object"
+    },
+    "AnalysisTask": {
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        },
+        "business_question": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Business Question",
+          "type": "string"
+        },
+        "priority": {
+          "enum": [
+            "P0",
+            "P1",
+            "P2"
+          ],
+          "title": "Priority",
+          "type": "string"
+        },
+        "priority_reason": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Priority Reason",
+          "type": "string"
+        },
+        "requirement_ids": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Requirement Ids",
+          "type": "array"
+        },
+        "depends_on": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Depends On",
+          "type": "array"
+        },
+        "missing_inputs": {
+          "items": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Missing Inputs",
+          "type": "array"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/AnalysisStep"
+          },
+          "maxItems": 20,
+          "title": "Steps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "task_id",
+        "title",
+        "business_question",
+        "priority",
+        "priority_reason",
+        "requirement_ids",
+        "depends_on",
+        "steps"
+      ],
+      "title": "AnalysisTask",
+      "type": "object"
+    },
+    "ChartSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "chart_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Chart Id",
+          "type": "string"
+        },
+        "task_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        },
+        "chart_type": {
+          "enum": [
+            "bar",
+            "line",
+            "pie",
+            "kpi",
+            "table"
+          ],
+          "title": "Chart Type",
+          "type": "string"
+        },
+        "dimension": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Dimension"
+        },
+        "metrics": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Metrics",
+          "type": "array"
+        },
+        "data_ref": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Data Ref",
+          "type": "string"
+        },
+        "supported_chart_types": {
+          "items": {
+            "enum": [
+              "bar",
+              "line",
+              "pie",
+              "kpi",
+              "table"
+            ],
+            "type": "string"
+          },
+          "title": "Supported Chart Types",
+          "type": "array"
+        },
+        "evidence_refs": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "display_limit": {
+          "maximum": 50,
+          "minimum": 1,
+          "title": "Display Limit",
+          "type": "integer"
+        },
+        "order": {
+          "enum": [
+            "value_desc",
+            "dimension_asc",
+            "original"
+          ],
+          "title": "Order",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Note"
+        }
+      },
+      "required": [
+        "chart_id",
+        "task_id",
+        "title",
+        "chart_type",
+        "dimension",
+        "metrics",
+        "data_ref",
+        "supported_chart_types",
+        "evidence_refs",
+        "display_limit",
+        "order",
+        "note"
+      ],
+      "title": "ChartSpec",
+      "type": "object"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Evidence Id",
+          "type": "string"
+        },
+        "task_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "data_ref": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Data Ref",
+          "type": "string"
+        },
+        "result_field": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Result Field",
+          "type": "string"
+        },
+        "evidence_type": {
+          "enum": [
+            "metric",
+            "ranking",
+            "maximum",
+            "minimum",
+            "proportion",
+            "difference",
+            "change_rate",
+            "comparison",
+            "coverage"
+          ],
+          "title": "Evidence Type",
+          "type": "string"
+        },
+        "value": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "maxLength": 10485760,
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Value",
+          "type": "object"
+        },
+        "scope": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Scope",
+          "type": "string"
+        },
+        "calculation": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Calculation",
+          "type": "string"
+        },
+        "statement": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Statement",
+          "type": "string"
+        },
+        "source_row_indices": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Source Row Indices",
+          "type": "array"
+        },
+        "related_result_refs": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Related Result Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "task_id",
+        "data_ref",
+        "result_field",
+        "evidence_type",
+        "value",
+        "scope",
+        "calculation",
+        "statement",
+        "source_row_indices"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "Insight": {
+      "additionalProperties": false,
+      "properties": {
+        "insight_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Insight Id",
+          "type": "string"
+        },
+        "task_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "fact": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Fact",
+          "type": "string"
+        },
+        "finding": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Finding",
+          "type": "string"
+        },
+        "implication": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Implication",
+          "type": "string"
+        },
+        "recommendation": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Recommendation",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "limitations": {
+          "items": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Limitations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "insight_id",
+        "task_id",
+        "fact",
+        "finding",
+        "implication",
+        "recommendation",
+        "evidence_refs",
+        "limitations"
+      ],
+      "title": "Insight",
+      "type": "object"
+    },
+    "KeyMetric": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "maxLength": 10485760,
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Unit"
+        },
+        "evidence_ref": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Evidence Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value",
+        "unit",
+        "evidence_ref"
+      ],
+      "title": "KeyMetric",
+      "type": "object"
+    },
+    "LLMMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Model"
+        },
+        "is_mock": {
+          "title": "Is Mock",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "provider",
+        "model",
+        "is_mock"
+      ],
+      "title": "LLMMetadata",
+      "type": "object"
+    },
+    "LogicalType": {
+      "enum": [
+        "empty",
+        "boolean",
+        "integer",
+        "number",
+        "date",
+        "datetime",
+        "time",
+        "text",
+        "mixed"
+      ],
+      "title": "LogicalType",
+      "type": "string"
+    },
+    "Provenance": {
+      "properties": {
+        "source": {
+          "default": "mock",
+          "enum": [
+            "mock",
+            "uploaded",
+            "llm",
+            "input_guard"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "dataset": {
+          "default": "insightflow-demo-v1",
+          "title": "Dataset",
+          "type": "string"
+        },
+        "dataset_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dataset Version"
+        },
+        "plan_version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plan Version"
+        },
+        "notice": {
+          "default": "Mock 示例，非上传文件分析结果",
+          "title": "Notice",
+          "type": "string"
+        }
+      },
+      "title": "Provenance",
+      "type": "object"
+    },
+    "Recommendation": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Text",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "text",
+        "evidence_refs"
+      ],
+      "title": "Recommendation",
+      "type": "object"
+    },
+    "ResultColumn": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Field",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Label",
+          "type": "string"
+        },
+        "logical_type": {
+          "$ref": "#/$defs/LogicalType"
+        },
+        "role": {
+          "enum": [
+            "dimension",
+            "metric"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "maxLength": 40,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Unit"
+        }
+      },
+      "required": [
+        "field",
+        "label",
+        "logical_type",
+        "role",
+        "unit"
+      ],
+      "title": "ResultColumn",
+      "type": "object"
+    },
+    "ResultTable": {
+      "additionalProperties": false,
+      "properties": {
+        "result_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Result Id",
+          "type": "string"
+        },
+        "columns": {
+          "items": {
+            "$ref": "#/$defs/ResultColumn"
+          },
+          "maxItems": 276,
+          "minItems": 1,
+          "title": "Columns",
+          "type": "array"
+        },
+        "rows": {
+          "items": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "maxLength": 10485760,
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object"
+          },
+          "maxItems": 5000,
+          "title": "Rows",
+          "type": "array"
+        },
+        "truncated": {
+          "title": "Truncated",
+          "type": "boolean"
+        },
+        "total_result_rows": {
+          "minimum": 0,
+          "title": "Total Result Rows",
+          "type": "integer"
+        },
+        "row_offset": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Row Offset",
+          "type": "integer"
+        },
+        "total_refs": {
+          "items": {
+            "$ref": "#/$defs/TotalReference"
+          },
+          "maxItems": 20,
+          "title": "Total Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "result_id",
+        "columns",
+        "rows",
+        "truncated",
+        "total_result_rows"
+      ],
+      "title": "ResultTable",
+      "type": "object"
+    },
+    "Summary": {
+      "additionalProperties": false,
+      "properties": {
+        "headline": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Headline",
+          "type": "string"
+        },
+        "overview": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Overview",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "headline",
+        "overview",
+        "evidence_refs"
+      ],
+      "title": "Summary",
+      "type": "object"
+    },
+    "TotalReference": {
+      "additionalProperties": false,
+      "properties": {
+        "metric_field": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Metric Field",
+          "type": "string"
+        },
+        "result_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Result Id",
+          "type": "string"
+        },
+        "result_field": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Result Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metric_field",
+        "result_id",
+        "result_field"
+      ],
+      "title": "TotalReference",
+      "type": "object"
+    },
+    "UncompletedTask": {
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        },
+        "priority": {
+          "enum": [
+            "P0",
+            "P1",
+            "P2"
+          ],
+          "title": "Priority",
+          "type": "string"
+        },
+        "reason": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "task_id",
+        "title",
+        "priority",
+        "reason"
+      ],
+      "title": "UncompletedTask",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "dataset_id": {
+      "minLength": 1,
+      "title": "Dataset Id",
+      "type": "string"
+    },
+    "dataset_version": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Dataset Version",
+      "type": "string"
+    },
+    "report_id": {
+      "maxLength": 120,
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Report Id",
+      "type": "string"
+    },
+    "execution_id": {
+      "maxLength": 120,
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Execution Id",
+      "type": "string"
+    },
+    "plan_version": {
+      "title": "Plan Version",
+      "type": "integer"
+    },
+    "report_status": {
+      "enum": [
+        "complete",
+        "partial",
+        "unavailable"
+      ],
+      "title": "Report Status",
+      "type": "string"
+    },
+    "goal_coverage": {
+      "enum": [
+        "complete",
+        "partial",
+        "blocked"
+      ],
+      "title": "Goal Coverage",
+      "type": "string"
+    },
+    "analysis_goal": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Analysis Goal",
+      "type": "string"
+    },
+    "dataset_name": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Dataset Name",
+      "type": "string"
+    },
+    "dataset_row_count": {
+      "title": "Dataset Row Count",
+      "type": "integer"
+    },
+    "execution_source": {
+      "enum": [
+        "engine",
+        "imported"
+      ],
+      "title": "Execution Source",
+      "type": "string"
+    },
+    "summary": {
+      "$ref": "#/$defs/Summary"
+    },
+    "key_metrics": {
+      "items": {
+        "$ref": "#/$defs/KeyMetric"
+      },
+      "title": "Key Metrics",
+      "type": "array"
+    },
+    "insights": {
+      "items": {
+        "$ref": "#/$defs/Insight"
+      },
+      "title": "Insights",
+      "type": "array"
+    },
+    "charts": {
+      "items": {
+        "$ref": "#/$defs/ChartSpec"
+      },
+      "title": "Charts",
+      "type": "array"
+    },
+    "recommendations": {
+      "items": {
+        "$ref": "#/$defs/Recommendation"
+      },
+      "title": "Recommendations",
+      "type": "array"
+    },
+    "limitations": {
+      "items": {
+        "maxLength": 2000,
+        "minLength": 1,
+        "pattern": "\\S",
+        "type": "string"
+      },
+      "title": "Limitations",
+      "type": "array"
+    },
+    "uncompleted_tasks": {
+      "items": {
+        "$ref": "#/$defs/UncompletedTask"
+      },
+      "title": "Uncompleted Tasks",
+      "type": "array"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/Evidence"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "result_data": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ResultTable"
+      },
+      "title": "Result Data",
+      "type": "object"
+    },
+    "execution_metadata": {
+      "additionalProperties": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Execution Metadata",
+      "type": "object"
+    },
+    "task_metadata": {
+      "additionalProperties": {
+        "$ref": "#/$defs/AnalysisTask"
+      },
+      "title": "Task Metadata",
+      "type": "object"
+    },
+    "fact_validation": {
+      "const": "structured_facts_verified_interpretations_unverified",
+      "title": "Fact Validation",
+      "type": "string"
+    },
+    "llm": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LLMMetadata"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "preview_url": {
+      "title": "Preview Url",
+      "type": "string"
+    },
+    "download_url": {
+      "title": "Download Url",
+      "type": "string"
+    },
+    "generated_at": {
+      "title": "Generated At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "dataset_id",
+    "dataset_version",
+    "report_id",
+    "execution_id",
+    "plan_version",
+    "report_status",
+    "goal_coverage",
+    "analysis_goal",
+    "dataset_name",
+    "dataset_row_count",
+    "execution_source",
+    "summary",
+    "key_metrics",
+    "insights",
+    "charts",
+    "recommendations",
+    "limitations",
+    "uncompleted_tasks",
+    "evidence",
+    "result_data",
+    "execution_metadata",
+    "task_metadata",
+    "fact_validation",
+    "llm",
+    "provenance",
+    "preview_url",
+    "download_url",
+    "generated_at"
+  ],
+  "title": "AnalysisReport",
+  "type": "object"
+}

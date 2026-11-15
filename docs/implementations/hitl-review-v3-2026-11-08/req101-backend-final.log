@@ -1,0 +1,54 @@
+........................................................................ [  4%]
+........................................................................ [  8%]
+........................................................................ [ 13%]
+........................................................................ [ 17%]
+........................................................................ [ 22%]
+........................................................................ [ 26%]
+........................................................................ [ 31%]
+........................................................................ [ 35%]
+..............F......................................................... [ 40%]
+........................................................................ [ 44%]
+........................................................................ [ 48%]
+........................................................................ [ 53%]
+........................................................................ [ 57%]
+........................................................................ [ 62%]
+........................................................................ [ 66%]
+........................................................................ [ 71%]
+........................................................................ [ 75%]
+........................................................................ [ 80%]
+........................................................................ [ 84%]
+........................................................................ [ 88%]
+........................................................................ [ 93%]
+........................................................................ [ 97%]
+...................................                                      [100%]
+=================================== FAILURES ===================================
+____________________ test_total_deadline_shared_by_retries _____________________
+
+    def test_total_deadline_shared_by_retries():
+        class Slow(PlannerProvider):
+            cancelled=False
+            async def generate(self,request):
+                self.requests.append(request)
+                try:await asyncio.sleep(.03)
+                except asyncio.CancelledError:self.cancelled=True;raise
+                from app.llm.base import LLMResponse
+                return LLMResponse(text='bad',provider='scripted',is_mock=True)
+        p=Slow();service=AnalysisPlannerService(p,CapabilityRegistry(),.05)
+        with pytest.raises(AppError) as caught:
+            asyncio.run(service.plan(ParsedIntent.model_validate(intent_payload()),recruiting_profile()))
+        assert caught.value.error.code=='LLM_TIMEOUT'
+>       assert len(p.requests)==2 and p.cancelled
+E       assert (1 == 2)
+E        +  where 1 = len([LLMRequest(purpose='analysis_planner_v1', instruction='{"intent": {"analysis_mode": "goal_driven", "next_action": "pr...: 'Tasks', 'type': 'array'}}, 'required': ['tasks'], 'title': 'PlannerDraft', 'type': 'object'}, enable_thinking=None)])
+E        +    where [LLMRequest(purpose='analysis_planner_v1', instruction='{"intent": {"analysis_mode": "goal_driven", "next_action": "pr...: 'Tasks', 'type': 'array'}}, 'required': ['tasks'], 'title': 'PlannerDraft', 'type': 'object'}, enable_thinking=None)] = <test_planner_v1_live_contract.test_total_deadline_shared_by_retries.<locals>.Slow object at 0x10d842ba0>.requests
+
+backend/tests/test_planner_v1_live_contract.py:54: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_planner_v1_live_contract.py::test_total_deadline_shared_by_retries
+1 failed, 1618 passed, 1 warning in 87.01s (0:01:27)

@@ -1,0 +1,319 @@
+{
+  "analysis_goal": {
+    "analysis_object": "recruiting数据",
+    "business_goal": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会",
+    "decision_goal": null
+  },
+  "goal_coverage": "complete",
+  "original_query": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会",
+  "constraints": {
+    "time_range": null,
+    "filters": [],
+    "metric_requirements": [],
+    "analysis_limits": []
+  },
+  "constraints_confirmed": false,
+  "scope_context": [
+    {
+      "task_id": "A01",
+      "approved_steps": [
+        "按城市分组",
+        "拟用统计口径：记录数",
+        "按记录数从高到低排列，取前 3 名"
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "field_id": "field_0001",
+      "name": "城市",
+      "logical_type": "text",
+      "upload_missing_count": 0
+    },
+    {
+      "field_id": "field_0002",
+      "name": "岗位",
+      "logical_type": "text",
+      "upload_missing_count": 0
+    }
+  ],
+  "uncompleted_tasks": [],
+  "task_sample_context": [
+    {
+      "task_id": "A01",
+      "status": "success",
+      "valid_sample_count": 7,
+      "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+      "metric_valid_counts": {}
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "A01",
+      "priority": "P0",
+      "business_question": "城市岗位数量前三名"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E0009",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "comparison",
+      "value": {
+        "metric_field": "value",
+        "dimension_field": "field_0001",
+        "source_scope": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会；仅限当前上传数据与批准任务范围。",
+        "unit": "%",
+        "rounding": "half_up_1_decimal",
+        "left": "上海",
+        "right": "北京",
+        "left_value": "3",
+        "right_value": "2",
+        "difference": "1",
+        "formula": "(left_value - right_value) / right_value * 100",
+        "comparison_kind": "relative_lead",
+        "numerator": "1",
+        "denominator": "2",
+        "percent": "50.0"
+      },
+      "scope": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会；仅限当前上传数据与批准任务范围。；仅比较当前返回的同口径分组。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；relative_lead：(left_value - right_value) / right_value * 100；字段 value，分子 1，分母 2；分母必须为正，百分比四舍五入一位小数。",
+      "statement": "在当前返回结果中，上海的记录数量比北京高 1，相对北京领先约 50.0%。",
+      "source_row_indices": [
+        0,
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0010",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "comparison",
+      "value": {
+        "metric_field": "value",
+        "dimension_field": "field_0001",
+        "source_scope": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会；仅限当前上传数据与批准任务范围。",
+        "unit": "%",
+        "rounding": "half_up_1_decimal",
+        "left": "杭州",
+        "right": "上海",
+        "left_value": "1",
+        "right_value": "3",
+        "formula": "left_value / right_value * 100",
+        "comparison_kind": "relative_ratio",
+        "numerator": "1",
+        "denominator": "3",
+        "percent": "33.3"
+      },
+      "scope": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会；仅限当前上传数据与批准任务范围。；仅比较当前返回的同口径分组。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；relative_ratio：left_value / right_value * 100；字段 value，分子 1，分母 3；分母必须为正，百分比四舍五入一位小数。",
+      "statement": "在当前返回结果中，杭州的记录数量为 1，约为上海的 33.3%。",
+      "source_row_indices": [
+        2,
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0011",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "comparison",
+      "value": {
+        "metric_field": "value",
+        "dimension_field": "field_0001",
+        "source_scope": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会；仅限当前上传数据与批准任务范围。",
+        "unit": "%",
+        "rounding": "half_up_1_decimal",
+        "left": "上海",
+        "right": "北京",
+        "left_value": "3",
+        "right_value": "2",
+        "returned_group_count": 3,
+        "denominator_scope": "returned_groups_only",
+        "formula": "(left_value + right_value) / returned_group_sum * 100",
+        "comparison_kind": "returned_concentration",
+        "numerator": "5",
+        "denominator": "6",
+        "percent": "83.3"
+      },
+      "scope": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会；仅限当前上传数据与批准任务范围。；分母仅为本次完整返回的分组合计，不是全部筛选范围或整体市场。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；returned_concentration：(left_value + right_value) / returned_group_sum * 100；字段 value，分子 5，分母 6；分母必须为正，百分比四舍五入一位小数。",
+      "statement": "上海和北京合计占本次返回 3 个分组记录数量合计的约 83.3%；分母仅为返回分组合计，不代表全部筛选范围或整体市场占比。",
+      "source_row_indices": [
+        0,
+        1,
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0007",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "difference",
+      "value": {
+        "left": "上海",
+        "right": "北京",
+        "left_value": 3,
+        "right_value": 2,
+        "difference": 1
+      },
+      "scope": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算值相减：value[0] - value[1]；不是因果或显著性检验。",
+      "statement": "在当前返回结果中，上海与北京的记录 · 数量差值为 1条。",
+      "source_row_indices": [
+        0,
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0002",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "上海",
+        "value": 3,
+        "rank": 1
+      },
+      "scope": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在当前返回结果中，上海的记录 · 数量为 3条，并列值采用同一名次，排名 1。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0003",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "北京",
+        "value": 2,
+        "rank": 2
+      },
+      "scope": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在当前返回结果中，北京的记录 · 数量为 2条，并列值采用同一名次，排名 2。",
+      "source_row_indices": [
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0004",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "杭州",
+        "value": 1,
+        "rank": 3
+      },
+      "scope": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在当前返回结果中，杭州的记录 · 数量为 1条，并列值采用同一名次，排名 3。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0008",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "metric",
+      "value": {
+        "value": 6,
+        "unit": "条",
+        "label": "本次返回分组合计（记录 · 数量）"
+      },
+      "scope": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；仅将当前完整返回表中的可加指标相加；含 Top N 时只代表所选分组，不作为总体占比分母。",
+      "statement": "本次返回的 3 个分组的记录 · 数量合计为 6条。",
+      "source_row_indices": [
+        0,
+        1,
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0005",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "maximum",
+      "value": {
+        "value": 3,
+        "category": "上海",
+        "tie_count": 1
+      },
+      "scope": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；读取 value 的最大值，保留并列来源行。",
+      "statement": "当前返回结果的记录 · 数量最大值为 3条，对应 上海等 1 个分组。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0006",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "minimum",
+      "value": {
+        "value": 1,
+        "category": "杭州",
+        "tie_count": 1
+      },
+      "scope": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；读取 value 的最小值，保留并列来源行。",
+      "statement": "当前返回结果的记录 · 数量最小值为 1条，对应 杭州等 1 个分组。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    }
+  ],
+  "evidence_groups": [
+    {
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_ids": [
+        "E0009",
+        "E0010",
+        "E0011",
+        "E0007",
+        "E0002",
+        "E0003",
+        "E0004",
+        "E0008",
+        "E0005",
+        "E0006"
+      ]
+    }
+  ],
+  "limitations": [
+    "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+    "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+    "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。",
+    "城市岗位数量前三名：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。"
+  ]
+}

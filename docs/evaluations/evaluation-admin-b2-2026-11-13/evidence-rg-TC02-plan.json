@@ -1,0 +1,128 @@
+{
+  "request": "/api/v1/admin/evaluations/runs/rg_20261112-133157_f04289/cases/TC02/evidence?kind=plan",
+  "status": 200,
+  "body": {
+    "run_id": "rg_20261112-133157_f04289",
+    "case_id": "TC02",
+    "kind": "plan",
+    "status": "AVAILABLE",
+    "reason": null,
+    "ref": "cases/TC02.json.plan",
+    "integrity": {
+      "status": "unverified",
+      "trusted": false,
+      "expected_sha256": null,
+      "actual_sha256": null
+    },
+    "file_size_bytes": 14108,
+    "file_sha256": "e9b7201164f52fdf6c18c7c0d98358141fed2ddfcc502be8eead587cc0dc059c",
+    "limits": {
+      "max_file_bytes": 2097152,
+      "max_response_bytes": 1048576,
+      "max_values": 50000,
+      "max_depth": 24
+    },
+    "depth_truncated_paths": [],
+    "redactions": [],
+    "content": {
+      "plan_id": "plan_940c5e7ead2044dfa97651ed75175935",
+      "plan_version": 1,
+      "coverage_status": "complete",
+      "task_count": 1,
+      "executable_count": 1,
+      "blocked_count": 0,
+      "f0_count": 0,
+      "f1_count": 1,
+      "unmet_core_count": 0,
+      "tasks": [
+        {
+          "task_id": "T1",
+          "title": "2026年华东地区（排除上海）已完成订单城市销售额排名",
+          "business_question": "统计2026年华东地区、非上海城市的已完成订单，按城市汇总销售额并降序排列。",
+          "priority": "P0",
+          "priority_reason": "直接回答核心分析目标：2026年华东地区已完成订单（排除上海）的城市销售额汇总排名。删除此任务将无法提供决策所需的关键数据视图。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03",
+            "C04",
+            "C05"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "field_0003",
+                    "operator": "eq",
+                    "value": "华东"
+                  },
+                  {
+                    "field": "field_0004",
+                    "operator": "ne",
+                    "value": "上海"
+                  },
+                  {
+                    "field": "field_0005",
+                    "operator": "eq",
+                    "value": "已完成"
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "S2",
+              "operation": "derive",
+              "params": {
+                "function": "extract_year",
+                "field": "field_0002",
+                "alias": "order_year"
+              }
+            },
+            {
+              "step_id": "S3",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "order_year",
+                    "operator": "eq",
+                    "value": 2026
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "S4",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0006",
+                    "alias": "total_sales"
+                  }
+                ],
+                "dimensions": [
+                  "field_0004"
+                ]
+              }
+            },
+            {
+              "step_id": "S5",
+              "operation": "sort",
+              "params": {
+                "field": "total_sales",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

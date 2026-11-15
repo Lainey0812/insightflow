@@ -1,0 +1,872 @@
+{
+  "workflow_id": "wf_4115453210414d498cbc12ef41336840",
+  "root_run_id": "run_eb53335a2fb042d08aa738d80ddfe887",
+  "id": "f393c9ebf76c4ced9dae94c2d5fd8ad3",
+  "title": "仅看已完成订单，按照城市汇总销售额总和，按销售额升序排列",
+  "status": "AWAITING_APPROVAL",
+  "revision": 8,
+  "created_at": "2026-11-04T15:31:43.601973+00:00",
+  "updated_at": "2026-11-04T15:31:52.584817+00:00",
+  "data_source": "uploaded",
+  "workflow_kind": "real_v1",
+  "profile_options": {
+    "header_row": 1,
+    "sheet_name": null,
+    "encoding": "utf-8-sig",
+    "delimiter": ","
+  },
+  "planner_result": {
+    "plan": {
+      "dataset_id": "355e6c1ff8a34948b8d3f44af0876430",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "plan_id": "plan_3c2118ee8582473ea48974f921703b83",
+      "plan_version": 1,
+      "tasks": [
+        {
+          "task_id": "T1",
+          "title": "已完成订单城市销售额总和升序排名",
+          "business_question": "按城市汇总已完成订单的销售额总和，并按销售额升序排列。仅看已完成订单。",
+          "priority": "P0",
+          "priority_reason": "直接回答核心分析目标“按城市汇总已完成订单的销售额总和，并按销售额升序排列”。删除此任务将无法获得任何业务结果。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03",
+            "C04"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "field_0004",
+                    "operator": "eq",
+                    "value": "已完成"
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0005",
+                    "alias": "total_sales_amount"
+                  }
+                ],
+                "dimensions": [
+                  "field_0003"
+                ]
+              }
+            },
+            {
+              "step_id": "S3",
+              "operation": "sort",
+              "params": {
+                "field": "total_sales_amount",
+                "direction": "asc"
+              }
+            }
+          ]
+        }
+      ],
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "按城市汇总已完成订单的销售额总和，并按销售额升序排列"
+        },
+        {
+          "requirement_id": "C02",
+          "description": "filters：仅看已完成订单"
+        },
+        {
+          "requirement_id": "C03",
+          "description": "metric_requirements：销售额总和"
+        },
+        {
+          "requirement_id": "C04",
+          "description": "analysis_limits：按销售额升序排列"
+        }
+      ]
+    },
+    "validation_results": [
+      {
+        "task_id": "T1",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      }
+    ],
+    "unmet_core_requirements": [],
+    "coverage_status": "complete",
+    "executable_task_ids": [
+      "T1"
+    ],
+    "blocked_task_ids": [],
+    "fully_executable": true,
+    "validation_version": "1.0",
+    "registry_version": "1.0",
+    "approval_required": true,
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "355e6c1ff8a34948b8d3f44af0876430",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "plan_version": 1,
+      "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+    },
+    "intent_snapshot": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "已完成订单的城市销售额总和",
+        "business_goal": "按城市汇总已完成订单的销售额总和，并按销售额升序排列",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [
+          {
+            "raw_text": "仅看已完成订单",
+            "validation_status": "unverified"
+          }
+        ],
+        "metric_requirements": [
+          {
+            "raw_text": "销售额总和",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "按销售额升序排列",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    }
+  },
+  "workflow_events": [
+    {
+      "status": "CREATED",
+      "recorded_at": "2026-11-04T15:31:43.602600+00:00"
+    },
+    {
+      "status": "PROFILING",
+      "recorded_at": "2026-11-04T15:31:43.642893+00:00"
+    },
+    {
+      "status": "PARSING_INTENT",
+      "recorded_at": "2026-11-04T15:31:43.650948+00:00"
+    },
+    {
+      "status": "PLANNING",
+      "recorded_at": "2026-11-04T15:31:47.163633+00:00"
+    },
+    {
+      "status": "VALIDATING",
+      "recorded_at": "2026-11-04T15:31:52.576801+00:00"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "recorded_at": "2026-11-04T15:31:52.584680+00:00"
+    }
+  ],
+  "file": {
+    "id": "355e6c1ff8a34948b8d3f44af0876430",
+    "name": "sales.csv",
+    "size": 605,
+    "extension": ".csv",
+    "content_sha256": "ab26d151610f84c760e61c0f78ae78d421415ba0cb87ff424a346d346d242c3d"
+  },
+  "user_goal": "仅看已完成订单，按照城市汇总销售额总和，按销售额升序排列。",
+  "analysis_mode": "goal_driven",
+  "intent": {
+    "analysis_mode": "goal_driven",
+    "next_action": "proceed",
+    "analysis_goal": {
+      "analysis_object": "已完成订单的城市销售额总和",
+      "business_goal": "按城市汇总已完成订单的销售额总和，并按销售额升序排列",
+      "decision_goal": null
+    },
+    "constraints": {
+      "time_range": null,
+      "filters": [
+        {
+          "raw_text": "仅看已完成订单",
+          "validation_status": "unverified"
+        }
+      ],
+      "metric_requirements": [
+        {
+          "raw_text": "销售额总和",
+          "validation_status": "unverified"
+        }
+      ],
+      "analysis_limits": [
+        {
+          "raw_text": "按销售额升序排列",
+          "validation_status": "unverified"
+        }
+      ]
+    },
+    "uncertainties": [],
+    "clarification_questions": [],
+    "user_query": "仅看已完成订单，按照城市汇总销售额总和，按销售额升序排列。",
+    "clarification_answers": [],
+    "dataset_ref": {
+      "dataset_id": "355e6c1ff8a34948b8d3f44af0876430",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106"
+    },
+    "parse_origin": "llm",
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "355e6c1ff8a34948b8d3f44af0876430",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "plan_version": null,
+      "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+    },
+    "parser_version": "1.1",
+    "prompt_version": "intent-v1.3.3",
+    "llm_attempts": 1,
+    "parse_id": "2c31247002404f0eaa0fcb186c16aa0f"
+  },
+  "intent_history": [
+    {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "已完成订单的城市销售额总和",
+        "business_goal": "按城市汇总已完成订单的销售额总和，并按销售额升序排列",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [
+          {
+            "raw_text": "仅看已完成订单",
+            "validation_status": "unverified"
+          }
+        ],
+        "metric_requirements": [
+          {
+            "raw_text": "销售额总和",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "按销售额升序排列",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "仅看已完成订单，按照城市汇总销售额总和，按销售额升序排列。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "355e6c1ff8a34948b8d3f44af0876430",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "355e6c1ff8a34948b8d3f44af0876430",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "2c31247002404f0eaa0fcb186c16aa0f"
+    }
+  ],
+  "clarification_answers": [],
+  "profile": {
+    "dataset_id": "355e6c1ff8a34948b8d3f44af0876430",
+    "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+    "schema_version": "1.0",
+    "profiler_version": "1.1.0",
+    "content_sha256": "ab26d151610f84c760e61c0f78ae78d421415ba0cb87ff424a346d346d242c3d",
+    "file_name": "sales.csv",
+    "file_format": "csv",
+    "sheet_name": null,
+    "available_sheets": [],
+    "options": {
+      "header_row": 1,
+      "sheet_name": null,
+      "encoding": "utf-8-sig",
+      "delimiter": ","
+    },
+    "row_count": 10,
+    "column_count": 7,
+    "total_cell_count": 70,
+    "missing_cell_count": 0,
+    "missing_cell_rate": 0.0,
+    "duplicate_row_count": 0,
+    "duplicate_row_rate": 0.0,
+    "fields": [
+      {
+        "field_id": "field_0001",
+        "position": 1,
+        "original_name": "订单日期",
+        "display_name": "订单日期",
+        "physical_type": "string",
+        "logical_type": "date",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 10,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "date": 10
+        },
+        "samples": [
+          {
+            "value": "2026-01-03",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-02-04",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-01-05",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-03-06",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-02-07",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0002",
+        "position": 2,
+        "original_name": "地区",
+        "display_name": "地区",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 2,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "text": 10
+        },
+        "samples": [
+          {
+            "value": "华东",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "华北",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0003",
+        "position": 3,
+        "original_name": "城市",
+        "display_name": "城市",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 5,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "text": 10
+        },
+        "samples": [
+          {
+            "value": "济南",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "南京",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "上海",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "杭州",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "北京",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0004",
+        "position": 4,
+        "original_name": "订单状态",
+        "display_name": "订单状态",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "text": 10
+        },
+        "samples": [
+          {
+            "value": "已完成",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "已取消",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "待付款",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0005",
+        "position": 5,
+        "original_name": "销售额",
+        "display_name": "销售额",
+        "physical_type": "string",
+        "logical_type": "integer",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 10,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "integer": 10
+        },
+        "samples": [
+          {
+            "value": "15000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "6250",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "20000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "250",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "5760",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0006",
+        "position": 6,
+        "original_name": "订单编号",
+        "display_name": "订单编号",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 10,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "text": 10
+        },
+        "samples": [
+          {
+            "value": "S01",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "S02",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "S03",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "S04",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "S05",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0007",
+        "position": 7,
+        "original_name": "产品类别",
+        "display_name": "产品类别",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 2,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "text": 10
+        },
+        "samples": [
+          {
+            "value": "软件",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "服务",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      }
+    ],
+    "quality_issues": [],
+    "provenance": {
+      "source": "uploaded",
+      "dataset": "355e6c1ff8a34948b8d3f44af0876430",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "plan_version": null,
+      "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+    }
+  },
+  "dataset_ref": {
+    "dataset_id": "355e6c1ff8a34948b8d3f44af0876430",
+    "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106"
+  },
+  "plans": [],
+  "current_plan_version": 1,
+  "approved_plan_version": null,
+  "node_runs": [
+    {
+      "run_id": "78edd12182644d4b863d65958c2db383",
+      "node_name": "data_profiler",
+      "status": "success",
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "355e6c1ff8a34948b8d3f44af0876430",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_version": null,
+        "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T15:31:43.648193+00:00"
+    },
+    {
+      "run_id": "57b83eb7da7c4ce49019a40d55998a41",
+      "node_name": "intent_parser",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "355e6c1ff8a34948b8d3f44af0876430",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T15:31:47.156154+00:00"
+    },
+    {
+      "run_id": "6aa998d69eaf47b1b977f14674ada11f",
+      "node_name": "analysis_planner_v1",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "355e6c1ff8a34948b8d3f44af0876430",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T15:31:52.571366+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "id": "71f8cc1afde6473185c25d517a216088",
+      "role": "user",
+      "kind": "text",
+      "content": "仅看已完成订单，按照城市汇总销售额总和，按销售额升序排列。",
+      "plan_version": null,
+      "created_at": "2026-11-04T15:31:43.601957+00:00"
+    },
+    {
+      "id": "cd8d9099cb67403786e171b6c23794a4",
+      "role": "assistant",
+      "kind": "status",
+      "content": "正在解析上传文件并计算真实数据画像。",
+      "plan_version": null,
+      "created_at": "2026-11-04T15:31:43.642887+00:00"
+    },
+    {
+      "id": "96c3fa6cbf504734934fcea8a7444516",
+      "role": "assistant",
+      "kind": "status",
+      "content": "真实画像完成：10行、7列；正在理解分析需求。",
+      "plan_version": null,
+      "created_at": "2026-11-04T15:31:43.650944+00:00"
+    },
+    {
+      "id": "da233ed9e8fe4ace86aba57d523868b2",
+      "role": "assistant",
+      "kind": "status",
+      "content": "需求已理解，正在生成受控分析计划。",
+      "plan_version": null,
+      "created_at": "2026-11-04T15:31:47.163614+00:00"
+    },
+    {
+      "id": "486abd544df2459bbab202c796cc136d",
+      "role": "assistant",
+      "kind": "plan",
+      "content": "真实计划已保存，目标覆盖：complete。请审核任务、未满足需求和约束；批准前不会计算。",
+      "plan_version": 1,
+      "created_at": "2026-11-04T15:31:52.584674+00:00"
+    }
+  ],
+  "review_plan": {
+    "session_id": "f393c9ebf76c4ced9dae94c2d5fd8ad3",
+    "plan_id": "plan_3c2118ee8582473ea48974f921703b83",
+    "plan_version": 1,
+    "dataset_id": "355e6c1ff8a34948b8d3f44af0876430",
+    "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+    "validation_version": "1.0",
+    "created_at": "2026-11-04T15:31:52.584532+00:00",
+    "change_type": "created",
+    "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "355e6c1ff8a34948b8d3f44af0876430",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_id": "plan_3c2118ee8582473ea48974f921703b83",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "已完成订单城市销售额总和升序排名",
+            "business_question": "按城市汇总已完成订单的销售额总和，并按销售额升序排列。仅看已完成订单。",
+            "priority": "P0",
+            "priority_reason": "直接回答核心分析目标“按城市汇总已完成订单的销售额总和，并按销售额升序排列”。删除此任务将无法获得任何业务结果。",
+            "requirement_ids": [
+              "C01",
+              "C02",
+              "C03",
+              "C04"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "filter",
+                "params": {
+                  "conditions": [
+                    {
+                      "field": "field_0004",
+                      "operator": "eq",
+                      "value": "已完成"
+                    }
+                  ]
+                }
+              },
+              {
+                "step_id": "S2",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "sum",
+                      "field": "field_0005",
+                      "alias": "total_sales_amount"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0003"
+                  ]
+                }
+              },
+              {
+                "step_id": "S3",
+                "operation": "sort",
+                "params": {
+                  "field": "total_sales_amount",
+                  "direction": "asc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "按城市汇总已完成订单的销售额总和，并按销售额升序排列"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "filters：仅看已完成订单"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "metric_requirements：销售额总和"
+          },
+          {
+            "requirement_id": "C04",
+            "description": "analysis_limits：按销售额升序排列"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T1"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "355e6c1ff8a34948b8d3f44af0876430",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_version": 1,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "已完成订单的城市销售额总和",
+          "business_goal": "按城市汇总已完成订单的销售额总和，并按销售额升序排列",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [
+            {
+              "raw_text": "仅看已完成订单",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "销售额总和",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按销售额升序排列",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    }
+  },
+  "review_status": "awaiting_review",
+  "engine_approval": null,
+  "engine_execution_ids": [],
+  "report_generations": [],
+  "execution_result": null,
+  "report": null,
+  "error": null
+}

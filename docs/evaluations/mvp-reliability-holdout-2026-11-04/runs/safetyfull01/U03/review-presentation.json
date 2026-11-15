@@ -1,0 +1,470 @@
+{
+  "session_id": "c8f212c30a9640eebb8d4391bd08ef0c",
+  "revision": 8,
+  "plan_id": "plan_343fd5b621cc42518021ded62da25ee8",
+  "plan_version": 1,
+  "goal": "按项目汇总已完成任务的工时总和，并降序取前两名",
+  "coverage": "已安排核心问题的分析",
+  "conditions": [
+    {
+      "label": "分析条件",
+      "text": "按项目汇总已完成任务的工时总和，并降序取前两名",
+      "verification": "已核对分析步骤",
+      "source": "intent.analysis_goal.business_goal"
+    },
+    {
+      "label": "筛选范围",
+      "text": "只看已完成任务",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.filters[0]"
+    },
+    {
+      "label": "统计指标",
+      "text": "工时总和",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.metric_requirements[0]"
+    },
+    {
+      "label": "分析要求",
+      "text": "降序取前两名",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.analysis_limits[0]"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按项目分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S02"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：工时 · 合计",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S02"
+    },
+    {
+      "label": "拟用排序与展示",
+      "text": "按工时 · 合计从高到低排列，取前 2 名",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S03"
+    }
+  ],
+  "directions": [
+    {
+      "task_id": "T01",
+      "title": "已完成任务的项目工时Top2",
+      "question": "按项目汇总已完成任务的工时总和，并降序取前两名。注意：仅统计状态为“已完成”的任务；若某项目无已完成任务或工时缺失，保留该项目分组（指标为空）。",
+      "importance": "核心分析",
+      "reason": "删除后无法回答核心决策问题（哪些项目的已完成工时最多），直接对应所有核心需求C01-C04。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "状态 为 已完成",
+        "按项目分组",
+        "拟用统计口径：工时 · 合计",
+        "按工时 · 合计从高到低排列，取前 2 名"
+      ],
+      "gaps": [],
+      "can_remove": true
+    }
+  ],
+  "issues": [],
+  "warnings": [],
+  "can_approve": true,
+  "can_execute": false,
+  "audit": {
+    "audit_version": "2.1",
+    "binding": {
+      "dataset_id": "08c4a50ec05b434d8e491ea63d395c8f",
+      "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+      "plan_id": "plan_343fd5b621cc42518021ded62da25ee8",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "registry_version": "1.0"
+    },
+    "digest": "d168171d031b4b29cc791052295813e5b19bd8a93c02b7ea2bcea779c812b940",
+    "all_verified": true,
+    "items": [
+      {
+        "source": "intent.analysis_goal.business_goal",
+        "raw_text": "按项目汇总已完成任务的工时总和，并降序取前两名",
+        "status": "verified",
+        "category": "goal_dimensions",
+        "message": "目标中的明确字段分组已核对。",
+        "field_ids": [
+          "field_0002"
+        ],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S02",
+            "operation": "group_aggregate",
+            "dimensions": [
+              "field_0002"
+            ]
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.filters[0]",
+        "raw_text": "只看已完成任务",
+        "status": "verified",
+        "category": "filters",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0003"
+        ],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S01",
+            "operation": "filter",
+            "condition": {
+              "field": "field_0003",
+              "operator": "eq",
+              "value": "已完成"
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.metric_requirements[0]",
+        "raw_text": "工时总和",
+        "status": "verified",
+        "category": "metric_requirements",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0004"
+        ],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S02",
+            "operation": "group_aggregate",
+            "metric": {
+              "function": "sum",
+              "field": "field_0004",
+              "alias": "total_hours"
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.analysis_limits[0]",
+        "raw_text": "降序取前两名",
+        "status": "verified",
+        "category": "analysis_limits",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S03",
+            "operation": "top_n",
+            "metric": {
+              "function": "sum",
+              "field": "field_0004",
+              "alias": "total_hours"
+            },
+            "params": {
+              "field": "total_hours",
+              "direction": "desc",
+              "n": 2
+            }
+          },
+          {
+            "task_id": "T01",
+            "step_id": "S03",
+            "operation": "top_n",
+            "metric": {
+              "function": "sum",
+              "field": "field_0004",
+              "alias": "total_hours"
+            },
+            "params": {
+              "field": "total_hours",
+              "direction": "desc",
+              "n": 2
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "technical_details": {
+    "record": {
+      "session_id": "c8f212c30a9640eebb8d4391bd08ef0c",
+      "plan_id": "plan_343fd5b621cc42518021ded62da25ee8",
+      "plan_version": 1,
+      "dataset_id": "08c4a50ec05b434d8e491ea63d395c8f",
+      "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+      "validation_version": "1.0",
+      "created_at": "2026-11-04T15:31:35.946555+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "08c4a50ec05b434d8e491ea63d395c8f",
+          "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+          "plan_id": "plan_343fd5b621cc42518021ded62da25ee8",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T01",
+              "title": "已完成任务的项目工时Top2",
+              "business_question": "按项目汇总已完成任务的工时总和，并降序取前两名。注意：仅统计状态为“已完成”的任务；若某项目无已完成任务或工时缺失，保留该项目分组（指标为空）。",
+              "priority": "P0",
+              "priority_reason": "删除后无法回答核心决策问题（哪些项目的已完成工时最多），直接对应所有核心需求C01-C04。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03",
+                "C04"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "field_0003",
+                        "operator": "eq",
+                        "value": "已完成"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0004",
+                        "alias": "total_hours"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0002"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S03",
+                  "operation": "top_n",
+                  "params": {
+                    "field": "total_hours",
+                    "direction": "desc",
+                    "n": 2
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "按项目汇总已完成任务的工时总和，并降序取前两名"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "filters：只看已完成任务"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "metric_requirements：工时总和"
+            },
+            {
+              "requirement_id": "C04",
+              "description": "analysis_limits：降序取前两名"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "08c4a50ec05b434d8e491ea63d395c8f",
+          "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "已完成任务的项目工时",
+            "business_goal": "按项目汇总已完成任务的工时总和，并降序取前两名",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [
+              {
+                "raw_text": "只看已完成任务",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "工时总和",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "降序取前两名",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "constraint_audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "08c4a50ec05b434d8e491ea63d395c8f",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_id": "plan_343fd5b621cc42518021ded62da25ee8",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "d168171d031b4b29cc791052295813e5b19bd8a93c02b7ea2bcea779c812b940",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "按项目汇总已完成任务的工时总和，并降序取前两名",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0002"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0002"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "只看已完成任务",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0003",
+                "operator": "eq",
+                "value": "已完成"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "工时总和",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "sum",
+                "field": "field_0004",
+                "alias": "total_hours"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "降序取前两名",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S03",
+              "operation": "top_n",
+              "metric": {
+                "function": "sum",
+                "field": "field_0004",
+                "alias": "total_hours"
+              },
+              "params": {
+                "field": "total_hours",
+                "direction": "desc",
+                "n": 2
+              }
+            },
+            {
+              "task_id": "T01",
+              "step_id": "S03",
+              "operation": "top_n",
+              "metric": {
+                "function": "sum",
+                "field": "field_0004",
+                "alias": "total_hours"
+              },
+              "params": {
+                "field": "total_hours",
+                "direction": "desc",
+                "n": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "session_status": "AWAITING_APPROVAL",
+    "revision": 8
+  }
+}

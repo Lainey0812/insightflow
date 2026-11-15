@@ -1,0 +1,955 @@
+{
+  "workflow_id": "wf_782b17b16b9c4c8a8c1035783cf9eb39",
+  "root_run_id": "run_1ea6584162c94a5faeb27b669e8adb87",
+  "id": "f389677e69ce4226b28fea9f06994d9f",
+  "title": "帮我处理一下。",
+  "status": "APPROVED",
+  "revision": 12,
+  "created_at": "2026-11-09T07:55:27.805670+00:00",
+  "updated_at": "2026-11-09T07:55:38.368648+00:00",
+  "data_source": "uploaded",
+  "workflow_kind": "real_v1",
+  "profile_options": {
+    "header_row": 1,
+    "sheet_name": null,
+    "encoding": "utf-8-sig",
+    "delimiter": ","
+  },
+  "planner_result": {
+    "plan": {
+      "dataset_id": "364db4c8a2bc41779e4b92603dba37c0",
+      "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+      "plan_id": "plan_8dbc44b9dfec4ceebc7fca3484ac16ab",
+      "plan_version": 1,
+      "tasks": [
+        {
+          "task_id": "T01",
+          "title": "各城市岗位数量统计",
+          "business_question": "各城市的岗位数量分别是多少？",
+          "priority": "P0",
+          "priority_reason": "删除后无法回答核心问题“统计各城市的岗位数量”，直接支持业务目标。",
+          "requirement_ids": [
+            "C01",
+            "C02"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "job_count"
+                  }
+                ],
+                "dimensions": [
+                  "field_0001"
+                ]
+              }
+            },
+            {
+              "step_id": "S02",
+              "operation": "sort",
+              "params": {
+                "field": "job_count",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ],
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "统计各城市的岗位数量"
+        },
+        {
+          "requirement_id": "C02",
+          "description": "metric_requirements：岗位数量"
+        }
+      ]
+    },
+    "validation_results": [
+      {
+        "task_id": "T01",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      }
+    ],
+    "unmet_core_requirements": [],
+    "coverage_status": "complete",
+    "executable_task_ids": [
+      "T01"
+    ],
+    "blocked_task_ids": [],
+    "fully_executable": true,
+    "validation_version": "1.0",
+    "registry_version": "1.0",
+    "approval_required": true,
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "364db4c8a2bc41779e4b92603dba37c0",
+      "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+      "plan_version": 1,
+      "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+    },
+    "intent_snapshot": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "各城市岗位数量",
+        "business_goal": "统计各城市的岗位数量",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "岗位数量",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    }
+  },
+  "workflow_events": [
+    {
+      "status": "CREATED",
+      "recorded_at": "2026-11-09T07:55:27.806241+00:00"
+    },
+    {
+      "status": "PROFILING",
+      "recorded_at": "2026-11-09T07:55:27.841238+00:00"
+    },
+    {
+      "status": "PARSING_INTENT",
+      "recorded_at": "2026-11-09T07:55:27.847718+00:00"
+    },
+    {
+      "status": "WAITING_FOR_CLARIFICATION",
+      "recorded_at": "2026-11-09T07:55:31.763733+00:00"
+    },
+    {
+      "status": "PARSING_INTENT",
+      "recorded_at": "2026-11-09T07:55:31.779409+00:00"
+    },
+    {
+      "status": "PLANNING",
+      "recorded_at": "2026-11-09T07:55:33.984631+00:00"
+    },
+    {
+      "status": "VALIDATING",
+      "recorded_at": "2026-11-09T07:55:38.314589+00:00"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "recorded_at": "2026-11-09T07:55:38.320035+00:00"
+    },
+    {
+      "status": "APPROVED",
+      "recorded_at": "2026-11-09T07:55:38.368552+00:00"
+    }
+  ],
+  "file": {
+    "id": "364db4c8a2bc41779e4b92603dba37c0",
+    "name": "recruitment.csv",
+    "size": 377,
+    "extension": ".csv",
+    "content_sha256": "d38d1dc6cef8b931aaed5600e1532101528a75ac01e8c304cd345556addd04b2"
+  },
+  "user_goal": "帮我处理一下。",
+  "analysis_mode": "goal_driven",
+  "intent": {
+    "analysis_mode": "goal_driven",
+    "next_action": "proceed",
+    "analysis_goal": {
+      "analysis_object": "各城市岗位数量",
+      "business_goal": "统计各城市的岗位数量",
+      "decision_goal": null
+    },
+    "constraints": {
+      "time_range": null,
+      "filters": [],
+      "metric_requirements": [
+        {
+          "raw_text": "岗位数量",
+          "validation_status": "unverified"
+        }
+      ],
+      "analysis_limits": []
+    },
+    "uncertainties": [],
+    "clarification_questions": [],
+    "user_query": "帮我处理一下。",
+    "clarification_answers": [
+      "请统计各城市岗位数量。"
+    ],
+    "dataset_ref": {
+      "dataset_id": "364db4c8a2bc41779e4b92603dba37c0",
+      "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60"
+    },
+    "parse_origin": "llm",
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "364db4c8a2bc41779e4b92603dba37c0",
+      "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+      "plan_version": null,
+      "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+    },
+    "parser_version": "1.1",
+    "prompt_version": "intent-v1.3.3",
+    "llm_attempts": 1,
+    "parse_id": "ca6910bb6ca34dadac09368fb70c2930"
+  },
+  "intent_history": [
+    {
+      "analysis_mode": "undetermined",
+      "next_action": "clarify",
+      "analysis_goal": {
+        "analysis_object": null,
+        "business_goal": null,
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [],
+        "analysis_limits": []
+      },
+      "uncertainties": [
+        {
+          "id": "missing_analysis_intent",
+          "issue": "用户仅要求“帮我处理一下”，未指定具体的分析目标、指标或问题。",
+          "reason": "缺乏明确的分析意图，无法确定是进行数据清洗、探索性分析还是回答特定业务问题，导致无法制定后续计划。",
+          "action": "clarify",
+          "resolve_at": "before_planning"
+        }
+      ],
+      "clarification_questions": [
+        "您希望针对这份招聘数据进行什么具体的分析？例如：统计各城市的岗位数量、分析薪资分布情况，或者查看不同学历对应的平均薪资？"
+      ],
+      "user_query": "帮我处理一下。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "364db4c8a2bc41779e4b92603dba37c0",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "364db4c8a2bc41779e4b92603dba37c0",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "5958b6aa8c6e430cb7532c37035fd55f"
+    },
+    {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "各城市岗位数量",
+        "business_goal": "统计各城市的岗位数量",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "岗位数量",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "帮我处理一下。",
+      "clarification_answers": [
+        "请统计各城市岗位数量。"
+      ],
+      "dataset_ref": {
+        "dataset_id": "364db4c8a2bc41779e4b92603dba37c0",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "364db4c8a2bc41779e4b92603dba37c0",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "ca6910bb6ca34dadac09368fb70c2930"
+    }
+  ],
+  "clarification_answers": [
+    "请统计各城市岗位数量。"
+  ],
+  "profile": {
+    "dataset_id": "364db4c8a2bc41779e4b92603dba37c0",
+    "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+    "schema_version": "1.0",
+    "profiler_version": "1.1.0",
+    "content_sha256": "d38d1dc6cef8b931aaed5600e1532101528a75ac01e8c304cd345556addd04b2",
+    "file_name": "recruitment.csv",
+    "file_format": "csv",
+    "sheet_name": null,
+    "available_sheets": [],
+    "options": {
+      "header_row": 1,
+      "sheet_name": null,
+      "encoding": "utf-8-sig",
+      "delimiter": ","
+    },
+    "row_count": 8,
+    "column_count": 5,
+    "total_cell_count": 40,
+    "missing_cell_count": 1,
+    "missing_cell_rate": 0.025,
+    "duplicate_row_count": 0,
+    "duplicate_row_rate": 0.0,
+    "fields": [
+      {
+        "field_id": "field_0001",
+        "position": 1,
+        "original_name": "城市",
+        "display_name": "城市",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 4,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "北京",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "上海",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "杭州",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "南京",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0002",
+        "position": 2,
+        "original_name": "岗位名称",
+        "display_name": "岗位名称",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 4,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "产品经理",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "运营经理",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "运营专员",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "数据分析",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0003",
+        "position": 3,
+        "original_name": "薪资区间",
+        "display_name": "薪资区间",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 6,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "20-30K",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "25-35K",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "15-25K",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "18-28K",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "10-15K",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0004",
+        "position": 4,
+        "original_name": "薪资元",
+        "display_name": "薪资元",
+        "physical_type": "string",
+        "logical_type": "integer",
+        "missing_count": 1,
+        "missing_rate": 0.125,
+        "non_missing_count": 7,
+        "unique_count": 5,
+        "physical_type_counts": {
+          "string": 7
+        },
+        "logical_type_counts": {
+          "integer": 7
+        },
+        "samples": [
+          {
+            "value": "25000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "30000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "20000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "23000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "12500",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0005",
+        "position": 5,
+        "original_name": "学历",
+        "display_name": "学历",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 2,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "本科",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "硕士",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      }
+    ],
+    "quality_issues": [],
+    "provenance": {
+      "source": "uploaded",
+      "dataset": "364db4c8a2bc41779e4b92603dba37c0",
+      "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+      "plan_version": null,
+      "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+    }
+  },
+  "dataset_ref": {
+    "dataset_id": "364db4c8a2bc41779e4b92603dba37c0",
+    "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60"
+  },
+  "plans": [],
+  "current_plan_version": 1,
+  "approved_plan_version": 1,
+  "node_runs": [
+    {
+      "run_id": "ee1f1d1240414227bfaecebe816bb768",
+      "node_name": "data_profiler",
+      "status": "success",
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "364db4c8a2bc41779e4b92603dba37c0",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_version": null,
+        "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+      },
+      "error": null,
+      "finished_at": "2026-11-09T07:55:27.845579+00:00"
+    },
+    {
+      "run_id": "cfe1ae058f2e4ff68b80e6e1869206d1",
+      "node_name": "intent_parser",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "364db4c8a2bc41779e4b92603dba37c0",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "error": null,
+      "finished_at": "2026-11-09T07:55:31.757519+00:00"
+    },
+    {
+      "run_id": "cb48b29c170545a39efc184b44fce75c",
+      "node_name": "intent_parser",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "364db4c8a2bc41779e4b92603dba37c0",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "error": null,
+      "finished_at": "2026-11-09T07:55:33.978699+00:00"
+    },
+    {
+      "run_id": "c2f8c38c16f14fd2affd3c2725a1cd1a",
+      "node_name": "analysis_planner_v1",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "364db4c8a2bc41779e4b92603dba37c0",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "error": null,
+      "finished_at": "2026-11-09T07:55:38.311661+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "id": "7cc2ed32e7bf4ca7a4cd30fddbeb7c52",
+      "role": "user",
+      "kind": "text",
+      "content": "帮我处理一下。",
+      "plan_version": null,
+      "created_at": "2026-11-09T07:55:27.805658+00:00"
+    },
+    {
+      "id": "ccfe027e551b4f2ba8224e8fec8f7a30",
+      "role": "assistant",
+      "kind": "status",
+      "content": "正在解析上传文件并计算真实数据画像。",
+      "plan_version": null,
+      "created_at": "2026-11-09T07:55:27.841232+00:00"
+    },
+    {
+      "id": "1f12ae6baba14b41b71d75a731124aeb",
+      "role": "assistant",
+      "kind": "status",
+      "content": "真实画像完成：8行、5列；正在理解分析需求。",
+      "plan_version": null,
+      "created_at": "2026-11-09T07:55:27.847715+00:00"
+    },
+    {
+      "id": "03397aca1a1f444ba34402c8e8365232",
+      "role": "assistant",
+      "kind": "text",
+      "content": "需要先补充以下信息：\n您希望针对这份招聘数据进行什么具体的分析？例如：统计各城市的岗位数量、分析薪资分布情况，或者查看不同学历对应的平均薪资？",
+      "plan_version": null,
+      "created_at": "2026-11-09T07:55:31.763718+00:00"
+    },
+    {
+      "id": "5dab7a6036544dd1bfd5b4e86bcaa479",
+      "role": "user",
+      "kind": "text",
+      "content": "请统计各城市岗位数量。",
+      "plan_version": null,
+      "created_at": "2026-11-09T07:55:31.779398+00:00"
+    },
+    {
+      "id": "2682a3e1405e4284a53d7399a0597f12",
+      "role": "assistant",
+      "kind": "status",
+      "content": "需求已理解，正在生成受控分析计划。",
+      "plan_version": null,
+      "created_at": "2026-11-09T07:55:33.984620+00:00"
+    },
+    {
+      "id": "11dd0e636a284786bdeb7fe5344836fb",
+      "role": "assistant",
+      "kind": "plan",
+      "content": "真实计划已保存，目标覆盖：complete。请审核任务、未满足需求和约束；批准前不会计算。",
+      "plan_version": 1,
+      "created_at": "2026-11-09T07:55:38.320030+00:00"
+    },
+    {
+      "id": "1168647cead5428694277a54355b02e3",
+      "role": "user",
+      "kind": "text",
+      "content": "确认真实计划 v1 并执行；已确认限制：无。",
+      "plan_version": null,
+      "created_at": "2026-11-09T07:55:38.368547+00:00"
+    }
+  ],
+  "review_plan": {
+    "session_id": "f389677e69ce4226b28fea9f06994d9f",
+    "plan_id": "plan_8dbc44b9dfec4ceebc7fca3484ac16ab",
+    "plan_version": 1,
+    "dataset_id": "364db4c8a2bc41779e4b92603dba37c0",
+    "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+    "validation_version": "1.0",
+    "created_at": "2026-11-09T07:55:38.319809+00:00",
+    "change_type": "created",
+    "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "364db4c8a2bc41779e4b92603dba37c0",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_id": "plan_8dbc44b9dfec4ceebc7fca3484ac16ab",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T01",
+            "title": "各城市岗位数量统计",
+            "business_question": "各城市的岗位数量分别是多少？",
+            "priority": "P0",
+            "priority_reason": "删除后无法回答核心问题“统计各城市的岗位数量”，直接支持业务目标。",
+            "requirement_ids": [
+              "C01",
+              "C02"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "job_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0001"
+                  ]
+                }
+              },
+              {
+                "step_id": "S02",
+                "operation": "sort",
+                "params": {
+                  "field": "job_count",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "统计各城市的岗位数量"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：岗位数量"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T01",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T01"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "364db4c8a2bc41779e4b92603dba37c0",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_version": 1,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "各城市岗位数量",
+          "business_goal": "统计各城市的岗位数量",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "岗位数量",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    }
+  },
+  "review_status": "approved",
+  "engine_approval": {
+    "approval_id": "approval_7f33391ea07a4688ab58f7ad01f9e51b",
+    "approved_at": "2026-11-09T07:55:38.367928+00:00",
+    "status": "approved",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "364db4c8a2bc41779e4b92603dba37c0",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_id": "plan_8dbc44b9dfec4ceebc7fca3484ac16ab",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T01",
+            "title": "各城市岗位数量统计",
+            "business_question": "各城市的岗位数量分别是多少？",
+            "priority": "P0",
+            "priority_reason": "删除后无法回答核心问题“统计各城市的岗位数量”，直接支持业务目标。",
+            "requirement_ids": [
+              "C01",
+              "C02"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "job_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0001"
+                  ]
+                }
+              },
+              {
+                "step_id": "S02",
+                "operation": "sort",
+                "params": {
+                  "field": "job_count",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "统计各城市的岗位数量"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：岗位数量"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T01",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T01"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "364db4c8a2bc41779e4b92603dba37c0",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_version": 1,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "各城市岗位数量",
+          "business_goal": "统计各城市的岗位数量",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "岗位数量",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "各城市岗位数量",
+        "business_goal": "统计各城市的岗位数量",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "岗位数量",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    },
+    "resolved_uncertainty_ids": [],
+    "constraints_confirmed": true,
+    "session_id": "f389677e69ce4226b28fea9f06994d9f",
+    "acknowledged_warnings": []
+  },
+  "engine_execution_ids": [],
+  "report_generations": [],
+  "execution_result": null,
+  "report": null,
+  "error": null
+}

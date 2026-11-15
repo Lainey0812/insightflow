@@ -1,0 +1,161 @@
+{
+  "plan": {
+    "dataset_id": "REPLACE_WITH_SESSION_DATASET_ID",
+    "dataset_version": "REPLACE_WITH_SESSION_DATASET_VERSION",
+    "plan_id": "sales_manual_review",
+    "plan_version": 1,
+    "tasks": [
+      {
+        "task_id": "A01",
+        "title": "高额记录地区排名",
+        "business_question": "销售额不低于18000的记录中，哪个地区金额最高？",
+        "priority": "P0",
+        "priority_reason": "删除后无法回答地区差异问题",
+        "requirement_ids": [
+          "C01"
+        ],
+        "depends_on": [],
+        "missing_inputs": [],
+        "steps": [
+          {
+            "step_id": "S01",
+            "operation": "filter",
+            "params": {
+              "conditions": [
+                {
+                  "field": "field_0004",
+                  "operator": "gte",
+                  "value": 18000
+                }
+              ]
+            }
+          },
+          {
+            "step_id": "S02",
+            "operation": "group_aggregate",
+            "params": {
+              "dimensions": [
+                "field_0003"
+              ],
+              "metrics": [
+                {
+                  "function": "count",
+                  "alias": "record_count"
+                },
+                {
+                  "function": "sum",
+                  "field": "field_0004",
+                  "alias": "sales_total"
+                }
+              ]
+            }
+          },
+          {
+            "step_id": "S03",
+            "operation": "sort",
+            "params": {
+              "field": "sales_total",
+              "direction": "desc"
+            }
+          },
+          {
+            "step_id": "S04",
+            "operation": "top_n",
+            "params": {
+              "field": "sales_total",
+              "direction": "desc",
+              "n": 1
+            }
+          }
+        ]
+      },
+      {
+        "task_id": "A02",
+        "title": "整体销售额",
+        "business_question": "全部记录销售额合计是多少？",
+        "priority": "P0",
+        "priority_reason": "删除后无法给出整体销售总额",
+        "requirement_ids": [
+          "C02"
+        ],
+        "depends_on": [],
+        "missing_inputs": [],
+        "steps": [
+          {
+            "step_id": "S01",
+            "operation": "aggregate",
+            "params": {
+              "metrics": [
+                {
+                  "function": "sum",
+                  "field": "field_0004",
+                  "alias": "sales_total"
+                },
+                {
+                  "function": "count",
+                  "alias": "record_count"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "task_id": "A03",
+        "title": "辅助销售汇总",
+        "business_question": "全部记录销售额合计是多少？",
+        "priority": "P2",
+        "priority_reason": "辅助核对，可删除",
+        "requirement_ids": [],
+        "depends_on": [],
+        "missing_inputs": [],
+        "steps": [
+          {
+            "step_id": "S01",
+            "operation": "aggregate",
+            "params": {
+              "metrics": [
+                {
+                  "function": "sum",
+                  "field": "field_0004",
+                  "alias": "sales_total"
+                },
+                {
+                  "function": "count",
+                  "alias": "record_count"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "core_requirements": [
+      {
+        "requirement_id": "C01",
+        "description": "高额记录地区排名"
+      },
+      {
+        "requirement_id": "C02",
+        "description": "整体销售总额"
+      }
+    ]
+  },
+  "intent": {
+    "analysis_mode": "goal_driven",
+    "next_action": "proceed",
+    "analysis_goal": {
+      "analysis_object": "销售记录",
+      "business_goal": "比较高额销售记录的地区分布，并统计总销售额",
+      "decision_goal": null
+    },
+    "constraints": {
+      "time_range": null,
+      "filters": [],
+      "metric_requirements": [],
+      "analysis_limits": []
+    },
+    "uncertainties": [],
+    "clarification_questions": []
+  }
+}

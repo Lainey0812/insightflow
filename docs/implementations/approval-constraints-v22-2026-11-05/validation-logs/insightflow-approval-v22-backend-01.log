@@ -1,0 +1,1022 @@
+........................................................................ [  4%]
+........................................................................ [  9%]
+........................................................................ [ 13%]
+........................................................................ [ 18%]
+........................................................................ [ 22%]
+........................................................................ [ 27%]
+........................................................................ [ 32%]
+........................................................................ [ 36%]
+.................................................F...................... [ 41%]
+........................................................................ [ 45%]
+........................................................................ [ 50%]
+........................................................................ [ 55%]
+........................................................................ [ 59%]
+.........................FFFFFFF........................................ [ 64%]
+........................................................................ [ 68%]
+........................................................................ [ 73%]
+........................................................................ [ 78%]
+........................................................................ [ 82%]
+........................................................................ [ 87%]
+........................................................................ [ 91%]
+........................................................................ [ 96%]
+.....................FFFFF........FFFF.................                  [100%]
+=================================== FAILURES ===================================
+_ test_request_body_unchanged_from_frozen_preimplementation_capture[report-R01-imported] _
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_request_body_unchanged_fr2')
+node = 'report', baseline = 'R01-imported'
+
+    @pytest.mark.parametrize('node,baseline',[('intent','I01-first'),('planner','P01-first'),('report','R01-imported')])
+    def test_request_body_unchanged_from_frozen_preimplementation_capture(tmp_path,node,baseline):
+        from app.domain.intent import ParsedIntent
+        historical=Path(__file__).resolve().parents[2]/'docs/audits/prompt-loading-paths-2026-10-29/captures-v3'
+        expected=json.loads((historical/(baseline+'.json')).read_text())['calls'][0]['request']
+        good=intent_payload(business_goal='比较城市岗位数量',analysis_object='招聘数据')
+        output=good if node=='intent' else ({'tasks':[task()]} if node=='planner' else report_output)
+        llm,repo,bodies=provider(tmp_path,[output])
+        if node=='intent':
+            asyncio.run(IntentParserService(llm,enable_thinking=False).parse('比较城市岗位数量',recruiting_profile(),['保留全部城市']))
+        elif node=='planner':
+            asyncio.run(AnalysisPlannerService(llm,CapabilityRegistry()).plan(ParsedIntent.model_validate(good),recruiting_profile()))
+        else:
+            asyncio.run(AnalysisReportService(llm,CapabilityRegistry()).generate(*report_case()))
+        if node != 'report':
+            assert bodies == [expected]
+        else:
+            # REQ-0090 deliberately versions the Report prompt and dynamic schema.
+            # Keep the historical capture intact; verify the exact authorized delta
+            # and that Registry captured the actual request, not a reconstruction.
+            from app.reporting.prompt import SYSTEM_PROMPT
+            current = bodies[0]
+            assert current['model'] == expected['model']
+            assert current['enable_thinking'] == expected['enable_thinking']
+            assert current['messages'][0] == {'role': 'system', 'content': SYSTEM_PROMPT}
+            old_input = json.loads(expected['messages'][1]['content'])
+            new_input = json.loads(current['messages'][1]['content'])
+            assert set(new_input) == set(old_input) | {'required_core_groups', 'allowed_limitations', 'draft_schema_version', 'recommendation_options', 'limitation_pool'}
+            for key in set(old_input) - {'limitations'}:
+>               assert new_input[key] == old_input[key]
+E               AssertionError: assert [{'task_id': ...按记录数从高到低排列']}] == [{'task_id': ...按记录数从高到低排列']}]
+E                 
+E                 At index 0 diff: {'task_id': 'A01', 'approved_steps': ['按城市分组', '拟用统计口径：记录数', '按上传记录逐行计数，不代表去重后的业务实体数量。', '按记录数从高到低排列']} != {'task_id': 'A01', 'approved_steps': ['按城市分组', '拟用统计口径：记录数', '按记录数从高到低排列']}
+E                 Use -v to get more diff
+
+backend/tests/test_prompt_registry.py:335: AssertionError
+___________________ test_trace_down_keeps_business_delivery ____________________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_trace_down_keeps_business0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d6416a0>
+
+    def test_trace_down_keeps_business_delivery(tmp_path,monkeypatch):
+        app=application(tmp_path)
+        with TestClient(app) as client:
+            _,_,session=run(client)
+            monkeypatch.setattr(app.state.traces.repository,'connect',lambda: (_ for _ in ()).throw(OSError('down')))
+            response=client.get('/admin/workflow-observability/'+session['workflow_id'],headers=AUTH)
+            assert response.status_code==200,response.text
+            detail=response.json()
+>           assert detail['business_lifecycle']['status']=='succeeded'
+E           AssertionError: assert 'partially_succeeded' == 'succeeded'
+E             
+E             - succeeded
+E             + partially_succeeded
+
+backend/tests/test_workflow_observability_admin.py:49: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  app.trace:recorder.py:184 Trace persistence unavailable; business continues; observations may be missing
+WARNING  app.trace:recorder.py:184 Trace persistence unavailable; business continues; observations may be missing
+_________ test_inconsistent_trace_retains_independent_business_result __________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_inconsistent_trace_retain0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x139074a60>
+
+    def test_inconsistent_trace_retains_independent_business_result(tmp_path,monkeypatch):
+        from app.domain.errors import AppError
+>       app=application(tmp_path)
+            ^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_observability_admin.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_trace_closure_c2.py:16: in application
+    return create_app(Settings(path,admin_read_token='read'),provider)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/main.py:62: in create_app
+    report_service = AnalysisReportService(llm, registry, settings.llm_timeout_seconds, settings.report_enable_thinking)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/services/analysis_report.py:40: in __init__
+    self.prompt_source = pin_template(provider,'insight_generator',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.review.constraint_audit' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/review/constraint_audit.py'>
+actual_objects = [<function uuid4 at 0x1013600f0>, <class 'pydantic_core._pydantic_core.ValidationError'>, <class 'app.domain.analysis_...alysisReport'>, <class 'app.domain.analysis_report.InsightDraft'>, <class 'app.domain.analysis_report.KeyMetric'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+>               raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+E               app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载组合逻辑与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:87: AppError
+________________ test_status_filter_is_before_stable_pagination ________________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_status_filter_is_before_s0')
+
+    def test_status_filter_is_before_stable_pagination(tmp_path):
+        from workflow_v1_fixtures import create_real
+        from test_report_workflow import SALES,QUERY
+>       app=application(tmp_path)
+            ^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_observability_admin.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_trace_closure_c2.py:16: in application
+    return create_app(Settings(path,admin_read_token='read'),provider)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/main.py:62: in create_app
+    report_service = AnalysisReportService(llm, registry, settings.llm_timeout_seconds, settings.report_enable_thinking)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/services/analysis_report.py:40: in __init__
+    self.prompt_source = pin_template(provider,'insight_generator',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.review.constraint_audit' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/review/constraint_audit.py'>
+actual_objects = [<function uuid4 at 0x1013600f0>, <class 'pydantic_core._pydantic_core.ValidationError'>, <class 'app.domain.analysis_...alysisReport'>, <class 'app.domain.analysis_report.InsightDraft'>, <class 'app.domain.analysis_report.KeyMetric'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+>               raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+E               app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载组合逻辑与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:87: AppError
+_________ test_report_failure_business_status_does_not_depend_on_trace _________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_report_failure_business_s0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11fdc2510>
+
+    def test_report_failure_business_status_does_not_depend_on_trace(tmp_path,monkeypatch):
+        from test_report_workflow import Provider
+        from app.domain.errors import AppError
+>       app=application(tmp_path,Provider(report_error=AppError('LLM_TIMEOUT','unit timeout',504)))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_observability_admin.py:91: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_trace_closure_c2.py:16: in application
+    return create_app(Settings(path,admin_read_token='read'),provider)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/main.py:62: in create_app
+    report_service = AnalysisReportService(llm, registry, settings.llm_timeout_seconds, settings.report_enable_thinking)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/services/analysis_report.py:40: in __init__
+    self.prompt_source = pin_template(provider,'insight_generator',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.review.constraint_audit' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/review/constraint_audit.py'>
+actual_objects = [<function uuid4 at 0x1013600f0>, <class 'pydantic_core._pydantic_core.ValidationError'>, <class 'app.domain.analysis_...alysisReport'>, <class 'app.domain.analysis_report.InsightDraft'>, <class 'app.domain.analysis_report.KeyMetric'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+>               raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+E               app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载组合逻辑与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:87: AppError
+__________ test_explicit_skip_events_are_distinct_from_missing_trace ___________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_explicit_skip_events_are_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x128c92e40>
+
+    def test_explicit_skip_events_are_distinct_from_missing_trace(tmp_path,monkeypatch):
+>       app=application(tmp_path)
+            ^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_observability_admin.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_trace_closure_c2.py:16: in application
+    return create_app(Settings(path,admin_read_token='read'),provider)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/main.py:62: in create_app
+    report_service = AnalysisReportService(llm, registry, settings.llm_timeout_seconds, settings.report_enable_thinking)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/services/analysis_report.py:40: in __init__
+    self.prompt_source = pin_template(provider,'insight_generator',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.review.constraint_audit' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/review/constraint_audit.py'>
+actual_objects = [<function uuid4 at 0x1013600f0>, <class 'pydantic_core._pydantic_core.ValidationError'>, <class 'app.domain.analysis_...alysisReport'>, <class 'app.domain.analysis_report.InsightDraft'>, <class 'app.domain.analysis_report.KeyMetric'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+>               raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+E               app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载组合逻辑与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:87: AppError
+______ test_claim_without_node_start_does_not_assert_engine_has_executed _______
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_claim_without_node_start_0')
+
+    def test_claim_without_node_start_does_not_assert_engine_has_executed(tmp_path):
+        from workflow_v1_fixtures import create_real
+        from test_report_workflow import SALES,QUERY
+        from hitl_fixtures import approval,execution
+        from app.domain.execution import ExecutionRequest
+>       app=application(tmp_path)
+            ^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_observability_admin.py:122: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_trace_closure_c2.py:16: in application
+    return create_app(Settings(path,admin_read_token='read'),provider)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/main.py:62: in create_app
+    report_service = AnalysisReportService(llm, registry, settings.llm_timeout_seconds, settings.report_enable_thinking)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/services/analysis_report.py:40: in __init__
+    self.prompt_source = pin_template(provider,'insight_generator',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.review.constraint_audit' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/review/constraint_audit.py'>
+actual_objects = [<function uuid4 at 0x1013600f0>, <class 'pydantic_core._pydantic_core.ValidationError'>, <class 'app.domain.analysis_...alysisReport'>, <class 'app.domain.analysis_report.InsightDraft'>, <class 'app.domain.analysis_report.KeyMetric'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+>               raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+E               app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载组合逻辑与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:87: AppError
+______ test_concurrent_business_revision_change_is_not_silently_combined _______
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_concurrent_business_revis0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x12fcacd00>
+
+    def test_concurrent_business_revision_change_is_not_silently_combined(tmp_path,monkeypatch):
+>       app=application(tmp_path)
+            ^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_observability_admin.py:134: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_trace_closure_c2.py:16: in application
+    return create_app(Settings(path,admin_read_token='read'),provider)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/main.py:62: in create_app
+    report_service = AnalysisReportService(llm, registry, settings.llm_timeout_seconds, settings.report_enable_thinking)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/services/analysis_report.py:40: in __init__
+    self.prompt_source = pin_template(provider,'insight_generator',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.review.constraint_audit' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/review/constraint_audit.py'>
+actual_objects = [<function uuid4 at 0x1013600f0>, <class 'pydantic_core._pydantic_core.ValidationError'>, <class 'app.domain.analysis_...alysisReport'>, <class 'app.domain.analysis_report.InsightDraft'>, <class 'app.domain.analysis_report.KeyMetric'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+>               raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+E               app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载组合逻辑与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:87: AppError
+________ test_normal_preparation_and_two_validator_sites_and_call_links ________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_normal_preparation_and_tw0')
+
+    def test_normal_preparation_and_two_validator_sites_and_call_links(tmp_path):
+>       llm,bodies=http_provider();app=create_app(config(tmp_path),llm)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_trace_v031.py:39: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/app/main.py:62: in create_app
+    report_service = AnalysisReportService(llm, registry, settings.llm_timeout_seconds, settings.report_enable_thinking)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/services/analysis_report.py:40: in __init__
+    self.prompt_source = pin_template(provider,'insight_generator',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.review.constraint_audit' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/review/constraint_audit.py'>
+actual_objects = [<function uuid4 at 0x1013600f0>, <class 'pydantic_core._pydantic_core.ValidationError'>, <class 'app.domain.analysis_...alysisReport'>, <class 'app.domain.analysis_report.InsightDraft'>, <class 'app.domain.analysis_report.KeyMetric'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+>               raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+E               app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载组合逻辑与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:87: AppError
+_________ test_internal_retry_has_one_node_and_distinct_call_attempts __________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_internal_retry_has_one_no0')
+
+    def test_internal_retry_has_one_node_and_distinct_call_attempts(tmp_path):
+>       llm,_=http_provider(bad_intent=True);app=create_app(config(tmp_path),llm)
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_trace_v031.py:63: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/app/main.py:62: in create_app
+    report_service = AnalysisReportService(llm, registry, settings.llm_timeout_seconds, settings.report_enable_thinking)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/services/analysis_report.py:40: in __init__
+    self.prompt_source = pin_template(provider,'insight_generator',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.review.constraint_audit' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/review/constraint_audit.py'>
+actual_objects = [<function uuid4 at 0x1013600f0>, <class 'pydantic_core._pydantic_core.ValidationError'>, <class 'app.domain.analysis_...alysisReport'>, <class 'app.domain.analysis_report.InsightDraft'>, <class 'app.domain.analysis_report.KeyMetric'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+>               raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+E               app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载组合逻辑与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:87: AppError
+_________ test_clarification_keeps_root_and_old_attempt_and_sequences __________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_clarification_keeps_root_0')
+
+    def test_clarification_keeps_root_and_old_attempt_and_sequences(tmp_path):
+        llm,_=http_provider(ControlledWorkflowProvider([intent_payload('undetermined','clarify'),intent()]))
+>       app=create_app(config(tmp_path),llm)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_trace_v031.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/app/main.py:62: in create_app
+    report_service = AnalysisReportService(llm, registry, settings.llm_timeout_seconds, settings.report_enable_thinking)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/services/analysis_report.py:40: in __init__
+    self.prompt_source = pin_template(provider,'insight_generator',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.review.constraint_audit' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/review/constraint_audit.py'>
+actual_objects = [<function uuid4 at 0x1013600f0>, <class 'pydantic_core._pydantic_core.ValidationError'>, <class 'app.domain.analysis_...alysisReport'>, <class 'app.domain.analysis_report.InsightDraft'>, <class 'app.domain.analysis_report.KeyMetric'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+>               raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+E               app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载组合逻辑与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:87: AppError
+_______ test_timeout_and_checkpoint_retry_preserve_failed_span_and_call ________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_timeout_and_checkpoint_re0')
+
+    def test_timeout_and_checkpoint_retry_preserve_failed_span_and_call(tmp_path):
+        control=ControlledWorkflowProvider(planner=lambda _:(_ for _ in ()).throw(httpx.ReadTimeout('PRIVATE-TEXT')))
+>       llm,_=http_provider(control);app=create_app(config(tmp_path),llm)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_trace_v031.py:91: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/app/main.py:62: in create_app
+    report_service = AnalysisReportService(llm, registry, settings.llm_timeout_seconds, settings.report_enable_thinking)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/services/analysis_report.py:40: in __init__
+    self.prompt_source = pin_template(provider,'insight_generator',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.review.constraint_audit' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/review/constraint_audit.py'>
+actual_objects = [<function uuid4 at 0x1013600f0>, <class 'pydantic_core._pydantic_core.ValidationError'>, <class 'app.domain.analysis_...alysisReport'>, <class 'app.domain.analysis_report.InsightDraft'>, <class 'app.domain.analysis_report.KeyMetric'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+>               raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+E               app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载组合逻辑与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:87: AppError
+________________________ test_f0_is_not_runtime_failure ________________________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_f0_is_not_runtime_failure0')
+
+    def test_f0_is_not_runtime_failure(tmp_path):
+        def unavailable(ctx):
+            value=draft(ctx);value['tasks'][0]['steps'][0]['params']['dimensions']=['field_missing'];return value
+>       llm,_=http_provider(ControlledWorkflowProvider(planner=unavailable));app=create_app(config(tmp_path),llm)
+                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_trace_v031.py:110: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/app/main.py:62: in create_app
+    report_service = AnalysisReportService(llm, registry, settings.llm_timeout_seconds, settings.report_enable_thinking)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/services/analysis_report.py:40: in __init__
+    self.prompt_source = pin_template(provider,'insight_generator',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.review.constraint_audit' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/review/constraint_audit.py'>
+actual_objects = [<function uuid4 at 0x1013600f0>, <class 'pydantic_core._pydantic_core.ValidationError'>, <class 'app.domain.analysis_...alysisReport'>, <class 'app.domain.analysis_report.InsightDraft'>, <class 'app.domain.analysis_report.KeyMetric'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+>               raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+E               app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载组合逻辑与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:87: AppError
+_ test_schema_protocol_and_node_errors_are_real_failures_without_secret_text[schema] _
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_schema_protocol_and_node_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10dd1db00>
+failure = 'schema'
+
+    @pytest.mark.parametrize('failure',['schema','protocol','node'])
+    def test_schema_protocol_and_node_errors_are_real_failures_without_secret_text(tmp_path,monkeypatch,failure):
+        value=intent();value['analysis_mode']='illegal-mode'
+        llm,_=http_provider(ControlledWorkflowProvider([value] if failure=='schema' else [httpx.ReadTimeout('PRIVATE-INTENT')]))
+>       app=create_app(config(tmp_path),llm)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_trace_v031.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/app/main.py:62: in create_app
+    report_service = AnalysisReportService(llm, registry, settings.llm_timeout_seconds, settings.report_enable_thinking)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/services/analysis_report.py:40: in __init__
+    self.prompt_source = pin_template(provider,'insight_generator',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.review.constraint_audit' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/review/constraint_audit.py'>
+actual_objects = [<function uuid4 at 0x1013600f0>, <class 'pydantic_core._pydantic_core.ValidationError'>, <class 'app.domain.analysis_...alysisReport'>, <class 'app.domain.analysis_report.InsightDraft'>, <class 'app.domain.analysis_report.KeyMetric'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+>               raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+E               app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载组合逻辑与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:87: AppError
+_ test_schema_protocol_and_node_errors_are_real_failures_without_secret_text[protocol] _
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_schema_protocol_and_node_1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1094d6f20>
+failure = 'protocol'
+
+    @pytest.mark.parametrize('failure',['schema','protocol','node'])
+    def test_schema_protocol_and_node_errors_are_real_failures_without_secret_text(tmp_path,monkeypatch,failure):
+        value=intent();value['analysis_mode']='illegal-mode'
+        llm,_=http_provider(ControlledWorkflowProvider([value] if failure=='schema' else [httpx.ReadTimeout('PRIVATE-INTENT')]))
+>       app=create_app(config(tmp_path),llm)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_trace_v031.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/app/main.py:62: in create_app
+    report_service = AnalysisReportService(llm, registry, settings.llm_timeout_seconds, settings.report_enable_thinking)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/services/analysis_report.py:40: in __init__
+    self.prompt_source = pin_template(provider,'insight_generator',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.review.constraint_audit' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/review/constraint_audit.py'>
+actual_objects = [<function uuid4 at 0x1013600f0>, <class 'pydantic_core._pydantic_core.ValidationError'>, <class 'app.domain.analysis_...alysisReport'>, <class 'app.domain.analysis_report.InsightDraft'>, <class 'app.domain.analysis_report.KeyMetric'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+>               raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+E               app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载组合逻辑与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:87: AppError
+_ test_schema_protocol_and_node_errors_are_real_failures_without_secret_text[node] _
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_schema_protocol_and_node_2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10e34edd0>
+failure = 'node'
+
+    @pytest.mark.parametrize('failure',['schema','protocol','node'])
+    def test_schema_protocol_and_node_errors_are_real_failures_without_secret_text(tmp_path,monkeypatch,failure):
+        value=intent();value['analysis_mode']='illegal-mode'
+        llm,_=http_provider(ControlledWorkflowProvider([value] if failure=='schema' else [httpx.ReadTimeout('PRIVATE-INTENT')]))
+>       app=create_app(config(tmp_path),llm)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_trace_v031.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/app/main.py:62: in create_app
+    report_service = AnalysisReportService(llm, registry, settings.llm_timeout_seconds, settings.report_enable_thinking)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/services/analysis_report.py:40: in __init__
+    self.prompt_source = pin_template(provider,'insight_generator',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.review.constraint_audit' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/review/constraint_audit.py'>
+actual_objects = [<function uuid4 at 0x1013600f0>, <class 'pydantic_core._pydantic_core.ValidationError'>, <class 'app.domain.analysis_...alysisReport'>, <class 'app.domain.analysis_report.InsightDraft'>, <class 'app.domain.analysis_report.KeyMetric'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+>               raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+E               app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载组合逻辑与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:87: AppError
+_________ test_task_local_contexts_do_not_mix_two_concurrent_llm_calls _________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-224/test_task_local_contexts_do_no0')
+
+    def test_task_local_contexts_do_not_mix_two_concurrent_llm_calls(tmp_path):
+>       llm,_=http_provider();app=create_app(config(tmp_path),llm);repo=app.state.traces.repository
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_trace_v031.py:214: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/app/main.py:62: in create_app
+    report_service = AnalysisReportService(llm, registry, settings.llm_timeout_seconds, settings.report_enable_thinking)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/services/analysis_report.py:40: in __init__
+    self.prompt_source = pin_template(provider,'insight_generator',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.review.constraint_audit' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/review/constraint_audit.py'>
+actual_objects = [<function uuid4 at 0x1013600f0>, <class 'pydantic_core._pydantic_core.ValidationError'>, <class 'app.domain.analysis_...alysisReport'>, <class 'app.domain.analysis_report.InsightDraft'>, <class 'app.domain.analysis_report.KeyMetric'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+>               raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+E               app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载组合逻辑与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:87: AppError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests/test_approval_constraints_v22.py::test_full_categorical_value_is_not_satisfied_by_ambiguous_field_or_truncated_sample[task_id]
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/pydantic/main.py:520: UserWarning: Pydantic serializer warnings:
+    PydanticSerializationUnexpectedValue(Expected `enum` - serialized value may not be as expected [field_name='logical_type', input_value='text', input_type=str])
+    return self.__pydantic_serializer__.to_python(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_prompt_registry.py::test_request_body_unchanged_from_frozen_preimplementation_capture[report-R01-imported]
+FAILED backend/tests/test_workflow_observability_admin.py::test_trace_down_keeps_business_delivery
+FAILED backend/tests/test_workflow_observability_admin.py::test_inconsistent_trace_retains_independent_business_result
+FAILED backend/tests/test_workflow_observability_admin.py::test_status_filter_is_before_stable_pagination
+FAILED backend/tests/test_workflow_observability_admin.py::test_report_failure_business_status_does_not_depend_on_trace
+FAILED backend/tests/test_workflow_observability_admin.py::test_explicit_skip_events_are_distinct_from_missing_trace
+FAILED backend/tests/test_workflow_observability_admin.py::test_claim_without_node_start_does_not_assert_engine_has_executed
+FAILED backend/tests/test_workflow_observability_admin.py::test_concurrent_business_revision_change_is_not_silently_combined
+FAILED backend/tests/test_workflow_trace_v031.py::test_normal_preparation_and_two_validator_sites_and_call_links
+FAILED backend/tests/test_workflow_trace_v031.py::test_internal_retry_has_one_node_and_distinct_call_attempts
+FAILED backend/tests/test_workflow_trace_v031.py::test_clarification_keeps_root_and_old_attempt_and_sequences
+FAILED backend/tests/test_workflow_trace_v031.py::test_timeout_and_checkpoint_retry_preserve_failed_span_and_call
+FAILED backend/tests/test_workflow_trace_v031.py::test_f0_is_not_runtime_failure
+FAILED backend/tests/test_workflow_trace_v031.py::test_schema_protocol_and_node_errors_are_real_failures_without_secret_text[schema]
+FAILED backend/tests/test_workflow_trace_v031.py::test_schema_protocol_and_node_errors_are_real_failures_without_secret_text[protocol]
+FAILED backend/tests/test_workflow_trace_v031.py::test_schema_protocol_and_node_errors_are_real_failures_without_secret_text[node]
+FAILED backend/tests/test_workflow_trace_v031.py::test_task_local_contexts_do_not_mix_two_concurrent_llm_calls
+17 failed, 1550 passed, 2 warnings in 73.21s (0:01:13)

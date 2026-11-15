@@ -1,0 +1,60 @@
+
+> insightflow-frontend@0.1.0 test
+> vitest run --reporter=dot
+
+
+ RUN  v4.1.12 /Users/lainey/Desktop/vibe-coding/insightflow/frontend
+
+·x···························x··········································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/tests/business-report.test.tsx > shows a saved fact once and a recommendation once when presentation is unavailable
+AssertionError: expected [ <p class="chart-next"></p>, …(1) ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ src/tests/business-report.test.tsx:90:69
+     88|   render(<ReportDocument report={updated}/>);
+     89|   expect(screen.getAllByText('济南与南京的已验证销售额差额为 1,000。',{exact:true}).le…
+     90|   expect(screen.getAllByText('比较对应城市订单数量；补充分析尚未执行。',{exact:false})).to…
+       |                                                                     ^
+     91|   expect(screen.getByText('事实核对详情',{exact:true})).toBeVisible();
+     92| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/tests/report.test.tsx > renders the five report sections, evidence, limits and optional download
+AssertionError: expected [ '分析范围与统计口径', '主要发现', '交互图表', …(2) ] to deeply equal [ '主要发现', '交互图表', '下一步建议', …(1) ]
+
+- Expected
++ Received
+
+  [
++   "分析范围与统计口径",
+    "主要发现",
+    "交互图表",
+    "下一步建议",
+    "数据局限与未完成任务",
+  ]
+
+ ❯ src/tests/report.test.tsx:15:20
+     13|   render(<ReportDocument report={report} />);
+     14|   const headings = screen.getAllByRole('heading', { level: 2 }).map(e …
+     15|   expect(headings).toEqual(['主要发现','交互图表','下一步建议','数据局限与未完成任务']);
+       |                    ^
+     16|   expect(screen.getByText(report.summary.headline)).toBeInTheDocument(…
+     17|   expect(screen.getByText(/当前业务解释为测试内容/)).toBeInTheDocument();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 7 passed (9)
+      Tests  2 failed | 70 passed (72)
+   Start at  22:47:25
+   Duration  3.27s (transform 984ms, setup 1.20s, import 1.54s, tests 7.75s, environment 2.72s)
+

@@ -1,0 +1,242 @@
+{
+  "schema_version": "golden-fidelity-case-v2",
+  "case_id": "RF-05",
+  "execution": {
+    "schema_version": "case-execution-v1",
+    "execution_id": "gf_20261113-000000_d1dddd:RF-05:1",
+    "locator": "gf_20261113-000000_d1dddd/RF-05",
+    "run_id": "gf_20261113-000000_d1dddd",
+    "case_id": "RF-05",
+    "attempt": 1,
+    "execution_status": "COMPLETED",
+    "failure_origin": null,
+    "workflow_id": "wf_5",
+    "started_at": "2026-11-13T00:00:00+00:00",
+    "finished_at": "2026-11-13T00:00:01+00:00",
+    "record_ref": "RF-05/result.json",
+    "output_ref": "RF-05/result.json#observed.result_tables",
+    "trace_ref": "RF-05/trace.json",
+    "error_code": null,
+    "blocking_stage": null,
+    "expect_blocked": false,
+    "provenance": "recorded",
+    "projection": {
+      "execution_status": {
+        "value": "COMPLETED",
+        "sources": [
+          "RF-05/result.json#observed.execution_status"
+        ],
+        "basis": "Engine execution status success."
+      }
+    },
+    "unverified": [],
+    "legacy": null
+  },
+  "evaluator_results": [
+    {
+      "schema_version": "evaluator-result-v1",
+      "evaluator_id": "insightflow.golden.oracle",
+      "evaluator_version": "golden-oracle-v2",
+      "evaluator_config_hash": "295d4f83242bf9204a961f033755b3affec988d3c99cf2c12e4245b0ddf0e581",
+      "case_execution_ref": "gf_20261113-000000_d1dddd/RF-05",
+      "evaluation_scope": "e2e",
+      "required": true,
+      "verdict": "PASS",
+      "score": null,
+      "failure_code": null,
+      "reason": "oracle_match",
+      "evidence_refs": [
+        "RF-05/result.json#observed.result_tables"
+      ],
+      "evaluated_at": "2026-11-13T00:00:02+00:00",
+      "provenance": "recorded",
+      "basis": null,
+      "legacy": null
+    },
+    {
+      "schema_version": "evaluator-result-v1",
+      "evaluator_id": "insightflow.golden.must_forbid",
+      "evaluator_version": "must-forbid-v1",
+      "evaluator_config_hash": "ff8958d7f570c369273b7f7ec2585a75d0042c79151fe24aebd138d5d6007963",
+      "case_execution_ref": "gf_20261113-000000_d1dddd/RF-05",
+      "evaluation_scope": "e2e",
+      "required": true,
+      "verdict": "NOT_EVALUATED",
+      "score": null,
+      "failure_code": null,
+      "reason": "rule_not_adapted:case.must_forbid[0],case.must_forbid[1],case.must_forbid[2],case.must_forbid[3]",
+      "evidence_refs": [],
+      "evaluated_at": "2026-11-13T00:00:03+00:00",
+      "provenance": "recorded",
+      "basis": null,
+      "legacy": null
+    },
+    {
+      "schema_version": "evaluator-result-v1",
+      "evaluator_id": "insightflow.node.requirement_fidelity",
+      "evaluator_version": "requirement-fidelity-v1",
+      "evaluator_config_hash": "0469c2040631843467f64d5e709eb9f9e092084b16f423f180cfcaaaf2708dc4",
+      "case_execution_ref": "gf_20261113-000000_d1dddd/RF-05",
+      "evaluation_scope": "node",
+      "required": false,
+      "verdict": "FAIL",
+      "score": null,
+      "failure_code": "lost_at:engine",
+      "reason": "x",
+      "evidence_refs": [
+        "RF-05/result.json#observed.fidelity"
+      ],
+      "evaluated_at": "2026-11-13T00:00:04+00:00",
+      "provenance": "recorded",
+      "basis": null,
+      "legacy": null
+    }
+  ],
+  "e2e": {
+    "schema_version": "e2e-summary-v1",
+    "case_execution_ref": "gf_20261113-000000_d1dddd/RF-05",
+    "case_id": "RF-05",
+    "verdict": "NOT_EVALUATED",
+    "gate": "required_evaluator",
+    "reason": "insightflow.golden.must_forbid:rule_not_adapted:case.must_forbid[0],case.must_forbid[1],case.must_forbid[2],case.must_forbid[3]",
+    "execution_status": "COMPLETED",
+    "execution_completed": true,
+    "task_condition_met": true,
+    "required_verdicts": {
+      "insightflow.golden.oracle": "PASS",
+      "insightflow.golden.must_forbid": "NOT_EVALUATED"
+    },
+    "optional_verdicts": {
+      "insightflow.node.requirement_fidelity": "FAIL"
+    },
+    "provenance": "recorded"
+  },
+  "observed": {
+    "final_status": "COMPLETED",
+    "error_code": null,
+    "execution_status": "success",
+    "approved_by_runner": true,
+    "can_approve": null,
+    "runner_error": null,
+    "workflow_id": "wf_5",
+    "business_status": null,
+    "result_tables": [
+      [
+        {
+          "城市": "深圳",
+          "岗位数量": 3
+        },
+        {
+          "城市": "北京",
+          "岗位数量": 1
+        },
+        {
+          "城市": "杭州",
+          "岗位数量": 1
+        }
+      ]
+    ],
+    "plan": {
+      "tasks": [
+        {
+          "task_id": "t1",
+          "title": "不要分析薪资",
+          "business_question": "统计岗位数量，不分析薪资",
+          "steps": [
+            {
+              "step_id": "s1",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "f4",
+                    "operator": "ne",
+                    "value": "实习"
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "s2",
+              "operation": "group_aggregate",
+              "params": {
+                "dimensions": [
+                  "f2"
+                ],
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "岗位数量"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "profile": {
+      "fields": [
+        {
+          "field_id": "f1",
+          "display_name": "编号"
+        },
+        {
+          "field_id": "f2",
+          "display_name": "城市"
+        },
+        {
+          "field_id": "f3",
+          "display_name": "岗位名称"
+        },
+        {
+          "field_id": "f4",
+          "display_name": "岗位类型"
+        }
+      ]
+    },
+    "execution_steps": [
+      {
+        "task_id": "t1",
+        "step_id": "s1",
+        "operation": "filter",
+        "status": "success"
+      },
+      {
+        "task_id": "t1",
+        "step_id": "s2",
+        "operation": "group_aggregate",
+        "status": "success"
+      }
+    ],
+    "duration_ms": null,
+    "prompt_templates": {
+      "intent_parser": [
+        "pt_a"
+      ],
+      "analysis_planner": [
+        "pt_b"
+      ]
+    },
+    "nodes": [
+      {
+        "name": "data_profiler",
+        "status": "success"
+      },
+      {
+        "name": "intent_parser",
+        "status": "success"
+      }
+    ],
+    "fidelity": {
+      "status": "scored",
+      "lost": [
+        {
+          "lost_at": "engine",
+          "detail": "x"
+        }
+      ]
+    }
+  }
+}

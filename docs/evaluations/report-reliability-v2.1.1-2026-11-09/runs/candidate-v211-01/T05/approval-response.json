@@ -1,0 +1,1099 @@
+{
+  "workflow_id": "wf_a19b464c70c24d54a1647c8670f638ea",
+  "root_run_id": "run_1541e990f9da4dd4bcebd7c690eee39d",
+  "id": "2c67f36ba6ff4c4b99ca1bde86140073",
+  "title": "帮我探索这份客服工单数据的主要特征和差异。",
+  "status": "APPROVED",
+  "revision": 9,
+  "created_at": "2026-11-09T08:05:31.084137+00:00",
+  "updated_at": "2026-11-09T08:05:42.729191+00:00",
+  "data_source": "uploaded",
+  "workflow_kind": "real_v1",
+  "profile_options": {
+    "header_row": 1,
+    "sheet_name": null,
+    "encoding": "utf-8-sig",
+    "delimiter": ","
+  },
+  "planner_result": {
+    "plan": {
+      "dataset_id": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+      "plan_id": "plan_74d01324a06a4368be0e95d4533e0fee",
+      "plan_version": 1,
+      "tasks": [
+        {
+          "task_id": "T1",
+          "title": "工单整体概况统计",
+          "business_question": "客服工单的总数量、涉及团队数及状态分布情况如何？",
+          "priority": "P0",
+          "priority_reason": "删除此任务将无法了解数据集的基本规模和主要类别构成，无法回答“主要特征”这一核心探索目标。",
+          "requirement_ids": [
+            "C01"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1_1",
+              "operation": "aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "total_ticket_count"
+                  },
+                  {
+                    "function": "distinct_count",
+                    "field": "field_0002",
+                    "alias": "unique_team_count"
+                  },
+                  {
+                    "function": "distinct_count",
+                    "field": "field_0003",
+                    "alias": "unique_status_count"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "task_id": "T2",
+          "title": "按团队分析工单数量与响应时间差异",
+          "business_question": "不同团队的工单数量分布如何？各团队的平均响应分钟数是否存在显著差异？",
+          "priority": "P0",
+          "priority_reason": "这是探索数据“差异”的核心维度。通过分组对比不同团队的负载（数量）和效率（响应时间），直接支持识别主要业务特征的决策需求。",
+          "requirement_ids": [
+            "C01"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S2_1",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "ticket_count_by_team"
+                  },
+                  {
+                    "function": "avg",
+                    "field": "field_0005",
+                    "alias": "avg_response_minutes_by_team"
+                  }
+                ],
+                "dimensions": [
+                  "field_0002"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "task_id": "T3",
+          "title": "按优先级与状态交叉分析工单分布",
+          "business_question": "不同优先级下的工单在各状态中的分布情况如何？高优先级工单是否更容易处于未解决状态？",
+          "priority": "P1",
+          "priority_reason": "提供比单一维度更细致的特征洞察，帮助理解业务逻辑（如优先级对处理流程的影响），属于补充性但高质量的分析。",
+          "requirement_ids": [
+            "C01"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S3_1",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "ticket_count_by_priority_status"
+                  }
+                ],
+                "dimensions": [
+                  "field_0004",
+                  "field_0003"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "探索客服工单数据的主要特征和差异"
+        }
+      ]
+    },
+    "validation_results": [
+      {
+        "task_id": "T1",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      },
+      {
+        "task_id": "T2",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      },
+      {
+        "task_id": "T3",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      }
+    ],
+    "unmet_core_requirements": [],
+    "coverage_status": "complete",
+    "executable_task_ids": [
+      "T1",
+      "T2",
+      "T3"
+    ],
+    "blocked_task_ids": [],
+    "fully_executable": true,
+    "validation_version": "1.0",
+    "registry_version": "1.0",
+    "approval_required": true,
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+      "plan_version": 1,
+      "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+    },
+    "intent_snapshot": {
+      "analysis_mode": "exploratory",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "客服工单数据",
+        "business_goal": "探索客服工单数据的主要特征和差异",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    }
+  },
+  "workflow_events": [
+    {
+      "status": "CREATED",
+      "recorded_at": "2026-11-09T08:05:31.084783+00:00"
+    },
+    {
+      "status": "PROFILING",
+      "recorded_at": "2026-11-09T08:05:31.123865+00:00"
+    },
+    {
+      "status": "PARSING_INTENT",
+      "recorded_at": "2026-11-09T08:05:31.130678+00:00"
+    },
+    {
+      "status": "PLANNING",
+      "recorded_at": "2026-11-09T08:05:33.409490+00:00"
+    },
+    {
+      "status": "VALIDATING",
+      "recorded_at": "2026-11-09T08:05:42.657470+00:00"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "recorded_at": "2026-11-09T08:05:42.668756+00:00"
+    },
+    {
+      "status": "APPROVED",
+      "recorded_at": "2026-11-09T08:05:42.729079+00:00"
+    }
+  ],
+  "file": {
+    "id": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+    "name": "support.csv",
+    "size": 384,
+    "extension": ".csv",
+    "content_sha256": "9b89f9d75d9e1b9868bc276a8030a2336f68181c868e47fb0cd5406668081475"
+  },
+  "user_goal": "帮我探索这份客服工单数据的主要特征和差异。",
+  "analysis_mode": "exploratory",
+  "intent": {
+    "analysis_mode": "exploratory",
+    "next_action": "proceed",
+    "analysis_goal": {
+      "analysis_object": "客服工单数据",
+      "business_goal": "探索客服工单数据的主要特征和差异",
+      "decision_goal": null
+    },
+    "constraints": {
+      "time_range": null,
+      "filters": [],
+      "metric_requirements": [],
+      "analysis_limits": []
+    },
+    "uncertainties": [],
+    "clarification_questions": [],
+    "user_query": "帮我探索这份客服工单数据的主要特征和差异。",
+    "clarification_answers": [],
+    "dataset_ref": {
+      "dataset_id": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2"
+    },
+    "parse_origin": "llm",
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+      "plan_version": null,
+      "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+    },
+    "parser_version": "1.1",
+    "prompt_version": "intent-v1.3.3",
+    "llm_attempts": 1,
+    "parse_id": "8308c813f05d4cefbe9d9add5ecf60c8"
+  },
+  "intent_history": [
+    {
+      "analysis_mode": "exploratory",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "客服工单数据",
+        "business_goal": "探索客服工单数据的主要特征和差异",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "帮我探索这份客服工单数据的主要特征和差异。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "8308c813f05d4cefbe9d9add5ecf60c8"
+    }
+  ],
+  "clarification_answers": [],
+  "profile": {
+    "dataset_id": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+    "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+    "schema_version": "1.0",
+    "profiler_version": "1.1.0",
+    "content_sha256": "9b89f9d75d9e1b9868bc276a8030a2336f68181c868e47fb0cd5406668081475",
+    "file_name": "support.csv",
+    "file_format": "csv",
+    "sheet_name": null,
+    "available_sheets": [],
+    "options": {
+      "header_row": 1,
+      "sheet_name": null,
+      "encoding": "utf-8-sig",
+      "delimiter": ","
+    },
+    "row_count": 8,
+    "column_count": 6,
+    "total_cell_count": 48,
+    "missing_cell_count": 1,
+    "missing_cell_rate": 0.020833333333333332,
+    "duplicate_row_count": 0,
+    "duplicate_row_rate": 0.0,
+    "fields": [
+      {
+        "field_id": "field_0001",
+        "position": 1,
+        "original_name": "提交日期",
+        "display_name": "提交日期",
+        "physical_type": "string",
+        "logical_type": "date",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 8,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "date": 8
+        },
+        "samples": [
+          {
+            "value": "2026-01-01",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-01-02",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-02-03",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-02-04",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-03-05",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0002",
+        "position": 2,
+        "original_name": "团队",
+        "display_name": "团队",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "一组",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "二组",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "三组",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0003",
+        "position": 3,
+        "original_name": "状态",
+        "display_name": "状态",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "已解决",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "处理中",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "待分配",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0004",
+        "position": 4,
+        "original_name": "优先级",
+        "display_name": "优先级",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "高",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "低",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "中",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0005",
+        "position": 5,
+        "original_name": "响应分钟",
+        "display_name": "响应分钟",
+        "physical_type": "string",
+        "logical_type": "integer",
+        "missing_count": 1,
+        "missing_rate": 0.125,
+        "non_missing_count": 7,
+        "unique_count": 7,
+        "physical_type_counts": {
+          "string": 7
+        },
+        "logical_type_counts": {
+          "integer": 7
+        },
+        "samples": [
+          {
+            "value": "10",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "20",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "30",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "40",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "5",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0006",
+        "position": 6,
+        "original_name": "工单编号",
+        "display_name": "工单编号",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 8,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "T01",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "T02",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "T03",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "T04",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "T05",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      }
+    ],
+    "quality_issues": [],
+    "provenance": {
+      "source": "uploaded",
+      "dataset": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+      "plan_version": null,
+      "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+    }
+  },
+  "dataset_ref": {
+    "dataset_id": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+    "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2"
+  },
+  "plans": [],
+  "current_plan_version": 1,
+  "approved_plan_version": 1,
+  "node_runs": [
+    {
+      "run_id": "6132bd9e45f740a0a679a09567a8c688",
+      "node_name": "data_profiler",
+      "status": "success",
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_version": null,
+        "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+      },
+      "error": null,
+      "finished_at": "2026-11-09T08:05:31.128570+00:00"
+    },
+    {
+      "run_id": "1a57b1d0c1e44e478564b8d66b5902df",
+      "node_name": "intent_parser",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "error": null,
+      "finished_at": "2026-11-09T08:05:33.404354+00:00"
+    },
+    {
+      "run_id": "446e3499d4d14ebb8220789ff03db3e8",
+      "node_name": "analysis_planner_v1",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "error": null,
+      "finished_at": "2026-11-09T08:05:42.650992+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "id": "de8d5e7785d5487eb0b3df1877103f6f",
+      "role": "user",
+      "kind": "text",
+      "content": "帮我探索这份客服工单数据的主要特征和差异。",
+      "plan_version": null,
+      "created_at": "2026-11-09T08:05:31.084124+00:00"
+    },
+    {
+      "id": "be75aab5883141b39de15a7c14f888f3",
+      "role": "assistant",
+      "kind": "status",
+      "content": "正在解析上传文件并计算真实数据画像。",
+      "plan_version": null,
+      "created_at": "2026-11-09T08:05:31.123859+00:00"
+    },
+    {
+      "id": "a5a6022e1a1a4794ba923d7b8068ad12",
+      "role": "assistant",
+      "kind": "status",
+      "content": "真实画像完成：8行、6列；正在理解分析需求。",
+      "plan_version": null,
+      "created_at": "2026-11-09T08:05:31.130675+00:00"
+    },
+    {
+      "id": "50eb5028423342919b64e6cbc8b3d997",
+      "role": "assistant",
+      "kind": "status",
+      "content": "需求已理解，正在生成受控分析计划。",
+      "plan_version": null,
+      "created_at": "2026-11-09T08:05:33.409479+00:00"
+    },
+    {
+      "id": "9f4269c8f8d84486a0e03c7e6c0543d8",
+      "role": "assistant",
+      "kind": "plan",
+      "content": "真实计划已保存，目标覆盖：complete。请审核任务、未满足需求和约束；批准前不会计算。",
+      "plan_version": 1,
+      "created_at": "2026-11-09T08:05:42.668745+00:00"
+    },
+    {
+      "id": "6df2def836e84a79aad75268ad2a7ff4",
+      "role": "user",
+      "kind": "text",
+      "content": "确认真实计划 v1 并执行；已确认限制：无。",
+      "plan_version": null,
+      "created_at": "2026-11-09T08:05:42.729073+00:00"
+    }
+  ],
+  "review_plan": {
+    "session_id": "2c67f36ba6ff4c4b99ca1bde86140073",
+    "plan_id": "plan_74d01324a06a4368be0e95d4533e0fee",
+    "plan_version": 1,
+    "dataset_id": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+    "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+    "validation_version": "1.0",
+    "created_at": "2026-11-09T08:05:42.668228+00:00",
+    "change_type": "created",
+    "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_id": "plan_74d01324a06a4368be0e95d4533e0fee",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "工单整体概况统计",
+            "business_question": "客服工单的总数量、涉及团队数及状态分布情况如何？",
+            "priority": "P0",
+            "priority_reason": "删除此任务将无法了解数据集的基本规模和主要类别构成，无法回答“主要特征”这一核心探索目标。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1_1",
+                "operation": "aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "total_ticket_count"
+                    },
+                    {
+                      "function": "distinct_count",
+                      "field": "field_0002",
+                      "alias": "unique_team_count"
+                    },
+                    {
+                      "function": "distinct_count",
+                      "field": "field_0003",
+                      "alias": "unique_status_count"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "task_id": "T2",
+            "title": "按团队分析工单数量与响应时间差异",
+            "business_question": "不同团队的工单数量分布如何？各团队的平均响应分钟数是否存在显著差异？",
+            "priority": "P0",
+            "priority_reason": "这是探索数据“差异”的核心维度。通过分组对比不同团队的负载（数量）和效率（响应时间），直接支持识别主要业务特征的决策需求。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S2_1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "ticket_count_by_team"
+                    },
+                    {
+                      "function": "avg",
+                      "field": "field_0005",
+                      "alias": "avg_response_minutes_by_team"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "task_id": "T3",
+            "title": "按优先级与状态交叉分析工单分布",
+            "business_question": "不同优先级下的工单在各状态中的分布情况如何？高优先级工单是否更容易处于未解决状态？",
+            "priority": "P1",
+            "priority_reason": "提供比单一维度更细致的特征洞察，帮助理解业务逻辑（如优先级对处理流程的影响），属于补充性但高质量的分析。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S3_1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "ticket_count_by_priority_status"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0004",
+                    "field_0003"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "探索客服工单数据的主要特征和差异"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        },
+        {
+          "task_id": "T2",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        },
+        {
+          "task_id": "T3",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T1",
+        "T2",
+        "T3"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_version": 1,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "exploratory",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "客服工单数据",
+          "business_goal": "探索客服工单数据的主要特征和差异",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    }
+  },
+  "review_status": "approved",
+  "engine_approval": {
+    "approval_id": "approval_77487aeca45d46f5a3416b86f4271dbe",
+    "approved_at": "2026-11-09T08:05:42.728313+00:00",
+    "status": "approved",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_id": "plan_74d01324a06a4368be0e95d4533e0fee",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "工单整体概况统计",
+            "business_question": "客服工单的总数量、涉及团队数及状态分布情况如何？",
+            "priority": "P0",
+            "priority_reason": "删除此任务将无法了解数据集的基本规模和主要类别构成，无法回答“主要特征”这一核心探索目标。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1_1",
+                "operation": "aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "total_ticket_count"
+                    },
+                    {
+                      "function": "distinct_count",
+                      "field": "field_0002",
+                      "alias": "unique_team_count"
+                    },
+                    {
+                      "function": "distinct_count",
+                      "field": "field_0003",
+                      "alias": "unique_status_count"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "task_id": "T2",
+            "title": "按团队分析工单数量与响应时间差异",
+            "business_question": "不同团队的工单数量分布如何？各团队的平均响应分钟数是否存在显著差异？",
+            "priority": "P0",
+            "priority_reason": "这是探索数据“差异”的核心维度。通过分组对比不同团队的负载（数量）和效率（响应时间），直接支持识别主要业务特征的决策需求。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S2_1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "ticket_count_by_team"
+                    },
+                    {
+                      "function": "avg",
+                      "field": "field_0005",
+                      "alias": "avg_response_minutes_by_team"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "task_id": "T3",
+            "title": "按优先级与状态交叉分析工单分布",
+            "business_question": "不同优先级下的工单在各状态中的分布情况如何？高优先级工单是否更容易处于未解决状态？",
+            "priority": "P1",
+            "priority_reason": "提供比单一维度更细致的特征洞察，帮助理解业务逻辑（如优先级对处理流程的影响），属于补充性但高质量的分析。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S3_1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "ticket_count_by_priority_status"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0004",
+                    "field_0003"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "探索客服工单数据的主要特征和差异"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        },
+        {
+          "task_id": "T2",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        },
+        {
+          "task_id": "T3",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T1",
+        "T2",
+        "T3"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "13551f616bcd4e79ac3c5a7fa5dfc72f",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_version": 1,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "exploratory",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "客服工单数据",
+          "business_goal": "探索客服工单数据的主要特征和差异",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "intent": {
+      "analysis_mode": "exploratory",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "客服工单数据",
+        "business_goal": "探索客服工单数据的主要特征和差异",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    },
+    "resolved_uncertainty_ids": [],
+    "constraints_confirmed": false,
+    "session_id": "2c67f36ba6ff4c4b99ca1bde86140073",
+    "acknowledged_warnings": []
+  },
+  "engine_execution_ids": [],
+  "report_generations": [],
+  "execution_result": null,
+  "report": null,
+  "error": null
+}

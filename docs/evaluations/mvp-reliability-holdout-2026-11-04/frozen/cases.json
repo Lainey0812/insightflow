@@ -1,0 +1,70 @@
+[
+  {
+    "case_id": "U01",
+    "domain": "sales",
+    "query": "统计各城市订单数量，按数量升序排列。",
+    "kind": "numeric",
+    "split": "holdout",
+    "dimension": "城市",
+    "metric_field": null,
+    "function": "count",
+    "filters": [],
+    "order": "asc",
+    "no_extra_tasks": true
+  },
+  {
+    "case_id": "U02",
+    "domain": "support",
+    "query": "只看一组与三组，按团队计算响应分钟中位数，升序排名。",
+    "kind": "numeric",
+    "split": "holdout",
+    "dimension": "团队",
+    "metric_field": "响应分钟",
+    "function": "median",
+    "filters": [
+      [
+        "团队",
+        "in",
+        [
+          "一组",
+          "三组"
+        ]
+      ]
+    ],
+    "order": "asc"
+  },
+  {
+    "case_id": "U03",
+    "domain": "projects",
+    "query": "只看已完成任务，按项目汇总工时总和，降序取前两名。",
+    "kind": "numeric",
+    "split": "holdout",
+    "dimension": "项目",
+    "metric_field": "工时",
+    "function": "sum",
+    "filters": [
+      [
+        "状态",
+        "eq",
+        "已完成"
+      ]
+    ],
+    "order": "desc",
+    "top_n": 2
+  },
+  {
+    "case_id": "U04",
+    "domain": "recruitment",
+    "query": "按城市统计岗位数量，按数量降序排名，取前两名，不排除北京。",
+    "kind": "numeric",
+    "split": "holdout",
+    "dimension": "城市",
+    "metric_field": null,
+    "function": "count",
+    "filters": [],
+    "order": "desc",
+    "top_n": 2,
+    "must_include": "北京",
+    "no_extra_tasks": true
+  }
+]

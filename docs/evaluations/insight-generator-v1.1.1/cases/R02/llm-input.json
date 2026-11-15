@@ -1,0 +1,303 @@
+{
+  "analysis_goal": {
+    "analysis_object": "recruiting数据",
+    "business_goal": "比较不同发布日期的岗位数量变化，不能外推市场趋势",
+    "decision_goal": null
+  },
+  "goal_coverage": "complete",
+  "original_query": "比较不同发布日期的岗位数量变化，不能外推市场趋势",
+  "constraints": {
+    "time_range": null,
+    "filters": [],
+    "metric_requirements": [],
+    "analysis_limits": []
+  },
+  "constraints_confirmed": false,
+  "scope_context": [
+    {
+      "task_id": "A01",
+      "approved_steps": [
+        "按发布日期分组",
+        "拟用统计口径：记录数"
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "field_id": "field_0001",
+      "name": "发布日期",
+      "logical_type": "date",
+      "upload_missing_count": 0
+    },
+    {
+      "field_id": "field_0002",
+      "name": "岗位",
+      "logical_type": "text",
+      "upload_missing_count": 0
+    }
+  ],
+  "uncompleted_tasks": [],
+  "task_sample_context": [
+    {
+      "task_id": "A01",
+      "status": "success",
+      "valid_sample_count": 6,
+      "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+      "metric_valid_counts": {}
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "A01",
+      "priority": "P0",
+      "business_question": "不同发布日期岗位数量变化"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E0008",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "change_rate",
+      "value": {
+        "from": "2026-01-01",
+        "to": "2026-03-01",
+        "baseline": 1,
+        "current": 3,
+        "change_percent": 200
+      },
+      "scope": "比较不同发布日期的岗位数量变化，不能外推市场趋势；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；(末期已计算值 - 首期已计算值) / 首期已计算值 × 100；首期分母为正；不保证时间点连续。",
+      "statement": "在已返回时间点中，记录 · 数量从 2026-01-01至2026-03-01变化约 200%。",
+      "source_row_indices": [
+        0,
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0007",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "difference",
+      "value": {
+        "left": "2026-03-01",
+        "right": "2026-01-01",
+        "left_value": 3,
+        "right_value": 1,
+        "difference": 2
+      },
+      "scope": "比较不同发布日期的岗位数量变化，不能外推市场趋势；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算值相减：value[2] - value[0]；不是因果或显著性检验。",
+      "statement": "在该任务完整分组结果中，2026-03-01与2026-01-01的记录 · 数量差值为 2条。",
+      "source_row_indices": [
+        2,
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0002",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "2026-03-01",
+        "value": 3,
+        "rank": 1
+      },
+      "scope": "比较不同发布日期的岗位数量变化，不能外推市场趋势；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，2026-03-01的记录 · 数量为 3条，并列值采用同一名次，排名 1。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0003",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "2026-02-01",
+        "value": 2,
+        "rank": 2
+      },
+      "scope": "比较不同发布日期的岗位数量变化，不能外推市场趋势；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，2026-02-01的记录 · 数量为 2条，并列值采用同一名次，排名 2。",
+      "source_row_indices": [
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0004",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "2026-01-01",
+        "value": 1,
+        "rank": 3
+      },
+      "scope": "比较不同发布日期的岗位数量变化，不能外推市场趋势；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，2026-01-01的记录 · 数量为 1条，并列值采用同一名次，排名 3。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0012",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "metric",
+      "value": {
+        "value": 6,
+        "unit": "条",
+        "label": "本次返回分组合计（记录 · 数量）"
+      },
+      "scope": "比较不同发布日期的岗位数量变化，不能外推市场趋势；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；仅将当前完整返回表中的可加指标相加；含 Top N 时只代表所选分组，不作为总体占比分母。",
+      "statement": "本次返回的 3 个分组的记录 · 数量合计为 6条。",
+      "source_row_indices": [
+        0,
+        1,
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0009",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "proportion",
+      "value": {
+        "category": "2026-03-01",
+        "numerator": 3,
+        "denominator": 6.0,
+        "percent": 50
+      },
+      "scope": "比较不同发布日期的岗位数量变化，不能外推市场趋势；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+      "statement": "2026-03-01的记录 · 数量占该任务同口径总体约 50%。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0010",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "proportion",
+      "value": {
+        "category": "2026-02-01",
+        "numerator": 2,
+        "denominator": 6.0,
+        "percent": 33.333333333333336
+      },
+      "scope": "比较不同发布日期的岗位数量变化，不能外推市场趋势；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+      "statement": "2026-02-01的记录 · 数量占该任务同口径总体约 33.333333333333336%。",
+      "source_row_indices": [
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0011",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "proportion",
+      "value": {
+        "category": "2026-01-01",
+        "numerator": 1,
+        "denominator": 6.0,
+        "percent": 16.666666666666668
+      },
+      "scope": "比较不同发布日期的岗位数量变化，不能外推市场趋势；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+      "statement": "2026-01-01的记录 · 数量占该任务同口径总体约 16.666666666666668%。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0005",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "maximum",
+      "value": {
+        "value": 3,
+        "category": "2026-03-01",
+        "tie_count": 1
+      },
+      "scope": "比较不同发布日期的岗位数量变化，不能外推市场趋势；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；读取 value 的最大值，保留并列来源行。",
+      "statement": "该任务完整分组结果的记录 · 数量最大值为 3条，对应 2026-03-01等 1 个分组。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0006",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "minimum",
+      "value": {
+        "value": 1,
+        "category": "2026-01-01",
+        "tie_count": 1
+      },
+      "scope": "比较不同发布日期的岗位数量变化，不能外推市场趋势；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；读取 value 的最小值，保留并列来源行。",
+      "statement": "该任务完整分组结果的记录 · 数量最小值为 1条，对应 2026-01-01等 1 个分组。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    }
+  ],
+  "evidence_groups": [
+    {
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_ids": [
+        "E0008",
+        "E0007",
+        "E0002",
+        "E0003",
+        "E0004",
+        "E0012",
+        "E0009",
+        "E0010",
+        "E0011",
+        "E0005",
+        "E0006"
+      ]
+    }
+  ],
+  "limitations": [
+    "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+    "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+    "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+  ]
+}

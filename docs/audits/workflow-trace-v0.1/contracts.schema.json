@@ -1,0 +1,1087 @@
+{
+  "TraceRun": {
+    "$defs": {
+      "RunManifest": {
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {
+            "const": "workflow-trace-v0.1",
+            "default": "workflow-trace-v0.1",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "bindings": {
+            "additionalProperties": true,
+            "title": "Bindings",
+            "type": "object"
+          },
+          "versions": {
+            "additionalProperties": true,
+            "title": "Versions",
+            "type": "object"
+          },
+          "model_config_snapshot": {
+            "additionalProperties": true,
+            "title": "Model Config Snapshot",
+            "type": "object"
+          },
+          "source_sha256": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Source Sha256",
+            "type": "object"
+          },
+          "raw_content_retained": {
+            "const": false,
+            "default": false,
+            "title": "Raw Content Retained",
+            "type": "boolean"
+          }
+        },
+        "title": "RunManifest",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "run_id": {
+        "title": "Run Id",
+        "type": "string"
+      },
+      "kind": {
+        "const": "report_generation",
+        "default": "report_generation",
+        "title": "Kind",
+        "type": "string"
+      },
+      "session_id": {
+        "title": "Session Id",
+        "type": "string"
+      },
+      "execution_id": {
+        "title": "Execution Id",
+        "type": "string"
+      },
+      "attempt": {
+        "minimum": 1,
+        "title": "Attempt",
+        "type": "integer"
+      },
+      "retry_of_run_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Retry Of Run Id"
+      },
+      "owner_instance": {
+        "title": "Owner Instance",
+        "type": "string"
+      },
+      "status": {
+        "enum": [
+          "queued",
+          "running",
+          "complete",
+          "partial",
+          "unavailable",
+          "failed",
+          "interrupted"
+        ],
+        "title": "Status",
+        "type": "string"
+      },
+      "queued_at": {
+        "title": "Queued At",
+        "type": "string"
+      },
+      "started_at": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Started At"
+      },
+      "finished_at": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Finished At"
+      },
+      "recovered_at": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Recovered At"
+      },
+      "duration_ms": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Duration Ms"
+      },
+      "report_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Report Id"
+      },
+      "error_code": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Error Code"
+      },
+      "integrity": {
+        "default": "observed",
+        "enum": [
+          "observed",
+          "incomplete"
+        ],
+        "title": "Integrity",
+        "type": "string"
+      },
+      "manifest": {
+        "$ref": "#/$defs/RunManifest"
+      }
+    },
+    "required": [
+      "run_id",
+      "session_id",
+      "execution_id",
+      "attempt",
+      "owner_instance",
+      "status",
+      "queued_at",
+      "manifest"
+    ],
+    "title": "TraceRun",
+    "type": "object"
+  },
+  "TraceSpan": {
+    "additionalProperties": false,
+    "properties": {
+      "span_id": {
+        "title": "Span Id",
+        "type": "string"
+      },
+      "run_id": {
+        "title": "Run Id",
+        "type": "string"
+      },
+      "parent_span_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Parent Span Id"
+      },
+      "name": {
+        "title": "Name",
+        "type": "string"
+      },
+      "status": {
+        "enum": [
+          "running",
+          "complete",
+          "partial",
+          "failed",
+          "skipped",
+          "interrupted"
+        ],
+        "title": "Status",
+        "type": "string"
+      },
+      "started_at": {
+        "title": "Started At",
+        "type": "string"
+      },
+      "finished_at": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Finished At"
+      },
+      "recovered_at": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Recovered At"
+      },
+      "duration_ms": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Duration Ms"
+      },
+      "error_code": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Error Code"
+      },
+      "attributes": {
+        "additionalProperties": true,
+        "title": "Attributes",
+        "type": "object"
+      }
+    },
+    "required": [
+      "span_id",
+      "run_id",
+      "name",
+      "status",
+      "started_at"
+    ],
+    "title": "TraceSpan",
+    "type": "object"
+  },
+  "TraceEvent": {
+    "additionalProperties": false,
+    "properties": {
+      "event_id": {
+        "title": "Event Id",
+        "type": "string"
+      },
+      "run_id": {
+        "title": "Run Id",
+        "type": "string"
+      },
+      "span_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Span Id"
+      },
+      "sequence": {
+        "minimum": 1,
+        "title": "Sequence",
+        "type": "integer"
+      },
+      "event_type": {
+        "title": "Event Type",
+        "type": "string"
+      },
+      "recorded_at": {
+        "title": "Recorded At",
+        "type": "string"
+      },
+      "payload": {
+        "additionalProperties": true,
+        "title": "Payload",
+        "type": "object"
+      }
+    },
+    "required": [
+      "event_id",
+      "run_id",
+      "sequence",
+      "event_type",
+      "recorded_at"
+    ],
+    "title": "TraceEvent",
+    "type": "object"
+  },
+  "RunManifest": {
+    "additionalProperties": false,
+    "properties": {
+      "schema_version": {
+        "const": "workflow-trace-v0.1",
+        "default": "workflow-trace-v0.1",
+        "title": "Schema Version",
+        "type": "string"
+      },
+      "bindings": {
+        "additionalProperties": true,
+        "title": "Bindings",
+        "type": "object"
+      },
+      "versions": {
+        "additionalProperties": true,
+        "title": "Versions",
+        "type": "object"
+      },
+      "model_config_snapshot": {
+        "additionalProperties": true,
+        "title": "Model Config Snapshot",
+        "type": "object"
+      },
+      "source_sha256": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "title": "Source Sha256",
+        "type": "object"
+      },
+      "raw_content_retained": {
+        "const": false,
+        "default": false,
+        "title": "Raw Content Retained",
+        "type": "boolean"
+      }
+    },
+    "title": "RunManifest",
+    "type": "object"
+  },
+  "RunPage": {
+    "$defs": {
+      "RunManifest": {
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {
+            "const": "workflow-trace-v0.1",
+            "default": "workflow-trace-v0.1",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "bindings": {
+            "additionalProperties": true,
+            "title": "Bindings",
+            "type": "object"
+          },
+          "versions": {
+            "additionalProperties": true,
+            "title": "Versions",
+            "type": "object"
+          },
+          "model_config_snapshot": {
+            "additionalProperties": true,
+            "title": "Model Config Snapshot",
+            "type": "object"
+          },
+          "source_sha256": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Source Sha256",
+            "type": "object"
+          },
+          "raw_content_retained": {
+            "const": false,
+            "default": false,
+            "title": "Raw Content Retained",
+            "type": "boolean"
+          }
+        },
+        "title": "RunManifest",
+        "type": "object"
+      },
+      "TraceRun": {
+        "additionalProperties": false,
+        "properties": {
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "kind": {
+            "const": "report_generation",
+            "default": "report_generation",
+            "title": "Kind",
+            "type": "string"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "execution_id": {
+            "title": "Execution Id",
+            "type": "string"
+          },
+          "attempt": {
+            "minimum": 1,
+            "title": "Attempt",
+            "type": "integer"
+          },
+          "retry_of_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Retry Of Run Id"
+          },
+          "owner_instance": {
+            "title": "Owner Instance",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "running",
+              "complete",
+              "partial",
+              "unavailable",
+              "failed",
+              "interrupted"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "queued_at": {
+            "title": "Queued At",
+            "type": "string"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Finished At"
+          },
+          "recovered_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Recovered At"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Duration Ms"
+          },
+          "report_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Report Id"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Error Code"
+          },
+          "integrity": {
+            "default": "observed",
+            "enum": [
+              "observed",
+              "incomplete"
+            ],
+            "title": "Integrity",
+            "type": "string"
+          },
+          "manifest": {
+            "$ref": "#/$defs/RunManifest"
+          }
+        },
+        "required": [
+          "run_id",
+          "session_id",
+          "execution_id",
+          "attempt",
+          "owner_instance",
+          "status",
+          "queued_at",
+          "manifest"
+        ],
+        "title": "TraceRun",
+        "type": "object"
+      }
+    },
+    "properties": {
+      "items": {
+        "items": {
+          "$ref": "#/$defs/TraceRun"
+        },
+        "title": "Items",
+        "type": "array"
+      },
+      "total": {
+        "title": "Total",
+        "type": "integer"
+      },
+      "limit": {
+        "title": "Limit",
+        "type": "integer"
+      },
+      "offset": {
+        "title": "Offset",
+        "type": "integer"
+      },
+      "coverage_notice": {
+        "title": "Coverage Notice",
+        "type": "string"
+      },
+      "collector_degraded": {
+        "title": "Collector Degraded",
+        "type": "boolean"
+      },
+      "retention": {
+        "additionalProperties": true,
+        "title": "Retention",
+        "type": "object"
+      }
+    },
+    "required": [
+      "items",
+      "total",
+      "limit",
+      "offset",
+      "coverage_notice",
+      "collector_degraded",
+      "retention"
+    ],
+    "title": "RunPage",
+    "type": "object"
+  },
+  "RunDetail": {
+    "$defs": {
+      "RunManifest": {
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {
+            "const": "workflow-trace-v0.1",
+            "default": "workflow-trace-v0.1",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "bindings": {
+            "additionalProperties": true,
+            "title": "Bindings",
+            "type": "object"
+          },
+          "versions": {
+            "additionalProperties": true,
+            "title": "Versions",
+            "type": "object"
+          },
+          "model_config_snapshot": {
+            "additionalProperties": true,
+            "title": "Model Config Snapshot",
+            "type": "object"
+          },
+          "source_sha256": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Source Sha256",
+            "type": "object"
+          },
+          "raw_content_retained": {
+            "const": false,
+            "default": false,
+            "title": "Raw Content Retained",
+            "type": "boolean"
+          }
+        },
+        "title": "RunManifest",
+        "type": "object"
+      },
+      "TraceRun": {
+        "additionalProperties": false,
+        "properties": {
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "kind": {
+            "const": "report_generation",
+            "default": "report_generation",
+            "title": "Kind",
+            "type": "string"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "execution_id": {
+            "title": "Execution Id",
+            "type": "string"
+          },
+          "attempt": {
+            "minimum": 1,
+            "title": "Attempt",
+            "type": "integer"
+          },
+          "retry_of_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Retry Of Run Id"
+          },
+          "owner_instance": {
+            "title": "Owner Instance",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "running",
+              "complete",
+              "partial",
+              "unavailable",
+              "failed",
+              "interrupted"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "queued_at": {
+            "title": "Queued At",
+            "type": "string"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Finished At"
+          },
+          "recovered_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Recovered At"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Duration Ms"
+          },
+          "report_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Report Id"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Error Code"
+          },
+          "integrity": {
+            "default": "observed",
+            "enum": [
+              "observed",
+              "incomplete"
+            ],
+            "title": "Integrity",
+            "type": "string"
+          },
+          "manifest": {
+            "$ref": "#/$defs/RunManifest"
+          }
+        },
+        "required": [
+          "run_id",
+          "session_id",
+          "execution_id",
+          "attempt",
+          "owner_instance",
+          "status",
+          "queued_at",
+          "manifest"
+        ],
+        "title": "TraceRun",
+        "type": "object"
+      }
+    },
+    "properties": {
+      "run": {
+        "$ref": "#/$defs/TraceRun"
+      },
+      "business_source": {
+        "additionalProperties": true,
+        "title": "Business Source",
+        "type": "object"
+      },
+      "coverage_notice": {
+        "title": "Coverage Notice",
+        "type": "string"
+      },
+      "collector_degraded": {
+        "title": "Collector Degraded",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "run",
+      "business_source",
+      "coverage_notice",
+      "collector_degraded"
+    ],
+    "title": "RunDetail",
+    "type": "object"
+  },
+  "SpanPage": {
+    "$defs": {
+      "TraceSpan": {
+        "additionalProperties": false,
+        "properties": {
+          "span_id": {
+            "title": "Span Id",
+            "type": "string"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "parent_span_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Parent Span Id"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "running",
+              "complete",
+              "partial",
+              "failed",
+              "skipped",
+              "interrupted"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "started_at": {
+            "title": "Started At",
+            "type": "string"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Finished At"
+          },
+          "recovered_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Recovered At"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Duration Ms"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Error Code"
+          },
+          "attributes": {
+            "additionalProperties": true,
+            "title": "Attributes",
+            "type": "object"
+          }
+        },
+        "required": [
+          "span_id",
+          "run_id",
+          "name",
+          "status",
+          "started_at"
+        ],
+        "title": "TraceSpan",
+        "type": "object"
+      }
+    },
+    "properties": {
+      "items": {
+        "items": {
+          "$ref": "#/$defs/TraceSpan"
+        },
+        "title": "Items",
+        "type": "array"
+      }
+    },
+    "required": [
+      "items"
+    ],
+    "title": "SpanPage",
+    "type": "object"
+  },
+  "EventPage": {
+    "$defs": {
+      "TraceEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "span_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Span Id"
+          },
+          "sequence": {
+            "minimum": 1,
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "event_type": {
+            "title": "Event Type",
+            "type": "string"
+          },
+          "recorded_at": {
+            "title": "Recorded At",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          }
+        },
+        "required": [
+          "event_id",
+          "run_id",
+          "sequence",
+          "event_type",
+          "recorded_at"
+        ],
+        "title": "TraceEvent",
+        "type": "object"
+      }
+    },
+    "properties": {
+      "items": {
+        "items": {
+          "$ref": "#/$defs/TraceEvent"
+        },
+        "title": "Items",
+        "type": "array"
+      },
+      "limit": {
+        "title": "Limit",
+        "type": "integer"
+      },
+      "offset": {
+        "title": "Offset",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "items",
+      "limit",
+      "offset"
+    ],
+    "title": "EventPage",
+    "type": "object"
+  }
+}

@@ -1,0 +1,16 @@
+{"mapping_version": "golden-constraint-coverage-v1", "mapping_sha256": "4bebc8ba8e2d1a97e35d195a198c1ee74b6d4b67eeda617fc813fdc75382b2d2", "must_forbid_config_sha256": "931acc81f415d7faead2c162fe00ffc66c5cf73d8b6f5a25588e1f470f0482ea"}
+{"case": "RF-01", "plan": "correct plan", "oracle": ["PASS", null], "must_forbid": ["PASS", null, "row_set:1;oracle_covered:4"], "e2e": ["PASS", "all_gates"]}
+{"case": "RF-02", "plan": "correct plan", "oracle": ["PASS", null], "must_forbid": ["PASS", null, "oracle_covered:3"], "e2e": ["PASS", "all_gates"]}
+{"case": "RF-03", "plan": "correct plan", "oracle": ["PASS", null], "must_forbid": ["PASS", null, "row_set:2"], "e2e": ["PASS", "all_gates"]}
+{"case": "RF-04", "plan": "correct plan", "oracle": ["PASS", null], "must_forbid": ["PASS", null, "forbid_field:plan,engine,result_columns;row_set:1"], "e2e": ["PASS", "all_gates"]}
+{"case": "RF-05", "plan": "correct plan", "oracle": ["PASS", null], "must_forbid": ["PASS", null, "oracle_covered:4"], "e2e": ["PASS", "all_gates"]}
+{"case": "RF-01", "plan": "wrong filter 岗位名称 eq 产品经理", "oracle": ["PASS", null], "must_forbid": ["FAIL", "F-EXCLUDE-DROPPED", "row_set@must_execute[0]:t1:included=J04"], "e2e": ["FAIL", "required_evaluator"]}
+{"case": "RF-01", "plan": "no exclusion, city+type groups sorted by type", "oracle": ["PASS", null], "must_forbid": ["FAIL", "F-EXCLUDE-DROPPED", "row_set@must_execute[0]:t1:included=J04+J06+J07"], "e2e": ["FAIL", "required_evaluator"]}
+{"case": "RF-01", "plan": "polarity reversed", "oracle": ["FAIL", "F-POLARITY-REVERSED"], "must_forbid": ["FAIL", "F-EXCLUDE-DROPPED", "row_set@must_execute[0]:t1:included=J04+J06+J07"], "e2e": ["FAIL", "required_evaluator"]}
+{"case": "RF-02", "plan": "still excludes interns", "oracle": ["FAIL", "F-EXTRA-CONSTRAINT"], "must_forbid": ["NOT_EVALUATED", null, "oracle_not_pass:case.must_forbid[0],case.must_forbid[1],case.must_forbid[2]"], "e2e": ["FAIL", "required_evaluator"]}
+{"case": "RF-03", "plan": "wrong filter 岗位名称 eq 分析师", "oracle": ["PASS", null], "must_forbid": ["FAIL", "F-EXTRA-CONSTRAINT", "row_set@must_forbid[0]:t1:missing=J04"], "e2e": ["FAIL", "required_evaluator"]}
+{"case": "RF-03", "plan": "no type filter, city+type groups", "oracle": ["PASS", null], "must_forbid": ["FAIL", "F-EXCLUDE-DROPPED", "row_set@must_forbid[1]:t1:included=J01+J02+J03+J05"], "e2e": ["FAIL", "required_evaluator"]}
+{"case": "RF-04", "plan": "wrong filter 岗位名称 eq 产品经理", "oracle": ["PASS", null], "must_forbid": ["FAIL", "F-EXCLUDE-DROPPED", "row_set@must_execute[0]:t1:included=J04"], "e2e": ["FAIL", "required_evaluator"]}
+{"case": "RF-05", "plan": "equivalent whitelist 城市 in 深圳/北京/杭州", "oracle": ["PASS", null], "must_forbid": ["PASS", null, "oracle_covered:4"], "e2e": ["PASS", "all_gates"]}
+{"case": "RF-05", "plan": "also excludes interns", "oracle": ["FAIL", "F-EXTRA-CONSTRAINT"], "must_forbid": ["NOT_EVALUATED", null, "oracle_not_pass:case.must_forbid[0],case.must_forbid[1],case.must_forbid[2],case.must_forbid[3]"], "e2e": ["FAIL", "required_evaluator"]}
+{"case": "RF-02", "plan": "tables only (no plan/profile, like a historical run)", "oracle": ["PASS", null], "must_forbid": ["PASS", null, "oracle_covered:3"], "e2e": ["PASS", "all_gates"]}

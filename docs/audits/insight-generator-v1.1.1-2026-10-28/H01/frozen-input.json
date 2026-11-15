@@ -1,0 +1,312 @@
+{
+  "case_id": "H01",
+  "domain": "recruiting",
+  "split": "holdout",
+  "query": "比较岗位类型数量的结构，不判断招聘成功率",
+  "note": "",
+  "expected": {
+    "important_families": [
+      "difference"
+    ],
+    "unsupported_business_claims_allowed": false,
+    "no_valid_evidence": false,
+    "failed_tasks": []
+  },
+  "input": {
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "recruiting数据",
+        "business_goal": "比较岗位类型数量的结构，不判断招聘成功率",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    },
+    "validated": {
+      "plan": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "534745cabc5936b721c64e9cb9c033335fd3dff68ae8088edca0c3c06064d5d9",
+        "plan_id": "test_plan",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "A01",
+            "title": "岗位类型数量结构",
+            "business_question": "岗位类型数量结构",
+            "priority": "P0",
+            "priority_reason": "删除后无法比较城市岗位数量，核心问题将无法回答。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "group_aggregate",
+                "params": {
+                  "dimensions": [
+                    "field_0001"
+                  ],
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "alias": "value"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "比较岗位类型数量的结构，不判断招聘成功率"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "A01",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "A01"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "report-dataset",
+        "dataset_version": "534745cabc5936b721c64e9cb9c033335fd3dff68ae8088edca0c3c06064d5d9",
+        "plan_version": 1,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "recruiting数据",
+          "business_goal": "比较岗位类型数量的结构，不判断招聘成功率",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "execution": {
+      "dataset_id": "report-dataset",
+      "dataset_version": "534745cabc5936b721c64e9cb9c033335fd3dff68ae8088edca0c3c06064d5d9",
+      "execution_id": "exec_kernel_test",
+      "plan_id": "test_plan",
+      "plan_version": 1,
+      "approved_plan_version": 1,
+      "execution_status": "success",
+      "source": "imported",
+      "producer": "deterministic-test-kernels",
+      "session_id": null,
+      "execution_request_id": null,
+      "approval_id": null,
+      "started_at": null,
+      "finished_at": null,
+      "duration_ms": null,
+      "result_view": null,
+      "provenance": null,
+      "errors": [],
+      "warnings": [],
+      "tasks": [
+        {
+          "task_id": "A01",
+          "status": "success",
+          "result": {
+            "result_id": "R001",
+            "columns": [
+              {
+                "field": "field_0001",
+                "label": "类型",
+                "logical_type": "text",
+                "role": "dimension",
+                "unit": null
+              },
+              {
+                "field": "value",
+                "label": "记录 · 数量",
+                "logical_type": "integer",
+                "role": "metric",
+                "unit": "条"
+              }
+            ],
+            "rows": [
+              {
+                "field_0001": "算法",
+                "value": 4
+              },
+              {
+                "field_0001": "产品",
+                "value": 2
+              },
+              {
+                "field_0001": "设计",
+                "value": 1
+              }
+            ],
+            "truncated": false,
+            "total_result_rows": 3,
+            "row_offset": 0,
+            "total_refs": []
+          },
+          "effective_row_count": 7,
+          "valid_sample_count": 7,
+          "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+          "scope": "比较岗位类型数量的结构，不判断招聘成功率；仅限当前上传数据与批准任务范围。",
+          "calculation": "按当前批准的受控操作链计算，保留缺失分组。",
+          "failure_reason": null,
+          "result_id": null,
+          "result_ref": null,
+          "row_count": null,
+          "execution_metadata": null,
+          "error": null
+        }
+      ]
+    },
+    "profile": {
+      "dataset_id": "report-dataset",
+      "dataset_version": "534745cabc5936b721c64e9cb9c033335fd3dff68ae8088edca0c3c06064d5d9",
+      "schema_version": "1.0",
+      "profiler_version": "1.1.0",
+      "content_sha256": "42f71598c489a674a823fb71a6cdad2c5047057e86793d89a93936a91b5d4121",
+      "file_name": "recruiting.csv",
+      "file_format": "csv",
+      "sheet_name": null,
+      "available_sheets": [],
+      "options": {
+        "header_row": 1,
+        "sheet_name": null,
+        "encoding": "utf-8-sig",
+        "delimiter": ","
+      },
+      "row_count": 7,
+      "column_count": 2,
+      "total_cell_count": 14,
+      "missing_cell_count": 0,
+      "missing_cell_rate": 0.0,
+      "duplicate_row_count": 0,
+      "duplicate_row_rate": 0.0,
+      "fields": [
+        {
+          "field_id": "field_0001",
+          "position": 1,
+          "original_name": "类型",
+          "display_name": "类型",
+          "physical_type": "string",
+          "logical_type": "text",
+          "missing_count": 0,
+          "missing_rate": 0.0,
+          "non_missing_count": 7,
+          "unique_count": 3,
+          "physical_type_counts": {
+            "string": 7
+          },
+          "logical_type_counts": {
+            "text": 7
+          },
+          "samples": [
+            {
+              "value": "算法",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "产品",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "设计",
+              "physical_type": "string",
+              "truncated": false
+            }
+          ]
+        },
+        {
+          "field_id": "field_0002",
+          "position": 2,
+          "original_name": "岗位",
+          "display_name": "岗位",
+          "physical_type": "string",
+          "logical_type": "text",
+          "missing_count": 0,
+          "missing_rate": 0.0,
+          "non_missing_count": 7,
+          "unique_count": 7,
+          "physical_type_counts": {
+            "string": 7
+          },
+          "logical_type_counts": {
+            "text": 7
+          },
+          "samples": [
+            {
+              "value": "甲",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "乙",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "丙",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "丁",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "戊",
+              "physical_type": "string",
+              "truncated": false
+            }
+          ]
+        }
+      ],
+      "quality_issues": [],
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "report-dataset",
+        "dataset_version": "534745cabc5936b721c64e9cb9c033335fd3dff68ae8088edca0c3c06064d5d9",
+        "plan_version": null,
+        "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+      }
+    }
+  }
+}

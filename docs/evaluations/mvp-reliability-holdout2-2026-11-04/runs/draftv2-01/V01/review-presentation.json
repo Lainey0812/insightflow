@@ -1,0 +1,487 @@
+{
+  "session_id": "241a7fb9e64541ddab5484a4c64d8c1a",
+  "revision": 8,
+  "plan_id": "plan_ccdff36f187c4bac85c67f4de57ac634",
+  "plan_version": 1,
+  "goal": "按城市汇总已完成订单的销售额总和，并按销售额升序排列",
+  "coverage": "已安排核心问题的分析",
+  "conditions": [
+    {
+      "label": "分析条件",
+      "text": "按城市汇总已完成订单的销售额总和，并按销售额升序排列",
+      "verification": "已核对分析步骤",
+      "source": "intent.analysis_goal.business_goal"
+    },
+    {
+      "label": "筛选范围",
+      "text": "仅看已完成订单",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.filters[0]"
+    },
+    {
+      "label": "统计指标",
+      "text": "销售额总和",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.metric_requirements[0]"
+    },
+    {
+      "label": "分析要求",
+      "text": "按照城市汇总",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.analysis_limits[0]"
+    },
+    {
+      "label": "分析要求",
+      "text": "按销售额升序排列",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.analysis_limits[1]"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按城市分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S2"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：销售额 · 合计",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S2"
+    },
+    {
+      "label": "拟用排序与展示",
+      "text": "按销售额 · 合计从低到高排列",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S3"
+    }
+  ],
+  "directions": [
+    {
+      "task_id": "T1",
+      "title": "各城市已完成订单销售额汇总及排序",
+      "question": "仅统计已完成订单，按城市汇总销售额总和，并按销售额升序排列结果。",
+      "importance": "核心分析",
+      "reason": "删除此任务将无法回答核心问题“各城市已完成订单的销售额总和”及支持决策目标“按销售额升序排列”，属于核心分析路径。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "订单状态 为 已完成",
+        "按城市分组",
+        "拟用统计口径：销售额 · 合计",
+        "按销售额 · 合计从低到高排列"
+      ],
+      "gaps": [],
+      "can_remove": true
+    }
+  ],
+  "issues": [],
+  "warnings": [],
+  "can_approve": true,
+  "can_execute": false,
+  "audit": {
+    "audit_version": "2.1",
+    "binding": {
+      "dataset_id": "2077b639ce554ca59218e64217b41784",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "plan_id": "plan_ccdff36f187c4bac85c67f4de57ac634",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "registry_version": "1.0"
+    },
+    "digest": "95ac4154b8adfa9aebc3b87c793da513ef43d64229b5d46ab75005c36efb26bd",
+    "all_verified": true,
+    "items": [
+      {
+        "source": "intent.analysis_goal.business_goal",
+        "raw_text": "按城市汇总已完成订单的销售额总和，并按销售额升序排列",
+        "status": "verified",
+        "category": "goal_dimensions",
+        "message": "目标中的明确字段分组已核对。",
+        "field_ids": [
+          "field_0003"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S2",
+            "operation": "group_aggregate",
+            "dimensions": [
+              "field_0003"
+            ]
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.filters[0]",
+        "raw_text": "仅看已完成订单",
+        "status": "verified",
+        "category": "filters",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0004"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S1",
+            "operation": "filter",
+            "condition": {
+              "field": "field_0004",
+              "operator": "eq",
+              "value": "已完成"
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.metric_requirements[0]",
+        "raw_text": "销售额总和",
+        "status": "verified",
+        "category": "metric_requirements",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0005"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S2",
+            "operation": "group_aggregate",
+            "metric": {
+              "function": "sum",
+              "field": "field_0005",
+              "alias": "total_sales"
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.analysis_limits[0]",
+        "raw_text": "按照城市汇总",
+        "status": "verified",
+        "category": "analysis_limits",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0003"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S2",
+            "operation": "group_aggregate",
+            "dimension": "field_0003"
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.analysis_limits[1]",
+        "raw_text": "按销售额升序排列",
+        "status": "verified",
+        "category": "analysis_limits",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0005"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S3",
+            "operation": "sort",
+            "metric": {
+              "function": "sum",
+              "field": "field_0005",
+              "alias": "total_sales"
+            },
+            "params": {
+              "field": "total_sales",
+              "direction": "asc"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "technical_details": {
+    "record": {
+      "session_id": "241a7fb9e64541ddab5484a4c64d8c1a",
+      "plan_id": "plan_ccdff36f187c4bac85c67f4de57ac634",
+      "plan_version": 1,
+      "dataset_id": "2077b639ce554ca59218e64217b41784",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "validation_version": "1.0",
+      "created_at": "2026-11-04T16:36:49.270344+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "2077b639ce554ca59218e64217b41784",
+          "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+          "plan_id": "plan_ccdff36f187c4bac85c67f4de57ac634",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T1",
+              "title": "各城市已完成订单销售额汇总及排序",
+              "business_question": "仅统计已完成订单，按城市汇总销售额总和，并按销售额升序排列结果。",
+              "priority": "P0",
+              "priority_reason": "删除此任务将无法回答核心问题“各城市已完成订单的销售额总和”及支持决策目标“按销售额升序排列”，属于核心分析路径。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03",
+                "C04"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S1",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "field_0004",
+                        "operator": "eq",
+                        "value": "已完成"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S2",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0005",
+                        "alias": "total_sales"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0003"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S3",
+                  "operation": "sort",
+                  "params": {
+                    "field": "total_sales",
+                    "direction": "asc"
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "按城市汇总已完成订单的销售额总和，并按销售额升序排列"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "filters：仅看已完成订单"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "metric_requirements：销售额总和"
+            },
+            {
+              "requirement_id": "C04",
+              "description": "analysis_limits：按照城市汇总；按销售额升序排列"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T1",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T1"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "2077b639ce554ca59218e64217b41784",
+          "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "各城市已完成订单的销售额总和",
+            "business_goal": "按城市汇总已完成订单的销售额总和，并按销售额升序排列",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [
+              {
+                "raw_text": "仅看已完成订单",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "销售额总和",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按照城市汇总",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "按销售额升序排列",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "constraint_audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "2077b639ce554ca59218e64217b41784",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_id": "plan_ccdff36f187c4bac85c67f4de57ac634",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "95ac4154b8adfa9aebc3b87c793da513ef43d64229b5d46ab75005c36efb26bd",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "按城市汇总已完成订单的销售额总和，并按销售额升序排列",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0003"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "仅看已完成订单",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0004",
+                "operator": "eq",
+                "value": "已完成"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "销售额总和",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0005"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "sum",
+                "field": "field_0005",
+                "alias": "total_sales"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "按照城市汇总",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "dimension": "field_0003"
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[1]",
+          "raw_text": "按销售额升序排列",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0005"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S3",
+              "operation": "sort",
+              "metric": {
+                "function": "sum",
+                "field": "field_0005",
+                "alias": "total_sales"
+              },
+              "params": {
+                "field": "total_sales",
+                "direction": "asc"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "session_status": "AWAITING_APPROVAL",
+    "revision": 8
+  }
+}

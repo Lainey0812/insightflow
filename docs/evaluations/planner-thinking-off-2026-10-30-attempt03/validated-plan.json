@@ -1,0 +1,243 @@
+{
+  "plan": {
+    "dataset_id": "44a1c2ad96d342e19820ea244b5e4eef",
+    "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a",
+    "plan_id": "diagnostic_plan_b333d698aabc4e818ddd9cbee33ffb0a",
+    "plan_version": 1,
+    "tasks": [
+      {
+        "task_id": "T01",
+        "title": "整体销售概况与异常极值检测",
+        "business_question": "总体销售额、订单量及单笔交易的最大/最小销售额是多少，以识别潜在的数据异常或极端值？",
+        "priority": "P0",
+        "priority_reason": "这是探索性分析的基础，直接回答“主要特征”和“异常”的核心需求。删除此任务将无法了解数据的基本规模和分布边界。",
+        "requirement_ids": [
+          "C01"
+        ],
+        "depends_on": [],
+        "missing_inputs": [],
+        "steps": [
+          {
+            "step_id": "S01",
+            "operation": "aggregate",
+            "params": {
+              "metrics": [
+                {
+                  "function": "count",
+                  "field": null,
+                  "alias": "total_order_count"
+                },
+                {
+                  "function": "sum",
+                  "field": "field_0011",
+                  "alias": "total_sales_amount"
+                },
+                {
+                  "function": "max",
+                  "field": "field_0011",
+                  "alias": "max_single_sale"
+                },
+                {
+                  "function": "min",
+                  "field": "field_0011",
+                  "alias": "min_single_sale"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "task_id": "T02",
+        "title": "地区维度销售表现差异",
+        "business_question": "不同地区的销售总额和订单数量分布如何，是否存在显著的地区集中性或差异规律？",
+        "priority": "P0",
+        "priority_reason": "地区是核心业务维度，分析其分布有助于发现“主要特征”中的地域规律。删除此任务将遗漏关键的业务结构洞察。",
+        "requirement_ids": [
+          "C01"
+        ],
+        "depends_on": [],
+        "missing_inputs": [],
+        "steps": [
+          {
+            "step_id": "S01",
+            "operation": "group_aggregate",
+            "params": {
+              "metrics": [
+                {
+                  "function": "sum",
+                  "field": "field_0011",
+                  "alias": "sales_by_region"
+                },
+                {
+                  "function": "count",
+                  "field": null,
+                  "alias": "orders_by_region"
+                }
+              ],
+              "dimensions": [
+                "field_0003"
+              ]
+            }
+          },
+          {
+            "step_id": "S02",
+            "operation": "sort",
+            "params": {
+              "field": "sales_by_region",
+              "direction": "desc"
+            }
+          }
+        ]
+      },
+      {
+        "task_id": "T03",
+        "title": "产品类别贡献度分析",
+        "business_question": "各产品类别的销售总额占比情况如何，哪类产品是主要收入来源？",
+        "priority": "P0",
+        "priority_reason": "产品类别是另一个核心业务维度，用于揭示销售数据的结构性特征。对于探索性分析，理解品类构成是回答“主要特征”的必要部分。",
+        "requirement_ids": [
+          "C01"
+        ],
+        "depends_on": [],
+        "missing_inputs": [],
+        "steps": [
+          {
+            "step_id": "S01",
+            "operation": "group_aggregate",
+            "params": {
+              "metrics": [
+                {
+                  "function": "sum",
+                  "field": "field_0011",
+                  "alias": "sales_by_category"
+                },
+                {
+                  "function": "count",
+                  "field": null,
+                  "alias": "orders_by_category"
+                }
+              ],
+              "dimensions": [
+                "field_0007"
+              ]
+            }
+          },
+          {
+            "step_id": "S02",
+            "operation": "sort",
+            "params": {
+              "field": "sales_by_category",
+              "direction": "desc"
+            }
+          }
+        ]
+      },
+      {
+        "task_id": "T04",
+        "title": "月度时间趋势规律",
+        "business_question": "按月统计的销售总额变化趋势如何，是否存在季节性波动或特定月份的高峰/低谷？",
+        "priority": "P1",
+        "priority_reason": "时间趋势是探索“规律”的重要视角。虽然非绝对必需（取决于用户是否关注时间），但对于全面理解销售动态很有价值，属于高优先级的补充分析。",
+        "requirement_ids": [
+          "C01"
+        ],
+        "depends_on": [],
+        "missing_inputs": [],
+        "steps": [
+          {
+            "step_id": "S01",
+            "operation": "derive",
+            "params": {
+              "function": "extract_month",
+              "field": "field_0002",
+              "alias": "order_month"
+            }
+          },
+          {
+            "step_id": "S02",
+            "operation": "group_aggregate",
+            "params": {
+              "metrics": [
+                {
+                  "function": "sum",
+                  "field": "field_0011",
+                  "alias": "monthly_sales"
+                }
+              ],
+              "dimensions": [
+                "order_month"
+              ]
+            }
+          },
+          {
+            "step_id": "S03",
+            "operation": "sort",
+            "params": {
+              "field": "order_month",
+              "direction": "asc"
+            }
+          }
+        ]
+      }
+    ],
+    "core_requirements": [
+      {
+        "requirement_id": "C01",
+        "description": "探索销售数据的主要特征、规律和异常"
+      }
+    ]
+  },
+  "validation_results": [
+    {
+      "task_id": "T01",
+      "feasibility": "F2",
+      "reason_code": "READY",
+      "validation_issues": [],
+      "executable": true
+    },
+    {
+      "task_id": "T02",
+      "feasibility": "F2",
+      "reason_code": "READY",
+      "validation_issues": [],
+      "executable": true
+    },
+    {
+      "task_id": "T03",
+      "feasibility": "F2",
+      "reason_code": "READY",
+      "validation_issues": [],
+      "executable": true
+    },
+    {
+      "task_id": "T04",
+      "feasibility": "F1",
+      "reason_code": "REQUIRES_TRANSFORMATION",
+      "validation_issues": [],
+      "executable": true
+    }
+  ],
+  "unmet_core_requirements": [],
+  "coverage_status": "complete",
+  "executable_task_ids": [
+    "T01",
+    "T02",
+    "T03",
+    "T04"
+  ],
+  "blocked_task_ids": [],
+  "fully_executable": true,
+  "validation_version": "1.0",
+  "registry_version": "1.0",
+  "approval_required": true,
+  "llm": null,
+  "provenance": {
+    "source": "uploaded",
+    "dataset": "44a1c2ad96d342e19820ea244b5e4eef",
+    "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a",
+    "plan_version": 1,
+    "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+  },
+  "intent_snapshot": null
+}

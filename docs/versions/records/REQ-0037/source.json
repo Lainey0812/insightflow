@@ -1,0 +1,17 @@
+{
+  "thread_id": "01a16e64-6e52-7260-a727-3f583c95f8f8",
+  "turn_id": "01a18013-f2ed-7f53-9520-a6a881a78506",
+  "message_id": "01a18013-f305-7e83-be47-b8f6578386ae",
+  "started_at": 1793150153,
+  "content": [
+    {
+      "type": "text",
+      "text": "# InsightFlow — Insight Generator V1.1 第二阶段实施任务\n\n## 一、任务目标\n\n根据 2026-10-28 第一阶段审计结果，修复 Insight Generator 当前的结构性质量瓶颈。\n\n本轮目标：\n\n**让 Insight Generator 能够利用多个已验证证据，生成具有比较价值、业务意义且可追溯的洞察，并将其统一保存到 AnalysisReport。**\n\n不以增加文字数量或洞察条数作为成功标准。\n\n## 二、实施顺序\n\n### Step 1：先建立冻结评测基线\n\n在修改 Prompt 或生成逻辑之前：\n\n- 冻结销售、招聘、客服、项目运营四类测试。\n- 包含单任务、多任务、Top N、时间变化、缺失数据和不支持的业务解释。\n- 建立独立未见测试集。\n- 固定 A–G 七个评测维度。\n- A 事实准确性、G 安全边界设置硬失败。\n- 保存输入、原始 LLM 输出、AnalysisReport 和 Presentation 三层结果。\n\n不能根据优化后的结果临时放宽评分规则。\n\n### Step 2：增强 Evidence Builder\n\n复用现有证据计算能力，增加必要的可验证比较证据。\n\n针对销售订单案例，应能提供：\n\n- 济南领先南京 1,000。\n- 济南相对南京领先约 4.9%。\n- 上海销售额约为济南的 27.1%。\n- 济南和南京合计占返回前三名销售额的约 87.8%。\n\n每条证据必须包含：\n\n- evidence_id。\n- 来源任务和结果。\n- 参与计算的字段。\n- 计算口径。\n- 分子、分母或其他计算来源。\n- 适用范围。\n\n严格区分“返回 Top 3 内占比”和“全部华东地区占比”。\n\n不要无限生成两两比较；优先根据用户目标和信息价值选择证据。\n\n### Step 3：修改 Insight Generator 的生成契约\n\n取消“每任务最多一条”的硬性限制。\n\n整体建议 1–3 条高价值洞察，但根据证据信息量决定，不强制凑数。\n\n允许 LLM 选择多个相关证据，组织成同一条综合发现。\n\n例如：\n\n“济南销售额排名第一，但仅领先南京约 4.9%；两座城市在当前统计范围内表现接近。”\n\n以上数值必须来自 Evidence Builder。\n\nPrompt 应要求：\n\n- 优先回答用户核心分析目标。\n- 优先选择信息增量高的比较或结构性发现。\n- 避免重复排名和极值事实。\n- 区分已验证事实、业务解释和待验证假设。\n- 建议必须对应具体发现。\n- 不生成无证据支持的因果、利润、成本或经营判断。\n\n### Step 4：修复多证据事实生成\n\n当前 materialize 仅使用 primary_evidence_id 生成 fact/finding，必须调整。\n\n允许一条洞察关联多个有效证据。\n\n优先由确定性代码根据受控证据组合生成可验证的事实表达。\n\nLLM 负责选择证据组合、组织解释和提出建议。\n\n如需调整内部 Draft Schema，先说明最小变更和兼容性。\n\n尽量保持公开 AnalysisReport Schema 不变。\n\n不能只增加 evidence_refs，而最终仍然只展示主证据。\n\n### Step 5：改进事实校验\n\n不能简单删除现有数字正则。\n\n需要分别验证：\n\n1. 证据 ID 是否存在。\n2. 引用是否属于合法任务和统计范围。\n3. 数值及计算口径是否来自真实证据。\n4. 比较对象是否一致。\n5. Top N 是否被误当成完整总体。\n6. 解释中是否出现无依据的业务断言。\n7. 建议是否被错误表述为已经验证的结论。\n\n对于无法确定真假的自由文本解释，应采取保守策略：标记为待验证假设、要求改写，或拒绝进入报告。\n\n不得宣称仅靠正则已实现完整语义事实验证。\n\n### Step 6：统一保存报告与展示层\n\n当前 Report Presentation 会独立生成 V001–V005 证据及三条规则发现。\n\n本轮应将有价值的确定性比较证据前移到 Evidence Builder，并由统一的 Insight Generator 流程选择使用。\n\n最终：\n\n- AnalysisReport 是业务洞察的权威来源。\n- Presentation 负责展示，不再独立创造另一套业务结论。\n- HTML 导出和页面预览应使用一致的洞察来源。\n- 图表、KPI 和格式化可以继续由确定性代码生成。\n- 历史报告必须保持兼容；必要时采用明确的旧版展示逻辑，不静默改变原有保存内容。\n\n### Step 7：真实 LLM 评测\n\n沿用 qwen3.8-flash 和现有 Provider。\n\n使用相同输入比较优化前后结果，并对独立未见案例进行测试。\n\n分别评测：\n\n- LLM 原始候选。\n- 最终保存的 AnalysisReport。\n- 用户实际看到的 Presentation。\n\n不能混合三层结果计算同一个质量分数。\n\n重点报告：\n\n- 事实准确性。\n- 重要证据利用率。\n- 多证据综合能力。\n- 业务目标相关性。\n- 建议关联性。\n- 用户可读性。\n- 无依据断言和错误总体推断。\n\n所有失败案例必须保留，不得只展示优秀案例。\n\n## 三、开发边界\n\n- 保持单 LLM。\n- 不引入 Agent Loop 或多模型。\n- 不修改 Planner、Validator、HITL、Engine 的业务逻辑。\n- 不重新开发 Report Module。\n- 不使用 LLM 自行执行计算。\n- 不使用展示模板掩盖生成层的质量问题。\n\n## 四、交付物\n\n1. 修改文件清单。\n2. 新旧 Prompt 对比。\n3. Evidence Builder 新增证据类型。\n4. 多证据 fact/finding 生成机制。\n5. Fact Validator 的安全边界说明。\n6. 统一 AnalysisReport 与 Presentation 的方案及结果。\n7. 优化前后真实模型评测。\n8. 独立未见案例评测。\n9. 自动化回归测试。\n10. 剩余 Bad Case 和验收建议。\n\n完成后先提交实际评测结果，不要直接宣称 V1.1 已达到专业分析师水平。\n"
+    }
+  ],
+  "source": "codex_app.read_thread.userMessage",
+  "type": "original_user_message_recovered_from_desktop_thread",
+  "cleaning": "request.md removes ambient browser packaging and extracts My request when present; original content retained in source.json.",
+  "recovered_at": "2026-10-28",
+  "history_note": "Backfilled from available thread history; not proof that requirements were archived before the original implementation."
+}

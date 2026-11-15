@@ -1,0 +1,376 @@
+--- before/backend/app/main.py
++++ after/backend/app/main.py
+@@ -38,7 +38,8 @@
+ from app.workflow.reporting import ReportWorkflow
+ 
+ 
+-def create_app(settings: Settings | None = None, provider: LLMProvider | None = None) -> FastAPI:
++def create_app(settings: Settings | None = None, provider: LLMProvider | None = None, *,
++               bootstrap_identity: bool = True) -> FastAPI:
+     settings = settings or Settings.from_env()
+     repository = SessionRepository(Database(settings.data_dir))
+     files = FileStore(settings.data_dir, settings.max_upload_bytes)
+@@ -74,7 +75,14 @@
+     reporting = ReportWorkflow(repository, datasets, executions, reports, report_service, traces)
+     engine = AnalysisEngineService(repository,datasets,files,executions,registry)
+     review = PlanReviewService(repository, datasets, registry)
+-    workflow = WorkflowOrchestrator(repository, parser, profiler, planner, review, traces)
++    from app.storage.workflow_expand import apply_expand
++    from app.storage.workflow_identity import WorkflowIdentityRepository
++    # Explicit opt-out exists for pre-Expand compatibility fixtures/embedders only.
++    # The deployed application always enables identity bootstrap.
++    if bootstrap_identity:
++        apply_expand(repository.database.path, 'business')
++    identities = WorkflowIdentityRepository(repository.database) if bootstrap_identity else None
++    workflow = WorkflowOrchestrator(repository, parser, profiler, planner, review, traces, identities)
+ 
+     @asynccontextmanager
+     async def lifespan(_: FastAPI):
+--- before/backend/app/observability/recorder.py
++++ after/backend/app/observability/recorder.py
+@@ -23,7 +23,7 @@
+ SAFE_KEYS.update({'status','previous_status','session_revision','node_name','operation_id','validation_role',
+                   'next_action','coverage_status','executable_count','blocked_count','error_message',
+                   'dataset_id','dataset_version','plan_id','plan_version','validation_version'})
+-SAFE_KEYS.update({'row_count','column_count'})
++SAFE_KEYS.update({'row_count','column_count','workflow_id','root_run_id'})
+ 
+ def safe_error_message(code):
+     messages={'LLM_TIMEOUT':'模型调用超时。','LLM_HTTP_ERROR':'模型服务返回错误。',
+@@ -51,12 +51,14 @@
+     def __init__(self, context, name, attributes=None, skip=False):
+         self.context=context
+         self.skipped=skip
+-        parent_key=(context.active.record.node_key+'#'+str(context.active.record.node_attempt)) if context.active and context.active.record else None
++        flat = getattr(context, 'workflow_identity', None) is not None
++        parent_key=(context.active.record.node_key+'#'+str(context.active.record.node_attempt)) if context.active and context.active.record and not flat else None
+         key=(parent_key+'/' if parent_key else '')+name
+         context.node_attempts[key]=context.node_attempts.get(key,0)+1
+         self.record=TraceSpan(span_id='span_'+uuid4().hex,run_id=context.run.run_id,
+-            name=name,node_key=key,node_attempt=context.node_attempts[key],status='running',started_at=now(),attributes=safe(attributes or {}),
+-            parent_span_id=context.active.record.span_id if context.active and context.active.record else None) if context.run else None
++            name=name,node_key=key,node_attempt=context.node_attempts[key],status='running',started_at=now(),attributes=safe({**(attributes or {}), **({'workflow_id': context.workflow_identity.workflow_id,
++                'root_run_id': context.workflow_identity.root_run_id} if flat else {})}),
++            parent_span_id=context.active.record.span_id if context.active and context.active.record and not flat else None) if context.run else None
+         self.timer=perf_counter()
+         if self.record:
+             if context.run.kind == 'workflow':
+--- before/backend/app/observability/workflow.py
++++ after/backend/app/observability/workflow.py
+@@ -8,7 +8,7 @@
+ from pathlib import Path
+ 
+ 
+-def register_root(recorder, state, parser, planner):
++def register_root(recorder, state, parser, planner, binding=None):
+     def create():
+         refs = {}
+         versions = {}
+@@ -22,26 +22,43 @@
+             models[name] = {'provider': type(provider).__name__, 'model': getattr(provider, 'model', None),
+                             'timeout_seconds': getattr(service, 'timeout_seconds', None),
+                             'enable_thinking': getattr(service, 'enable_thinking', None)}
+-        identity = 'run_' + uuid4().hex
+-        return recorder.repository.create(TraceRun(run_id=identity, kind='workflow', workflow_run_id=identity,
++        if binding and state.status.value != 'CREATED':
++            # A repaired identity is not evidence of historical prompt/config usage.
++            refs, versions, models = {}, {}, {}
++        identity = binding.root_run_id if binding else 'run_' + uuid4().hex
++        run = TraceRun(run_id=identity, kind='workflow', workflow_run_id=identity,
+             session_id=state.id, attempt=1, owner_instance=recorder.owner_instance, status='queued',
+             business_revision=state.revision, queued_at=state.created_at,
++            integrity='incomplete' if binding and state.status.value != 'CREATED' else 'observed',
+             manifest=RunManifest(schema_version='workflow-trace-v0.3.1', capture_scope='workflow_preparation',
+-                bindings={'session_id': state.id, 'file_id': state.file.id}, versions=versions,
++                bindings={'session_id': state.id, 'file_id': state.file.id,
++                          **({'workflow_id': binding.workflow_id, 'root_run_id': binding.root_run_id} if binding else {})}, versions=versions,
+                 git=git_snapshot(Path(__file__).resolve().parents[3]),
+                 input_sha256={'user_goal': digest(state.user_goal)},
+-                prompt_template_snapshots=refs, model_config_snapshot=models)))
++                prompt_template_snapshots=refs, model_config_snapshot=models))
++        return (recorder.repository.create_registered_root(run, binding) if binding
++                else recorder.repository.create(run))
+     ok, run = recorder.call(create)
+     if not ok:
+         recorder.workflow_gap(state.id)
+     return run
+ 
+ 
+-def preparation_context(recorder, session_id):
+-    ok, run = recorder.call(lambda: recorder.repository.workflow(session_id))
++def preparation_context(recorder, session_id, identity=None, explicit_only=False):
++    def load():
++        if identity:
++            run = recorder.repository.get(identity.root_run_id)
++            if run and (run.session_id != identity.session_id or
++                        run.manifest.bindings.get('workflow_id') != identity.workflow_id):
++                raise ValueError('Preparation Root identity mismatch')
++            return run
++        return None if explicit_only else recorder.repository.workflow(session_id)
++    ok, run = recorder.call(load)
+     if not ok:
+         recorder.workflow_gap(session_id)
+-    return TraceContext(recorder, run)
++    trace = TraceContext(recorder, run)
++    trace.workflow_identity = identity
++    return trace
+ 
+ 
+ def start_preparation(trace, revision):
+--- before/backend/app/storage/trace_repository.py
++++ after/backend/app/storage/trace_repository.py
+@@ -51,6 +51,35 @@
+             conn.execute('INSERT OR IGNORE INTO trace_runs VALUES (?, ?, ?, ?, ?, ?)',
+                 (run.run_id,run.execution_id,run.attempt,run.queued_at,run.status,run.model_dump_json()))
+         return self.workflow(run.session_id) if run.kind == 'workflow' else self.attempt(run.execution_id,run.attempt)
++
++    def create_registered_root(self, run, identity):
++        """Exact reserved ID only; never resolve a different Root through Session."""
++        if (run.run_id, run.session_id, run.manifest.bindings.get('workflow_id')) != (identity.root_run_id, identity.session_id, identity.workflow_id):
++            raise ValueError('Reserved Root identity mismatch')
++        from .workflow_expand import apply_expand
++        apply_expand(self.path, 'trace')
++        with closing(self.connect()) as conn, conn:
++            conn.execute('BEGIN IMMEDIATE')
++            row = conn.execute('SELECT record FROM trace_runs WHERE id=?', (identity.root_run_id,)).fetchone()
++            if row:
++                stored = TraceRun.model_validate_json(row['record'])
++                if (stored.kind != 'workflow' or stored.session_id != identity.session_id or
++                    stored.manifest.bindings.get('workflow_id') != identity.workflow_id):
++                    raise ValueError('Registered Root identity mismatch')
++            else:
++                # The preserved legacy Session unique index rejects competing physical Roots.
++                conn.execute('INSERT INTO trace_runs VALUES (?,?,?,?,?,?)',
++                    (run.run_id,None,run.attempt,run.queued_at,run.status,run.model_dump_json()))
++                stored = run
++            link = conn.execute('SELECT * FROM trace_workflow_links WHERE run_id=?', (identity.root_run_id,)).fetchone()
++            if link:
++                if (link['workflow_id'],link['session_id'],link['kind']) != (identity.workflow_id,identity.session_id,'workflow'):
++                    raise ValueError('Registered Root link mismatch')
++            else:
++                conn.execute('INSERT INTO trace_workflow_links VALUES (?,?,?,?,?,?)',
++                    (identity.root_run_id,identity.workflow_id,identity.session_id,'workflow',
++                     json.dumps({'source':'business_workflows','root_run_id':identity.root_run_id}),now()))
++            return stored
+ 
+     def workflow(self, session_id):
+         with closing(self.connect()) as conn:
+--- before/backend/app/storage/workflow_identity.py
++++ after/backend/app/storage/workflow_identity.py
+@@ -0,0 +1,92 @@
++"""Single-flow identity bootstrap; Session remains the business state authority."""
++from contextlib import closing
++from dataclasses import dataclass
++import hashlib
++import json
++from uuid import uuid4
++
++from app.domain.errors import AppError
++from app.domain.models import SessionState, now, record_status_event
++
++
++@dataclass(frozen=True)
++class WorkflowIdentity:
++    session_id: str
++    workflow_id: str
++    root_run_id: str
++
++
++class WorkflowIdentityRepository:
++    def __init__(self, database):
++        self.database = database
++
++    def create(self, state, request_id):
++        """Session, source facts, identity and key commit together, before any Trace IO.
++
++        Idempotency is deliberately scoped to an already allocated Session ID;
++        a new upload creates a new Session, as before. This is not HTTP upload deduplication.
++        """
++        if state.workflow_kind != 'real_v1' or not request_id or not state.messages:
++            raise AppError('WORKFLOW_IDENTITY_INVALID', '缺少真实流程创建信息。', 409)
++        if not state.user_goal.strip():
++            raise AppError('ANALYSIS_GOAL_REQUIRED', '身份登记需要非空分析需求，请填写后上传。', 422)
++        origin = state.messages[0]
++        payload = json.dumps({'file': state.file.model_dump(mode='json'), 'goal': state.user_goal,
++            'options': state.profile_options.model_dump(mode='json'), 'origin': origin.model_dump(mode='json')},
++            sort_keys=True, ensure_ascii=False, separators=(',', ':'))
++        fingerprint = hashlib.sha256(payload.encode()).hexdigest()
++        with closing(self.database.connect()) as conn, conn:
++            conn.execute('BEGIN IMMEDIATE')
++            rows = conn.execute('SELECT * FROM business_workflows WHERE session_id=?', (state.id,)).fetchall()
++            if rows:
++                if len(rows) != 1 or rows[0]['creation_request_id'] != request_id or rows[0]['creation_payload_hash'] != fingerprint:
++                    raise AppError('WORKFLOW_IDENTITY_CONFLICT', '单流程身份或创建请求冲突。', 409)
++                stored = conn.execute('SELECT state FROM sessions WHERE id=?', (state.id,)).fetchone()
++                replay = SessionState.model_validate_json(stored['state'])
++                self._verify(rows[0], replay)
++                return replay
++            if conn.execute('SELECT 1 FROM sessions WHERE id=?', (state.id,)).fetchone():
++                raise AppError('WORKFLOW_IDENTITY_UNAVAILABLE', '历史会话不能自动登记为新流程。', 409)
++            if state.status.value != 'CREATED' or origin.role != 'user':
++                raise AppError('WORKFLOW_IDENTITY_INVALID', '仅新建用户分析请求可以登记身份。', 409)
++            state.workflow_id = 'wf_' + uuid4().hex
++            state.root_run_id = 'run_' + uuid4().hex
++            record_status_event(state, None)
++            conn.execute('INSERT INTO sessions VALUES (?,?,?)', (state.id,state.updated_at,state.model_dump_json()))
++            existing = conn.execute('SELECT file_info FROM datasets WHERE id=?', (state.file.id,)).fetchone()
++            if existing and json.loads(existing['file_info']) != state.file.model_dump(mode='json'):
++                raise AppError('WORKFLOW_IDENTITY_CONFLICT', '文件清单与登记内容不一致。', 409)
++            conn.execute('INSERT OR IGNORE INTO datasets VALUES (?,?)', (state.file.id,state.file.model_dump_json()))
++            conn.execute('INSERT INTO session_datasets VALUES (?,?,?)', (state.id,state.file.id,now()))
++            conn.execute('INSERT INTO session_messages VALUES (?,?,?,?,?,?,?,NULL)',
++                (origin.id,state.id,1,origin.role,origin.kind,origin.content,origin.created_at))
++            conn.execute('''INSERT INTO business_workflows
++                (workflow_id,session_id,root_run_id,origin_message_id,input_file_id,goal_text,goal_sha256,
++                 control_status,control_context,creation_request_id,creation_payload_hash,origin,
++                 created_at,updated_at,materialized_at,provenance)
++                VALUES (?,?,?,?,?,?,?,'CREATED',?,?,?,?,?,?,?,?)''',
++                (state.workflow_id,state.id,state.root_run_id,origin.id,state.file.id,state.user_goal,
++                 hashlib.sha256(state.user_goal.encode()).hexdigest(),
++                 json.dumps({'authority':'session','scope':'identity_only'}),request_id,fingerprint,'native',
++                 state.created_at,state.updated_at,now(),json.dumps({'source':'identity-bootstrap-v1'})))
++            conn.execute('UPDATE session_messages SET workflow_id=? WHERE session_id=? AND message_id=?',
++                (state.workflow_id,state.id,origin.id))
++        return state
++
++    @staticmethod
++    def _verify(row, state):
++        if (row['workflow_id'],row['root_run_id'],row['input_file_id']) != (state.workflow_id,state.root_run_id,state.file.id):
++            raise AppError('WORKFLOW_IDENTITY_MISMATCH', '流程身份与业务登记不一致。', 409)
++
++    def require_unregistered(self, session_id):
++        with closing(self.database.connect()) as conn:
++            if conn.execute('SELECT 1 FROM business_workflows WHERE session_id=?', (session_id,)).fetchone():
++                raise AppError('WORKFLOW_IDENTITY_MISMATCH', '会话缺少已登记的显式流程身份。', 409)
++
++    def resolve(self, state):
++        with closing(self.database.connect()) as conn:
++            rows = conn.execute('SELECT * FROM business_workflows WHERE session_id=?', (state.id,)).fetchall()
++        if len(rows) != 1:
++            raise AppError('WORKFLOW_IDENTITY_UNAVAILABLE', '缺少唯一明确登记的流程身份。', 409)
++        self._verify(rows[0],state)
++        return WorkflowIdentity(state.id,state.workflow_id,state.root_run_id)
+--- before/backend/app/workflow/orchestrator.py
++++ after/backend/app/workflow/orchestrator.py
+@@ -29,7 +29,8 @@
+ 
+ class WorkflowOrchestrator:
+     def __init__(self, repository: SessionRepository, parser: IntentParserService, profiler: DataProfilerService,
+-                 real_planner=None, review=None, traces=None):
++                 real_planner=None, review=None, traces=None, identities=None):
++        self.identities = identities
+         self.repository = repository
+         self.datasets = profiler.datasets
+         self.intent_parser = IntentParserNode(parser)
+@@ -41,9 +42,26 @@
+         self.review = review
+         self.traces = traces or TraceRecorder()
+ 
++    def create_real_session(self, state):
++        if self.identities:
++            return self.identities.create(state, 'prepare:' + state.id)
++        self.repository.create(state)
++        return state
++
++    def identity(self, state):
++        if self.identities:
++            if state.workflow_id or state.root_run_id:
++                return self.identities.resolve(state)
++            self.identities.require_unregistered(state.id)
++        return None
++
+     def trace_created(self, state):
+-        register_root(self.traces, state, self.intent_parser.parser,
+-                      self.real_planner.planner if self.real_planner else None)
++        identity = self.identity(state)
++        # Historical Sessions are not backfilled or assigned a guessed Root.
++        if self.identities and identity is None:
++            return None
++        return register_root(self.traces, state, self.intent_parser.parser,
++                      self.real_planner.planner if self.real_planner else None, identity)
+ 
+     async def observed_node(self, trace, name, node, request, guard=None):
+         with trace.span(name, {'node_name': node.name}) as span:
+@@ -78,9 +96,9 @@
+         return self.repository.mutate(session_id, change)
+ 
+     async def prepare(self, session_id: str, profile_options: ProfileOptions | None = None, manual_review: bool = False,
+-                      real_workflow: bool = False) -> SessionState:
++                      real_workflow: bool = False, identity=None) -> SessionState:
+         if real_workflow:
+-            return await self.prepare_real(session_id)
++            return await self.prepare_real(session_id, identity)
+         def start(state: SessionState):
+             transition(state, S.PREPARING)
+             state.messages.append(Message(role="assistant", kind="status",
+@@ -224,9 +242,16 @@
+         guard['revision'] = state.revision
+         return state
+ 
+-    async def prepare_real(self, session_id):
++    async def prepare_real(self, session_id, identity=None):
++        state = self.repository.get(session_id)
++        registered = self.identity(state)
++        if identity is not None and identity != registered:
++            raise AppError('WORKFLOW_IDENTITY_MISMATCH', '准备任务身份与业务登记不一致。', 409)
++        identity = registered
++        if identity:
++            self.trace_created(state)  # Idempotent repair of a missing physical Root/link.
+         guard = {'revision': self.repository.get(session_id).revision}
+-        trace = preparation_context(self.traces, session_id)
++        trace = preparation_context(self.traces, session_id, identity, explicit_only=self.identities is not None)
+         with bind_trace(trace):
+             start_preparation(trace, guard['revision'])
+             try:
+--- before/backend/app/api/routes.py
++++ after/backend/app/api/routes.py
+@@ -67,7 +67,10 @@
+                              review_status="awaiting_review" if real_workflow else None,
+                              messages=[Message(role="user", content=goal)])
+         try:
+-            repository.create(state)
++            if real_workflow:
++                state = workflow.create_real_session(state)
++            else:
++                repository.create(state)
+         except Exception:
+             files.remove(metadata)
+             raise
+@@ -75,7 +78,7 @@
+             workflow.trace_created(state)
+         token = issue_session_token(repository.database, state.id) if manual_review or real_workflow else None
+         if real_workflow:
+-            background_tasks.add_task(workflow.prepare, state.id, real_workflow=True)
++            background_tasks.add_task(workflow.prepare, state.id, real_workflow=True, identity=workflow.identity(state))
+             return JSONResponse(status_code=201, content={**state.model_dump(mode="json"), "review_access_token": token})
+         result = await workflow.prepare(state.id, options, manual_review=manual_review)
+         if token:
+@@ -141,14 +144,14 @@
+     async def clarify_intent(session_id: str, request: ClarificationRequest, background_tasks: BackgroundTasks):
+         if repository.get(session_id).workflow_kind == "real_v1":
+             state = workflow.begin_real_clarification(session_id, request.answer, request.expected_revision)
+-            background_tasks.add_task(workflow.prepare_real, session_id)
++            background_tasks.add_task(workflow.prepare_real, session_id, workflow.identity(state))
+             return state
+         return await workflow.clarify(session_id, request.answer, request.expected_revision)
+ 
+     @router.post("/sessions/{session_id}/retry-preparation", response_model=SessionState)
+     async def retry_preparation(session_id: str, request: RetryPreparationRequest, background_tasks: BackgroundTasks):
+         state = workflow.begin_real_retry(session_id, request.expected_revision)
+-        background_tasks.add_task(workflow.prepare_real, session_id)
++        background_tasks.add_task(workflow.prepare_real, session_id, workflow.identity(state))
+         return state
+ 
+     @router.post("/sessions/{session_id}/plan-revisions", response_model=SessionState)
+--- before/backend/app/domain/models.py
++++ after/backend/app/domain/models.py
+@@ -135,6 +135,9 @@
+ 
+ 
+ class SessionState(BaseModel):
++    # Optional only for legacy payload compatibility; assigned atomically for new real sessions.
++    workflow_id: str | None = None
++    root_run_id: str | None = None
+     id: str = Field(default_factory=uid)
+     title: str
+     status: SessionStatus = SessionStatus.CREATED

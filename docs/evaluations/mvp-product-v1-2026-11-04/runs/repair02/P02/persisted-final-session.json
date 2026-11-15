@@ -1,0 +1,1021 @@
+{
+  "workflow_id": "wf_fc9098f32497425681539f9e7b54a23e",
+  "root_run_id": "run_059398c3feb4462f9ce2206b0443ad11",
+  "id": "1b678456572b45e0bef0123680fdab88",
+  "title": "只统计已完成任务，按项目汇总工时总和，不包含丙项目。",
+  "status": "COMPLETED",
+  "revision": 14,
+  "created_at": "2026-11-04T10:47:21.058933+00:00",
+  "updated_at": "2026-11-04T10:47:37.093586+00:00",
+  "data_source": "uploaded",
+  "workflow_kind": "real_v1",
+  "profile_options": {
+    "header_row": 1,
+    "sheet_name": null,
+    "encoding": "utf-8-sig",
+    "delimiter": ","
+  },
+  "planner_result": {
+    "plan": {
+      "dataset_id": "73fd47bdbe304cbe9d78d1662a78a86b",
+      "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+      "plan_id": "plan_9965c911523344a2b6852ba940046a75",
+      "plan_version": 1,
+      "tasks": [
+        {
+          "task_id": "T01",
+          "title": "按项目汇总已完成任务工时（排除丙）",
+          "business_question": "在不包含丙项目的情况下，各项目中状态为“已完成”的任务的工时总和是多少？",
+          "priority": "P0",
+          "priority_reason": "直接响应核心业务目标：按项目汇总已完成任务的工时总和，不包含丙项目。删除此任务将无法回答用户关于特定范围下资源投入的核心问题。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "field_0003",
+                    "operator": "eq",
+                    "value": "已完成"
+                  },
+                  {
+                    "field": "field_0002",
+                    "operator": "ne",
+                    "value": "丙"
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0004",
+                    "alias": "total_hours_sum"
+                  }
+                ],
+                "dimensions": [
+                  "field_0002"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "按项目汇总已完成任务的工时总和，不包含丙项目"
+        },
+        {
+          "requirement_id": "C02",
+          "description": "filters：只统计已完成任务；不包含丙项目"
+        },
+        {
+          "requirement_id": "C03",
+          "description": "metric_requirements：工时总和"
+        }
+      ]
+    },
+    "validation_results": [
+      {
+        "task_id": "T01",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      }
+    ],
+    "unmet_core_requirements": [],
+    "coverage_status": "complete",
+    "executable_task_ids": [
+      "T01"
+    ],
+    "blocked_task_ids": [],
+    "fully_executable": true,
+    "validation_version": "1.0",
+    "registry_version": "1.0",
+    "approval_required": true,
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "73fd47bdbe304cbe9d78d1662a78a86b",
+      "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+      "plan_version": 1,
+      "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+    },
+    "intent_snapshot": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "已完成任务的工时总和",
+        "business_goal": "按项目汇总已完成任务的工时总和，不包含丙项目",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [
+          {
+            "raw_text": "只统计已完成任务",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "不包含丙项目",
+            "validation_status": "unverified"
+          }
+        ],
+        "metric_requirements": [
+          {
+            "raw_text": "工时总和",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    }
+  },
+  "workflow_events": [
+    {
+      "status": "CREATED",
+      "recorded_at": "2026-11-04T10:47:21.059507+00:00"
+    },
+    {
+      "status": "PROFILING",
+      "recorded_at": "2026-11-04T10:47:21.093514+00:00"
+    },
+    {
+      "status": "PARSING_INTENT",
+      "recorded_at": "2026-11-04T10:47:21.099763+00:00"
+    },
+    {
+      "status": "PLANNING",
+      "recorded_at": "2026-11-04T10:47:24.724639+00:00"
+    },
+    {
+      "status": "VALIDATING",
+      "recorded_at": "2026-11-04T10:47:31.551559+00:00"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "recorded_at": "2026-11-04T10:47:31.559772+00:00"
+    },
+    {
+      "status": "APPROVED",
+      "recorded_at": "2026-11-04T10:47:31.613673+00:00"
+    },
+    {
+      "status": "RUNNING",
+      "recorded_at": "2026-11-04T10:47:31.626678+00:00"
+    },
+    {
+      "status": "COMPLETED",
+      "recorded_at": "2026-11-04T10:47:31.633601+00:00"
+    }
+  ],
+  "file": {
+    "id": "73fd47bdbe304cbe9d78d1662a78a86b",
+    "name": "projects.csv",
+    "size": 310,
+    "extension": ".csv",
+    "content_sha256": "4a85298a7adedc6fade44c0f4ee147be77cb7c122aa9411a000eb4bd97d894c0"
+  },
+  "user_goal": "只统计已完成任务，按项目汇总工时总和，不包含丙项目。",
+  "analysis_mode": "goal_driven",
+  "intent": {
+    "analysis_mode": "goal_driven",
+    "next_action": "proceed",
+    "analysis_goal": {
+      "analysis_object": "已完成任务的工时总和",
+      "business_goal": "按项目汇总已完成任务的工时总和，不包含丙项目",
+      "decision_goal": null
+    },
+    "constraints": {
+      "time_range": null,
+      "filters": [
+        {
+          "raw_text": "只统计已完成任务",
+          "validation_status": "unverified"
+        },
+        {
+          "raw_text": "不包含丙项目",
+          "validation_status": "unverified"
+        }
+      ],
+      "metric_requirements": [
+        {
+          "raw_text": "工时总和",
+          "validation_status": "unverified"
+        }
+      ],
+      "analysis_limits": []
+    },
+    "uncertainties": [],
+    "clarification_questions": [],
+    "user_query": "只统计已完成任务，按项目汇总工时总和，不包含丙项目。",
+    "clarification_answers": [],
+    "dataset_ref": {
+      "dataset_id": "73fd47bdbe304cbe9d78d1662a78a86b",
+      "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd"
+    },
+    "parse_origin": "llm",
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "73fd47bdbe304cbe9d78d1662a78a86b",
+      "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+      "plan_version": null,
+      "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+    },
+    "parser_version": "1.1",
+    "prompt_version": "intent-v1.3.3",
+    "llm_attempts": 1,
+    "parse_id": "d1ebc9a2f7d04fd8be3a204bddf9a468"
+  },
+  "intent_history": [
+    {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "已完成任务的工时总和",
+        "business_goal": "按项目汇总已完成任务的工时总和，不包含丙项目",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [
+          {
+            "raw_text": "只统计已完成任务",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "不包含丙项目",
+            "validation_status": "unverified"
+          }
+        ],
+        "metric_requirements": [
+          {
+            "raw_text": "工时总和",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "只统计已完成任务，按项目汇总工时总和，不包含丙项目。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "73fd47bdbe304cbe9d78d1662a78a86b",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "73fd47bdbe304cbe9d78d1662a78a86b",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "d1ebc9a2f7d04fd8be3a204bddf9a468"
+    }
+  ],
+  "clarification_answers": [],
+  "profile": {
+    "dataset_id": "73fd47bdbe304cbe9d78d1662a78a86b",
+    "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+    "schema_version": "1.0",
+    "profiler_version": "1.1.0",
+    "content_sha256": "4a85298a7adedc6fade44c0f4ee147be77cb7c122aa9411a000eb4bd97d894c0",
+    "file_name": "projects.csv",
+    "file_format": "csv",
+    "sheet_name": null,
+    "available_sheets": [],
+    "options": {
+      "header_row": 1,
+      "sheet_name": null,
+      "encoding": "utf-8-sig",
+      "delimiter": ","
+    },
+    "row_count": 8,
+    "column_count": 5,
+    "total_cell_count": 40,
+    "missing_cell_count": 1,
+    "missing_cell_rate": 0.025,
+    "duplicate_row_count": 0,
+    "duplicate_row_rate": 0.0,
+    "fields": [
+      {
+        "field_id": "field_0001",
+        "position": 1,
+        "original_name": "创建日期",
+        "display_name": "创建日期",
+        "physical_type": "string",
+        "logical_type": "date",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 8,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "date": 8
+        },
+        "samples": [
+          {
+            "value": "2026-01-02",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-01-05",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-02-01",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-02-02",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-02-04",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0002",
+        "position": 2,
+        "original_name": "项目",
+        "display_name": "项目",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "甲",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "乙",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "丙",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0003",
+        "position": 3,
+        "original_name": "状态",
+        "display_name": "状态",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "已完成",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "进行中",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "待开始",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0004",
+        "position": 4,
+        "original_name": "工时",
+        "display_name": "工时",
+        "physical_type": "string",
+        "logical_type": "integer",
+        "missing_count": 1,
+        "missing_rate": 0.125,
+        "non_missing_count": 7,
+        "unique_count": 7,
+        "physical_type_counts": {
+          "string": 7
+        },
+        "logical_type_counts": {
+          "integer": 7
+        },
+        "samples": [
+          {
+            "value": "4",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "6",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "8",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "10",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "12",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0005",
+        "position": 5,
+        "original_name": "任务编号",
+        "display_name": "任务编号",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 8,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "P01",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "P02",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "P03",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "P04",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "P05",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      }
+    ],
+    "quality_issues": [],
+    "provenance": {
+      "source": "uploaded",
+      "dataset": "73fd47bdbe304cbe9d78d1662a78a86b",
+      "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+      "plan_version": null,
+      "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+    }
+  },
+  "dataset_ref": {
+    "dataset_id": "73fd47bdbe304cbe9d78d1662a78a86b",
+    "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd"
+  },
+  "plans": [],
+  "current_plan_version": 1,
+  "approved_plan_version": 1,
+  "node_runs": [
+    {
+      "run_id": "3b2757fc6d9e4271ac92c23b27c9a0b5",
+      "node_name": "data_profiler",
+      "status": "success",
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "73fd47bdbe304cbe9d78d1662a78a86b",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_version": null,
+        "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T10:47:21.097791+00:00"
+    },
+    {
+      "run_id": "0f420cf21bfd4a83858b00a44f808544",
+      "node_name": "intent_parser",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "73fd47bdbe304cbe9d78d1662a78a86b",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T10:47:24.717645+00:00"
+    },
+    {
+      "run_id": "1b9ba821106c43c6a28a367032690530",
+      "node_name": "analysis_planner_v1",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "73fd47bdbe304cbe9d78d1662a78a86b",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T10:47:31.546626+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "id": "d13741bdd3844a03bf7a8723bb0f7e0e",
+      "role": "user",
+      "kind": "text",
+      "content": "只统计已完成任务，按项目汇总工时总和，不包含丙项目。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:47:21.058922+00:00"
+    },
+    {
+      "id": "f4306e8220584320b44f2df45dd8d9e1",
+      "role": "assistant",
+      "kind": "status",
+      "content": "正在解析上传文件并计算真实数据画像。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:47:21.093508+00:00"
+    },
+    {
+      "id": "a788dedc9dc6407184854358fd4cd8f2",
+      "role": "assistant",
+      "kind": "status",
+      "content": "真实画像完成：8行、5列；正在理解分析需求。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:47:21.099759+00:00"
+    },
+    {
+      "id": "0deea9f2242c45eca76365a5fe20e67a",
+      "role": "assistant",
+      "kind": "status",
+      "content": "需求已理解，正在生成受控分析计划。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:47:24.724628+00:00"
+    },
+    {
+      "id": "91d065ce3d094c718cf74d14186c5c5e",
+      "role": "assistant",
+      "kind": "plan",
+      "content": "真实计划已保存，目标覆盖：complete。请审核任务、未满足需求和约束；批准前不会计算。",
+      "plan_version": 1,
+      "created_at": "2026-11-04T10:47:31.559767+00:00"
+    },
+    {
+      "id": "d7415afcd92f461a9a15721aaa87d738",
+      "role": "user",
+      "kind": "text",
+      "content": "确认真实计划 v1 并执行；已确认限制：无。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:47:31.613669+00:00"
+    },
+    {
+      "id": "bb368989307542d2a991af56e7bb4631",
+      "role": "assistant",
+      "kind": "status",
+      "content": "已核对批准版本，正在执行真实上传数据。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:47:31.626692+00:00"
+    },
+    {
+      "id": "b3507cc2d105440c8a5c96a5024b680a",
+      "role": "assistant",
+      "kind": "status",
+      "content": "真实计算已结束，执行结果与步骤记录已保存；本阶段不自动生成报告。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:47:31.633611+00:00"
+    }
+  ],
+  "review_plan": {
+    "session_id": "1b678456572b45e0bef0123680fdab88",
+    "plan_id": "plan_9965c911523344a2b6852ba940046a75",
+    "plan_version": 1,
+    "dataset_id": "73fd47bdbe304cbe9d78d1662a78a86b",
+    "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+    "validation_version": "1.0",
+    "created_at": "2026-11-04T10:47:31.559653+00:00",
+    "change_type": "created",
+    "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "73fd47bdbe304cbe9d78d1662a78a86b",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_id": "plan_9965c911523344a2b6852ba940046a75",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T01",
+            "title": "按项目汇总已完成任务工时（排除丙）",
+            "business_question": "在不包含丙项目的情况下，各项目中状态为“已完成”的任务的工时总和是多少？",
+            "priority": "P0",
+            "priority_reason": "直接响应核心业务目标：按项目汇总已完成任务的工时总和，不包含丙项目。删除此任务将无法回答用户关于特定范围下资源投入的核心问题。",
+            "requirement_ids": [
+              "C01",
+              "C02",
+              "C03"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "filter",
+                "params": {
+                  "conditions": [
+                    {
+                      "field": "field_0003",
+                      "operator": "eq",
+                      "value": "已完成"
+                    },
+                    {
+                      "field": "field_0002",
+                      "operator": "ne",
+                      "value": "丙"
+                    }
+                  ]
+                }
+              },
+              {
+                "step_id": "S02",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "sum",
+                      "field": "field_0004",
+                      "alias": "total_hours_sum"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "按项目汇总已完成任务的工时总和，不包含丙项目"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "filters：只统计已完成任务；不包含丙项目"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "metric_requirements：工时总和"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T01",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T01"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "73fd47bdbe304cbe9d78d1662a78a86b",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_version": 1,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "已完成任务的工时总和",
+          "business_goal": "按项目汇总已完成任务的工时总和，不包含丙项目",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [
+            {
+              "raw_text": "只统计已完成任务",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "不包含丙项目",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "工时总和",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    }
+  },
+  "review_status": "completed",
+  "engine_approval": {
+    "approval_id": "approval_c81f3737bf69493193ff7884d869f7bf",
+    "approved_at": "2026-11-04T10:47:31.613064+00:00",
+    "status": "approved",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "73fd47bdbe304cbe9d78d1662a78a86b",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_id": "plan_9965c911523344a2b6852ba940046a75",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T01",
+            "title": "按项目汇总已完成任务工时（排除丙）",
+            "business_question": "在不包含丙项目的情况下，各项目中状态为“已完成”的任务的工时总和是多少？",
+            "priority": "P0",
+            "priority_reason": "直接响应核心业务目标：按项目汇总已完成任务的工时总和，不包含丙项目。删除此任务将无法回答用户关于特定范围下资源投入的核心问题。",
+            "requirement_ids": [
+              "C01",
+              "C02",
+              "C03"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "filter",
+                "params": {
+                  "conditions": [
+                    {
+                      "field": "field_0003",
+                      "operator": "eq",
+                      "value": "已完成"
+                    },
+                    {
+                      "field": "field_0002",
+                      "operator": "ne",
+                      "value": "丙"
+                    }
+                  ]
+                }
+              },
+              {
+                "step_id": "S02",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "sum",
+                      "field": "field_0004",
+                      "alias": "total_hours_sum"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "按项目汇总已完成任务的工时总和，不包含丙项目"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "filters：只统计已完成任务；不包含丙项目"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "metric_requirements：工时总和"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T01",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T01"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "73fd47bdbe304cbe9d78d1662a78a86b",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_version": 1,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "已完成任务的工时总和",
+          "business_goal": "按项目汇总已完成任务的工时总和，不包含丙项目",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [
+            {
+              "raw_text": "只统计已完成任务",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "不包含丙项目",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "工时总和",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "已完成任务的工时总和",
+        "business_goal": "按项目汇总已完成任务的工时总和，不包含丙项目",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [
+          {
+            "raw_text": "只统计已完成任务",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "不包含丙项目",
+            "validation_status": "unverified"
+          }
+        ],
+        "metric_requirements": [
+          {
+            "raw_text": "工时总和",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    },
+    "resolved_uncertainty_ids": [],
+    "constraints_confirmed": true,
+    "session_id": "1b678456572b45e0bef0123680fdab88",
+    "acknowledged_warnings": []
+  },
+  "engine_execution_ids": [
+    "exec_6519aa58162c405e8bd51e647cb6e1e7"
+  ],
+  "report_generations": [
+    {
+      "workflow_binding": {
+        "session_id": "1b678456572b45e0bef0123680fdab88",
+        "execution_id": "exec_6519aa58162c405e8bd51e647cb6e1e7",
+        "approval_id": "approval_c81f3737bf69493193ff7884d869f7bf",
+        "dataset_id": "73fd47bdbe304cbe9d78d1662a78a86b",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_id": "plan_9965c911523344a2b6852ba940046a75",
+        "plan_version": 1,
+        "workflow_id": "wf_fc9098f32497425681539f9e7b54a23e",
+        "root_run_id": "run_059398c3feb4462f9ce2206b0443ad11",
+        "plan_version_id": "wpv_8f73b1430123ec5114633c9ee50f898d19474dbf5b0dbd2afd37e75f0891dd47",
+        "report_attempt": 1,
+        "active_key": "exec_6519aa58162c405e8bd51e647cb6e1e7:1",
+        "commit_request_id": "exec_6519aa58162c405e8bd51e647cb6e1e7:1",
+        "authorized_revision": 13,
+        "revision_authority": "session_single_flow",
+        "branch_sha256": "b7e08845d0df08b694e05f519b33483b202a3625077eacc8406164ec07f59929"
+      },
+      "execution_id": "exec_6519aa58162c405e8bd51e647cb6e1e7",
+      "session_id": "1b678456572b45e0bef0123680fdab88",
+      "status": "completed",
+      "attempt": 1,
+      "report_id": "report_7be7067a3e50411eb81515bd9957cd64",
+      "error": null,
+      "queued_at": "2026-11-04T10:47:31.638679+00:00",
+      "started_at": "2026-11-04T10:47:31.663083+00:00",
+      "finished_at": "2026-11-04T10:47:37.093204+00:00"
+    }
+  ],
+  "execution_result": null,
+  "report": null,
+  "error": null
+}

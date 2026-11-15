@@ -1,0 +1,39 @@
+PASS 1-integration  1. runner calls oracle and must_forbid evaluators, never legacy score_case
+PASS 1-integration  2. each case has its own execution and three evaluator results
+INFO 1-integration  normal run: RF-02 and RF-05 stay NOT_EVALUATED because their must_forbid items are not adapted
+PASS 1-integration  3. run-config.json exists before each case, manifest does not
+PASS 1-integration  4. run-manifest.json written after completion
+PASS 1-integration  5. read_run verifies every manifest hash (VERIFIED)
+PASS 1-integration  6. read_run reads the new run completely
+PASS 1-integration  7. metrics from read_run equal the runner summary; trusted metrics exclude nothing
+PASS 1-integration  8a. interruption during a case: run INCOMPLETE, integrity INCOMPLETE
+PASS 1-integration  8b. all cases written, no manifest: INCOMPLETE, never FINISHED or VERIFIED
+PASS 5-integrity    edited result.json is INVALID, case excluded from trusted metrics, verdict not rewritten
+PASS 5-integrity    edited trace.json is INVALID
+PASS 5-integrity    edited summary.json is INVALID; case files stay VERIFIED
+PASS 5-integrity    edited run-config.json is INVALID and every case untrusted
+PASS 5-integrity    missing file named in the manifest is INVALID
+PASS 5-integrity    manifest path outside the run directory is INVALID
+PASS 2-gates        oracle PASS + forbid PASS -> PASS
+PASS 2-gates        oracle PASS + forbid FAIL -> FAIL
+PASS 2-gates        oracle PASS + forbid NOT_EVALUATED -> NOT_EVALUATED
+PASS 2-gates        oracle PASS + forbid EVALUATOR_ERROR -> EVALUATOR_ERROR
+PASS 2-gates        agent FAILED + oracle NOT_EVALUATED -> FAIL
+PASS 2-gates        optional node EVALUATOR_ERROR does not change PASS
+PASS 3-rf04         production code reads must_forbid
+PASS 3-rf04         must_forbid registered as required_when_applicable; oracle required; node optional
+PASS 3-rf04         oracle no longer contains an RF-04 branch or salary check
+PASS 3-rf04         probe: no plan and no profile captured -> must_forbid NOT_EVALUATED
+PASS 3-rf04         probe: step on invented field 薪资 not in profile -> must_forbid FAIL
+PASS 3-rf04         probe: salary result column 平均薪资 -> must_forbid FAIL
+PASS 3-rf04         probe: profiled field displayed as 薪资 -> must_forbid FAIL
+PASS 3-rf04         probe: clean evidence, 薪资 only in plan text -> must_forbid PASS
+PASS 3-rf04         runner: RF-04 correct counts without forbid evidence is not E2E PASS
+PASS 3-rf04         runner: RF-04 correct counts with complete clean evidence is E2E PASS
+PASS 3-rf04         runner: RF-04 forbidden field use is E2E FAIL
+PASS 4-history      historical sha256 unchanged and equal to the Phase 1-B baseline
+PASS 4-history      historical golden projection unchanged; legacy labels kept
+PASS 4-history      historical golden and TC runs are UNVERIFIED, not VERIFIED
+PASS 4-history      TC read through the same interface
+PASS 4-history      historical metrics still computable
+PASS 37, FAIL 0, INFO 1; evidence in /Users/lainey/Desktop/vibe-coding/insightflow/docs/evaluations/evaluation-quality-gates-phase1d-2026-11-13/outputs

@@ -1,0 +1,388 @@
+{
+  "version": "1.0",
+  "operations": {
+    "filter": {
+      "supported": true,
+      "params_schema": {
+        "$defs": {
+          "Condition": {
+            "additionalProperties": false,
+            "properties": {
+              "field": {
+                "maxLength": 120,
+                "minLength": 1,
+                "pattern": "\\S",
+                "title": "Field",
+                "type": "string"
+              },
+              "operator": {
+                "enum": [
+                  "eq",
+                  "ne",
+                  "gt",
+                  "gte",
+                  "lt",
+                  "lte",
+                  "in",
+                  "not_in",
+                  "is_null",
+                  "not_null"
+                ],
+                "title": "Operator",
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Value"
+              }
+            },
+            "required": [
+              "field",
+              "operator",
+              "value"
+            ],
+            "title": "Condition",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "conditions": {
+            "items": {
+              "$ref": "#/$defs/Condition"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Conditions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "conditions"
+        ],
+        "title": "FilterParams",
+        "type": "object"
+      },
+      "input_rules": "AND conditions; typed comparisons; null only via is_null/not_null; no semantic matching",
+      "output_rules": "Preserves all current fields; no new fields"
+    },
+    "group_aggregate": {
+      "supported": true,
+      "params_schema": {
+        "$defs": {
+          "Metric": {
+            "additionalProperties": false,
+            "properties": {
+              "function": {
+                "enum": [
+                  "count",
+                  "sum",
+                  "avg",
+                  "median",
+                  "min",
+                  "max",
+                  "distinct_count"
+                ],
+                "title": "Function",
+                "type": "string"
+              },
+              "field": {
+                "anyOf": [
+                  {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "pattern": "\\S",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Field"
+              },
+              "alias": {
+                "maxLength": 120,
+                "minLength": 1,
+                "pattern": "\\S",
+                "title": "Alias",
+                "type": "string"
+              }
+            },
+            "required": [
+              "function",
+              "alias"
+            ],
+            "title": "Metric",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "metrics": {
+            "items": {
+              "$ref": "#/$defs/Metric"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Metrics",
+            "type": "array"
+          },
+          "dimensions": {
+            "items": {
+              "maxLength": 120,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Dimensions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "metrics",
+          "dimensions"
+        ],
+        "title": "GroupParams",
+        "type": "object"
+      },
+      "input_rules": "Unique comparable dimensions; numeric sum/avg/median/min/max; count optional field; distinct_count comparable field",
+      "output_rules": "Replaces input with dimensions and unique fresh metric aliases; missing groups retained"
+    },
+    "aggregate": {
+      "supported": true,
+      "params_schema": {
+        "$defs": {
+          "Metric": {
+            "additionalProperties": false,
+            "properties": {
+              "function": {
+                "enum": [
+                  "count",
+                  "sum",
+                  "avg",
+                  "median",
+                  "min",
+                  "max",
+                  "distinct_count"
+                ],
+                "title": "Function",
+                "type": "string"
+              },
+              "field": {
+                "anyOf": [
+                  {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "pattern": "\\S",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Field"
+              },
+              "alias": {
+                "maxLength": 120,
+                "minLength": 1,
+                "pattern": "\\S",
+                "title": "Alias",
+                "type": "string"
+              }
+            },
+            "required": [
+              "function",
+              "alias"
+            ],
+            "title": "Metric",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "metrics": {
+            "items": {
+              "$ref": "#/$defs/Metric"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Metrics",
+            "type": "array"
+          }
+        },
+        "required": [
+          "metrics"
+        ],
+        "title": "AggregateParams",
+        "type": "object"
+      },
+      "input_rules": "Numeric sum/avg/median/min/max; count optional field; distinct_count comparable field",
+      "output_rules": "Replaces input with metric aliases only"
+    },
+    "sort": {
+      "supported": true,
+      "params_schema": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "title": "Field",
+            "type": "string"
+          },
+          "direction": {
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "title": "Direction",
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "direction"
+        ],
+        "title": "SortParams",
+        "type": "object"
+      },
+      "input_rules": "Existing comparable field; stable asc/desc; null last",
+      "output_rules": "Preserves fields"
+    },
+    "top_n": {
+      "supported": true,
+      "params_schema": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "title": "Field",
+            "type": "string"
+          },
+          "direction": {
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "title": "Direction",
+            "type": "string"
+          },
+          "n": {
+            "maximum": 1000,
+            "minimum": 1,
+            "title": "N",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "field",
+          "direction",
+          "n"
+        ],
+        "title": "TopNParams",
+        "type": "object"
+      },
+      "input_rules": "Existing comparable field; n integer 1..1000; sort then head; stable ties",
+      "output_rules": "Preserves fields"
+    },
+    "derive": {
+      "supported": true,
+      "params_schema": {
+        "additionalProperties": false,
+        "properties": {
+          "function": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "title": "Function",
+            "type": "string"
+          },
+          "field": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "title": "Field",
+            "type": "string"
+          },
+          "alias": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "title": "Alias",
+            "type": "string"
+          }
+        },
+        "required": [
+          "function",
+          "field",
+          "alias"
+        ],
+        "title": "DeriveParams",
+        "type": "object"
+      },
+      "input_rules": "Only extract_year/extract_month; homogeneous DATE/DATETIME including valid ISO strings",
+      "output_rules": "Preserves fields and adds a fresh INTEGER alias; no text-to-date guess, salary parsing or skill extraction"
+    }
+  },
+  "aggregate_functions": [
+    "count",
+    "sum",
+    "avg",
+    "median",
+    "min",
+    "max",
+    "distinct_count"
+  ],
+  "derive_functions": [
+    "extract_year",
+    "extract_month"
+  ],
+  "execution_scope": "tested kernels with versioned dataset execution service; server-owned approval required; cross-task dependencies unsupported",
+  "null_policy": "count()=rows; count(field)=nonmissing; distinct_count excludes null; numeric all-null result=null; missing groups retained",
+  "logical_input_policy": "CSV homogeneous logical numbers/ISO dates are interpreted deterministically; no mixed/text semantic conversion"
+}

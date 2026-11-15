@@ -1,0 +1,1112 @@
+[
+  {
+    "section": "1-integration",
+    "check": "1. runner calls oracle and must_forbid evaluators, never legacy score_case",
+    "result": "PASS",
+    "evidence": {
+      "evaluate_calls": [
+        [
+          "insightflow.golden.oracle",
+          "RF-01"
+        ],
+        [
+          "insightflow.golden.must_forbid",
+          "RF-01"
+        ],
+        [
+          "insightflow.golden.oracle",
+          "RF-02"
+        ],
+        [
+          "insightflow.golden.must_forbid",
+          "RF-02"
+        ],
+        [
+          "insightflow.node.requirement_fidelity",
+          "RF-02"
+        ],
+        [
+          "insightflow.golden.oracle",
+          "RF-03"
+        ],
+        [
+          "insightflow.golden.must_forbid",
+          "RF-03"
+        ],
+        [
+          "insightflow.golden.oracle",
+          "RF-04"
+        ],
+        [
+          "insightflow.golden.must_forbid",
+          "RF-04"
+        ],
+        [
+          "insightflow.node.requirement_fidelity",
+          "RF-04"
+        ],
+        [
+          "insightflow.golden.oracle",
+          "RF-05"
+        ],
+        [
+          "insightflow.golden.must_forbid",
+          "RF-05"
+        ],
+        [
+          "insightflow.node.requirement_fidelity",
+          "RF-05"
+        ]
+      ],
+      "legacy_score_case_calls": 0
+    }
+  },
+  {
+    "section": "1-integration",
+    "check": "2. each case has its own execution and three evaluator results",
+    "result": "PASS",
+    "evidence": {
+      "RF-01": {
+        "execution": "BLOCKED",
+        "evaluators": {
+          "insightflow.golden.oracle": [
+            "NOT_EVALUATED",
+            true,
+            "no_engine_result"
+          ],
+          "insightflow.golden.must_forbid": [
+            "NOT_EVALUATED",
+            true,
+            "rule_not_adapted:case.must_forbid[0],case.must_forbid[1],case.must_forbid[2],case.must_forbid[3]"
+          ],
+          "insightflow.node.requirement_fidelity": [
+            "NOT_EVALUATED",
+            false,
+            "not_in_gold"
+          ]
+        },
+        "e2e": [
+          "FAIL",
+          "task_not_completed:BLOCKED"
+        ]
+      },
+      "RF-02": {
+        "execution": "COMPLETED",
+        "evaluators": {
+          "insightflow.golden.oracle": [
+            "PASS",
+            true,
+            "oracle_match"
+          ],
+          "insightflow.golden.must_forbid": [
+            "NOT_EVALUATED",
+            true,
+            "rule_not_adapted:case.must_forbid[0],case.must_forbid[1],case.must_forbid[2]"
+          ],
+          "insightflow.node.requirement_fidelity": [
+            "PASS",
+            false,
+            "all_obligations_carried"
+          ]
+        },
+        "e2e": [
+          "NOT_EVALUATED",
+          "insightflow.golden.must_forbid:rule_not_adapted:case.must_forbid[0],case.must_forbid[1],case.must_forbid[2]"
+        ]
+      },
+      "RF-03": {
+        "execution": "BLOCKED",
+        "evaluators": {
+          "insightflow.golden.oracle": [
+            "NOT_EVALUATED",
+            true,
+            "no_engine_result"
+          ],
+          "insightflow.golden.must_forbid": [
+            "NOT_EVALUATED",
+            true,
+            "rule_not_adapted:case.must_forbid[0],case.must_forbid[1]"
+          ],
+          "insightflow.node.requirement_fidelity": [
+            "NOT_EVALUATED",
+            false,
+            "not_in_gold"
+          ]
+        },
+        "e2e": [
+          "FAIL",
+          "task_not_completed:BLOCKED"
+        ]
+      },
+      "RF-04": {
+        "execution": "FAILED",
+        "evaluators": {
+          "insightflow.golden.oracle": [
+            "NOT_EVALUATED",
+            true,
+            "no_engine_result"
+          ],
+          "insightflow.golden.must_forbid": [
+            "NOT_EVALUATED",
+            true,
+            "missing_evidence:plan,profile"
+          ],
+          "insightflow.node.requirement_fidelity": [
+            "EVALUATOR_ERROR",
+            false,
+            "collector_error:KeyError"
+          ]
+        },
+        "e2e": [
+          "FAIL",
+          "task_not_completed:FAILED"
+        ]
+      },
+      "RF-05": {
+        "execution": "COMPLETED",
+        "evaluators": {
+          "insightflow.golden.oracle": [
+            "PASS",
+            true,
+            "oracle_match"
+          ],
+          "insightflow.golden.must_forbid": [
+            "NOT_EVALUATED",
+            true,
+            "rule_not_adapted:case.must_forbid[0],case.must_forbid[1],case.must_forbid[2],case.must_forbid[3]"
+          ],
+          "insightflow.node.requirement_fidelity": [
+            "FAIL",
+            false,
+            "x"
+          ]
+        },
+        "e2e": [
+          "NOT_EVALUATED",
+          "insightflow.golden.must_forbid:rule_not_adapted:case.must_forbid[0],case.must_forbid[1],case.must_forbid[2],case.must_forbid[3]"
+        ]
+      }
+    }
+  },
+  {
+    "section": "1-integration",
+    "check": "normal run: RF-02 and RF-05 stay NOT_EVALUATED because their must_forbid items are not adapted",
+    "result": "INFO",
+    "evidence": {
+      "RF-01": [
+        "FAIL",
+        "task_not_completed:BLOCKED"
+      ],
+      "RF-02": [
+        "NOT_EVALUATED",
+        "insightflow.golden.must_forbid:rule_not_adapted:case.must_forbid[0],case.must_forbid[1],case.must_forbid[2]"
+      ],
+      "RF-03": [
+        "FAIL",
+        "task_not_completed:BLOCKED"
+      ],
+      "RF-04": [
+        "FAIL",
+        "task_not_completed:FAILED"
+      ],
+      "RF-05": [
+        "NOT_EVALUATED",
+        "insightflow.golden.must_forbid:rule_not_adapted:case.must_forbid[0],case.must_forbid[1],case.must_forbid[2],case.must_forbid[3]"
+      ]
+    }
+  },
+  {
+    "section": "1-integration",
+    "check": "3. run-config.json exists before each case, manifest does not",
+    "result": "PASS",
+    "evidence": [
+      {
+        "case_id": "RF-01",
+        "config_exists": true,
+        "manifest_exists": false
+      },
+      {
+        "case_id": "RF-02",
+        "config_exists": true,
+        "manifest_exists": false
+      },
+      {
+        "case_id": "RF-03",
+        "config_exists": true,
+        "manifest_exists": false
+      },
+      {
+        "case_id": "RF-04",
+        "config_exists": true,
+        "manifest_exists": false
+      },
+      {
+        "case_id": "RF-05",
+        "config_exists": true,
+        "manifest_exists": false
+      }
+    ]
+  },
+  {
+    "section": "1-integration",
+    "check": "4. run-manifest.json written after completion",
+    "result": "PASS",
+    "evidence": {
+      "status": "FINISHED",
+      "cases": 5
+    }
+  },
+  {
+    "section": "1-integration",
+    "check": "5. read_run verifies every manifest hash (VERIFIED)",
+    "result": "PASS",
+    "evidence": {
+      "status": "VERIFIED",
+      "reasons": [],
+      "files": [
+        {
+          "ref": "run-config.json",
+          "role": "config",
+          "case_id": null,
+          "expected_sha256": "691307a33938724651568592024f7e64517308746d7d4128af25485d18f88369",
+          "actual_sha256": "691307a33938724651568592024f7e64517308746d7d4128af25485d18f88369",
+          "status": "ok"
+        },
+        {
+          "ref": "summary.json",
+          "role": "summary",
+          "case_id": null,
+          "expected_sha256": "4c04a07cb611b17b3b8a5bf5ca222f668ed6350ddc9b5f1212ec1f13014ef8eb",
+          "actual_sha256": "4c04a07cb611b17b3b8a5bf5ca222f668ed6350ddc9b5f1212ec1f13014ef8eb",
+          "status": "ok"
+        },
+        {
+          "ref": "RF-01/result.json",
+          "role": "case_result",
+          "case_id": "RF-01",
+          "expected_sha256": "93884d785100da037a1c89f9f87395ddeffbedcd757566c5e43d2e6d5176322d",
+          "actual_sha256": "93884d785100da037a1c89f9f87395ddeffbedcd757566c5e43d2e6d5176322d",
+          "status": "ok"
+        },
+        {
+          "ref": "RF-01/trace.json",
+          "role": "case_trace",
+          "case_id": "RF-01",
+          "expected_sha256": "eb34750048e5851d81477491f41da69710f364ecbd4c655716cf87992b5f0378",
+          "actual_sha256": "eb34750048e5851d81477491f41da69710f364ecbd4c655716cf87992b5f0378",
+          "status": "ok"
+        },
+        {
+          "ref": "RF-02/result.json",
+          "role": "case_result",
+          "case_id": "RF-02",
+          "expected_sha256": "df68a03610f48e930e6494f0586426f27046a4ea39d50cea5cf6f37d28b2513c",
+          "actual_sha256": "df68a03610f48e930e6494f0586426f27046a4ea39d50cea5cf6f37d28b2513c",
+          "status": "ok"
+        },
+        {
+          "ref": "RF-02/trace.json",
+          "role": "case_trace",
+          "case_id": "RF-02",
+          "expected_sha256": "f65183d91b85c6db3dee2ed6e021ca2c1bc73052288df9715e2787485b88f2a8",
+          "actual_sha256": "f65183d91b85c6db3dee2ed6e021ca2c1bc73052288df9715e2787485b88f2a8",
+          "status": "ok"
+        },
+        {
+          "ref": "RF-03/result.json",
+          "role": "case_result",
+          "case_id": "RF-03",
+          "expected_sha256": "c500e64d5c13775a818a55a824971c17e41925e237c3f22cf0c13a627ec126bd",
+          "actual_sha256": "c500e64d5c13775a818a55a824971c17e41925e237c3f22cf0c13a627ec126bd",
+          "status": "ok"
+        },
+        {
+          "ref": "RF-03/trace.json",
+          "role": "case_trace",
+          "case_id": "RF-03",
+          "expected_sha256": "eb34750048e5851d81477491f41da69710f364ecbd4c655716cf87992b5f0378",
+          "actual_sha256": "eb34750048e5851d81477491f41da69710f364ecbd4c655716cf87992b5f0378",
+          "status": "ok"
+        },
+        {
+          "ref": "RF-04/result.json",
+          "role": "case_result",
+          "case_id": "RF-04",
+          "expected_sha256": "118000c09471464f1b45a3e44e50ba4035d156bc0de9e327fdc0eda791c095b0",
+          "actual_sha256": "118000c09471464f1b45a3e44e50ba4035d156bc0de9e327fdc0eda791c095b0",
+          "status": "ok"
+        },
+        {
+          "ref": "RF-04/trace.json",
+          "role": "case_trace",
+          "case_id": "RF-04",
+          "expected_sha256": "bf1061dc131336cef06499b8579dbd76a67fe0b8e4659383c08235d427d07ade",
+          "actual_sha256": "bf1061dc131336cef06499b8579dbd76a67fe0b8e4659383c08235d427d07ade",
+          "status": "ok"
+        },
+        {
+          "ref": "RF-05/result.json",
+          "role": "case_result",
+          "case_id": "RF-05",
+          "expected_sha256": "a198f500858084d9415e0ae799e7139fc328122de5a49c692e4500d5ce0ae6b0",
+          "actual_sha256": "a198f500858084d9415e0ae799e7139fc328122de5a49c692e4500d5ce0ae6b0",
+          "status": "ok"
+        },
+        {
+          "ref": "RF-05/trace.json",
+          "role": "case_trace",
+          "case_id": "RF-05",
+          "expected_sha256": "f65183d91b85c6db3dee2ed6e021ca2c1bc73052288df9715e2787485b88f2a8",
+          "actual_sha256": "f65183d91b85c6db3dee2ed6e021ca2c1bc73052288df9715e2787485b88f2a8",
+          "status": "ok"
+        }
+      ],
+      "case_status": {
+        "RF-01": "VERIFIED",
+        "RF-02": "VERIFIED",
+        "RF-03": "VERIFIED",
+        "RF-04": "VERIFIED",
+        "RF-05": "VERIFIED"
+      },
+      "basis": "SHA-256 of each file named in run-manifest.json, confined to the run directory, against the recorded value; manifest cases must equal the config case ids."
+    }
+  },
+  {
+    "section": "1-integration",
+    "check": "6. read_run reads the new run completely",
+    "result": "PASS",
+    "evidence": {
+      "evaluator_manifest": [
+        {
+          "evaluator_id": "insightflow.golden.oracle",
+          "evaluator_version": "golden-oracle-v2",
+          "config_sha256": "295d4f83242bf9204a961f033755b3affec988d3c99cf2c12e4245b0ddf0e581",
+          "required": true,
+          "scope": "e2e",
+          "requirement": "required"
+        },
+        {
+          "evaluator_id": "insightflow.golden.must_forbid",
+          "evaluator_version": "must-forbid-v1",
+          "config_sha256": "ff8958d7f570c369273b7f7ec2585a75d0042c79151fe24aebd138d5d6007963",
+          "required": null,
+          "scope": "e2e",
+          "requirement": "required_when_applicable"
+        },
+        {
+          "evaluator_id": "insightflow.node.requirement_fidelity",
+          "evaluator_version": "requirement-fidelity-v1",
+          "config_sha256": "0469c2040631843467f64d5e709eb9f9e092084b16f423f180cfcaaaf2708dc4",
+          "required": false,
+          "scope": "node",
+          "requirement": "optional"
+        }
+      ]
+    }
+  },
+  {
+    "section": "1-integration",
+    "check": "7. metrics from read_run equal the runner summary; trusted metrics exclude nothing",
+    "result": "PASS",
+    "evidence": {
+      "integrity": "VERIFIED",
+      "included_case_ids": [
+        "RF-01",
+        "RF-02",
+        "RF-03",
+        "RF-04",
+        "RF-05"
+      ],
+      "excluded": [],
+      "metrics": {
+        "counts": {
+          "started": 5,
+          "not_started": 0,
+          "valid": 5,
+          "infra_error": 0,
+          "e2e": {
+            "FAIL": 3,
+            "NOT_EVALUATED": 2
+          },
+          "execution": {
+            "BLOCKED": 2,
+            "COMPLETED": 2,
+            "FAILED": 1
+          },
+          "execution_status_unknown": 0
+        },
+        "e2e_confirmed_success_rate": 0.0,
+        "decidable_pass_rate": 0.0,
+        "evaluation_coverage": 0.6,
+        "execution_completion_rate": 0.4,
+        "executed_result_correct_rate": 1.0,
+        "block_rate": 0.4,
+        "run_failure_rate": 0.2,
+        "evaluators": {
+          "insightflow.golden.must_forbid": {
+            "counts": {
+              "NOT_EVALUATED": 5
+            },
+            "error_rate": 0.0,
+            "not_evaluated_rate": 1.0,
+            "pass_rate_when_decided": null
+          },
+          "insightflow.golden.oracle": {
+            "counts": {
+              "NOT_EVALUATED": 3,
+              "PASS": 2
+            },
+            "error_rate": 0.0,
+            "not_evaluated_rate": 0.6,
+            "pass_rate_when_decided": 1.0
+          },
+          "insightflow.node.requirement_fidelity": {
+            "counts": {
+              "NOT_EVALUATED": 2,
+              "PASS": 1,
+              "EVALUATOR_ERROR": 1,
+              "FAIL": 1
+            },
+            "error_rate": 0.2,
+            "not_evaluated_rate": 0.4,
+            "pass_rate_when_decided": 0.5
+          }
+        }
+      }
+    }
+  },
+  {
+    "section": "1-integration",
+    "check": "8a. interruption during a case: run INCOMPLETE, integrity INCOMPLETE",
+    "result": "PASS",
+    "evidence": {
+      "status": "INCOMPLETE",
+      "integrity": {
+        "status": "INCOMPLETE",
+        "reasons": [
+          "final_manifest_missing"
+        ],
+        "files": [],
+        "case_status": {
+          "RF-01": "INCOMPLETE",
+          "RF-02": "INCOMPLETE",
+          "RF-03": "INCOMPLETE",
+          "RF-04": "INCOMPLETE",
+          "RF-05": "INCOMPLETE"
+        },
+        "basis": "run-config.json exists but run-manifest.json does not; the run did not finish."
+      },
+      "missing": [
+        "RF-03",
+        "RF-04",
+        "RF-05"
+      ]
+    }
+  },
+  {
+    "section": "1-integration",
+    "check": "8b. all cases written, no manifest: INCOMPLETE, never FINISHED or VERIFIED",
+    "result": "PASS",
+    "evidence": {
+      "status": "INCOMPLETE",
+      "integrity": "INCOMPLETE"
+    }
+  },
+  {
+    "section": "5-integrity",
+    "check": "edited result.json is INVALID, case excluded from trusted metrics, verdict not rewritten",
+    "result": "PASS",
+    "evidence": {
+      "integrity": "INVALID",
+      "reasons": [
+        "mismatch:RF-02/result.json"
+      ],
+      "case_status": {
+        "RF-01": "VERIFIED",
+        "RF-02": "INVALID",
+        "RF-03": "VERIFIED",
+        "RF-04": "VERIFIED",
+        "RF-05": "VERIFIED"
+      },
+      "trusted_excluded": [
+        {
+          "case_id": "RF-02",
+          "reason": "evidence_integrity_invalid"
+        }
+      ]
+    }
+  },
+  {
+    "section": "5-integrity",
+    "check": "edited trace.json is INVALID",
+    "result": "PASS",
+    "evidence": {
+      "integrity": "INVALID",
+      "reasons": [
+        "mismatch:RF-01/trace.json"
+      ],
+      "case_status": {
+        "RF-01": "INVALID",
+        "RF-02": "VERIFIED",
+        "RF-03": "VERIFIED",
+        "RF-04": "VERIFIED",
+        "RF-05": "VERIFIED"
+      },
+      "trusted_excluded": [
+        {
+          "case_id": "RF-01",
+          "reason": "evidence_integrity_invalid"
+        }
+      ]
+    }
+  },
+  {
+    "section": "5-integrity",
+    "check": "edited summary.json is INVALID; case files stay VERIFIED",
+    "result": "PASS",
+    "evidence": {
+      "integrity": "INVALID",
+      "reasons": [
+        "mismatch:summary.json"
+      ],
+      "case_status": {
+        "RF-01": "VERIFIED",
+        "RF-02": "VERIFIED",
+        "RF-03": "VERIFIED",
+        "RF-04": "VERIFIED",
+        "RF-05": "VERIFIED"
+      },
+      "trusted_excluded": []
+    }
+  },
+  {
+    "section": "5-integrity",
+    "check": "edited run-config.json is INVALID and every case untrusted",
+    "result": "PASS",
+    "evidence": {
+      "integrity": "INVALID",
+      "reasons": [
+        "mismatch:run-config.json"
+      ],
+      "case_status": {
+        "RF-01": "INVALID",
+        "RF-02": "INVALID",
+        "RF-03": "INVALID",
+        "RF-04": "INVALID",
+        "RF-05": "INVALID"
+      },
+      "trusted_excluded": [
+        {
+          "case_id": "RF-01",
+          "reason": "evidence_integrity_invalid"
+        },
+        {
+          "case_id": "RF-02",
+          "reason": "evidence_integrity_invalid"
+        },
+        {
+          "case_id": "RF-03",
+          "reason": "evidence_integrity_invalid"
+        },
+        {
+          "case_id": "RF-04",
+          "reason": "evidence_integrity_invalid"
+        },
+        {
+          "case_id": "RF-05",
+          "reason": "evidence_integrity_invalid"
+        }
+      ]
+    }
+  },
+  {
+    "section": "5-integrity",
+    "check": "missing file named in the manifest is INVALID",
+    "result": "PASS",
+    "evidence": {
+      "integrity": "INVALID",
+      "reasons": [
+        "missing:RF-03/trace.json"
+      ],
+      "case_status": {
+        "RF-01": "VERIFIED",
+        "RF-02": "VERIFIED",
+        "RF-03": "INVALID",
+        "RF-04": "VERIFIED",
+        "RF-05": "VERIFIED"
+      },
+      "trusted_excluded": [
+        {
+          "case_id": "RF-03",
+          "reason": "evidence_integrity_invalid"
+        }
+      ]
+    }
+  },
+  {
+    "section": "5-integrity",
+    "check": "manifest path outside the run directory is INVALID",
+    "result": "PASS",
+    "evidence": {
+      "integrity": "INVALID",
+      "reasons": [
+        "outside_run:../outside.json"
+      ],
+      "case_status": {
+        "RF-01": "VERIFIED",
+        "RF-02": "INVALID",
+        "RF-03": "VERIFIED",
+        "RF-04": "VERIFIED",
+        "RF-05": "VERIFIED"
+      },
+      "trusted_excluded": [
+        {
+          "case_id": "RF-02",
+          "reason": "evidence_integrity_invalid"
+        }
+      ]
+    }
+  },
+  {
+    "section": "2-gates",
+    "check": "oracle PASS + forbid PASS -> PASS",
+    "result": "PASS",
+    "evidence": {
+      "oracle": "PASS",
+      "must_forbid": [
+        "PASS",
+        null,
+        "no_forbidden_field_in:plan,engine,result_columns"
+      ],
+      "e2e": [
+        "PASS",
+        "task_condition_met_and_required_passed"
+      ],
+      "optional": {
+        "insightflow.node.requirement_fidelity": "NOT_EVALUATED"
+      }
+    }
+  },
+  {
+    "section": "2-gates",
+    "check": "oracle PASS + forbid FAIL -> FAIL",
+    "result": "PASS",
+    "evidence": {
+      "oracle": "PASS",
+      "must_forbid": [
+        "FAIL",
+        "F-METRIC-SUBSTITUTED",
+        "forbid-salary-field@plan:t2/s9.metrics[0].field=薪资"
+      ],
+      "e2e": [
+        "FAIL",
+        "insightflow.golden.must_forbid:F-METRIC-SUBSTITUTED"
+      ],
+      "optional": {
+        "insightflow.node.requirement_fidelity": "NOT_EVALUATED"
+      }
+    }
+  },
+  {
+    "section": "2-gates",
+    "check": "oracle PASS + forbid NOT_EVALUATED -> NOT_EVALUATED",
+    "result": "PASS",
+    "evidence": {
+      "oracle": "PASS",
+      "must_forbid": [
+        "NOT_EVALUATED",
+        null,
+        "missing_evidence:engine"
+      ],
+      "e2e": [
+        "NOT_EVALUATED",
+        "insightflow.golden.must_forbid:missing_evidence:engine"
+      ],
+      "optional": {
+        "insightflow.node.requirement_fidelity": "NOT_EVALUATED"
+      }
+    }
+  },
+  {
+    "section": "2-gates",
+    "check": "oracle PASS + forbid EVALUATOR_ERROR -> EVALUATOR_ERROR",
+    "result": "PASS",
+    "evidence": {
+      "oracle": "PASS",
+      "must_forbid": [
+        "EVALUATOR_ERROR",
+        null,
+        "RuntimeError"
+      ],
+      "e2e": [
+        "EVALUATOR_ERROR",
+        "insightflow.golden.must_forbid:RuntimeError"
+      ],
+      "optional": {
+        "insightflow.node.requirement_fidelity": "NOT_EVALUATED"
+      }
+    }
+  },
+  {
+    "section": "2-gates",
+    "check": "agent FAILED + oracle NOT_EVALUATED -> FAIL",
+    "result": "PASS",
+    "evidence": {
+      "oracle": "NOT_EVALUATED",
+      "must_forbid": [
+        "NOT_EVALUATED",
+        null,
+        "missing_evidence:plan"
+      ],
+      "e2e": [
+        "FAIL",
+        "task_not_completed:FAILED"
+      ],
+      "optional": {
+        "insightflow.node.requirement_fidelity": "NOT_EVALUATED"
+      }
+    }
+  },
+  {
+    "section": "2-gates",
+    "check": "optional node EVALUATOR_ERROR does not change PASS",
+    "result": "PASS",
+    "evidence": {
+      "oracle": "PASS",
+      "must_forbid": [
+        "PASS",
+        null,
+        "no_forbidden_field_in:plan,engine,result_columns"
+      ],
+      "e2e": [
+        "PASS",
+        "task_condition_met_and_required_passed"
+      ],
+      "optional": {
+        "insightflow.node.requirement_fidelity": "EVALUATOR_ERROR"
+      }
+    }
+  },
+  {
+    "section": "3-rf04",
+    "check": "production code reads must_forbid",
+    "result": "PASS",
+    "evidence": [
+      "backend/app/evaluation/must_forbid.py"
+    ]
+  },
+  {
+    "section": "3-rf04",
+    "check": "must_forbid registered as required_when_applicable; oracle required; node optional",
+    "result": "PASS",
+    "evidence": [
+      [
+        "insightflow.golden.oracle",
+        "required"
+      ],
+      [
+        "insightflow.golden.must_forbid",
+        "required_when_applicable"
+      ],
+      [
+        "insightflow.node.requirement_fidelity",
+        "optional"
+      ]
+    ]
+  },
+  {
+    "section": "3-rf04",
+    "check": "oracle no longer contains an RF-04 branch or salary check",
+    "result": "PASS",
+    "evidence": null
+  },
+  {
+    "section": "3-rf04",
+    "check": "probe: no plan and no profile captured -> must_forbid NOT_EVALUATED",
+    "result": "PASS",
+    "evidence": {
+      "must_forbid": [
+        "NOT_EVALUATED",
+        null,
+        "missing_evidence:engine,plan,profile"
+      ],
+      "e2e": "NOT_EVALUATED"
+    }
+  },
+  {
+    "section": "3-rf04",
+    "check": "probe: step on invented field 薪资 not in profile -> must_forbid FAIL",
+    "result": "PASS",
+    "evidence": {
+      "must_forbid": [
+        "FAIL",
+        "F-METRIC-SUBSTITUTED",
+        "forbid-salary-field@plan:t2/s9.metrics[0].field=薪资"
+      ],
+      "e2e": "FAIL"
+    }
+  },
+  {
+    "section": "3-rf04",
+    "check": "probe: salary result column 平均薪资 -> must_forbid FAIL",
+    "result": "PASS",
+    "evidence": {
+      "must_forbid": [
+        "FAIL",
+        "F-METRIC-SUBSTITUTED",
+        "forbid-salary-field@result_columns:table[0]=平均薪资"
+      ],
+      "e2e": "FAIL"
+    }
+  },
+  {
+    "section": "3-rf04",
+    "check": "probe: profiled field displayed as 薪资 -> must_forbid FAIL",
+    "result": "PASS",
+    "evidence": {
+      "must_forbid": [
+        "FAIL",
+        "F-METRIC-SUBSTITUTED",
+        "forbid-salary-field@plan:t2/s9.field=f9(薪资)"
+      ],
+      "e2e": "FAIL"
+    }
+  },
+  {
+    "section": "3-rf04",
+    "check": "probe: clean evidence, 薪资 only in plan text -> must_forbid PASS",
+    "result": "PASS",
+    "evidence": {
+      "must_forbid": [
+        "PASS",
+        null,
+        "no_forbidden_field_in:plan,engine,result_columns"
+      ],
+      "e2e": "PASS"
+    }
+  },
+  {
+    "section": "3-rf04",
+    "check": "runner: RF-04 correct counts without forbid evidence is not E2E PASS",
+    "result": "PASS",
+    "evidence": {
+      "execution": "COMPLETED",
+      "evaluators": {
+        "insightflow.golden.oracle": [
+          "PASS",
+          true,
+          "oracle_match"
+        ],
+        "insightflow.golden.must_forbid": [
+          "NOT_EVALUATED",
+          true,
+          "missing_evidence:engine,plan,profile"
+        ],
+        "insightflow.node.requirement_fidelity": [
+          "NOT_EVALUATED",
+          false,
+          "fidelity_not_collected"
+        ]
+      },
+      "e2e": [
+        "NOT_EVALUATED",
+        "insightflow.golden.must_forbid:missing_evidence:engine,plan,profile"
+      ]
+    }
+  },
+  {
+    "section": "3-rf04",
+    "check": "runner: RF-04 correct counts with complete clean evidence is E2E PASS",
+    "result": "PASS",
+    "evidence": {
+      "execution": "COMPLETED",
+      "evaluators": {
+        "insightflow.golden.oracle": [
+          "PASS",
+          true,
+          "oracle_match"
+        ],
+        "insightflow.golden.must_forbid": [
+          "PASS",
+          true,
+          "no_forbidden_field_in:plan,engine,result_columns"
+        ],
+        "insightflow.node.requirement_fidelity": [
+          "NOT_EVALUATED",
+          false,
+          "fidelity_not_collected"
+        ]
+      },
+      "e2e": [
+        "PASS",
+        "task_condition_met_and_required_passed"
+      ]
+    }
+  },
+  {
+    "section": "3-rf04",
+    "check": "runner: RF-04 forbidden field use is E2E FAIL",
+    "result": "PASS",
+    "evidence": {
+      "execution": "COMPLETED",
+      "evaluators": {
+        "insightflow.golden.oracle": [
+          "FAIL",
+          true,
+          "no_control_matched"
+        ],
+        "insightflow.golden.must_forbid": [
+          "FAIL",
+          true,
+          "forbid-salary-field@result_columns:table[0]=平均薪资"
+        ],
+        "insightflow.node.requirement_fidelity": [
+          "NOT_EVALUATED",
+          false,
+          "fidelity_not_collected"
+        ]
+      },
+      "e2e": [
+        "FAIL",
+        "insightflow.golden.oracle:F-ORACLE-MISS"
+      ]
+    }
+  },
+  {
+    "section": "4-history",
+    "check": "historical sha256 unchanged and equal to the Phase 1-B baseline",
+    "result": "PASS",
+    "evidence": {
+      "files": {
+        "/Users/lainey/Desktop/vibe-coding/insightflow/docs/evaluations/requirement-fidelity-golden-v1-2026-11-12/golden-set.json": "fe52a92cc77bb16fa5425f5618c7d7a9dd633f0790eaf341a3c434554a052142",
+        "/Users/lainey/Desktop/vibe-coding/insightflow/docs/evaluations/requirement-fidelity-golden-v1-2026-11-12/runs/gf_20261112-143406_cde1fd/RF-01/result.json": "16ca4af2451eb2bf58ac58c0f2ef78ff7012dc283b0d075a9210dd1b0c6af99b",
+        "/Users/lainey/Desktop/vibe-coding/insightflow/docs/evaluations/requirement-fidelity-golden-v1-2026-11-12/runs/gf_20261112-143406_cde1fd/RF-01/trace.json": "52444fc4231518b62bf765f90ea32f427318b73e3a16370a4e1e0ad408d4cdfb",
+        "/Users/lainey/Desktop/vibe-coding/insightflow/docs/evaluations/requirement-fidelity-golden-v1-2026-11-12/runs/gf_20261112-143406_cde1fd/RF-02/result.json": "7d7f7057a98763f7d0fd43d10397b77edc6579899ca75fd2f21de00686a5d5fa",
+        "/Users/lainey/Desktop/vibe-coding/insightflow/docs/evaluations/requirement-fidelity-golden-v1-2026-11-12/runs/gf_20261112-143406_cde1fd/RF-02/trace.json": "7cd5a5b5f16ffeda43ae54ec90af0ca765427208ca26686763d0ff67d2c84dde",
+        "/Users/lainey/Desktop/vibe-coding/insightflow/docs/evaluations/requirement-fidelity-golden-v1-2026-11-12/runs/gf_20261112-143406_cde1fd/RF-03/result.json": "b5ebf8cb714742707f100e23b0c52ec34f9a6c6869963ddf87710417750960ae",
+        "/Users/lainey/Desktop/vibe-coding/insightflow/docs/evaluations/requirement-fidelity-golden-v1-2026-11-12/runs/gf_20261112-143406_cde1fd/RF-03/trace.json": "23f4332030868aec0c76f8dc0678c871a19c2fa5727acd5cb6e978a31d3db743",
+        "/Users/lainey/Desktop/vibe-coding/insightflow/docs/evaluations/requirement-fidelity-golden-v1-2026-11-12/runs/gf_20261112-143406_cde1fd/RF-04/result.json": "05f64092d306bae337a989037e1ebcab9398a4454c1339826e8342ccfdf2d026",
+        "/Users/lainey/Desktop/vibe-coding/insightflow/docs/evaluations/requirement-fidelity-golden-v1-2026-11-12/runs/gf_20261112-143406_cde1fd/RF-04/trace.json": "49e2d3fe10e9a7ccecdec36c71674b6b4d67d1a96c5d08cf718ccaf7de8a55cb",
+        "/Users/lainey/Desktop/vibe-coding/insightflow/docs/evaluations/requirement-fidelity-golden-v1-2026-11-12/runs/gf_20261112-143406_cde1fd/RF-05/result.json": "c4e23c344251ce511a9fabfce42f36c7ee743edd18ea3d0d708441511f36fca9",
+        "/Users/lainey/Desktop/vibe-coding/insightflow/docs/evaluations/requirement-fidelity-golden-v1-2026-11-12/runs/gf_20261112-143406_cde1fd/RF-05/trace.json": "c86259ef342c01631844b9ce66fa07df9b0a2c1354635c51a52cfe98bcefa75e",
+        "/Users/lainey/Desktop/vibe-coding/insightflow/docs/evaluations/requirement-fidelity-golden-v1-2026-11-12/runs/gf_20261112-143406_cde1fd/summary.json": "4d2f35430d9f2f5d9c1fc492043d0dbd047fb538a93203711011a43b66ab6101",
+        "/Users/lainey/Desktop/vibe-coding/var/regression/runs/rg_20261112-133157_f04289/run.json": "1efe8c59eff6af33c039a19c2b739c9f801f30a41629fa93df9b9c6acb7f112e"
+      }
+    }
+  },
+  {
+    "section": "4-history",
+    "check": "historical golden projection unchanged; legacy labels kept",
+    "result": "PASS",
+    "evidence": {
+      "projection": {
+        "RF-01": [
+          "BLOCKED",
+          "NOT_EVALUATED",
+          "FAIL"
+        ],
+        "RF-02": [
+          "COMPLETED",
+          "PASS",
+          "PASS"
+        ],
+        "RF-03": [
+          "BLOCKED",
+          "NOT_EVALUATED",
+          "FAIL"
+        ],
+        "RF-04": [
+          "FAILED",
+          "NOT_EVALUATED",
+          "FAIL"
+        ],
+        "RF-05": [
+          "COMPLETED",
+          "PASS",
+          "PASS"
+        ]
+      },
+      "legacy_failure": {
+        "RF-01": "F-GOAL-SUBSTITUTED",
+        "RF-02": null,
+        "RF-03": "F-GOAL-SUBSTITUTED",
+        "RF-04": "F-GOAL-SUBSTITUTED",
+        "RF-05": null
+      }
+    }
+  },
+  {
+    "section": "4-history",
+    "check": "historical golden and TC runs are UNVERIFIED, not VERIFIED",
+    "result": "PASS",
+    "evidence": {
+      "golden": {
+        "status": "UNVERIFIED",
+        "reasons": [
+          "legacy_run_has_no_manifest"
+        ],
+        "files": [],
+        "case_status": {},
+        "basis": "Legacy golden runs wrote no config snapshot or final manifest; file hashes were never recorded."
+      },
+      "tc": {
+        "status": "UNVERIFIED",
+        "reasons": [
+          "tc_run_has_no_manifest"
+        ],
+        "files": [],
+        "case_status": {},
+        "basis": "The TC runner writes no final manifest with file hashes."
+      }
+    }
+  },
+  {
+    "section": "4-history",
+    "check": "TC read through the same interface",
+    "result": "PASS",
+    "evidence": {
+      "not_started": 14
+    }
+  },
+  {
+    "section": "4-history",
+    "check": "historical metrics still computable",
+    "result": "PASS",
+    "evidence": {
+      "counts": {
+        "started": 5,
+        "not_started": 0,
+        "valid": 5,
+        "infra_error": 0,
+        "e2e": {
+          "FAIL": 3,
+          "PASS": 2
+        },
+        "execution": {
+          "BLOCKED": 2,
+          "COMPLETED": 2,
+          "FAILED": 1
+        },
+        "execution_status_unknown": 0
+      },
+      "e2e_confirmed_success_rate": 0.4,
+      "decidable_pass_rate": 0.4,
+      "evaluation_coverage": 1.0,
+      "execution_completion_rate": 0.4,
+      "executed_result_correct_rate": 1.0,
+      "block_rate": 0.4,
+      "run_failure_rate": 0.2,
+      "evaluators": {
+        "insightflow.golden.score_case": {
+          "counts": {
+            "NOT_EVALUATED": 3,
+            "PASS": 2
+          },
+          "error_rate": 0.0,
+          "not_evaluated_rate": 0.6,
+          "pass_rate_when_decided": 1.0
+        }
+      }
+    }
+  }
+]

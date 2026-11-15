@@ -1,0 +1,606 @@
+{
+  "session_id": "606ec6fff21d4d3f90e075b44dc3d482",
+  "revision": 8,
+  "plan_id": "plan_e5629d61179c4d13b07256ea980da851",
+  "plan_version": 1,
+  "goal": "探索主要特征和差异",
+  "coverage": "已安排核心问题的分析",
+  "conditions": [
+    {
+      "label": "用户指定条件",
+      "text": "没有单独指定时间、筛选或统计限制；请查看各方向拟用口径。",
+      "verification": "以当前方案为准",
+      "source": "intent.constraints"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：记录数",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S01"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：工单编号 · 去重数量",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S01"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：响应分钟 · 均值",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S01"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：响应分钟 · 中位数",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S01"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按团队分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T02.steps.S01"
+    },
+    {
+      "label": "拟用排序与展示",
+      "text": "按记录数从高到低排列",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T02.steps.S02"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按优先级、状态分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T03.steps.S01"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按提交日期的月份分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T04.steps.S02"
+    },
+    {
+      "label": "拟用排序与展示",
+      "text": "按提交日期的月份从低到高排列",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T04.steps.S03"
+    }
+  ],
+  "directions": [
+    {
+      "task_id": "T01",
+      "title": "工单整体概况统计",
+      "question": "客服工单的总量、唯一编号数及响应时间的分布情况如何？",
+      "importance": "核心分析",
+      "reason": "核心需求要求探索主要特征，整体规模与关键数值指标（响应分钟）的集中趋势是理解数据概况的基础。删除此任务将无法回答“数据有多少”及“典型响应速度是多少”的基本问题。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "拟用统计口径：记录数",
+        "按上传记录逐行计数，不代表去重后的业务实体数量。",
+        "拟用统计口径：工单编号 · 去重数量",
+        "拟用统计口径：响应分钟 · 均值",
+        "拟用统计口径：响应分钟 · 中位数"
+      ],
+      "gaps": [],
+      "can_remove": true
+    },
+    {
+      "task_id": "T02",
+      "title": "各团队工单分布与响应差异",
+      "question": "不同团队的工单数量分布如何？各团队的平均响应时间是否存在显著差异？",
+      "importance": "核心分析",
+      "reason": "核心需求要求探索“差异”。团队是主要的组织维度，分析其数量分布和响应效率差异直接回应了“主要特征和差异”这一目标。这是识别资源分配不均或效率瓶颈的关键视角。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "按团队分组",
+        "拟用统计口径：记录数",
+        "按上传记录逐行计数，不代表去重后的业务实体数量。",
+        "拟用统计口径：响应分钟 · 均值",
+        "按记录数从高到低排列"
+      ],
+      "gaps": [],
+      "can_remove": true
+    },
+    {
+      "task_id": "T03",
+      "title": "优先级与状态交叉分析",
+      "question": "不同优先级的工单在状态上的分布有何特征？高优先级工单的处理进度是否优于低优先级？",
+      "importance": "辅助分析",
+      "reason": "优先级和状态是反映业务紧急程度和处理流程的核心分类字段。虽然不如团队维度直观，但交叉分析能揭示SLA执行情况和积压风险，属于对“主要特征”的深度补充。删除后仍可了解概况，但无法深入洞察处理流程中的潜在矛盾。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "按优先级、状态分组",
+        "拟用统计口径：记录数",
+        "按上传记录逐行计数，不代表去重后的业务实体数量。",
+        "按记录数从高到低排列"
+      ],
+      "gaps": [],
+      "can_remove": true
+    },
+    {
+      "task_id": "T04",
+      "title": "提交日期月度趋势概览",
+      "question": "工单提交量在不同月份之间是否有波动规律？",
+      "importance": "补充分析",
+      "reason": "探索式分析通常包含时间维度的初步观察。虽然样本量较小（8行），且未指定具体年份，但提取月份进行分组计数有助于发现季节性或周期性特征的线索。此为补充性分析，若数据量过小可能无显著意义，但不影响核心结论。",
+      "readiness": "完成已支持的数据转换后可分析",
+      "executable": true,
+      "details": [
+        "从提交日期提取月份，再分析",
+        "按提交日期的月份分组",
+        "拟用统计口径：记录数",
+        "按上传记录逐行计数，不代表去重后的业务实体数量。",
+        "按提交日期的月份从低到高排列"
+      ],
+      "gaps": [],
+      "can_remove": true
+    }
+  ],
+  "issues": [],
+  "warnings": [],
+  "can_approve": true,
+  "can_execute": false,
+  "audit": {
+    "audit_version": "2.2",
+    "binding": {
+      "dataset_id": "1f0b5676b9e64458b8acf88a40a6dafd",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+      "plan_id": "plan_e5629d61179c4d13b07256ea980da851",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "registry_version": "1.0"
+    },
+    "digest": "eeda05c6b86fd6d3735b29fee0727c85590da906080bb2c0c15b4a247da3463f",
+    "all_verified": true,
+    "items": []
+  },
+  "technical_details": {
+    "record": {
+      "session_id": "606ec6fff21d4d3f90e075b44dc3d482",
+      "plan_id": "plan_e5629d61179c4d13b07256ea980da851",
+      "plan_version": 1,
+      "dataset_id": "1f0b5676b9e64458b8acf88a40a6dafd",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+      "validation_version": "1.0",
+      "created_at": "2026-11-09T07:32:27.612628+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "1f0b5676b9e64458b8acf88a40a6dafd",
+          "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+          "plan_id": "plan_e5629d61179c4d13b07256ea980da851",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T01",
+              "title": "工单整体概况统计",
+              "business_question": "客服工单的总量、唯一编号数及响应时间的分布情况如何？",
+              "priority": "P0",
+              "priority_reason": "核心需求要求探索主要特征，整体规模与关键数值指标（响应分钟）的集中趋势是理解数据概况的基础。删除此任务将无法回答“数据有多少”及“典型响应速度是多少”的基本问题。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "total_ticket_count"
+                      },
+                      {
+                        "function": "distinct_count",
+                        "field": "field_0006",
+                        "alias": "unique_ticket_ids"
+                      },
+                      {
+                        "function": "avg",
+                        "field": "field_0005",
+                        "alias": "avg_response_minutes"
+                      },
+                      {
+                        "function": "median",
+                        "field": "field_0005",
+                        "alias": "median_response_minutes"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "task_id": "T02",
+              "title": "各团队工单分布与响应差异",
+              "business_question": "不同团队的工单数量分布如何？各团队的平均响应时间是否存在显著差异？",
+              "priority": "P0",
+              "priority_reason": "核心需求要求探索“差异”。团队是主要的组织维度，分析其数量分布和响应效率差异直接回应了“主要特征和差异”这一目标。这是识别资源分配不均或效率瓶颈的关键视角。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "ticket_count"
+                      },
+                      {
+                        "function": "avg",
+                        "field": "field_0005",
+                        "alias": "team_avg_response"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0002"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "sort",
+                  "params": {
+                    "field": "ticket_count",
+                    "direction": "desc"
+                  }
+                }
+              ]
+            },
+            {
+              "task_id": "T03",
+              "title": "优先级与状态交叉分析",
+              "business_question": "不同优先级的工单在状态上的分布有何特征？高优先级工单的处理进度是否优于低优先级？",
+              "priority": "P1",
+              "priority_reason": "优先级和状态是反映业务紧急程度和处理流程的核心分类字段。虽然不如团队维度直观，但交叉分析能揭示SLA执行情况和积压风险，属于对“主要特征”的深度补充。删除后仍可了解概况，但无法深入洞察处理流程中的潜在矛盾。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "status_count"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0004",
+                      "field_0003"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "sort",
+                  "params": {
+                    "field": "status_count",
+                    "direction": "desc"
+                  }
+                }
+              ]
+            },
+            {
+              "task_id": "T04",
+              "title": "提交日期月度趋势概览",
+              "business_question": "工单提交量在不同月份之间是否有波动规律？",
+              "priority": "P2",
+              "priority_reason": "探索式分析通常包含时间维度的初步观察。虽然样本量较小（8行），且未指定具体年份，但提取月份进行分组计数有助于发现季节性或周期性特征的线索。此为补充性分析，若数据量过小可能无显著意义，但不影响核心结论。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "derive",
+                  "params": {
+                    "function": "extract_month",
+                    "field": "field_0001",
+                    "alias": "submit_month"
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "monthly_ticket_count"
+                      }
+                    ],
+                    "dimensions": [
+                      "submit_month"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S03",
+                  "operation": "sort",
+                  "params": {
+                    "field": "submit_month",
+                    "direction": "asc"
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "探索主要特征和差异"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          },
+          {
+            "task_id": "T02",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          },
+          {
+            "task_id": "T03",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          },
+          {
+            "task_id": "T04",
+            "feasibility": "F1",
+            "reason_code": "REQUIRES_TRANSFORMATION",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T01",
+          "T02",
+          "T03",
+          "T04"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "1f0b5676b9e64458b8acf88a40a6dafd",
+          "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "exploratory",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "客服工单数据",
+            "business_goal": "探索主要特征和差异",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "constraint_audit": {
+      "audit_version": "2.2",
+      "binding": {
+        "dataset_id": "1f0b5676b9e64458b8acf88a40a6dafd",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_id": "plan_e5629d61179c4d13b07256ea980da851",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "eeda05c6b86fd6d3735b29fee0727c85590da906080bb2c0c15b4a247da3463f",
+      "all_verified": true,
+      "items": []
+    },
+    "session_status": "AWAITING_APPROVAL",
+    "revision": 8
+  },
+  "report_capacity": {
+    "policy_version": "report-capacity-v1",
+    "supported": true,
+    "metric_count": 8,
+    "core_metric_count": 6,
+    "estimated_batches": 1,
+    "max_groups_per_call": 8,
+    "max_groups": 64,
+    "max_batches": 8,
+    "estimated_metadata_bytes": 1673,
+    "context_estimate_only": true,
+    "message": "本方案包含 6 个核心指标、共 8 个指标，预计一次生成报告。 实际证据大小和模型生成结果将在执行后核验。"
+  },
+  "analysis_basis": {
+    "version": "analysis-basis-v1",
+    "session_id": "606ec6fff21d4d3f90e075b44dc3d482",
+    "plan_id": "plan_e5629d61179c4d13b07256ea980da851",
+    "plan_version": 1,
+    "dataset_id": "1f0b5676b9e64458b8acf88a40a6dafd",
+    "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+    "plan_hash": "ef59324a8853495e38eba3e91db6fd7940dca24a25ba62fcb94aeeea689a7f97",
+    "row_grain": "unknown",
+    "entity_field_id": null,
+    "metrics": [
+      {
+        "task_id": "T01",
+        "step_id": "S01",
+        "alias": "total_ticket_count",
+        "field_id": null,
+        "label": "记录",
+        "function": "count",
+        "basis": "逐行计数，不是业务实体去重数量",
+        "unit_status": "record_count"
+      },
+      {
+        "task_id": "T01",
+        "step_id": "S01",
+        "alias": "unique_ticket_ids",
+        "field_id": "field_0006",
+        "label": "工单编号",
+        "function": "distinct_count",
+        "basis": "先排除缺失，再按字段不同值计数",
+        "unit_status": "record_count"
+      },
+      {
+        "task_id": "T01",
+        "step_id": "S01",
+        "alias": "avg_response_minutes",
+        "field_id": "field_0005",
+        "label": "响应分钟",
+        "function": "avg",
+        "basis": "按该字段非空值执行指定聚合",
+        "unit_status": "not_declared"
+      },
+      {
+        "task_id": "T01",
+        "step_id": "S01",
+        "alias": "median_response_minutes",
+        "field_id": "field_0005",
+        "label": "响应分钟",
+        "function": "median",
+        "basis": "按该字段非空值执行指定聚合",
+        "unit_status": "not_declared"
+      },
+      {
+        "task_id": "T02",
+        "step_id": "S01",
+        "alias": "ticket_count",
+        "field_id": null,
+        "label": "记录",
+        "function": "count",
+        "basis": "逐行计数，不是业务实体去重数量",
+        "unit_status": "record_count"
+      },
+      {
+        "task_id": "T02",
+        "step_id": "S01",
+        "alias": "team_avg_response",
+        "field_id": "field_0005",
+        "label": "响应分钟",
+        "function": "avg",
+        "basis": "按该字段非空值执行指定聚合",
+        "unit_status": "not_declared"
+      },
+      {
+        "task_id": "T03",
+        "step_id": "S01",
+        "alias": "status_count",
+        "field_id": null,
+        "label": "记录",
+        "function": "count",
+        "basis": "逐行计数，不是业务实体去重数量",
+        "unit_status": "record_count"
+      },
+      {
+        "task_id": "T04",
+        "step_id": "S02",
+        "alias": "monthly_ticket_count",
+        "field_id": null,
+        "label": "记录",
+        "function": "count",
+        "basis": "逐行计数，不是业务实体去重数量",
+        "unit_status": "record_count"
+      }
+    ],
+    "entity_field_options": [
+      {
+        "field_id": "field_0001",
+        "label": "提交日期",
+        "unique_non_null": true
+      },
+      {
+        "field_id": "field_0002",
+        "label": "团队",
+        "unique_non_null": false
+      },
+      {
+        "field_id": "field_0003",
+        "label": "状态",
+        "unique_non_null": false
+      },
+      {
+        "field_id": "field_0004",
+        "label": "优先级",
+        "unique_non_null": false
+      },
+      {
+        "field_id": "field_0005",
+        "label": "响应分钟",
+        "unique_non_null": false
+      },
+      {
+        "field_id": "field_0006",
+        "label": "工单编号",
+        "unique_non_null": true
+      }
+    ],
+    "declaration_source": "unconfirmed",
+    "created_at": "2026-11-09T07:32:27.613223+00:00",
+    "digest": "82866852c76be132310ef846b8fa4df3a6970ca21e481daa0d7e645fb94935f3"
+  },
+  "data_overview": {
+    "dataset_id": "1f0b5676b9e64458b8acf88a40a6dafd",
+    "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+    "file_name": "support.csv",
+    "sheet_name": null,
+    "row_count": 8,
+    "column_count": 6,
+    "missing_cell_count": 1,
+    "duplicate_row_count": 0,
+    "fields_with_missing": [
+      {
+        "name": "响应分钟",
+        "missing_count": 1
+      }
+    ],
+    "quality_notes": [],
+    "cleaning_status": "not_performed",
+    "cleaning_notice": "已检查上传数据；尚未自动删除、填补或去重。疑似重复不等于错误记录。",
+    "sample_notice": "筛选后及指标有效样本量需执行后按分析方向统计，当前不将缺失单元格换算为无效行。"
+  }
+}

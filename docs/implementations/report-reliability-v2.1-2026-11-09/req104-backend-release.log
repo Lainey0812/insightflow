@@ -1,0 +1,58 @@
+........................................................................ [  4%]
+........................................................................ [  8%]
+........................................................................ [ 13%]
+........................................................................ [ 17%]
+........................................................................ [ 22%]
+........................................................................ [ 26%]
+........................................................................ [ 30%]
+........................................................................ [ 35%]
+........................................................................ [ 39%]
+........................................................................ [ 44%]
+...............................................................F........ [ 48%]
+........................................................................ [ 52%]
+........................................................................ [ 57%]
+........................................................................ [ 61%]
+........................................................................ [ 66%]
+........................................................................ [ 70%]
+........................................................................ [ 75%]
+........................................................................ [ 79%]
+........................................................................ [ 83%]
+........................................................................ [ 88%]
+........................................................................ [ 92%]
+........................................................................ [ 97%]
+................................................                         [100%]
+=================================== FAILURES ===================================
+_ test_model_cannot_introduce_unverified_facts_or_claims[output1-REPORT_INVALID_EVIDENCE_REFERENCE] _
+
+output = {'insights': [{'primary_evidence_id': 'E0002', 'evidence_refs': ['E0002', 'E0002'], 'finding_type': 'highlight', 'recommendation_id': 'none', ...}]}
+code = 'REPORT_INVALID_EVIDENCE_REFERENCE'
+
+    @pytest.mark.parametrize("output,code", [
+        (draft(primary="E9999"), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(refs=["E0002","E0002"]), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(kind="trend"), "REPORT_INVALID_EVIDENCE_TYPE"),
+        (draft(implication="当前有42条记录。"), "REPORT_LLM_INVALID_OUTPUT"),
+        (draft(implication="占百分之五十。"), "REPORT_LLM_INVALID_OUTPUT"),
+        (draft(implication="排名第一。"), "REPORT_LLM_INVALID_OUTPUT"),
+        (draft(implication="需求导致岗位集中。"), "REPORT_LLM_INVALID_OUTPUT"),
+        (draft(recommendation="保证能够获得机会。"), "REPORT_LLM_INVALID_OUTPUT"),
+        ("invalid JSON", "REPORT_LLM_INVALID_OUTPUT"),
+        ('{"insights":[],"insights":[]}', "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[],"headline":"目标完成"}, "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[{**draft()["insights"][0], "fact":"上海有42条"}]}, "REPORT_LLM_INVALID_OUTPUT"),
+    ])
+    def test_model_cannot_introduce_unverified_facts_or_claims(output, code):
+>       with pytest.raises(AppError) as exc: generate(provider=ReportProvider(output))
+             ^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE AppError
+
+backend/tests/test_report_module.py:101: Failed
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_report_module.py::test_model_cannot_introduce_unverified_facts_or_claims[output1-REPORT_INVALID_EVIDENCE_REFERENCE]
+1 failed, 1631 passed, 1 warning in 87.43s (0:01:27)

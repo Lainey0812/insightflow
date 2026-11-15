@@ -1,0 +1,257 @@
+[
+  {
+    "case_id": "S01",
+    "domain": "sales",
+    "query": "帮我分析2026年华东地区已完成订单的销售额，按照城市汇总并降序排名，取前三名。",
+    "kind": "numeric",
+    "split": "core",
+    "dimension": "城市",
+    "metric_field": "销售额",
+    "function": "sum",
+    "filters": [
+      [
+        "订单日期",
+        "year",
+        2026
+      ],
+      [
+        "地区",
+        "eq",
+        "华东"
+      ],
+      [
+        "订单状态",
+        "eq",
+        "已完成"
+      ]
+    ],
+    "order": "desc",
+    "top_n": 3,
+    "expected_constraints": [
+      "2026年",
+      "华东地区",
+      "已完成订单",
+      "销售额",
+      "城市",
+      "降序",
+      "前三名"
+    ],
+    "no_extra_tasks": true
+  },
+  {
+    "case_id": "S02",
+    "domain": "sales",
+    "query": "只统计各城市订单数量，不分析销售额。",
+    "kind": "numeric",
+    "split": "core",
+    "dimension": "城市",
+    "metric_field": null,
+    "function": "count",
+    "filters": [],
+    "prohibited_fields": [
+      "销售额"
+    ],
+    "no_extra_tasks": true
+  },
+  {
+    "case_id": "S03",
+    "domain": "sales",
+    "query": "帮我探索这份销售数据的主要特征和差异。",
+    "kind": "exploratory",
+    "split": "core"
+  },
+  {
+    "case_id": "S04",
+    "domain": "sales",
+    "query": "按城市比较利润总额。",
+    "kind": "blocked",
+    "split": "holdout",
+    "missing_field": "利润",
+    "no_execution": true
+  },
+  {
+    "case_id": "R01",
+    "domain": "recruitment",
+    "query": "统计各城市岗位数量，按数量降序排名。",
+    "kind": "numeric",
+    "split": "core",
+    "dimension": "城市",
+    "metric_field": null,
+    "function": "count",
+    "filters": [],
+    "order": "desc",
+    "no_extra_tasks": true
+  },
+  {
+    "case_id": "R02",
+    "domain": "recruitment",
+    "query": "计算薪资区间的平均值，不使用薪资元字段替代，也不要自行解析区间。",
+    "kind": "blocked",
+    "split": "core",
+    "prohibited_fields": [
+      "薪资元"
+    ],
+    "no_execution": true
+  },
+  {
+    "case_id": "R03",
+    "domain": "recruitment",
+    "query": "帮我处理一下。",
+    "kind": "clarify",
+    "split": "core",
+    "clarification": "请统计各城市岗位数量。",
+    "dimension": "城市",
+    "metric_field": null,
+    "function": "count",
+    "filters": []
+  },
+  {
+    "case_id": "R04",
+    "domain": "recruitment",
+    "query": "统计各城市岗位数量，不排除北京，按数量降序排列。",
+    "kind": "numeric",
+    "split": "holdout",
+    "dimension": "城市",
+    "metric_field": null,
+    "function": "count",
+    "filters": [],
+    "order": "desc",
+    "must_include": "北京",
+    "no_extra_tasks": true
+  },
+  {
+    "case_id": "T01",
+    "domain": "support",
+    "query": "按团队比较平均响应分钟。",
+    "kind": "numeric",
+    "split": "core",
+    "dimension": "团队",
+    "metric_field": "响应分钟",
+    "function": "avg",
+    "filters": []
+  },
+  {
+    "case_id": "T02",
+    "domain": "support",
+    "query": "只看已解决工单，按优先级统计工单数量，降序取前两名。",
+    "kind": "numeric",
+    "split": "core",
+    "dimension": "优先级",
+    "metric_field": null,
+    "function": "count",
+    "filters": [
+      [
+        "状态",
+        "eq",
+        "已解决"
+      ]
+    ],
+    "order": "desc",
+    "top_n": 2
+  },
+  {
+    "case_id": "T03",
+    "domain": "support",
+    "query": "比较指定团队的平均响应分钟。",
+    "kind": "clarify",
+    "split": "core",
+    "clarification": "只看一组和二组，按团队计算平均响应分钟。",
+    "dimension": "团队",
+    "metric_field": "响应分钟",
+    "function": "avg",
+    "filters": [
+      [
+        "团队",
+        "in",
+        [
+          "一组",
+          "二组"
+        ]
+      ]
+    ]
+  },
+  {
+    "case_id": "T04",
+    "domain": "support",
+    "query": "比较各团队已解决工单数量，不要分析利润，也不要推断团队差异的原因。",
+    "kind": "numeric",
+    "split": "holdout",
+    "dimension": "团队",
+    "metric_field": null,
+    "function": "count",
+    "filters": [
+      [
+        "状态",
+        "eq",
+        "已解决"
+      ]
+    ],
+    "prohibited_claims": [
+      "利润结论",
+      "确定性因果"
+    ],
+    "no_extra_tasks": true
+  },
+  {
+    "case_id": "P01",
+    "domain": "projects",
+    "query": "统计2026年每个月创建的任务数量，按月份升序。",
+    "kind": "numeric",
+    "split": "core",
+    "dimension": "month(创建日期)",
+    "metric_field": null,
+    "function": "count",
+    "filters": [
+      [
+        "创建日期",
+        "year",
+        2026
+      ]
+    ],
+    "order": "asc",
+    "requires_derive": true
+  },
+  {
+    "case_id": "P02",
+    "domain": "projects",
+    "query": "只统计已完成任务，按项目汇总工时总和，不包含丙项目。",
+    "kind": "numeric",
+    "split": "core",
+    "dimension": "项目",
+    "metric_field": "工时",
+    "function": "sum",
+    "filters": [
+      [
+        "状态",
+        "eq",
+        "已完成"
+      ],
+      [
+        "项目",
+        "ne",
+        "丙"
+      ]
+    ]
+  },
+  {
+    "case_id": "P03",
+    "domain": "projects",
+    "query": "探索这份项目任务数据的主要分布与差异。",
+    "kind": "exploratory",
+    "split": "core"
+  },
+  {
+    "case_id": "P04",
+    "domain": "projects",
+    "query": "计算平均工时，不要求计算工时中位数。",
+    "kind": "numeric",
+    "split": "holdout",
+    "dimension": null,
+    "metric_field": "工时",
+    "function": "avg",
+    "filters": [],
+    "optional": [
+      "工时中位数"
+    ]
+  }
+]

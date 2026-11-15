@@ -1,0 +1,2423 @@
+--- before/backend/app/api/admin.py
++++ after/backend/app/api/admin.py
+@@ -35,7 +35,7 @@
+ 
+ NOTICE='Trace is best-effort; missing observations do not imply no business runs or failures.'
+ 
+-def create_admin_router(traces, reports, token, captures=None, snapshot_token='', runtime_templates=None, *, local_test_mode=False, lifecycle=None, workflow_trace=None):
++def create_admin_router(traces, reports, token, captures=None, snapshot_token='', runtime_templates=None, *, local_test_mode=False, lifecycle=None, workflow_trace=None, workflow_observability=None):
+     cookie_name='insightflow_admin_read'
+     session_seconds=8*60*60
+     def signature(value):
+@@ -97,6 +97,17 @@
+         if not span:raise AppError('TRACE_SPAN_NOT_FOUND','追踪阶段不存在。',404)
+         return span
+ 
++    if workflow_observability:
++        from app.domain.lifecycle import LifecycleStatus
++        @router.get('/workflow-observability',dependencies=protected)
++        def workflow_list(workflow_id:str|None=Query(None,min_length=1,max_length=120),
++                          session_id:str|None=Query(None,min_length=1,max_length=120),
++                          status:LifecycleStatus|None=None,limit:int=Query(20,ge=1,le=100),offset:int=Query(0,ge=0,le=1000000)):
++            return read(lambda:workflow_observability.list(workflow_id=workflow_id,session_id=session_id,status=status,limit=limit,offset=offset))
++        @router.get('/workflow-observability/{workflow_id}',dependencies=protected)
++        def workflow_observability_detail(workflow_id:str):
++            return read(lambda:workflow_observability.get(workflow_id))
++
+     if workflow_trace:
+         @router.get('/workflow-traces/{workflow_id}',dependencies=protected)
+         def workflow_trace_detail(workflow_id:str):
+--- before/backend/app/main.py
++++ after/backend/app/main.py
+@@ -136,8 +136,11 @@
+     from app.services.workflow_trace import WorkflowTraceService
+     workflow_trace = WorkflowTraceService(repository,traces,captures)
+     app.state.workflow_trace = workflow_trace
++    from app.services.workflow_observability import WorkflowObservabilityService
++    workflow_observability = WorkflowObservabilityService(workflow_trace)
++    app.state.workflow_observability = workflow_observability
+     admin_router = create_admin_router(traces, reports, settings.admin_read_token,captures,settings.admin_snapshot_token,runtime_templates,
+-                                      local_test_mode=settings.admin_local_test_mode, lifecycle=lifecycle, workflow_trace=workflow_trace)
++                                      local_test_mode=settings.admin_local_test_mode, lifecycle=lifecycle, workflow_trace=workflow_trace, workflow_observability=workflow_observability)
+     app.include_router(admin_router)
+     app.include_router(admin_router, prefix='/api/v1', include_in_schema=False)
+     install_error_handlers(app)
+--- before/backend/app/services/workflow_observability.py
++++ after/backend/app/services/workflow_observability.py
+@@ -0,0 +1,123 @@
++"""Read-only Admin projection. Business status is computed without reading any Span."""
++from datetime import datetime
++from app.domain.errors import AppError
++from app.services.lifecycle import aggregate
++from app.storage.lifecycle_reader import LifecycleReader, readonly
++
++
++class WorkflowObservabilityService:
++    def __init__(self,trace_service):
++        self.trace_service=trace_service
++        self.path=trace_service.sessions.database.path
++        self.reader=LifecycleReader(self.path,self.path.parent/'observability'/'trace.sqlite3')
++
++    def _business(self,wf):
++        snapshot=self.reader.read(wf['session_id'],business_only=True)
++        model=aggregate(snapshot,wf['session_id'])
++        state=snapshot.session or {}
++        identity_matches=(state.get('workflow_id'),state.get('root_run_id'))==(wf['workflow_id'],wf['root_run_id'])
++        business=model.business_lifecycle.model_dump()
++        consistency=model.consistency.model_dump()
++        if not identity_matches:
++            business['status']='unknown';consistency['status']='inconsistent' if snapshot.session else 'unknown'
++            consistency['issues']=list(dict.fromkeys(consistency['issues']+['workflow_identity_mismatch' if snapshot.session else 'business_unavailable']))
++        updated=state.get('updated_at') if identity_matches else wf['updated_at']
++        refs=model.source_refs.model_dump()
++        refs['workflow_id'],refs['root_run_id']=wf['workflow_id'],wf['root_run_id']
++        # Exact selected generation/execution from business evidence, never max(timestamp).
++        end=None
++        if business['status'] in {'succeeded','partially_succeeded','failed','interrupted'}:
++            generation=next((g for g in snapshot.generations if g.get('execution_id')==refs['execution_id'] and g.get('attempt')==refs['report_attempt']),None)
++            if generation and generation.get('status') in {'completed','unavailable','failed'}:end=generation.get('finished_at')
++            elif refs['execution_id']:
++                result=next((e.get('result') for e in snapshot.executions if e.get('id')==refs['execution_id']),None)
++                if result and business['report_generation_status'] is None:end=result.get('finished_at')
++        duration=None
++        try:
++            start_dt=datetime.fromisoformat(wf['created_at']);end_dt=datetime.fromisoformat(end) if end else None
++            if end_dt and start_dt.tzinfo and end_dt.tzinfo and end_dt>=start_dt:duration=(end_dt-start_dt).total_seconds()*1000
++        except (ValueError,TypeError):pass
++        return {'workflow_id':wf['workflow_id'],'session_id':wf['session_id'],'root_run_id':wf['root_run_id'],
++            'business_lifecycle':business,'activity':model.activity,
++            'reason_codes':[r for r in model.reason_codes if not r.startswith('trace_')],
++            'source_refs':refs,'consistency':consistency,'created_at':wf['created_at'],'updated_at':updated,
++            'duration_ms':duration,'duration_basis':'Workflow 创建到精确当前业务终态，含人工等待' if duration is not None else None,
++            'ended_at':end,'has_exception':(business['status'] in {'failed','partially_succeeded','interrupted','unknown'}
++                or business['execution_status'] in {'failed','partial_success'}
++                or business['report_generation_status'] in {'failed','unavailable'}
++                or business['report_status'] in {'partial','unavailable'})}
++
++    def _find(self,workflow_id):
++        with readonly(self.path) as conn:
++            row=conn.execute('SELECT * FROM business_workflows WHERE workflow_id=?',(workflow_id,)).fetchone()
++        if not row:raise AppError('BUSINESS_WORKFLOW_NOT_FOUND','未登记此 Workflow。',404)
++        return dict(row)
++
++    def get(self,workflow_id):
++        item=self._business(self._find(workflow_id));findings=[];trace=None
++        try:trace=self.trace_service.get(workflow_id)
++        except AppError as error:
++            findings.append({'category':'inconsistent' if error.status==409 else 'unknown',
++                'code':error.error.code,'evidence_refs':[workflow_id]})
++        except Exception:
++            findings.append({'category':'unknown','code':'TRACE_VIEW_UNAVAILABLE','evidence_refs':[workflow_id]})
++        if trace:
++            for gap in trace['collection']['gaps']:
++                code=gap['code']
++                if 'OWNERSHIP' in code or 'MISMATCH' in code:category='inconsistent'
++                elif code=='EXECUTION_SPAN_NOT_COLLECTED':
++                    execution=next((e for e in trace['executions'] if e['execution_id']==gap.get('execution_id')),None)
++                    interrupted=execution and any(e.get('code')=='EXECUTION_INTERRUPTED' for e in execution['errors'])
++                    category='executed_trace_missing' if execution and execution['status']=='finished' and execution['outcome'] and not interrupted else 'unknown'
++                elif code in {'NODE_NOT_COLLECTED','APPROVAL_SPAN_NOT_COLLECTED'}:category='executed_trace_missing'
++                elif code=='REPORT_COMMIT_SPAN_NOT_COLLECTED':
++                    present=any(n['name']=='report_persistence' and n.get('attributes',{}).get('report_id')==gap.get('report_id') for n in trace['nodes'])
++                    category='observation_incomplete' if present else 'executed_trace_missing'
++                elif code in {'RECORDED_COLLECTION_GAP','REPORT_ARTIFACT_COLLECTION_GAP','LLM_CALL_NOT_COLLECTED'}:category='observation_incomplete'
++                else:category='unknown'
++                findings.append({'category':category,'code':code,'evidence_refs':[str(v) for k,v in gap.items() if k!='code']})
++            for event in trace['events']:
++                if event['event_type']=='report.node_skipped':
++                    findings.append({'category':'not_executed','code':event['payload'].get('skip_reason','SKIP_RECORDED'),
++                        'node_key':event['payload'].get('node_name'),'evidence_refs':[event['event_id']]})
++            # No result rows, prompts, raw error text, authorization keys or full user content in this view.
++            trace={key:trace[key] for key in ('workflow_id','root_run_id','session_id','root','nodes','events','plan_versions','approvals','executions','report_generations','reports','llm_calls','report_artifact_runs')}
++            trace['executions']=[{**{k:e[k] for k in ('execution_id','approval_id','plan_version_id','status','outcome','result_ref')},
++                'errors':[{k:error.get(k) for k in ('code','task_id','step_id')} for error in e['errors']]} for e in trace['executions']]
++            trace['report_generations']=[{k:g.get(k) for k in ('execution_id','status','attempt','report_id','queued_at','started_at','finished_at')} for g in trace['report_generations']]
++            trace['reports']=[{k:r.get(k) for k in ('report_id','execution_id','accepted_report_attempt','report_status','goal_coverage')} for r in trace['reports']]
++            trace['approvals']=[{k:a.get(k) for k in ('approval_id','plan_version_id')} for a in trace['approvals']]
++            trace['plan_versions']=[{k:p.get(k) for k in ('plan_version_id','plan_id','plan_version','dataset_id','dataset_version')} for p in trace['plan_versions']]
++            trace['report_artifact_runs']=[{k:r.get(k) for k in ('run_id','execution_id','attempt','status','error_code','retry_of_run_id')} for r in trace['report_artifact_runs']]
++            trace['nodes']=sorted(trace['nodes'],key=lambda n:(n.get('started_at') or '\uffff',n['span_id']))
++        if item['consistency']['status']!='consistent':findings.append({'category':'inconsistent' if item['consistency']['status']=='inconsistent' else 'unknown','code':'BUSINESS_CONSISTENCY_UNCONFIRMED','evidence_refs':item['consistency']['issues']})
++        with readonly(self.path) as conn:
++            current=conn.execute("SELECT json_extract(state,'$.revision') FROM sessions WHERE id=?",(item['session_id'],)).fetchone()
++        item['consistency']['revision_rechecked']=True
++        if not current or current[0]!=item['source_refs']['session_revision']:
++            item['consistency']['status']='unknown'
++            item['consistency']['issues']=list(dict.fromkeys(item['consistency']['issues']+['session_changed']))
++            item['business_lifecycle']['status']='unknown'
++            item['business_lifecycle']['report_delivery']='unknown'
++            findings.append({'category':'unknown','code':'SESSION_CHANGED_DURING_READ','evidence_refs':[item['session_id']]})
++        item['trace']=trace
++        item['collection']={'status':'incomplete' if any(f['category']!='not_executed' for f in findings) else 'observed',
++            'findings':findings,'notice':'没有明确证据的缺席节点无法判断是否执行；不补齐预设节点。跨库读取不是分布式原子快照。'}
++        item['has_exception']=item['has_exception'] or any(f['category']=='inconsistent' for f in findings) or bool(trace and any(n['status'] in {'failed','interrupted','partial'} for n in trace['nodes']))
++        return {'schema_version':'workflow-observability-v1',**item}
++
++    def list(self,*,workflow_id=None,session_id=None,status=None,limit=20,offset=0):
++        where=[];args=[]
++        for key,value in [('workflow_id',workflow_id),('session_id',session_id)]:
++            if value:where.append(key+'=?');args.append(value)
++        sql='SELECT * FROM business_workflows'+(' WHERE '+' AND '.join(where) if where else '')+' ORDER BY created_at DESC,workflow_id ASC'
++        with readonly(self.path) as conn:rows=[dict(r) for r in conn.execute(sql,args)]
++        matches=[]
++        for wf in rows:
++            business=self._business(wf)
++            if status is None or business['business_lifecycle']['status']==status:matches.append(wf)
++        items=[]
++        for wf in matches[offset:offset+limit]:
++            detail=self.get(wf['workflow_id']);detail.pop('trace',None);items.append(detail)
++        return {'schema_version':'workflow-observability-page-v1','items':items,'total':len(matches),'limit':limit,'offset':offset,
++            'sort':'created_at DESC, workflow_id ASC','notice':'业务状态只读自 Business DB；Trace 故障不推翻业务结果。'}
+--- before/backend/app/storage/lifecycle_reader.py
++++ after/backend/app/storage/lifecycle_reader.py
+@@ -42,7 +42,7 @@
+     def __init__(self, business_path: Path, trace_path: Path):
+         self.business_path, self.trace_path = business_path, trace_path
+ 
+-    def read(self, session_id: str) -> LifecycleSnapshot:
++    def read(self, session_id: str, *, business_only: bool = False) -> LifecycleSnapshot:
+         snap = LifecycleSnapshot()
+         try:
+             with readonly(self.business_path) as conn:
+@@ -106,6 +106,9 @@
+         except (sqlite3.Error, ValueError, TypeError, KeyError):
+             snap.business_available = False
+             return snap
++        if business_only:
++            snap.trace_available = False
++            return snap
+         try:
+             with readonly(self.trace_path) as conn:
+                 for row in conn.execute("SELECT id, record FROM trace_runs WHERE json_extract(record,'$.session_id')=?",(session_id,)):
+--- before/backend/app/storage/migrations/prompt_registry_001.sql
++++ after/backend/app/storage/migrations/prompt_registry_001.sql
+@@ -0,0 +1,22 @@
++CREATE TABLE IF NOT EXISTS registry_migrations (version INTEGER PRIMARY KEY);
++CREATE TABLE IF NOT EXISTS prompt_templates (
++ id TEXT PRIMARY KEY, node_id TEXT NOT NULL, version TEXT NOT NULL,
++ content_hash TEXT NOT NULL, record TEXT NOT NULL, UNIQUE(node_id,version));
++CREATE TABLE IF NOT EXISTS llm_request_snapshots (
++ id TEXT PRIMARY KEY, template_id TEXT NOT NULL REFERENCES prompt_templates(id), record TEXT NOT NULL);
++CREATE TABLE IF NOT EXISTS llm_request_payloads (
++ snapshot_id TEXT PRIMARY KEY REFERENCES llm_request_snapshots(id), payload TEXT NOT NULL, expires_at TEXT);
++CREATE TABLE IF NOT EXISTS llm_calls (
++ id TEXT PRIMARY KEY, operation_id TEXT NOT NULL, sequence INTEGER NOT NULL,
++ run_id TEXT, span_id TEXT, status TEXT NOT NULL, record TEXT NOT NULL,
++ request_id TEXT NOT NULL UNIQUE REFERENCES llm_request_snapshots(id), UNIQUE(operation_id,sequence));
++CREATE INDEX IF NOT EXISTS llm_calls_run ON llm_calls(run_id);
++CREATE INDEX IF NOT EXISTS llm_calls_span ON llm_calls(span_id);
++CREATE TRIGGER IF NOT EXISTS templates_no_update BEFORE UPDATE ON prompt_templates BEGIN SELECT RAISE(ABORT,'Immutable template'); END;
++CREATE TRIGGER IF NOT EXISTS templates_no_delete BEFORE DELETE ON prompt_templates BEGIN SELECT RAISE(ABORT,'Immutable template'); END;
++CREATE TRIGGER IF NOT EXISTS requests_no_update BEFORE UPDATE ON llm_request_snapshots BEGIN SELECT RAISE(ABORT,'Immutable request'); END;
++CREATE TRIGGER IF NOT EXISTS requests_no_delete BEFORE DELETE ON llm_request_snapshots BEGIN SELECT RAISE(ABORT,'Immutable request'); END;
++CREATE TRIGGER IF NOT EXISTS payload_no_update BEFORE UPDATE ON llm_request_payloads BEGIN SELECT RAISE(ABORT,'Immutable payload'); END;
++CREATE TRIGGER IF NOT EXISTS calls_terminal BEFORE UPDATE ON llm_calls WHEN OLD.status != 'running' BEGIN SELECT RAISE(ABORT,'Terminal call'); END;
++CREATE TRIGGER IF NOT EXISTS calls_no_delete BEFORE DELETE ON llm_calls BEGIN SELECT RAISE(ABORT,'Preserve calls'); END;
++INSERT OR IGNORE INTO registry_migrations VALUES (1);
+--- before/backend/app/storage/migrations/workflow_expand_business_001.sql
++++ after/backend/app/storage/migrations/workflow_expand_business_001.sql
+@@ -0,0 +1,220 @@
++-- Expand only. No business rows, backfill, state routing or old constraints change.
++CREATE TABLE workflow_expand_migrations (
++    version TEXT NOT NULL PRIMARY KEY, database_kind TEXT NOT NULL,
++    checksum TEXT NOT NULL, applied_at TEXT NOT NULL
++);
++CREATE TRIGGER workflow_expand_version_no_update BEFORE UPDATE ON workflow_expand_migrations
++BEGIN SELECT RAISE(ABORT, 'Immutable expand migration'); END;
++CREATE TRIGGER workflow_expand_version_no_delete BEFORE DELETE ON workflow_expand_migrations
++BEGIN SELECT RAISE(ABORT, 'Preserve expand migration'); END;
++
++CREATE TABLE session_messages (
++    message_id TEXT NOT NULL, session_id TEXT NOT NULL REFERENCES sessions(id),
++    sequence INTEGER NOT NULL CHECK(sequence >= 1), role TEXT NOT NULL CHECK(role IN ('user','assistant','system')),
++    kind TEXT NOT NULL, content TEXT NOT NULL, created_at TEXT NOT NULL,
++    workflow_id TEXT,
++    PRIMARY KEY(session_id, message_id), UNIQUE(session_id, sequence),
++    FOREIGN KEY(session_id, workflow_id) REFERENCES business_workflows(session_id, workflow_id)
++);
++CREATE TABLE session_datasets (
++    session_id TEXT NOT NULL REFERENCES sessions(id), dataset_id TEXT NOT NULL REFERENCES datasets(id),
++    created_at TEXT NOT NULL, PRIMARY KEY(session_id, dataset_id)
++);
++CREATE TABLE business_workflows (
++    workflow_id TEXT NOT NULL PRIMARY KEY CHECK(length(trim(workflow_id))>0), session_id TEXT NOT NULL REFERENCES sessions(id),
++    root_run_id TEXT NOT NULL UNIQUE CHECK(length(trim(root_run_id)) > 0),
++    origin_message_id TEXT, parent_workflow_id TEXT, input_file_id TEXT,
++    dataset_id TEXT, dataset_version TEXT,
++    goal_text TEXT NOT NULL CHECK(length(trim(goal_text)) > 0),
++    goal_sha256 TEXT NOT NULL CHECK(length(goal_sha256)=64 AND goal_sha256 NOT GLOB '*[^0-9a-f]*'),
++    control_status TEXT NOT NULL CHECK(control_status IN ('CREATED','PREPARING','PROFILING','PARSING_INTENT','PLANNING','VALIDATING','WAITING_FOR_CLARIFICATION','AWAITING_APPROVAL','APPROVED','RUNNING','COMPLETED','FAILED')),
++    control_context TEXT NOT NULL CHECK(json_valid(control_context) AND json_type(control_context)='object'),
++    revision INTEGER NOT NULL DEFAULT 0 CHECK(typeof(revision)='integer' AND revision>=0),
++    active_execution_key TEXT,
++    current_plan_version_id TEXT, current_approval_id TEXT, current_execution_id TEXT,
++    creation_request_id TEXT NOT NULL CHECK(length(trim(creation_request_id))>0),
++    creation_payload_hash TEXT NOT NULL CHECK(length(creation_payload_hash)=64 AND creation_payload_hash NOT GLOB '*[^0-9a-f]*'),
++    origin TEXT NOT NULL CHECK(origin IN ('native','legacy_default','legacy_archive')),
++    created_at TEXT NOT NULL, updated_at TEXT NOT NULL, materialized_at TEXT NOT NULL,
++    provenance TEXT NOT NULL CHECK(json_valid(provenance) AND json_type(provenance)='object'),
++    UNIQUE(session_id, workflow_id), UNIQUE(workflow_id, dataset_id, dataset_version),
++    UNIQUE(session_id, creation_request_id),
++    CHECK(parent_workflow_id IS NULL OR parent_workflow_id<>workflow_id),
++    CHECK(origin<>'native' OR (origin_message_id IS NOT NULL AND input_file_id IS NOT NULL)),
++    CHECK((dataset_id IS NULL AND dataset_version IS NULL) OR
++          (dataset_id IS NOT NULL AND dataset_version IS NOT NULL AND dataset_id IS input_file_id)),
++    FOREIGN KEY(session_id, origin_message_id) REFERENCES session_messages(session_id, message_id),
++    FOREIGN KEY(session_id, parent_workflow_id) REFERENCES business_workflows(session_id, workflow_id),
++    FOREIGN KEY(session_id, input_file_id) REFERENCES session_datasets(session_id, dataset_id),
++    FOREIGN KEY(dataset_id, dataset_version) REFERENCES dataset_profiles(dataset_id, dataset_version),
++    FOREIGN KEY(workflow_id, current_plan_version_id) REFERENCES workflow_plan_versions(workflow_id, plan_version_id),
++    FOREIGN KEY(workflow_id, current_approval_id) REFERENCES workflow_approval_links(workflow_id, approval_id),
++    FOREIGN KEY(workflow_id, current_execution_id) REFERENCES workflow_execution_links(workflow_id, execution_id)
++);
++CREATE INDEX workflow_session_created ON business_workflows(session_id, created_at, workflow_id);
++CREATE TRIGGER workflow_identity_immutable BEFORE UPDATE ON business_workflows
++WHEN NEW.workflow_id IS NOT OLD.workflow_id OR NEW.session_id IS NOT OLD.session_id OR
++     NEW.root_run_id IS NOT OLD.root_run_id OR NEW.origin_message_id IS NOT OLD.origin_message_id OR
++     NEW.parent_workflow_id IS NOT OLD.parent_workflow_id OR NEW.goal_text IS NOT OLD.goal_text OR
++     NEW.goal_sha256 IS NOT OLD.goal_sha256 OR NEW.creation_request_id IS NOT OLD.creation_request_id OR
++     NEW.creation_payload_hash IS NOT OLD.creation_payload_hash OR NEW.origin IS NOT OLD.origin OR
++     NEW.created_at IS NOT OLD.created_at OR NEW.input_file_id IS NOT OLD.input_file_id OR
++     (OLD.dataset_id IS NOT NULL AND (NEW.dataset_id IS NOT OLD.dataset_id OR NEW.dataset_version IS NOT OLD.dataset_version))
++BEGIN SELECT RAISE(ABORT, 'Workflow identity and pinned dataset are immutable'); END;
++CREATE TRIGGER workflow_revision_guard BEFORE UPDATE ON business_workflows
++WHEN NEW.revision<>OLD.revision+1
++BEGIN SELECT RAISE(ABORT, 'Workflow revision must advance once'); END;
++CREATE TRIGGER workflow_history_no_delete BEFORE DELETE ON business_workflows
++BEGIN SELECT RAISE(ABORT, 'Preserve workflow history'); END;
++CREATE TRIGGER message_identity_immutable BEFORE UPDATE ON session_messages
++WHEN NEW.message_id IS NOT OLD.message_id OR NEW.session_id IS NOT OLD.session_id OR
++     NEW.sequence IS NOT OLD.sequence OR NEW.role IS NOT OLD.role OR NEW.kind IS NOT OLD.kind OR
++     NEW.content IS NOT OLD.content OR NEW.created_at IS NOT OLD.created_at OR
++     (OLD.workflow_id IS NOT NULL AND NEW.workflow_id IS NOT OLD.workflow_id)
++BEGIN SELECT RAISE(ABORT, 'Message identity and assigned workflow are immutable'); END;
++
++CREATE TABLE workflow_plan_versions (
++    plan_version_id TEXT NOT NULL PRIMARY KEY CHECK(length(trim(plan_version_id))>0), workflow_id TEXT NOT NULL, session_id TEXT NOT NULL,
++    plan_version INTEGER NOT NULL CHECK(typeof(plan_version)='integer' AND plan_version>=1),
++    plan_id TEXT NOT NULL, dataset_id TEXT NOT NULL, dataset_version TEXT NOT NULL,
++    validation_version TEXT NOT NULL, payload_hash TEXT NOT NULL CHECK(length(payload_hash)=64 AND payload_hash NOT GLOB '*[^0-9a-f]*'),
++    source_kind TEXT NOT NULL CHECK(source_kind IN ('legacy_ref','native')),
++    legacy_session_id TEXT, legacy_plan_version INTEGER, record_json TEXT,
++    registered_at TEXT NOT NULL,
++    UNIQUE(workflow_id, plan_version), UNIQUE(workflow_id, plan_version_id),
++    UNIQUE(legacy_session_id, legacy_plan_version),
++    CHECK((source_kind='legacy_ref' AND legacy_session_id IS session_id AND legacy_plan_version IS plan_version AND record_json IS NULL) OR
++          (source_kind='native' AND legacy_session_id IS NULL AND legacy_plan_version IS NULL AND record_json IS NOT NULL AND json_valid(record_json))),
++    CHECK(record_json IS NULL OR (json_extract(record_json,'$.session_id') IS session_id AND
++          json_extract(record_json,'$.plan_id') IS plan_id AND json_extract(record_json,'$.plan_version') IS plan_version AND
++          json_extract(record_json,'$.dataset_id') IS dataset_id AND json_extract(record_json,'$.dataset_version') IS dataset_version AND
++          json_extract(record_json,'$.validation_version') IS validation_version)),
++    FOREIGN KEY(session_id, workflow_id) REFERENCES business_workflows(session_id, workflow_id),
++    FOREIGN KEY(workflow_id, dataset_id, dataset_version) REFERENCES business_workflows(workflow_id, dataset_id, dataset_version),
++    FOREIGN KEY(legacy_session_id, legacy_plan_version) REFERENCES plan_versions(session_id, plan_version)
++);
++CREATE TRIGGER workflow_legacy_plan_owner BEFORE INSERT ON workflow_plan_versions
++WHEN NEW.source_kind='legacy_ref' AND NOT EXISTS (
++    SELECT 1 FROM plan_versions p WHERE p.session_id=NEW.legacy_session_id AND p.plan_version=NEW.legacy_plan_version
++    AND p.plan_id=NEW.plan_id AND json_extract(p.record,'$.dataset_id') IS NEW.dataset_id
++    AND json_extract(p.record,'$.dataset_version') IS NEW.dataset_version
++    AND json_extract(p.record,'$.validation_version') IS NEW.validation_version)
++BEGIN SELECT RAISE(ABORT, 'Legacy plan reference disagrees with source'); END;
++CREATE TRIGGER workflow_plan_no_update BEFORE UPDATE ON workflow_plan_versions
++BEGIN SELECT RAISE(ABORT, 'Immutable workflow plan'); END;
++CREATE TRIGGER workflow_plan_no_delete BEFORE DELETE ON workflow_plan_versions
++BEGIN SELECT RAISE(ABORT, 'Preserve workflow plan'); END;
++
++CREATE UNIQUE INDEX expand_approval_owner ON plan_approvals(approval_id, session_id);
++CREATE UNIQUE INDEX expand_execution_owner ON executions(id, session_id);
++CREATE TABLE workflow_approval_links (
++    approval_id TEXT NOT NULL PRIMARY KEY, workflow_id TEXT NOT NULL, session_id TEXT NOT NULL,
++    plan_version_id TEXT NOT NULL, client_request_id TEXT NOT NULL,
++    payload_hash TEXT NOT NULL CHECK(length(payload_hash)=64 AND payload_hash NOT GLOB '*[^0-9a-f]*'),
++    snapshot_hash TEXT NOT NULL CHECK(length(snapshot_hash)=64 AND snapshot_hash NOT GLOB '*[^0-9a-f]*'),
++    source_kind TEXT NOT NULL CHECK(source_kind IN ('legacy_ref','native')), registered_at TEXT NOT NULL,
++    UNIQUE(workflow_id, approval_id), UNIQUE(workflow_id, approval_id, plan_version_id),
++    UNIQUE(workflow_id, client_request_id),
++    FOREIGN KEY(approval_id, session_id) REFERENCES plan_approvals(approval_id, session_id),
++    FOREIGN KEY(session_id, workflow_id) REFERENCES business_workflows(session_id, workflow_id),
++    FOREIGN KEY(workflow_id, plan_version_id) REFERENCES workflow_plan_versions(workflow_id, plan_version_id)
++);
++CREATE TRIGGER workflow_approval_source_guard BEFORE INSERT ON workflow_approval_links
++WHEN NOT EXISTS (
++    SELECT 1 FROM plan_approvals a JOIN workflow_plan_versions p ON p.plan_version_id=NEW.plan_version_id
++    WHERE a.approval_id=NEW.approval_id AND a.session_id=NEW.session_id AND p.workflow_id=NEW.workflow_id
++    AND json_extract(a.record,'$.session_id') IS NEW.session_id
++    AND json_extract(a.record,'$.plan_id') IS p.plan_id AND json_extract(a.record,'$.plan_version') IS p.plan_version
++    AND json_extract(a.record,'$.dataset_id') IS p.dataset_id AND json_extract(a.record,'$.dataset_version') IS p.dataset_version
++    AND json_extract(a.record,'$.validation_version') IS p.validation_version
++    AND json_extract(a.record,'$.snapshot.approval_id') IS NEW.approval_id
++    AND json_extract(a.record,'$.snapshot.validated_plan.plan.plan_id') IS p.plan_id
++    AND json_extract(a.record,'$.snapshot.validated_plan.plan.plan_version') IS p.plan_version
++    AND json_extract(a.record,'$.snapshot.validated_plan.plan.dataset_id') IS p.dataset_id
++    AND json_extract(a.record,'$.snapshot.validated_plan.plan.dataset_version') IS p.dataset_version
++    AND (json_extract(a.record,'$.snapshot.session_id') IS NEW.session_id OR
++         (NEW.source_kind='legacy_ref' AND json_extract(a.record,'$.snapshot.session_id') IS NULL)))
++BEGIN SELECT RAISE(ABORT, 'Approval does not reference workflow plan'); END;
++CREATE TABLE workflow_execution_links (
++    execution_id TEXT NOT NULL PRIMARY KEY, workflow_id TEXT NOT NULL, session_id TEXT NOT NULL,
++    approval_id TEXT NOT NULL, plan_version_id TEXT NOT NULL, dispatch_key TEXT NOT NULL,
++    client_request_id TEXT NOT NULL, payload_hash TEXT NOT NULL CHECK(length(payload_hash)=64 AND payload_hash NOT GLOB '*[^0-9a-f]*'),
++    source_kind TEXT NOT NULL CHECK(source_kind IN ('legacy_ref','native')), registered_at TEXT NOT NULL,
++    UNIQUE(workflow_id, execution_id), UNIQUE(workflow_id, session_id, execution_id),
++    UNIQUE(workflow_id, client_request_id),
++    FOREIGN KEY(execution_id, session_id) REFERENCES executions(id, session_id),
++    FOREIGN KEY(session_id, workflow_id) REFERENCES business_workflows(session_id, workflow_id),
++    FOREIGN KEY(workflow_id, approval_id, plan_version_id) REFERENCES workflow_approval_links(workflow_id, approval_id, plan_version_id)
++);
++CREATE TRIGGER workflow_execution_source_guard BEFORE INSERT ON workflow_execution_links
++WHEN NOT EXISTS (
++    SELECT 1 FROM executions e JOIN workflow_plan_versions p ON p.plan_version_id=NEW.plan_version_id
++    WHERE e.id=NEW.execution_id AND e.session_id=NEW.session_id AND p.workflow_id=NEW.workflow_id
++    AND json_extract(e.request,'$.session_id') IS NEW.session_id
++    AND json_extract(e.request,'$.plan_id') IS p.plan_id AND json_extract(e.request,'$.plan_version') IS p.plan_version
++    AND json_extract(e.approval,'$.approval_id') IS NEW.approval_id
++    AND json_extract(e.approval,'$.validated_plan.plan.plan_id') IS p.plan_id
++    AND json_extract(e.approval,'$.validated_plan.plan.plan_version') IS p.plan_version
++    AND json_extract(e.approval,'$.validated_plan.plan.dataset_id') IS p.dataset_id
++    AND json_extract(e.approval,'$.validated_plan.plan.dataset_version') IS p.dataset_version
++    AND (e.result IS NULL OR (json_extract(e.result,'$.execution_id') IS NEW.execution_id
++         AND json_extract(e.result,'$.session_id') IS NEW.session_id
++         AND json_extract(e.result,'$.approval_id') IS NEW.approval_id)))
++BEGIN SELECT RAISE(ABORT, 'Execution does not reference workflow approval'); END;
++CREATE TABLE workflow_report_links (
++    report_id TEXT NOT NULL PRIMARY KEY REFERENCES analysis_reports(id), workflow_id TEXT NOT NULL,
++    session_id TEXT NOT NULL, execution_id TEXT NOT NULL,
++    accepted_report_attempt INTEGER NOT NULL CHECK(typeof(accepted_report_attempt)='integer' AND accepted_report_attempt>=1),
++    source_kind TEXT NOT NULL CHECK(source_kind IN ('legacy_ref','native')), registered_at TEXT NOT NULL,
++    UNIQUE(workflow_id, report_id),
++    FOREIGN KEY(workflow_id, session_id, execution_id) REFERENCES workflow_execution_links(workflow_id, session_id, execution_id)
++);
++CREATE TRIGGER workflow_report_source_guard BEFORE INSERT ON workflow_report_links
++WHEN NOT EXISTS (
++    SELECT 1 FROM analysis_reports r JOIN workflow_execution_links e ON e.execution_id=NEW.execution_id
++    JOIN workflow_plan_versions p ON p.plan_version_id=e.plan_version_id
++    WHERE r.id=NEW.report_id AND e.workflow_id=NEW.workflow_id AND e.session_id=NEW.session_id
++    AND json_extract(r.report,'$.report_id') IS NEW.report_id
++    AND json_extract(r.report,'$.execution_source') IS 'engine'
++    AND json_extract(r.report,'$.execution_id') IS NEW.execution_id
++    AND json_extract(r.report,'$.plan_version') IS p.plan_version
++    AND json_extract(r.report,'$.dataset_id') IS p.dataset_id AND json_extract(r.report,'$.dataset_version') IS p.dataset_version
++    AND json_extract(r.audit,'$.session_id') IS NEW.session_id AND json_extract(r.audit,'$.approval_id') IS e.approval_id
++    AND json_extract(r.audit,'$.execution_id') IS NEW.execution_id AND json_extract(r.audit,'$.plan_id') IS p.plan_id
++    AND (NEW.source_kind='legacy_ref' OR EXISTS (SELECT 1 FROM report_generations g
++         WHERE g.execution_id=NEW.execution_id AND g.status IN ('completed','unavailable')
++         AND json_extract(g.record,'$.report_id') IS NEW.report_id
++         AND json_extract(g.record,'$.attempt') IS NEW.accepted_report_attempt)))
++BEGIN SELECT RAISE(ABORT, 'Report does not reference workflow execution'); END;
++CREATE TRIGGER workflow_approval_no_update BEFORE UPDATE ON workflow_approval_links
++BEGIN SELECT RAISE(ABORT, 'Immutable approval binding'); END;
++CREATE TRIGGER workflow_approval_no_delete BEFORE DELETE ON workflow_approval_links
++BEGIN SELECT RAISE(ABORT, 'Preserve approval binding'); END;
++CREATE TRIGGER workflow_execution_no_update BEFORE UPDATE ON workflow_execution_links
++BEGIN SELECT RAISE(ABORT, 'Immutable execution binding'); END;
++CREATE TRIGGER workflow_execution_no_delete BEFORE DELETE ON workflow_execution_links
++BEGIN SELECT RAISE(ABORT, 'Preserve execution binding'); END;
++CREATE TRIGGER workflow_report_no_update BEFORE UPDATE ON workflow_report_links
++BEGIN SELECT RAISE(ABORT, 'Immutable report binding'); END;
++CREATE TRIGGER workflow_report_no_delete BEFORE DELETE ON workflow_report_links
++BEGIN SELECT RAISE(ABORT, 'Preserve report binding'); END;
++
++CREATE TABLE session_workflow_routes (
++    session_id TEXT NOT NULL PRIMARY KEY REFERENCES sessions(id),
++    mode TEXT NOT NULL CHECK(mode IN ('legacy','shadow','workflow_v2')),
++    default_workflow_id TEXT, migration_version TEXT NOT NULL, updated_at TEXT NOT NULL,
++    FOREIGN KEY(session_id, default_workflow_id) REFERENCES business_workflows(session_id, workflow_id)
++);
++CREATE TABLE workflow_backfill_items (
++    source_type TEXT NOT NULL, source_key TEXT NOT NULL, decision_version INTEGER NOT NULL CHECK(decision_version>=1),
++    source_hash TEXT NOT NULL CHECK(length(source_hash)=64 AND source_hash NOT GLOB '*[^0-9a-f]*'),
++    workflow_id TEXT REFERENCES business_workflows(workflow_id),
++    status TEXT NOT NULL CHECK(status IN ('proposed','verified','unresolved','conflict','failed')),
++    rule_version TEXT NOT NULL, evidence TEXT NOT NULL CHECK(json_valid(evidence)),
++    error_code TEXT, recorded_at TEXT NOT NULL,
++    PRIMARY KEY(source_type, source_key, decision_version)
++);
++CREATE TRIGGER workflow_backfill_no_update BEFORE UPDATE ON workflow_backfill_items
++BEGIN SELECT RAISE(ABORT, 'Append a new backfill decision'); END;
++CREATE TRIGGER workflow_backfill_no_delete BEFORE DELETE ON workflow_backfill_items
++BEGIN SELECT RAISE(ABORT, 'Preserve backfill decisions'); END;
+--- before/backend/app/storage/migrations/workflow_expand_registry_001.sql
++++ after/backend/app/storage/migrations/workflow_expand_registry_001.sql
+@@ -0,0 +1,24 @@
++CREATE TABLE workflow_expand_migrations (
++    version TEXT NOT NULL PRIMARY KEY, database_kind TEXT NOT NULL,
++    checksum TEXT NOT NULL, applied_at TEXT NOT NULL
++);
++CREATE TRIGGER workflow_expand_version_no_update BEFORE UPDATE ON workflow_expand_migrations
++BEGIN SELECT RAISE(ABORT, 'Immutable expand migration'); END;
++CREATE TRIGGER workflow_expand_version_no_delete BEFORE DELETE ON workflow_expand_migrations
++BEGIN SELECT RAISE(ABORT, 'Preserve expand migration'); END;
++CREATE TABLE llm_call_workflow_links (
++    call_id TEXT NOT NULL PRIMARY KEY REFERENCES llm_calls(id), workflow_id TEXT NOT NULL,
++    session_id TEXT NOT NULL, run_id TEXT, span_id TEXT, root_run_id TEXT,
++    evidence TEXT NOT NULL CHECK(json_valid(evidence)), registered_at TEXT NOT NULL,
++    CHECK(span_id IS NULL OR run_id IS NOT NULL)
++);
++CREATE INDEX expand_call_workflow_lookup ON llm_call_workflow_links(workflow_id, call_id);
++CREATE TRIGGER call_workflow_source_guard BEFORE INSERT ON llm_call_workflow_links
++WHEN NOT EXISTS (SELECT 1 FROM llm_calls c WHERE c.id=NEW.call_id
++    AND c.run_id IS NEW.run_id AND c.span_id IS NEW.span_id)
++    OR EXISTS (SELECT 1 FROM llm_call_workflow_links l WHERE l.workflow_id=NEW.workflow_id AND l.session_id<>NEW.session_id)
++BEGIN SELECT RAISE(ABORT, 'LLM call workflow ownership conflict'); END;
++CREATE TRIGGER call_workflow_no_update BEFORE UPDATE ON llm_call_workflow_links
++BEGIN SELECT RAISE(ABORT, 'Immutable call workflow binding'); END;
++CREATE TRIGGER call_workflow_no_delete BEFORE DELETE ON llm_call_workflow_links
++BEGIN SELECT RAISE(ABORT, 'Preserve call workflow binding'); END;
+--- before/backend/app/storage/migrations/workflow_expand_trace_001.sql
++++ after/backend/app/storage/migrations/workflow_expand_trace_001.sql
+@@ -0,0 +1,25 @@
++CREATE TABLE workflow_expand_migrations (
++    version TEXT NOT NULL PRIMARY KEY, database_kind TEXT NOT NULL,
++    checksum TEXT NOT NULL, applied_at TEXT NOT NULL
++);
++CREATE TRIGGER workflow_expand_version_no_update BEFORE UPDATE ON workflow_expand_migrations
++BEGIN SELECT RAISE(ABORT, 'Immutable expand migration'); END;
++CREATE TRIGGER workflow_expand_version_no_delete BEFORE DELETE ON workflow_expand_migrations
++BEGIN SELECT RAISE(ABORT, 'Preserve expand migration'); END;
++CREATE TABLE trace_workflow_links (
++    run_id TEXT NOT NULL PRIMARY KEY REFERENCES trace_runs(id), workflow_id TEXT NOT NULL,
++    session_id TEXT NOT NULL, kind TEXT NOT NULL CHECK(kind IN ('workflow','report_generation')),
++    evidence TEXT NOT NULL CHECK(json_valid(evidence)), registered_at TEXT NOT NULL
++);
++CREATE UNIQUE INDEX expand_workflow_root_identity ON trace_workflow_links(workflow_id) WHERE kind='workflow';
++CREATE INDEX expand_trace_workflow_lookup ON trace_workflow_links(workflow_id, kind);
++CREATE TRIGGER trace_workflow_source_guard BEFORE INSERT ON trace_workflow_links
++WHEN NOT EXISTS (SELECT 1 FROM trace_runs r WHERE r.id=NEW.run_id
++    AND json_extract(r.record,'$.session_id') IS NEW.session_id
++    AND COALESCE(json_extract(r.record,'$.kind'),'report_generation') IS NEW.kind)
++    OR EXISTS (SELECT 1 FROM trace_workflow_links l WHERE l.workflow_id=NEW.workflow_id AND l.session_id<>NEW.session_id)
++BEGIN SELECT RAISE(ABORT, 'Trace workflow ownership conflict'); END;
++CREATE TRIGGER trace_workflow_no_update BEFORE UPDATE ON trace_workflow_links
++BEGIN SELECT RAISE(ABORT, 'Immutable trace workflow binding'); END;
++CREATE TRIGGER trace_workflow_no_delete BEFORE DELETE ON trace_workflow_links
++BEGIN SELECT RAISE(ABORT, 'Preserve trace workflow binding'); END;
+--- before/backend/tests/test_workflow_observability_admin.py
++++ after/backend/tests/test_workflow_observability_admin.py
+@@ -0,0 +1,172 @@
++"""Read-only business/Trace projections; synthetic HTTP transport is declared in fixtures."""
++from contextlib import closing
++import hashlib,json
++from fastapi.testclient import TestClient
++from test_trace_closure_c2 import application,AUTH
++from test_report_workflow import run
++
++
++def rows(app):
++    result={}
++    for name,connect in [('business',app.state.repository.database.connect),('trace',app.state.traces.repository.connect)]:
++        with closing(connect()) as conn:
++            tables=[r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")]
++            result[name]=hashlib.sha256(json.dumps({t:[tuple(r) for r in conn.execute(f'SELECT * FROM {t} ORDER BY rowid')] for t in tables},sort_keys=True).encode()).hexdigest()
++    return result
++
++
++def test_list_detail_business_success_sorted_nodes_and_readonly(tmp_path):
++    app=application(tmp_path)
++    with TestClient(app) as client:
++        _,_,session=run(client);before=rows(app)
++        page=client.get('/admin/workflow-observability',headers=AUTH).json()
++        assert page['total']==1 and page['items'][0]['business_lifecycle']['status']=='succeeded',page
++        detail=client.get('/admin/workflow-observability/'+session['workflow_id'],headers=AUTH).json()
++        assert detail['duration_ms']>=0 and detail['collection']['status']=='observed'
++        assert len(detail['trace']['nodes'])==14 and len(detail['trace']['llm_calls'])==3
++        assert detail['trace']['nodes']==sorted(detail['trace']['nodes'],key=lambda n:(n['started_at'],n['span_id']))
++        assert detail['trace']['root']['status']=='waiting_approval'
++        assert detail['business_lifecycle']['status']=='succeeded'
++        assert client.get('/admin/workflow-observability?status=failed',headers=AUTH).json()['total']==0
++        assert client.get('/admin/workflow-observability?workflow_id=unknown',headers=AUTH).json()['items']==[]
++        assert client.get('/admin/workflow-observability?session_id='+session['id'],headers=AUTH).json()['total']==1
++        assert client.get('/admin/workflow-observability?limit=1&offset=1',headers=AUTH).json()['items']==[]
++        assert client.get('/admin/workflow-observability?limit=0',headers=AUTH).status_code==422
++        assert client.get('/admin/workflow-observability?status=imaginary',headers=AUTH).status_code==422
++        assert rows(app)==before
++        assert client.get('/admin/workflow-observability').status_code==403
++        assert client.get('/admin/workflow-observability/'+session['workflow_id']).status_code==403
++
++
++def test_trace_down_keeps_business_delivery(tmp_path,monkeypatch):
++    app=application(tmp_path)
++    with TestClient(app) as client:
++        _,_,session=run(client)
++        monkeypatch.setattr(app.state.traces.repository,'connect',lambda: (_ for _ in ()).throw(OSError('down')))
++        response=client.get('/admin/workflow-observability/'+session['workflow_id'],headers=AUTH)
++        assert response.status_code==200,response.text
++        detail=response.json()
++        assert detail['business_lifecycle']['status']=='succeeded'
++        assert detail['business_lifecycle']['report_delivery']=='delivered'
++        assert detail['trace']['reports'][0]['report_id']==session['report_generations'][0]['report_id']
++        assert detail['collection']['status']=='incomplete' and detail['trace']['nodes']==[]
++        assert any(f['category']=='executed_trace_missing' for f in detail['collection']['findings'])
++
++
++def test_inconsistent_trace_retains_independent_business_result(tmp_path,monkeypatch):
++    from app.domain.errors import AppError
++    app=application(tmp_path)
++    with TestClient(app) as client:
++        _,_,session=run(client)
++        monkeypatch.setattr(app.state.workflow_trace,'get',lambda _: (_ for _ in ()).throw(AppError('WORKFLOW_TRACE_IDENTITY_MISMATCH','unsafe',409)))
++        response=client.get('/admin/workflow-observability/'+session['workflow_id'],headers=AUTH)
++        assert response.status_code==200,response.text
++        detail=response.json()
++        assert detail['business_lifecycle']['status']=='succeeded' and detail['trace'] is None
++        assert detail['collection']['findings'][0]['category']=='inconsistent'
++
++
++def test_status_filter_is_before_stable_pagination(tmp_path):
++    from workflow_v1_fixtures import create_real
++    from test_report_workflow import SALES,QUERY
++    app=application(tmp_path)
++    with TestClient(app) as client:
++        _,_,completed=run(client)
++        waiting=create_real(client,SALES,'other.csv',QUERY)
++        query='/admin/workflow-observability'
++        first=client.get(query+'?limit=1&offset=0',headers=AUTH).json()
++        second=client.get(query+'?limit=1&offset=1',headers=AUTH).json()
++        assert first['total']==second['total']==2
++        assert first['items'][0]['workflow_id']==waiting['workflow_id']
++        assert second['items'][0]['workflow_id']==completed['workflow_id']
++        only=client.get(query+'?status=succeeded&limit=1',headers=AUTH).json()
++        assert only['total']==1 and only['items'][0]['workflow_id']==completed['workflow_id']
++        assert client.get(query+'?workflow_id='+completed['workflow_id'][:-1],headers=AUTH).json()['total']==0
++        assert client.post(query,json={},headers=AUTH).status_code==405
++
++
++def test_report_failure_business_status_does_not_depend_on_trace(tmp_path,monkeypatch):
++    from test_report_workflow import Provider
++    from app.domain.errors import AppError
++    app=application(tmp_path,Provider(report_error=AppError('LLM_TIMEOUT','unit timeout',504)))
++    with TestClient(app) as client:
++        _,_,session=run(client)
++        monkeypatch.setattr(app.state.traces.repository,'connect',lambda: (_ for _ in ()).throw(OSError('down')))
++        data=client.get('/admin/workflow-observability/'+session['workflow_id'],headers=AUTH).json()
++        assert data['business_lifecycle']['status']=='partially_succeeded'
++        assert data['business_lifecycle']['execution_status']=='success'
++        assert data['business_lifecycle']['report_delivery']=='not_delivered'
++        assert 'report_failed' in data['reason_codes'] and data['has_exception']
++
++
++def test_explicit_skip_events_are_distinct_from_missing_trace(tmp_path,monkeypatch):
++    app=application(tmp_path)
++    def unavailable(task,*args):
++        failure=app.state.analysis_engine.skipped(task.task_id,'UNIT_FAILURE','unit failure')
++        return failure.model_copy(update={'status':'failed'}),None,None,0
++    monkeypatch.setattr(app.state.analysis_engine.runner,'run',unavailable)
++    with TestClient(app) as client:
++        _,_,session=run(client)
++        data=client.get('/admin/workflow-observability/'+session['workflow_id'],headers=AUTH).json()
++        skips=[f for f in data['collection']['findings'] if f['category']=='not_executed']
++        assert {f['node_key'] for f in skips}=={'insight_generator','fact_validator'}
++        assert data['collection']['status']=='observed'
++        assert not any(n['name']=='insight_generator' for n in data['trace']['nodes'])
++
++
++def test_claim_without_node_start_does_not_assert_engine_has_executed(tmp_path):
++    from workflow_v1_fixtures import create_real
++    from test_report_workflow import SALES,QUERY
++    from hitl_fixtures import approval,execution
++    from app.domain.execution import ExecutionRequest
++    app=application(tmp_path)
++    with TestClient(app) as client:
++        state=create_real(client,SALES,'sales.csv',QUERY)
++        approved=client.post('/api/v1/sessions/'+state['id']+'/approvals',json=approval(state)).json()
++        current=app.state.repository.get(state['id'])
++        app.state.executions.claim(ExecutionRequest(**execution(approved)),current.revision,app.state.analysis_engine.check_approval)
++        data=client.get('/admin/workflow-observability/'+state['workflow_id'],headers=AUTH).json()
++        assert any(f['code']=='EXECUTION_SPAN_NOT_COLLECTED' and f['category']=='unknown' for f in data['collection']['findings'])
++        assert not any(n['name']=='analysis_engine' for n in data['trace']['nodes'])
++
++
++def test_concurrent_business_revision_change_is_not_silently_combined(tmp_path,monkeypatch):
++    app=application(tmp_path)
++    with TestClient(app) as client:
++        _,_,session=run(client)
++        original=app.state.workflow_trace.get
++        def changed(workflow_id):
++            data=original(workflow_id)
++            app.state.repository.mutate(session['id'],lambda s:setattr(s,'title','unit concurrent update'))
++            return data
++        monkeypatch.setattr(app.state.workflow_trace,'get',changed)
++        data=client.get('/admin/workflow-observability/'+session['workflow_id'],headers=AUTH).json()
++        assert data['business_lifecycle']['status']=='unknown'
++        assert data['consistency']['status']=='unknown'
++        assert any(f['code']=='SESSION_CHANGED_DURING_READ' for f in data['collection']['findings'])
++
++
++def test_engine_partial_is_an_exception_even_while_report_is_queued_and_trace_is_down(tmp_path,monkeypatch):
++    from app.main import create_app
++    from app.core.config import Settings
++    from app.domain.execution import ExecutionRequest
++    from workflow_v1_fixtures import ControlledWorkflowProvider,create_real
++    from hitl_fixtures import approval,execution
++    app=create_app(Settings(tmp_path,admin_read_token='read'),ControlledWorkflowProvider())
++    original=app.state.analysis_engine.runner.run
++    def partial(task,*args):
++        if task.task_id=='A02':
++            failure=app.state.analysis_engine.skipped(task.task_id,'UNIT_FAILURE','unit failure')
++            return failure.model_copy(update={'status':'failed'}),None,None,0
++        return original(task,*args)
++    monkeypatch.setattr(app.state.analysis_engine.runner,'run',partial)
++    with TestClient(app) as client:
++        state=create_real(client)
++        approved=client.post('/api/v1/sessions/'+state['id']+'/approvals',json=approval(state)).json()
++        result=app.state.analysis_engine.execute(ExecutionRequest(**execution(approved)))
++        app.state.report_workflow.enqueue(result.execution_id)
++        app.state.traces.repository=None
++        data=client.get('/admin/workflow-observability/'+state['workflow_id'],headers=AUTH).json()
++        assert data['business_lifecycle']['execution_status']=='partial_success'
++        assert data['business_lifecycle']['report_generation_status']=='queued'
++        assert data['has_exception'] is True
+--- before/admin/src/api/workflows.ts
++++ after/admin/src/api/workflows.ts
+@@ -0,0 +1,36 @@
++import { ApiError, createAdminClient } from './client';
++import { businessStatuses } from '../types/workflows';
++import type { WorkflowView, WorkflowPage } from '../types/workflows';
++const client = createAdminClient();
++const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
++const texts = (v: unknown): v is string[] => Array.isArray(v) && v.every(x => typeof x === 'string');
++const numeric = (v: unknown) => typeof v === 'number' && Number.isFinite(v) && v >= 0;
++export function isWorkflow(v: unknown): v is WorkflowView {
++  if (!object(v) || v.schema_version !== 'workflow-observability-v1' || !['workflow_id','session_id','root_run_id','created_at'].every(k => typeof v[k] === 'string')) return false;
++  if (!object(v.business_lifecycle) || !businessStatuses.includes(v.business_lifecycle.status as never) || !object(v.collection) || !['observed','incomplete'].includes(String(v.collection.status))) return false;
++  if (!Array.isArray(v.collection.findings) || !v.collection.findings.every(f => object(f) && ['not_executed','executed_trace_missing','observation_incomplete','inconsistent','unknown'].includes(String(f.category)) && typeof f.code === 'string' && texts(f.evidence_refs))) return false;
++  if (!object(v.source_refs) || !object(v.consistency) || !['consistent','inconsistent','unknown'].includes(String(v.consistency.status)) || !texts(v.consistency.issues) || !texts(v.reason_codes) || !(v.duration_ms === null || numeric(v.duration_ms))) return false;
++  if (v.trace !== undefined && v.trace !== null) {
++    const t = v.trace;
++    if (!object(t) || t.workflow_id !== v.workflow_id || t.root_run_id !== v.root_run_id || !['nodes','events','llm_calls','plan_versions','approvals','executions','report_generations','reports','report_artifact_runs'].every(k => Array.isArray(t[k]))) return false;
++    if (!(t.nodes as unknown[]).every(n => object(n) && typeof n.span_id === 'string' && n.run_id === v.root_run_id && typeof n.name === 'string' && typeof n.status === 'string' && (n.duration_ms === null || numeric(n.duration_ms)))) return false;
++    if (!(t.root === null || (object(t.root) && t.root.run_id === v.root_run_id))) return false;
++    if (!(t.events as unknown[]).every(e => object(e) && typeof e.event_id === 'string' && e.run_id === v.root_run_id && typeof e.event_type === 'string')) return false;
++    if (!(t.llm_calls as unknown[]).every(c => object(c) && typeof c.call_id === 'string' && typeof c.node_id === 'string' && (c.span_id === null || typeof c.span_id === 'string') && numeric(c.call_sequence) && numeric(c.retry_index) && (c.duration_ms === null || numeric(c.duration_ms)))) return false;
++    const ids=(t.nodes as {span_id:string}[]).map(n=>n.span_id);
++    if (new Set(ids).size !== ids.length) return false;
++  }
++  return true;
++}
++export const workflowApi = {
++  async list(query: string, signal?: AbortSignal): Promise<WorkflowPage> {
++    const v: unknown = await client.get('workflow-observability' + (query ? '?' + query : ''), { signal, cache: 'no-store' });
++    if (!object(v) || v.schema_version !== 'workflow-observability-page-v1' || !Array.isArray(v.items) || !v.items.every(isWorkflow) || !numeric(v.total) || !numeric(v.limit) || !numeric(v.offset)) throw new ApiError('INVALID_RESPONSE','Workflow 列表结构不正确。');
++    return v as unknown as WorkflowPage;
++  },
++  async get(id: string, signal?: AbortSignal): Promise<WorkflowView> {
++    const v: unknown = await client.get('workflow-observability/' + encodeURIComponent(id), { signal, cache: 'no-store' });
++    if (!isWorkflow(v) || v.workflow_id !== id || v.trace === undefined) throw new ApiError('INVALID_RESPONSE','Workflow 详情结构或归属不正确。');
++    return v;
++  },
++};
+--- before/admin/src/app/navigation.ts
++++ after/admin/src/app/navigation.ts
+@@ -37,6 +37,7 @@
+     { key: 'version-comparison', path: '/versions', label: '版本对比', permission: 'versions:view' },
+   ] },
+   { key: 'traces', label: '运行追踪', icon: Activity, children: [
++    { key: 'workflow-explorer', path: '/traces/workflows', label: 'Workflow 运行', permission: 'traces:view', enabled: true },
+     { key: 'run-explorer', path: '/traces', label: 'Run Explorer', permission: 'traces:view', enabled: true },
+     { key: 'trace-detail', path: '/traces/detail', label: 'Trace Detail', permission: 'traces:view', enabled: true, description: '请先从 Run Explorer 选择一次真实运行，再查看节点、事件与错误详情。此入口未预选运行。' },
+   ] },
+@@ -58,7 +59,7 @@
+ export const dashboardIcon = LayoutDashboard;
+ export const navigationPages = [dashboardNavigation, ...navigationGroups.flatMap(group => group.children)];
+ export function currentNavigation(pathname: string) {
+-  const key = pathname.startsWith('/prompts/') && !['/prompts/versions', '/prompts/playground'].includes(pathname) ? 'prompt-list'
++  const key = (pathname === '/traces/workflows' || pathname.startsWith('/traces/workflows/')) ? 'workflow-explorer' : pathname.startsWith('/prompts/') && !['/prompts/versions', '/prompts/playground'].includes(pathname) ? 'prompt-list'
+     : pathname === '/traces/compare' ? 'run-explorer'
+     : /^\/traces\/[^/]+$/.test(pathname) && pathname !== '/traces/detail' ? 'trace-detail' : undefined;
+   const page = key ? navigationPages.find(item => item.key === key) : navigationPages.find(item => item.path === pathname);
+--- before/admin/src/app/routes.tsx
++++ after/admin/src/app/routes.tsx
+@@ -1,6 +1,8 @@
+ import { Navigate, Route, Routes } from 'react-router-dom';
+ import { AdminLayout } from '../layouts/AdminLayout';
+ import { DashboardPage } from '../pages/DashboardPage';
++import { WorkflowsPage } from '../pages/WorkflowsPage';
++import { WorkflowDetailPage } from '../pages/WorkflowDetailPage';
+ import { TracesPage } from '../pages/TracesPage';
+ import { TraceComparisonPage } from '../pages/TraceComparisonPage';
+ import { TraceDetailPage } from '../pages/TraceDetailPage';
+@@ -17,7 +19,7 @@
+ import { PromptComparePage } from '../pages/PromptComparePage';
+ import { PromptCallPage } from '../pages/PromptCallPage';
+ 
+-const pages = { dashboard: DashboardPage, 'run-explorer': TracesPage, 'version-comparison': VersionsPage, environment: SettingsPage, 'prompt-list': PromptsPage, 'prompt-versions': PromptComparePage };
++const pages = { 'workflow-explorer': WorkflowsPage, dashboard: DashboardPage, 'run-explorer': TracesPage, 'version-comparison': VersionsPage, environment: SettingsPage, 'prompt-list': PromptsPage, 'prompt-versions': PromptComparePage };
+ export function AdminRoutes({ resolveAccess }: { resolveAccess?: AccessResolver }) {
+   return <Routes><Route element={<AdminLayout />}>
+     <Route index element={<Navigate to="/traces" replace />} />
+@@ -25,6 +27,7 @@
+       const Page = pages[page.key as keyof typeof pages];
+       return <Route key={page.key} path={page.path} element={<AccessBoundary permission={page.permission} resolve={resolveAccess}>{page.enabled && Page ? <Page /> : <ModulePlaceholderPage page={page} />}</AccessBoundary>} />;
+     })}
++    <Route path="/traces/workflows/:workflowId" element={<AccessBoundary permission="traces:view" resolve={resolveAccess}><WorkflowDetailPage /></AccessBoundary>} />
+     <Route path="/traces/compare" element={<AccessBoundary permission="traces:view" resolve={resolveAccess}><TraceComparisonPage /></AccessBoundary>} />
+     <Route path="/traces/:runId" element={<AccessBoundary permission="traces:view" resolve={resolveAccess}><TraceDetailPage /></AccessBoundary>} />
+     <Route path="/prompts/calls/:callId" element={<AccessBoundary permission="prompts:view" resolve={resolveAccess}><PromptCallPage /></AccessBoundary>} />
+--- before/admin/src/features/traces/AccessPanel.tsx
++++ after/admin/src/features/traces/AccessPanel.tsx
+@@ -14,7 +14,7 @@
+     finally { setPending(false); setToken(''); }
+   }
+   return <section className="trace-message" role="alert">
+-    <h2>{accessDenied ? '需要管理员只读访问' : notFound ? resource === '追踪数据' ? '追踪记录不存在' : '历史内容 unavailable' : '无法加载' + resource}</h2>
++    <h2>{accessDenied ? '需要管理员只读访问' : notFound ? resource === '追踪数据' ? '追踪记录不存在' : resource.startsWith('Workflow') ? 'Workflow 不存在或未登记' : '历史内容 unavailable' : '无法加载' + resource}</h2>
+     <p>{accessDenied ? '使用后端配置的管理员只读凭证。凭证不会写入 URL 或本地存储；短期访问由 HttpOnly Cookie 保存。' :
+       notFound ? '该记录可能未采集或已不可用。请返回列表核对。' : error instanceof ApiError && error.status === 503 ? resource === '追踪数据' ? '后端未配置管理员访问或追踪存储不可用，请检查服务配置。' : '后端未配置管理员访问或 Prompt Registry 存储不可用，请检查服务配置。' : '请求失败，未将失败当作空数据。请检查连接后重试。'}</p>
+     {accessDenied ? <form className="access-form" onSubmit={submit}><label>管理员只读凭证<input aria-label="管理员只读凭证" type="password" value={token} autoComplete="off" onChange={e => setToken(e.target.value)} required maxLength={2048} /></label><button className="primary-button" disabled={pending}>{pending ? '验证中…' : '启用只读访问'}</button>{denied && <span>验证失败，请检查凭证或服务配置。</span>}</form> : <button className="secondary-button" onClick={retry}>重新加载</button>}
+--- before/admin/src/features/workflows/WorkflowShared.tsx
++++ after/admin/src/features/workflows/WorkflowShared.tsx
+@@ -0,0 +1,6 @@
++import type { BusinessStatus, FindingCategory, WorkflowView } from '../../types/workflows';
++export const businessLabels: Record<BusinessStatus,string> = { created:'已创建',running:'进行中',waiting_input:'等待补充',waiting_approval:'等待审核',succeeded:'分析已完成',partially_succeeded:'部分完成',failed:'分析失败',interrupted:'执行中断',unknown:'尚无法判断' };
++export const findingLabels: Record<FindingCategory,string> = { not_executed:'明确未执行',executed_trace_missing:'已执行，Trace 缺失',observation_incomplete:'观测不完整',inconsistent:'业务与关联不一致',unknown:'尚无法判断' };
++export function BusinessBadge({ status }: { status: BusinessStatus }) { return <span className={`wf-business wf-business-${status}`}>{businessLabels[status]}</span>; }
++export function CollectionBadge({ value }: { value: WorkflowView['collection'] }) { return <span className={`wf-collection ${value.status === 'observed' ? '' : 'wf-collection-gap'}`}>{value.status === 'observed' ? '已采集' : '采集有缺口'}</span>; }
++export function Findings({ view }: { view: WorkflowView }) { return <section className="wf-findings" aria-labelledby="findings-heading"><h2 id="findings-heading">观测边界与缺口</h2><p className="muted">{view.collection.notice}</p>{view.collection.findings.length ? <ul>{view.collection.findings.map((f,index) => <li key={index}><strong>{findingLabels[f.category]}</strong><code>{f.node_key ? f.node_key + ' / ' : ''}{f.code}</code><span>{f.evidence_refs.join('，') || '无可用引用'}</span></li>)}</ul> : <p>当前业务事实与已采集记录一致，未发现已知采集缺口。</p>}</section>; }
+--- before/admin/src/pages/WorkflowDetailPage.tsx
++++ after/admin/src/pages/WorkflowDetailPage.tsx
+@@ -0,0 +1,47 @@
++import { useEffect, useState } from 'react';
++import { Link, useParams } from 'react-router-dom';
++import { RefreshCw, ChevronLeft, Check, CircleAlert, Clock3 } from 'lucide-react';
++import { workflowApi } from '../api/workflows';
++import type { WorkflowView, WorkflowObservation } from '../types/workflows';
++import type { TraceSpan, Metadata } from '../types/traces';
++import { BusinessBadge, CollectionBadge, Findings } from '../features/workflows/WorkflowShared';
++import { TraceError } from '../features/traces/AccessPanel';
++import { StatusBadge } from '../features/traces/TraceShared';
++import { durationText, nodeLabels, timeText, valueText } from '../features/traces/presentation';
++
++const names:Record<string,string>={...nodeLabels,analysis_engine:'分析执行',hitl:'人工审核',chart_builder:'图表构建'};
++function ResultRefs({ attrs }: { attrs:Metadata }) {
++  const refs=Object.fromEntries(['result_ref','report_id','approval_id','plan_version_id','dataset_id','dataset_version','operation_id','report_run_id'].filter(k=>attrs[k]!=null).map(k=>[k,attrs[k]]));
++  return <dl className="wf-refs">{Object.entries(refs).map(([k,v])=><div key={k}><dt>{k}</dt><dd><code>{valueText(v)}</code></dd></div>)}{Array.isArray(attrs.result_refs)&&<div><dt>result_refs</dt><dd>{valueText(attrs.result_refs)}</dd></div>}{!Object.keys(refs).length&&<div><dt>result_ref</dt><dd>未采集独立结果引用；保留实际输出摘要。</dd></div>}</dl>;
++}
++function NodeEntry({ node,trace }: { node:TraceSpan; trace:WorkflowObservation }) {
++  const attrs=node.attributes||{},events=trace.events.filter(e=>e.span_id===node.span_id),calls=trace.llm_calls.filter(c=>c.span_id===node.span_id);
++  const same=trace.nodes.filter(n=>n.node_key===node.node_key);
++  const reason=node.error_code||valueText(attrs.skip_reason);
++  const icon=node.status==='complete'?<Check size={15}/>:node.status==='running'?<Clock3 size={15}/>:<CircleAlert size={15}/>;
++  return <li className={'wf-node wf-node-'+node.status} data-testid="workflow-node"><div className="wf-node-time"><time>{timeText(node.started_at)}</time><span className="wf-node-dot">{icon}</span></div><details className="wf-node-content"><summary><div className="wf-node-title"><strong>{names[node.name]||node.name}</strong><code>{node.node_key||'node_key 未采集'}</code><span>attempt #{node.node_attempt??'unknown'}</span></div><div className="wf-node-metrics"><StatusBadge status={node.status}/><span>{durationText(node.duration_ms)}</span><span>{calls.length} 条 LLM 调用</span></div></summary>
++      <div className="wf-node-expanded"><dl className="wf-node-facts"><div><dt>started_at</dt><dd>{node.started_at||'未采集'}</dd></div><div><dt>ended_at</dt><dd>{node.finished_at||'未采集结束时间'}</dd></div><div><dt>reason_code</dt><dd>{reason}</dd></div><div><dt>span_id</dt><dd className="wf-id">{node.span_id}</dd></div></dl>
++        {attrs.validation_role!=null&&<p>实际校验位置：<code>{String(attrs.validation_role)}</code></p>}
++        <h3>结果引用</h3><ResultRefs attrs={attrs}/>
++        <details><summary>实际输出摘要</summary><pre>{JSON.stringify(attrs,null,2)}</pre></details>
++        <h3>事件记录 <small>{events.length} 条已采集</small></h3>{events.length?<ol className="wf-event-list">{events.map(e=><li key={e.event_id}><time>{timeText(e.recorded_at)}</time><code>{e.event_type}</code><pre>{JSON.stringify(e.payload||{},null,2)}</pre></li>)}</ol>:<p className="muted">没有可读取的事件，不据此推断节点没有运行。</p>}
++        <h3>LLM 调用记录</h3>{calls.length?<ul className="wf-calls">{calls.map(c=><li key={c.call_id}><Link className="wf-link wf-id" to={'/prompts/calls/'+encodeURIComponent(c.call_id)}>{c.call_id}</Link><span>请求 #{c.call_sequence} · {c.status} · {durationText(c.duration_ms)}</span>{c.retry_index>0&&<span className="wf-warning">请求重试 #{c.retry_index}，前次：{c.retry_of_call_id||'引用未采集'}</span>}</li>)}</ul>:<p className="muted">0 条已采集调用；记录缺失不等于已确认未调用。</p>}
++        {same.length>1&&<details><summary>相同 node_key 的实际重入记录（{same.length}）</summary><ul>{same.map(s=><li key={s.span_id}>attempt #{s.node_attempt??'unknown'} · {s.status} · {timeText(s.started_at)} · {s.span_id}</li>)}</ul><p className="muted">重复进入可能来自不同业务调用位置，不自动解释为失败重试。</p></details>}
++      </div></details></li>;
++}
++function Association({ label,values }: { label:string; values:unknown[] }) {return <div><dt>{label}</dt><dd>{values.length?values.map((v,i)=><code className="wf-id" key={i}>{valueText(v)}</code>):<span className="muted">尚无通过校验的关联记录</span>}</dd></div>;}
++export function WorkflowDetailPage() {
++  const { workflowId='' }=useParams();
++  const [view,setView]=useState<WorkflowView|null>(null),[error,setError]=useState<unknown>(null),[loading,setLoading]=useState(true),[refresh,setRefresh]=useState(0);
++  useEffect(()=>{const controller=new AbortController();setView(null);setError(null);setLoading(true);workflowApi.get(workflowId,controller.signal).then(v=>{if(!controller.signal.aborted)setView(v);}).catch(e=>{if(!controller.signal.aborted)setError(e);}).finally(()=>{if(!controller.signal.aborted)setLoading(false);});return()=>controller.abort();},[workflowId,refresh]);
++  const trace=view?.trace;
++  return <div className="wf-page"><Link className="wf-back" to="/traces/workflows"><ChevronLeft size={15}/>Workflow 列表</Link><header className="wf-heading"><div><h1>Workflow 运行详情</h1><p className="wf-id">{workflowId}</p></div><button className="secondary-button" disabled={loading} onClick={()=>setRefresh(v=>v+1)}><RefreshCw size={15}/>手动刷新</button></header>
++    {loading&&<p role="status">正在读取业务事实与实际节点…</p>}{error!=null&&<TraceError error={error} resource="Workflow 详情" retry={()=>setRefresh(v=>v+1)}/>}
++    {view&&<><section className="wf-business-summary"><div><p className="wf-label">业务生命周期</p><BusinessBadge status={view.business_lifecycle.status}/><p>执行：{valueText(view.business_lifecycle.execution_status)}<br/>报告：{view.business_lifecycle.report_status||'尚无报告'} · {view.business_lifecycle.report_delivery==='delivered'?'已交付':view.business_lifecycle.report_delivery==='not_delivered'?'未交付':'交付尚无法判断'}</p><small>来源：Business DB。Root 与 Span 状态不会覆盖业务结论。</small></div><dl><div><dt>开始时间（Workflow 创建）</dt><dd>{timeText(view.created_at)}</dd></div><div><dt>业务更新时间</dt><dd>{timeText(view.updated_at)}</dd></div><div><dt>总耗时</dt><dd>{view.duration_ms==null?'缺少可靠终态时间':durationText(view.duration_ms)}</dd></div><div><dt>耗时口径</dt><dd>{view.duration_basis||'不估算未采集耗时'}</dd></div><div><dt>Trace 采集</dt><dd><CollectionBadge value={view.collection}/></dd></div></dl></section>
++      <section className="wf-associations"><h2>业务与记录关联</h2><dl><Association label="Workflow" values={[view.workflow_id]}/><Association label="Session" values={[view.session_id]}/><div><dt>Root</dt><dd><code className="wf-id">{view.root_run_id}</code>{trace?.root?<Link className="wf-link" to={'/traces/'+encodeURIComponent(view.root_run_id)}>查看原始 Root Trace</Link>:<span className="muted">仅确认预留身份，物理 Root 暂不可读取</span>}</dd></div><Association label="PlanVersion" values={trace?.plan_versions.map(p=>p.plan_version_id)||[view.source_refs.plan_id].filter(Boolean)}/><Association label="Approval" values={trace?.approvals.map(a=>a.approval_id)||[view.source_refs.approval_id].filter(Boolean)}/><Association label="Execution / 结果引用" values={trace?.executions.map(e=>e.result_ref)||[view.source_refs.execution_id].filter(Boolean)}/><Association label="Report" values={trace?.reports.map(r=>r.report_id)||[view.source_refs.report_id].filter(Boolean)}/></dl><p className="muted">Root 原始状态属于准备阶段检查点；不作为全流程业务生命周期。</p></section>
++      <section className="wf-timeline" aria-labelledby="timeline-heading"><header><div><h2 id="timeline-heading">生命周期时间线</h2><p>按真实开始时间排列，仅包含已持久化的实际 Span。</p></div><span>{trace?.nodes.length??0} 个实际 Span · {trace?.llm_calls.length??0} 条已采集 LLM 调用</span></header>{trace?.nodes.length?<ol className="wf-node-list">{trace.nodes.map(n=><NodeEntry key={n.span_id} node={n} trace={trace}/>)}</ol>:<div className="wf-empty"><h3>暂无可读取的实际节点</h3><p>业务结果仍展示在上方。节点缺席不能被自动解释为未执行。</p></div>}</section>
++      {!!trace?.report_generations.length&&<section className="wf-report-attempts"><h2>报告尝试记录</h2><p className="muted">当前 ReportGeneration 与已保存的 Report Run 分开展示；不补造丢失的历史尝试。</p><dl className="wf-refs">{trace.report_generations.map((g,i)=><div key={i}><dt>当前 generation</dt><dd>{valueText(g.execution_id)} · attempt {valueText(g.attempt)} · {valueText(g.status)} · {valueText(g.report_id)}</dd></div>)}</dl><ul>{trace.report_artifact_runs.map((r,i)=><li key={i}><Link className="wf-link" to={'/traces/'+encodeURIComponent(String(r.run_id))}>{valueText(r.run_id)}</Link> · attempt {valueText(r.attempt)} · {valueText(r.status)}{r.error_code!=null&&<code>{String(r.error_code)}</code>}{r.retry_of_run_id!=null&&<small>真实重试来源：{String(r.retry_of_run_id)}</small>}</li>)}</ul></section>}
++      <Findings view={view}/>
++    </>}
++  </div>;
++}
+--- before/admin/src/pages/WorkflowsPage.tsx
++++ after/admin/src/pages/WorkflowsPage.tsx
+@@ -0,0 +1,33 @@
++import { useEffect, useState } from 'react';
++import type { FormEvent } from 'react';
++import { Link, useSearchParams } from 'react-router-dom';
++import { RefreshCw, Search } from 'lucide-react';
++import { workflowApi } from '../api/workflows';
++import type { WorkflowPage } from '../types/workflows';
++import { businessStatuses } from '../types/workflows';
++import { BusinessBadge, CollectionBadge, businessLabels } from '../features/workflows/WorkflowShared';
++import { TraceError } from '../features/traces/AccessPanel';
++import { durationText, timeText } from '../features/traces/presentation';
++
++export function WorkflowsPage() {
++  const [params,setParams]=useSearchParams();
++  const [page,setPage]=useState<WorkflowPage|null>(null),[error,setError]=useState<unknown>(null),[loading,setLoading]=useState(true),[refresh,setRefresh]=useState(0);
++  const size=Number(params.get('limit')||20), start=Number(params.get('offset')||0);
++  const limit=Number.isInteger(size)&&size>=1&&size<=100?size:20, offset=Number.isInteger(start)&&start>=0&&start<=1000000?start:0;
++  const query=new URLSearchParams({limit:String(limit),offset:String(offset)});
++  for(const k of ['workflow_id','session_id','status'])if(params.get(k))query.set(k,params.get(k)!);
++  const key=query.toString();
++  useEffect(()=>{const controller=new AbortController();setLoading(true);setError(null);setPage(null);
++    workflowApi.list(key,controller.signal).then(v=>{if(!controller.signal.aborted)setPage(v);}).catch(e=>{if(!controller.signal.aborted)setError(e);}).finally(()=>{if(!controller.signal.aborted)setLoading(false);});
++    return()=>controller.abort();},[key,refresh]);
++  function filter(event:FormEvent<HTMLFormElement>){event.preventDefault();const fields=new FormData(event.currentTarget),next=new URLSearchParams({limit:String(limit)});for(const k of ['workflow_id','session_id','status']){const value=String(fields.get(k)||'').trim();if(value)next.set(k,value);}setParams(next);}
++  function move(value:number){const next=new URLSearchParams(params);next.set('offset',String(value));setParams(next);}
++  return <div className="wf-page"><header className="wf-heading"><div><h1>Workflow 运行</h1><p>从业务事实定位一次分析，再沿实际节点追溯。</p></div><button className="secondary-button" onClick={()=>setRefresh(v=>v+1)} disabled={loading}><RefreshCw size={15}/>手动刷新</button></header>
++    <div className="wf-readonly">只读监控。业务状态来自 Business DB；采集状态单独显示，不提供执行、重试或恢复操作。</div>
++    <form className="wf-filters" onSubmit={filter} key={params.toString()}><label>Workflow ID<input name="workflow_id" defaultValue={params.get('workflow_id')||''} placeholder="完整 Workflow ID" maxLength={120}/></label><label>Session ID<input name="session_id" defaultValue={params.get('session_id')||''} placeholder="完整 Session ID" maxLength={120}/></label><label>业务生命周期<select name="status" defaultValue={params.get('status')||''}><option value="">全部业务状态</option>{businessStatuses.map(s=><option key={s} value={s}>{businessLabels[s]}</option>)}</select></label><button className="primary-button" type="submit"><Search size={15}/>查询</button></form>
++    {loading&&<p role="status" className="wf-loading">正在读取业务与观测记录…</p>}
++    {error!=null&&<TraceError error={error} retry={()=>setRefresh(v=>v+1)} resource="Workflow 运行"/>}
++    {!loading&&page&&<><div className="wf-table-top"><strong>{page.total} 条真实 Workflow</strong><span>按创建时间倒序，ID 稳定排序</span></div>{page.items.length ? <div className="wf-table-scroll"><table className="wf-table"><thead><tr><th>Workflow / Session</th><th>业务生命周期</th><th>开始 / 业务更新时间</th><th>总耗时</th><th>Trace 采集</th><th>异常</th></tr></thead><tbody>{page.items.map(item=><tr key={item.workflow_id}><td><Link className="wf-id wf-link" to={'/traces/workflows/'+encodeURIComponent(item.workflow_id)}>{item.workflow_id}</Link><code className="wf-subid">{item.session_id}</code></td><td><BusinessBadge status={item.business_lifecycle.status}/></td><td><time>{timeText(item.created_at)}</time><small>{timeText(item.updated_at)}</small></td><td title={item.duration_basis||'缺少可靠的结束时间'}>{item.duration_ms==null?'尚无可靠值':durationText(item.duration_ms)}</td><td><CollectionBadge value={item.collection}/></td><td>{item.has_exception?<span className="wf-warning">需要查看</span>:<span className="muted">无已知异常</span>}</td></tr>)}</tbody></table></div>:<section className="wf-empty"><h2>没有匹配的 Workflow</h2><p>只展示真实登记记录。可检查完整 ID 或调整业务状态筛选。</p></section>}
++      <div className="wf-pagination"><label>每页<select aria-label="每页记录数" value={limit} onChange={e=>{const next=new URLSearchParams(params);next.set('limit',e.target.value);next.delete('offset');setParams(next);}}>{Array.from(new Set([10,20,50,100,limit])).sort((a,b)=>a-b).map(v=><option key={v} value={v}>{v}</option>)}</select></label><span>{page.total?offset+1:0}–{Math.min(offset+limit,page.total)} / {page.total}</span><button className="secondary-button" disabled={offset===0} onClick={()=>move(Math.max(0,offset-limit))}>上一页</button><button className="secondary-button" disabled={offset+limit>=page.total} onClick={()=>move(offset+limit)}>下一页</button></div></>}
++  </div>;
++}
+--- before/admin/src/styles.css
++++ after/admin/src/styles.css
+@@ -259,3 +259,99 @@
+ .lifecycle-sources { margin-top:19px; border-top:1px solid #eee9f3; padding-top:16px; }
+ .status-waiting_input, .status-waiting_approval { background:#f4eedc; color:#89621d; }
+ @media(max-width:700px) { .lifecycle-outcomes { grid-template-columns:1fr; gap:18px; } .lifecycle-lead strong { font-size:21px; } }
++
++/* Workflow evidence workspace: actual time order, business facts independent of observation. */
++.wf-page { min-width: 0; }
++.wf-heading { display: flex; align-items: start; justify-content: space-between; gap: 20px; margin: 4px 0 22px; }
++.wf-heading h1 { font-size: 27px; letter-spacing: -.6px; margin: 0 0 9px; font-weight: 650; }
++.wf-heading p { margin: 0; color: #7c7588; font-size: 13px; line-height: 1.7; }
++.wf-heading button { display: flex; align-items: center; gap: 7px; white-space: nowrap; }
++.wf-readonly { font-size: 12px; line-height: 1.8; border-left: 3px solid #7360b3; padding: 10px 14px; background: #eeebf6; margin-bottom: 22px; color: #65557f; }
++.wf-filters { display: grid; grid-template-columns: minmax(190px,1fr) minmax(190px,1fr) 160px auto; align-items: end; gap: 12px; padding: 20px 0; }
++.wf-filters label,.wf-pagination label { display: grid; gap: 8px; font-size: 12px; color: #706779; }
++.wf-filters input,.wf-filters select,.wf-pagination select { width: 100%; min-height: 39px; border: 1px solid #ddd7e5; border-radius: 6px; padding: 8px 10px; background: #fff; color: #332b40; font: inherit; }
++.wf-filters input:focus-visible,.wf-filters select:focus-visible { outline: 2px solid #9b8fd0; outline-offset: 2px; }
++.wf-filters button { display: flex; gap: 7px; align-items: center; }
++.wf-table-top { display: flex; justify-content: space-between; padding: 17px 0 14px; font-size: 12px; color: #8a8195; }
++.wf-table-top strong { color: #51465e; font-weight: 550; }
++.wf-table-scroll { overflow: auto; background: #fff; border: 1px solid #e7e2ec; border-radius: 9px; }
++.wf-table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
++.wf-table th { font-size: 11px; font-weight: 550; background: #faf9fc; color: #82768c; padding: 14px 16px; border-bottom: 1px solid #eae5ef; white-space: nowrap; }
++.wf-table td { padding: 21px 16px; border-bottom: 1px solid #efecf4; vertical-align: top; }
++.wf-table tbody tr:last-child td { border: 0; }
++.wf-table tbody tr:hover { background: #fcfbff; }
++.wf-table small { display: block; margin-top: 8px; color: #74617e; }
++.wf-id { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11px; overflow-wrap: anywhere; line-height: 1.65; }
++.wf-link { color: #6c51a2; text-decoration: underline; text-underline-offset: 3px; }
++.wf-subid { display: block; margin-top: 8px; font-size: 10px; color: #74617e; }
++.wf-business,.wf-collection { display: inline-block; border-radius: 4px; padding: 5px 8px; font-size: 11px; white-space: nowrap; background: #efedf4; color: #756285; }
++.wf-business-succeeded,.wf-collection { background: #eaf4ee; color: #32735a; }
++.wf-business-failed,.wf-business-interrupted { color: #a54858; background: #f9ecef; }
++.wf-business-partially_succeeded,.wf-collection-gap { color: #92651e; background: #fcf3df; }
++.wf-business-running { color: #6551a2; background: #eeebf8; }
++.wf-business-unknown { background: #eeedf0; color: #79727f; }
++.wf-warning { color: #a56d28; font-size: 11px; }
++.wf-pagination { display: flex; justify-content: flex-end; align-items: center; gap: 16px; margin: 20px 0; font-size: 12px; color: #82768c; }
++.wf-pagination label { display: flex; align-items: center; gap: 9px; }
++.wf-pagination select { width: 66px; }
++.wf-back { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #85728d; margin-bottom: 20px; }
++.wf-business-summary { display: grid; grid-template-columns: 1fr 1.4fr; gap: 28px; background: #fff; padding: 24px; border: 1px solid #e7e1ef; border-left: 4px solid #7360b3; border-radius: 8px; }
++.wf-label { font-size: 12px; color: #8a7d94; margin: 0 0 13px; }
++.wf-business-summary p:not(.wf-label) { font-size: 12px; line-height: 1.9; color: #6d6179; }
++.wf-business-summary small { font-size: 11px; color: #74617e; line-height: 1.8; }
++.wf-business-summary dl { margin: 0; display: grid; gap: 12px; border-left: 1px solid #ebe6f1; padding-left: 28px; }
++.wf-business-summary dl>div { display: grid; grid-template-columns: 140px 1fr; font-size: 12px; }
++.wf-business-summary dt { color: #74617e; }
++.wf-business-summary dd { margin: 0; color: #5b4e68; }
++.wf-page h2 { font-size: 17px; font-weight: 600; margin: 0 0 16px; }
++.wf-page h3 { font-size: 13px; font-weight: 550; }
++.wf-associations { margin-top: 29px; }
++.wf-associations dl { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 26px; }
++.wf-associations dl>div { padding: 11px 0; border-top: 1px solid #e5e0eb; min-width: 0; display: grid; grid-template-columns: 115px minmax(0,1fr); font-size: 12px; }
++.wf-associations dt { color: #74617e; }
++.wf-associations dd { margin: 0; display: grid; gap: 5px; min-width: 0; }
++.wf-timeline { margin-top: 34px; }
++.wf-timeline>header { display: flex; justify-content: space-between; align-items: start; gap: 15px; margin-bottom: 20px; }
++.wf-timeline>header h2 { margin-bottom: 9px; }
++.wf-timeline>header p,.wf-timeline>header>span { color: #74617e; font-size: 11px; margin: 0; }
++.wf-node-list { list-style: none; padding: 0; margin: 0; }
++.wf-node { display: grid; grid-template-columns: 150px minmax(0,1fr); }
++.wf-node-time { position: relative; font-size: 10px; color: #74617e; padding-top: 17px; padding-right: 28px; border-right: 1px solid #ded6e9; }
++.wf-node-dot { position: absolute; right: -11px; top: 13px; width: 21px; height: 21px; display: grid; place-items: center; border: 2px solid #f6f5f8; border-radius: 50%; background: #deeee3; color: #397759; }
++.wf-node-failed .wf-node-dot,.wf-node-interrupted .wf-node-dot { background: #f4dfe5; color: #ab5367; }
++.wf-node-partial .wf-node-dot { background: #f6e8c8; color: #a2702d; }
++.wf-node-content { margin: 0 0 8px 26px; border-bottom: 1px solid #e5e0ec; }
++.wf-node-content>summary { display: flex; justify-content: space-between; align-items: center; gap: 16px; cursor: pointer; padding: 12px 5px 16px 0; list-style: none; }
++.wf-node-content>summary::-webkit-details-marker { display: none; }
++.wf-node-title { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; min-width: 0; }
++.wf-node-title strong { font-size: 13px; color: #4c3e5b; }
++.wf-node-title code { font-size: 10px; color: #74617e; }
++.wf-node-title>span { font-size: 10px; color: #74617e; }
++.wf-node-content summary::after { content: '展开'; font-size: 10px; color: #74617e; }
++.wf-node-content[open]>summary::after { content: '收起'; }
++.wf-node-metrics { margin-left: auto; display: flex; align-items: center; gap: 14px; color: #74617e; font-size: 11px; white-space: nowrap; }
++.wf-node-metrics .status-badge { font-size: 10px; }
++.wf-node-metrics .status-badge small { display: none; }
++.wf-node-expanded { padding: 3px 15px 20px; background: #fff; border-left: 2px solid #d5c9e8; font-size: 12px; }
++.wf-node-expanded pre { max-height: 300px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 10px; line-height: 1.7; background: #f7f5fa; padding: 12px; border-radius: 4px; }
++.wf-node-facts,.wf-refs { margin: 0; }
++.wf-node-facts>div,.wf-refs>div { display: grid; grid-template-columns: 130px minmax(0,1fr); gap: 10px; border-bottom: 1px solid #f0edf4; padding: 9px 0; }
++.wf-node-facts dt,.wf-refs dt { color: #74617e; font-size: 11px; }
++.wf-node-facts dd,.wf-refs dd { margin: 0; overflow-wrap: anywhere; font-size: 11px; }
++.wf-event-list,.wf-calls { padding-left: 18px; }
++.wf-event-list li,.wf-calls li { margin: 12px 0; }
++.wf-event-list time { display: block; font-size: 10px; color: #74617e; margin-bottom: 6px; }
++.wf-calls li { display: grid; gap: 6px; }
++.wf-findings,.wf-report-attempts { margin-top: 30px; border-top: 1px solid #e0d9e9; padding-top: 22px; }
++.wf-findings ul { padding: 0; list-style: none; }
++.wf-findings li { display: grid; grid-template-columns: 160px 1fr; gap: 7px 15px; padding: 14px; margin: 8px 0; background: #fff8eb; font-size: 11px; overflow-wrap: anywhere; }
++.wf-findings li>span { grid-column: 2; color: #a08b6a; }
++.wf-report-attempts li { font-size: 11px; overflow-wrap: anywhere; line-height: 2; }
++.wf-report-attempts li small { display: block; color: #a18ba8; }
++.wf-empty { background: #fff; padding: 32px; border: 1px dashed #d9cfe5; text-align: center; color: #91849b; font-size: 13px; }
++.wf-empty h2,.wf-empty h3 { color: #6c5a7b; }
++.wf-loading { padding: 30px 0; color: #94829f; }
++@media (max-width: 1050px) { .wf-filters { grid-template-columns: 1fr 1fr; } .wf-node { grid-template-columns: 100px minmax(0,1fr); } .wf-node-content>summary { flex-wrap: wrap; } .wf-node-metrics { margin-left: 0; } }
++@media (max-width: 720px) { .wf-business-summary { grid-template-columns: 1fr; } .wf-business-summary dl { padding-left: 0; border-left: 0; } .wf-associations dl { grid-template-columns: 1fr; } .wf-heading { flex-wrap: wrap; } .wf-node { grid-template-columns: 62px minmax(0,1fr); } .wf-node-time { overflow-wrap: anywhere; } .wf-node-content { margin-left: 18px; } .wf-node-facts>div,.wf-refs>div { grid-template-columns: 1fr; } .wf-timeline>header { flex-direction: column; } .wf-findings li { grid-template-columns: 1fr; } .wf-findings li>span { grid-column: 1; } .wf-pagination { flex-wrap: wrap; } }
++
++.wf-page .muted { color: #776682; line-height: 1.8; }
+--- before/admin/src/tests/fixtures/workflow-c2.json
++++ after/admin/src/tests/fixtures/workflow-c2.json
+@@ -0,0 +1,1319 @@
++{
++  "schema_version": "workflow-observability-v1",
++  "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++  "session_id": "71b2a50f7e4c4b44bea7e245b5b9cdf4",
++  "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++  "business_lifecycle": {
++    "status": "succeeded",
++    "execution_status": "success",
++    "report_generation_status": "completed",
++    "report_status": "complete",
++    "goal_coverage": "complete",
++    "report_delivery": "delivered"
++  },
++  "activity": "finished",
++  "reason_codes": [],
++  "source_refs": {
++    "session_id": "71b2a50f7e4c4b44bea7e245b5b9cdf4",
++    "session_revision": 14,
++    "dataset_id": "efe94407426a425f8c0e464ad92a5e22",
++    "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a",
++    "plan_id": "plan_532826233bd541ea9d925e7d5ab2f6f8",
++    "plan_version": 1,
++    "validation_version": "1.0",
++    "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++    "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++    "report_attempt": 1,
++    "report_id": "report_4d0455e523c645d99660ed61467dfc1e",
++    "workflow_run_id": null,
++    "report_run_id": null,
++    "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++    "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526"
++  },
++  "consistency": {
++    "status": "consistent",
++    "business_snapshot": "transactional",
++    "cross_store_snapshot": "non_atomic",
++    "revision_rechecked": false,
++    "issues": []
++  },
++  "created_at": "2026-10-31T13:37:40.867282+00:00",
++  "updated_at": "2026-10-31T13:37:57.103510+00:00",
++  "duration_ms": 16235.64,
++  "duration_basis": "Workflow 创建到精确当前业务终态，含人工等待",
++  "ended_at": "2026-10-31T13:37:57.102922+00:00",
++  "has_exception": false,
++  "trace": {
++    "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++    "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++    "session_id": "71b2a50f7e4c4b44bea7e245b5b9cdf4",
++    "root": {
++      "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++      "kind": "workflow",
++      "session_id": "71b2a50f7e4c4b44bea7e245b5b9cdf4",
++      "execution_id": null,
++      "workflow_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++      "business_revision": 8,
++      "observation_revision": 2,
++      "attempt": 1,
++      "retry_of_run_id": null,
++      "owner_instance": "905e611083dc4b0a9ad09a5cb53a58eb",
++      "status": "waiting_approval",
++      "queued_at": "2026-10-31T13:37:40.867282+00:00",
++      "started_at": "2026-10-31T13:37:40.900588+00:00",
++      "finished_at": null,
++      "recovered_at": null,
++      "duration_ms": null,
++      "report_id": null,
++      "error_code": null,
++      "error_message": null,
++      "integrity": "observed",
++      "manifest": {
++        "schema_version": "workflow-trace-v0.3.1",
++        "bindings": {
++          "session_id": "71b2a50f7e4c4b44bea7e245b5b9cdf4",
++          "file_id": "efe94407426a425f8c0e464ad92a5e22",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526"
++        },
++        "versions": {
++          "intent_parser": "intent-v1.3.3",
++          "analysis_planner": "planner-v1.2"
++        },
++        "model_config_snapshot": {
++          "intent_parser": {
++            "provider": "CompatibleLLMProvider",
++            "model": "qwen3.8-flash",
++            "timeout_seconds": 60.0,
++            "enable_thinking": false
++          },
++          "analysis_planner": {
++            "provider": "CompatibleLLMProvider",
++            "model": "qwen3.8-flash",
++            "timeout_seconds": 60.0,
++            "enable_thinking": false
++          }
++        },
++        "source_sha256": {},
++        "capture_scope": "workflow_preparation",
++        "git": {},
++        "input_sha256": {
++          "user_goal": "abbec7043166e2491b0c9a68bbf58f2f4e385ecb08c21d5ba852ac19918f9e85"
++        },
++        "prompt_template_snapshots": {
++          "intent_parser": "pt_c61175023dfaa7f9b7248cd3b30a2baa6eb9a1bff93889fba0183a285b441754",
++          "analysis_planner": "pt_00d2887d1cbeb11e82cba23892064ef53a8603d6c4286cdc8eca73701bb9a272"
++        },
++        "raw_content_retained": false
++      }
++    },
++    "nodes": [
++      {
++        "span_id": "span_e69bd8abb3a54f44b62e0ac7035ebd35",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "parent_span_id": null,
++        "name": "data_profiler",
++        "node_key": "data_profiler",
++        "node_attempt": 1,
++        "status": "complete",
++        "started_at": "2026-10-31T13:37:40.903802+00:00",
++        "finished_at": "2026-10-31T13:37:40.909674+00:00",
++        "recovered_at": null,
++        "duration_ms": 5.863250000402331,
++        "error_code": null,
++        "error_message": null,
++        "attributes": {
++          "node_name": "data_profiler",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "dataset_id": "efe94407426a425f8c0e464ad92a5e22",
++          "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a",
++          "row_count": 60,
++          "column_count": 12
++        }
++      },
++      {
++        "span_id": "span_0cf8c784309c485ab53dd885f2bbb9cf",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "parent_span_id": null,
++        "name": "intent_parser",
++        "node_key": "intent_parser",
++        "node_attempt": 1,
++        "status": "complete",
++        "started_at": "2026-10-31T13:37:40.913053+00:00",
++        "finished_at": "2026-10-31T13:37:43.715307+00:00",
++        "recovered_at": null,
++        "duration_ms": 2802.213874994777,
++        "error_code": null,
++        "error_message": null,
++        "attributes": {
++          "node_name": "intent_parser",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "operation_id": "acf1ec3a45e148ca95da6b2ca8626a98",
++          "next_action": "proceed"
++        }
++      },
++      {
++        "span_id": "span_9c4952a8f2fe477d929bce9ce5cb3a1c",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "parent_span_id": null,
++        "name": "analysis_planner",
++        "node_key": "analysis_planner",
++        "node_attempt": 1,
++        "status": "complete",
++        "started_at": "2026-10-31T13:37:43.722843+00:00",
++        "finished_at": "2026-10-31T13:37:50.463179+00:00",
++        "recovered_at": null,
++        "duration_ms": 6740.222875028849,
++        "error_code": null,
++        "error_message": null,
++        "attributes": {
++          "node_name": "analysis_planner_v1",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "operation_id": "cfb2f82f34e84403ab7203a0e6dde813",
++          "coverage_status": "complete",
++          "executable_count": 1,
++          "blocked_count": 0
++        }
++      },
++      {
++        "span_id": "span_a1a64abd59ce4bd09bf4ac81937654ca",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "parent_span_id": null,
++        "name": "plan_validator",
++        "node_key": "plan_validator",
++        "node_attempt": 1,
++        "status": "complete",
++        "started_at": "2026-10-31T13:37:50.452489+00:00",
++        "finished_at": "2026-10-31T13:37:50.456916+00:00",
++        "recovered_at": null,
++        "duration_ms": 4.383167019113898,
++        "error_code": null,
++        "error_message": null,
++        "attributes": {
++          "validation_role": "planner_output",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "coverage_status": "complete",
++          "executable_count": 1,
++          "blocked_count": 0
++        }
++      },
++      {
++        "span_id": "span_ec138a65e1084cf8a6db24f828525c2d",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "parent_span_id": null,
++        "name": "plan_validator",
++        "node_key": "plan_validator",
++        "node_attempt": 2,
++        "status": "complete",
++        "started_at": "2026-10-31T13:37:50.470496+00:00",
++        "finished_at": "2026-10-31T13:37:50.474100+00:00",
++        "recovered_at": null,
++        "duration_ms": 3.5877079935744405,
++        "error_code": null,
++        "error_message": null,
++        "attributes": {
++          "validation_role": "initial_plan_save",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "coverage_status": "complete",
++          "validation_version": "1.0",
++          "executable_count": 1,
++          "blocked_count": 0
++        }
++      },
++      {
++        "span_id": "span_d0ecca95419f4cf9acf0e2a13e3f5230",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "parent_span_id": null,
++        "name": "hitl",
++        "node_key": "hitl",
++        "node_attempt": 1,
++        "status": "complete",
++        "started_at": "2026-10-31T13:37:50.489063+00:00",
++        "finished_at": "2026-10-31T13:37:50.509127+00:00",
++        "recovered_at": null,
++        "duration_ms": 20.054041990078986,
++        "error_code": null,
++        "error_message": null,
++        "attributes": {
++          "command": "approve",
++          "plan_id": "plan_532826233bd541ea9d925e7d5ab2f6f8",
++          "plan_version": 1,
++          "session_revision": 8,
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "dataset_id": "efe94407426a425f8c0e464ad92a5e22",
++          "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a",
++          "validation_version": "1.0",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "outcome": "approved"
++        }
++      },
++      {
++        "span_id": "span_53d9f26581bc4c8a97d8e8c8b318d2bd",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "parent_span_id": null,
++        "name": "plan_validator",
++        "node_key": "plan_validator",
++        "node_attempt": 3,
++        "status": "complete",
++        "started_at": "2026-10-31T13:37:50.492661+00:00",
++        "finished_at": "2026-10-31T13:37:50.494993+00:00",
++        "recovered_at": null,
++        "duration_ms": 2.3247500066645443,
++        "error_code": null,
++        "error_message": null,
++        "attributes": {
++          "validation_role": "hitl_approve",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "coverage_status": "complete",
++          "validation_version": "1.0",
++          "executable_count": 1,
++          "blocked_count": 0
++        }
++      },
++      {
++        "span_id": "span_2aa77ff0ba094a299ad2cf1f80e53cd7",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "parent_span_id": null,
++        "name": "analysis_engine",
++        "node_key": "analysis_engine",
++        "node_attempt": 1,
++        "status": "complete",
++        "started_at": "2026-10-31T13:37:50.528438+00:00",
++        "finished_at": "2026-10-31T13:37:50.537148+00:00",
++        "recovered_at": null,
++        "duration_ms": 8.703542000148445,
++        "error_code": null,
++        "error_message": null,
++        "attributes": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "execution_status": "success",
++          "result_refs": [
++            "result_9ac6144d0cf04a04927f574f3de40651"
++          ],
++          "rule_ids": []
++        }
++      },
++      {
++        "span_id": "span_e2f5b36236e14e049462c793182d2433",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "parent_span_id": null,
++        "name": "evidence_builder",
++        "node_key": "evidence_builder",
++        "node_attempt": 1,
++        "status": "complete",
++        "started_at": "2026-10-31T13:37:50.577086+00:00",
++        "finished_at": "2026-10-31T13:37:50.579509+00:00",
++        "recovered_at": null,
++        "duration_ms": 2.414541959296912,
++        "error_code": null,
++        "error_message": null,
++        "attributes": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "evidence_count": 11
++        }
++      },
++      {
++        "span_id": "span_cac4bb8fa2f640a6ac9555749b171929",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "parent_span_id": null,
++        "name": "chart_builder",
++        "node_key": "chart_builder",
++        "node_attempt": 1,
++        "status": "complete",
++        "started_at": "2026-10-31T13:37:50.580842+00:00",
++        "finished_at": "2026-10-31T13:37:50.582163+00:00",
++        "recovered_at": null,
++        "duration_ms": 1.3159160153008997,
++        "error_code": null,
++        "error_message": null,
++        "attributes": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "chart_count": 1
++        }
++      },
++      {
++        "span_id": "span_9944acf699364609bd14469998d67521",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "parent_span_id": null,
++        "name": "insight_generator",
++        "node_key": "insight_generator",
++        "node_attempt": 1,
++        "status": "complete",
++        "started_at": "2026-10-31T13:37:50.583922+00:00",
++        "finished_at": "2026-10-31T13:37:57.078652+00:00",
++        "recovered_at": null,
++        "duration_ms": 6494.63149998337,
++        "error_code": null,
++        "error_message": null,
++        "attributes": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "purpose": "report_insights_v1",
++          "input_bytes": 11974,
++          "selected_evidence_count": 10,
++          "evidence_refs": [
++            "E0009",
++            "E0010",
++            "E0011",
++            "E0007",
++            "E0002",
++            "E0003",
++            "E0004",
++            "E0008",
++            "E0005",
++            "E0006"
++          ],
++          "candidate_count": 3,
++          "timeout_seconds": 60.0,
++          "enable_thinking": false,
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "provider": "compatible",
++          "model": "qwen3.8-flash",
++          "is_mock": false
++        }
++      },
++      {
++        "span_id": "span_632e45eb23ea4238baa4a31166eeb829",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "parent_span_id": null,
++        "name": "fact_validator",
++        "node_key": "fact_validator",
++        "node_attempt": 1,
++        "status": "complete",
++        "started_at": "2026-10-31T13:37:57.081701+00:00",
++        "finished_at": "2026-10-31T13:37:57.092035+00:00",
++        "recovered_at": null,
++        "duration_ms": 10.319916997104883,
++        "error_code": null,
++        "error_message": null,
++        "attributes": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "candidate_count": 3,
++          "accepted_count": 3,
++          "rejected_count": 0
++        }
++      },
++      {
++        "span_id": "span_555d9f5d608341f8bed1d941e419090c",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "parent_span_id": null,
++        "name": "report_assembler",
++        "node_key": "report_assembler",
++        "node_attempt": 1,
++        "status": "complete",
++        "started_at": "2026-10-31T13:37:57.094419+00:00",
++        "finished_at": "2026-10-31T13:37:57.096919+00:00",
++        "recovered_at": null,
++        "duration_ms": 2.4736669729463756,
++        "error_code": null,
++        "error_message": null,
++        "attributes": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "report_status": "complete",
++          "goal_coverage": "complete",
++          "insight_count": 3,
++          "chart_count": 1
++        }
++      },
++      {
++        "span_id": "span_21dc79dd4d3a4abeb2e3b6ae93cc5f83",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "parent_span_id": null,
++        "name": "report_persistence",
++        "node_key": "report_persistence",
++        "node_attempt": 1,
++        "status": "complete",
++        "started_at": "2026-10-31T13:37:57.098822+00:00",
++        "finished_at": "2026-10-31T13:37:57.106552+00:00",
++        "recovered_at": null,
++        "duration_ms": 7.720084046013653,
++        "error_code": null,
++        "error_message": null,
++        "attributes": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "report_id": "report_4d0455e523c645d99660ed61467dfc1e"
++        }
++      }
++    ],
++    "events": [
++      {
++        "event_id": "evt_2f9e087aaf9b4ac1a5c5dde54e306bfb",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": null,
++        "sequence": 1,
++        "event_type": "workflow.started",
++        "recorded_at": "2026-10-31T13:37:40.901263+00:00",
++        "payload": {
++          "status": "running",
++          "previous_status": "queued",
++          "session_revision": 0
++        }
++      },
++      {
++        "event_id": "evt_366b75e288854e16a171078b86178eec",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_e69bd8abb3a54f44b62e0ac7035ebd35",
++        "sequence": 2,
++        "event_type": "span.started",
++        "recorded_at": "2026-10-31T13:37:40.904502+00:00",
++        "payload": {
++          "node_name": "data_profiler",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526"
++        }
++      },
++      {
++        "event_id": "evt_702773becb624ad7ba537d9312df7cdf",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_e69bd8abb3a54f44b62e0ac7035ebd35",
++        "sequence": 3,
++        "event_type": "span.finished",
++        "recorded_at": "2026-10-31T13:37:40.910317+00:00",
++        "payload": {
++          "node_name": "data_profiler",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "dataset_id": "efe94407426a425f8c0e464ad92a5e22",
++          "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a",
++          "row_count": 60,
++          "column_count": 12,
++          "error_code": null,
++          "error_message": null
++        }
++      },
++      {
++        "event_id": "evt_14c124fe427040a2bab89bb86bac49c2",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_0cf8c784309c485ab53dd885f2bbb9cf",
++        "sequence": 4,
++        "event_type": "span.started",
++        "recorded_at": "2026-10-31T13:37:40.913776+00:00",
++        "payload": {
++          "node_name": "intent_parser",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526"
++        }
++      },
++      {
++        "event_id": "evt_2789a3efeaf546d193404a5703d5305f",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_0cf8c784309c485ab53dd885f2bbb9cf",
++        "sequence": 5,
++        "event_type": "span.finished",
++        "recorded_at": "2026-10-31T13:37:43.716954+00:00",
++        "payload": {
++          "node_name": "intent_parser",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "operation_id": "acf1ec3a45e148ca95da6b2ca8626a98",
++          "next_action": "proceed",
++          "error_code": null,
++          "error_message": null
++        }
++      },
++      {
++        "event_id": "evt_cc92dc97b3074bd48972e63a54ec8336",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_9c4952a8f2fe477d929bce9ce5cb3a1c",
++        "sequence": 6,
++        "event_type": "span.started",
++        "recorded_at": "2026-10-31T13:37:43.724234+00:00",
++        "payload": {
++          "node_name": "analysis_planner_v1",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526"
++        }
++      },
++      {
++        "event_id": "evt_c01bef37ca3f406895e5830b35cc964b",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_a1a64abd59ce4bd09bf4ac81937654ca",
++        "sequence": 7,
++        "event_type": "span.started",
++        "recorded_at": "2026-10-31T13:37:50.454809+00:00",
++        "payload": {
++          "validation_role": "planner_output",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526"
++        }
++      },
++      {
++        "event_id": "evt_2c72e4e8b3f74a6a88cdfd7ecd2becad",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_a1a64abd59ce4bd09bf4ac81937654ca",
++        "sequence": 8,
++        "event_type": "span.finished",
++        "recorded_at": "2026-10-31T13:37:50.458331+00:00",
++        "payload": {
++          "validation_role": "planner_output",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "coverage_status": "complete",
++          "executable_count": 1,
++          "blocked_count": 0,
++          "error_code": null,
++          "error_message": null
++        }
++      },
++      {
++        "event_id": "evt_d61ffe5aa1d044d08388ff30c9f73e5d",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_9c4952a8f2fe477d929bce9ce5cb3a1c",
++        "sequence": 9,
++        "event_type": "span.finished",
++        "recorded_at": "2026-10-31T13:37:50.464361+00:00",
++        "payload": {
++          "node_name": "analysis_planner_v1",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "operation_id": "cfb2f82f34e84403ab7203a0e6dde813",
++          "coverage_status": "complete",
++          "executable_count": 1,
++          "blocked_count": 0,
++          "error_code": null,
++          "error_message": null
++        }
++      },
++      {
++        "event_id": "evt_c0b768d8dd4a4a1e8ed1bfacd8f0e786",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_ec138a65e1084cf8a6db24f828525c2d",
++        "sequence": 10,
++        "event_type": "span.started",
++        "recorded_at": "2026-10-31T13:37:50.471808+00:00",
++        "payload": {
++          "validation_role": "initial_plan_save",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526"
++        }
++      },
++      {
++        "event_id": "evt_e570458a611f41ffae85cd4ecc319af8",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_ec138a65e1084cf8a6db24f828525c2d",
++        "sequence": 11,
++        "event_type": "span.finished",
++        "recorded_at": "2026-10-31T13:37:50.475104+00:00",
++        "payload": {
++          "validation_role": "initial_plan_save",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "coverage_status": "complete",
++          "validation_version": "1.0",
++          "executable_count": 1,
++          "blocked_count": 0,
++          "error_code": null,
++          "error_message": null
++        }
++      },
++      {
++        "event_id": "evt_cba876423799419bbe47f85159cfc8a5",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": null,
++        "sequence": 12,
++        "event_type": "workflow.waiting_approval",
++        "recorded_at": "2026-10-31T13:37:50.478623+00:00",
++        "payload": {
++          "status": "waiting_approval",
++          "session_revision": 8,
++          "error_code": null,
++          "error_message": null
++        }
++      },
++      {
++        "event_id": "evt_db7eea9d2d854ea1bf96e5c9f8b6dce4",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_d0ecca95419f4cf9acf0e2a13e3f5230",
++        "sequence": 13,
++        "event_type": "span.started",
++        "recorded_at": "2026-10-31T13:37:50.489896+00:00",
++        "payload": {
++          "command": "approve",
++          "plan_id": "plan_532826233bd541ea9d925e7d5ab2f6f8",
++          "plan_version": 1,
++          "session_revision": 8,
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526"
++        }
++      },
++      {
++        "event_id": "evt_f32d08ed23074b25b087f3df444e9657",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_53d9f26581bc4c8a97d8e8c8b318d2bd",
++        "sequence": 14,
++        "event_type": "span.started",
++        "recorded_at": "2026-10-31T13:37:50.493397+00:00",
++        "payload": {
++          "validation_role": "hitl_approve",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526"
++        }
++      },
++      {
++        "event_id": "evt_3e4efa8405b64018b92dd5ca6bf842b7",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_53d9f26581bc4c8a97d8e8c8b318d2bd",
++        "sequence": 15,
++        "event_type": "span.finished",
++        "recorded_at": "2026-10-31T13:37:50.495700+00:00",
++        "payload": {
++          "validation_role": "hitl_approve",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "coverage_status": "complete",
++          "validation_version": "1.0",
++          "executable_count": 1,
++          "blocked_count": 0,
++          "error_code": null,
++          "error_message": null
++        }
++      },
++      {
++        "event_id": "evt_6a75911128fd40bb90188e34a8388806",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_d0ecca95419f4cf9acf0e2a13e3f5230",
++        "sequence": 16,
++        "event_type": "hitl.approved",
++        "recorded_at": "2026-10-31T13:37:50.508492+00:00",
++        "payload": {
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "plan_id": "plan_532826233bd541ea9d925e7d5ab2f6f8",
++          "plan_version": 1,
++          "dataset_id": "efe94407426a425f8c0e464ad92a5e22",
++          "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a",
++          "validation_version": "1.0",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "command": "approve",
++          "outcome": "approved"
++        }
++      },
++      {
++        "event_id": "evt_46d3bed39dfb4f289485dc78e0954404",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_d0ecca95419f4cf9acf0e2a13e3f5230",
++        "sequence": 17,
++        "event_type": "span.finished",
++        "recorded_at": "2026-10-31T13:37:50.509758+00:00",
++        "payload": {
++          "command": "approve",
++          "plan_id": "plan_532826233bd541ea9d925e7d5ab2f6f8",
++          "plan_version": 1,
++          "session_revision": 8,
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "dataset_id": "efe94407426a425f8c0e464ad92a5e22",
++          "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a",
++          "validation_version": "1.0",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "outcome": "approved",
++          "error_code": null,
++          "error_message": null
++        }
++      },
++      {
++        "event_id": "evt_935610f432da4aac86ebae52e8a4b65d",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_2aa77ff0ba094a299ad2cf1f80e53cd7",
++        "sequence": 18,
++        "event_type": "span.started",
++        "recorded_at": "2026-10-31T13:37:50.529086+00:00",
++        "payload": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526"
++        }
++      },
++      {
++        "event_id": "evt_6b1904ef1ecf4372b64a0fe78f66cdaa",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_2aa77ff0ba094a299ad2cf1f80e53cd7",
++        "sequence": 19,
++        "event_type": "span.finished",
++        "recorded_at": "2026-10-31T13:37:50.537770+00:00",
++        "payload": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "execution_status": "success",
++          "result_refs": [
++            "result_9ac6144d0cf04a04927f574f3de40651"
++          ],
++          "rule_ids": [],
++          "error_code": null,
++          "error_message": null
++        }
++      },
++      {
++        "event_id": "evt_958fa0feee4d4bb6880f3543846d5d8c",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_e2f5b36236e14e049462c793182d2433",
++        "sequence": 20,
++        "event_type": "span.started",
++        "recorded_at": "2026-10-31T13:37:50.577718+00:00",
++        "payload": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526"
++        }
++      },
++      {
++        "event_id": "evt_32525e75a5cb4ec18436e15fc92e6551",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_e2f5b36236e14e049462c793182d2433",
++        "sequence": 21,
++        "event_type": "span.finished",
++        "recorded_at": "2026-10-31T13:37:50.580174+00:00",
++        "payload": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "evidence_count": 11,
++          "error_code": null,
++          "error_message": null
++        }
++      },
++      {
++        "event_id": "evt_ab6e0a6a3f4a4651b4dd458413a3e858",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_cac4bb8fa2f640a6ac9555749b171929",
++        "sequence": 22,
++        "event_type": "span.started",
++        "recorded_at": "2026-10-31T13:37:50.581471+00:00",
++        "payload": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526"
++        }
++      },
++      {
++        "event_id": "evt_5f2ddeb1bb7e4ce896e87d51fbcf7b09",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_cac4bb8fa2f640a6ac9555749b171929",
++        "sequence": 23,
++        "event_type": "span.finished",
++        "recorded_at": "2026-10-31T13:37:50.582640+00:00",
++        "payload": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "chart_count": 1,
++          "error_code": null,
++          "error_message": null
++        }
++      },
++      {
++        "event_id": "evt_270a84049d7f411882d71ce9d21d19c8",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_9944acf699364609bd14469998d67521",
++        "sequence": 24,
++        "event_type": "span.started",
++        "recorded_at": "2026-10-31T13:37:50.584580+00:00",
++        "payload": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "purpose": "report_insights_v1",
++          "input_bytes": 11974,
++          "selected_evidence_count": 10,
++          "evidence_refs": [
++            "E0009",
++            "E0010",
++            "E0011",
++            "E0007",
++            "E0002",
++            "E0003",
++            "E0004",
++            "E0008",
++            "E0005",
++            "E0006"
++          ],
++          "candidate_count": null,
++          "timeout_seconds": 60.0,
++          "enable_thinking": false,
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526"
++        }
++      },
++      {
++        "event_id": "evt_667c031815274e15877cc60e282723b4",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_9944acf699364609bd14469998d67521",
++        "sequence": 25,
++        "event_type": "llm.started",
++        "recorded_at": "2026-10-31T13:37:50.645539+00:00",
++        "payload": {
++          "purpose": "report_insights_v1"
++        }
++      },
++      {
++        "event_id": "evt_927e48eb4fda4ef8a7cf128aa4576f9d",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_9944acf699364609bd14469998d67521",
++        "sequence": 26,
++        "event_type": "llm.returned",
++        "recorded_at": "2026-10-31T13:37:57.076750+00:00",
++        "payload": {
++          "provider": "compatible",
++          "model": "qwen3.8-flash",
++          "is_mock": false,
++          "output_bytes": 2116,
++          "call_id": "call_182e98a54ca44e68a598236c56c8c16c",
++          "request_snapshot_id": "request_c23c75b299ff456589a8e4f7cdd68659",
++          "template_snapshot_id": "pt_c2cb54912d2bf620ff6d1cecddecbf440606c6ed094a7706163e91734932dedb"
++        }
++      },
++      {
++        "event_id": "evt_0dae915531e8406883e75e402ebc8cd0",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_9944acf699364609bd14469998d67521",
++        "sequence": 27,
++        "event_type": "span.finished",
++        "recorded_at": "2026-10-31T13:37:57.080394+00:00",
++        "payload": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "purpose": "report_insights_v1",
++          "input_bytes": 11974,
++          "selected_evidence_count": 10,
++          "evidence_refs": [
++            "E0009",
++            "E0010",
++            "E0011",
++            "E0007",
++            "E0002",
++            "E0003",
++            "E0004",
++            "E0008",
++            "E0005",
++            "E0006"
++          ],
++          "candidate_count": 3,
++          "timeout_seconds": 60.0,
++          "enable_thinking": false,
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "provider": "compatible",
++          "model": "qwen3.8-flash",
++          "is_mock": false,
++          "error_code": null,
++          "error_message": null
++        }
++      },
++      {
++        "event_id": "evt_de3e5661e6bf48c89fe0139694a40348",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_632e45eb23ea4238baa4a31166eeb829",
++        "sequence": 28,
++        "event_type": "span.started",
++        "recorded_at": "2026-10-31T13:37:57.083147+00:00",
++        "payload": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526"
++        }
++      },
++      {
++        "event_id": "evt_497af1e3ce9344809ac78f1b67fa2ac9",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_632e45eb23ea4238baa4a31166eeb829",
++        "sequence": 29,
++        "event_type": "candidate.validated",
++        "recorded_at": "2026-10-31T13:37:57.087267+00:00",
++        "payload": {
++          "candidate_index": 0,
++          "candidate_status": "accepted",
++          "primary_evidence_id": "E0009",
++          "evidence_refs": [
++            "E0002",
++            "E0003",
++            "E0007",
++            "E0009"
++          ]
++        }
++      },
++      {
++        "event_id": "evt_b2716c3bc516479ba38918333592497f",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_632e45eb23ea4238baa4a31166eeb829",
++        "sequence": 30,
++        "event_type": "candidate.validated",
++        "recorded_at": "2026-10-31T13:37:57.088778+00:00",
++        "payload": {
++          "candidate_index": 1,
++          "candidate_status": "accepted",
++          "primary_evidence_id": "E0010",
++          "evidence_refs": [
++            "E0004",
++            "E0010"
++          ]
++        }
++      },
++      {
++        "event_id": "evt_18ff8673cfd54cde98dd3477ab197030",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_632e45eb23ea4238baa4a31166eeb829",
++        "sequence": 31,
++        "event_type": "candidate.validated",
++        "recorded_at": "2026-10-31T13:37:57.089953+00:00",
++        "payload": {
++          "candidate_index": 2,
++          "candidate_status": "accepted",
++          "primary_evidence_id": "E0011",
++          "evidence_refs": [
++            "E0008",
++            "E0011"
++          ]
++        }
++      },
++      {
++        "event_id": "evt_3ea70d45a839434484c33791f8ea477d",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_632e45eb23ea4238baa4a31166eeb829",
++        "sequence": 32,
++        "event_type": "candidates.summarized",
++        "recorded_at": "2026-10-31T13:37:57.090852+00:00",
++        "payload": {
++          "candidate_count": 3,
++          "accepted_count": 3,
++          "rejected_count": 0
++        }
++      },
++      {
++        "event_id": "evt_13a14ba18b4845a49b5c2cb1c3758211",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_632e45eb23ea4238baa4a31166eeb829",
++        "sequence": 33,
++        "event_type": "span.finished",
++        "recorded_at": "2026-10-31T13:37:57.093274+00:00",
++        "payload": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "candidate_count": 3,
++          "accepted_count": 3,
++          "rejected_count": 0,
++          "error_code": null,
++          "error_message": null
++        }
++      },
++      {
++        "event_id": "evt_d4ff2d5a6baa4e98b6fc208dc19f833b",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_555d9f5d608341f8bed1d941e419090c",
++        "sequence": 34,
++        "event_type": "span.started",
++        "recorded_at": "2026-10-31T13:37:57.095646+00:00",
++        "payload": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526"
++        }
++      },
++      {
++        "event_id": "evt_f611e60c6c6b42afa2965e0995d27ce3",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_555d9f5d608341f8bed1d941e419090c",
++        "sequence": 35,
++        "event_type": "span.finished",
++        "recorded_at": "2026-10-31T13:37:57.097858+00:00",
++        "payload": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "report_status": "complete",
++          "goal_coverage": "complete",
++          "insight_count": 3,
++          "chart_count": 1,
++          "error_code": null,
++          "error_message": null
++        }
++      },
++      {
++        "event_id": "evt_2f9481472cbc4c31bcd12bc4d0c94eb9",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_21dc79dd4d3a4abeb2e3b6ae93cc5f83",
++        "sequence": 36,
++        "event_type": "span.started",
++        "recorded_at": "2026-10-31T13:37:57.099877+00:00",
++        "payload": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526"
++        }
++      },
++      {
++        "event_id": "evt_7ea2e625fac54a6b81cd4d2d483970ec",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_21dc79dd4d3a4abeb2e3b6ae93cc5f83",
++        "sequence": 37,
++        "event_type": "span.finished",
++        "recorded_at": "2026-10-31T13:37:57.107547+00:00",
++        "payload": {
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++          "workflow_id": "wf_65b741d8c88b45a2940abace3c8f92e5",
++          "root_run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++          "report_id": "report_4d0455e523c645d99660ed61467dfc1e",
++          "error_code": null,
++          "error_message": null
++        }
++      },
++      {
++        "event_id": "evt_c6a0e262d5ee400d9a454990d9474792",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": null,
++        "sequence": 38,
++        "event_type": "report.complete",
++        "recorded_at": "2026-10-31T13:37:57.109727+00:00",
++        "payload": {
++          "report_status": "complete",
++          "report_id": "report_4d0455e523c645d99660ed61467dfc1e",
++          "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++          "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++          "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++          "report_attempt": 1,
++          "report_run_id": "run_73539e80f42648a5a26dbb1787084f1f"
++        }
++      }
++    ],
++    "plan_versions": [
++      {
++        "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++        "plan_id": "plan_532826233bd541ea9d925e7d5ab2f6f8",
++        "plan_version": 1,
++        "dataset_id": "efe94407426a425f8c0e464ad92a5e22",
++        "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a"
++      }
++    ],
++    "approvals": [
++      {
++        "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++        "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac"
++      }
++    ],
++    "executions": [
++      {
++        "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++        "approval_id": "approval_1404ce3086f44124bfd7c0aee4f45b29",
++        "plan_version_id": "wpv_a69aaaf0ac668ccca2ad8ec8356c35275a6296576074b91f79f09277fb1c06ac",
++        "status": "finished",
++        "outcome": "success",
++        "result_ref": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++        "errors": []
++      }
++    ],
++    "report_generations": [
++      {
++        "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++        "status": "completed",
++        "attempt": 1,
++        "report_id": "report_4d0455e523c645d99660ed61467dfc1e",
++        "queued_at": "2026-10-31T13:37:50.541530+00:00",
++        "started_at": "2026-10-31T13:37:50.566267+00:00",
++        "finished_at": "2026-10-31T13:37:57.102922+00:00"
++      }
++    ],
++    "reports": [
++      {
++        "report_id": "report_4d0455e523c645d99660ed61467dfc1e",
++        "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++        "accepted_report_attempt": 1,
++        "report_status": "complete",
++        "goal_coverage": "complete"
++      }
++    ],
++    "llm_calls": [
++      {
++        "call_id": "call_93ade34088ef4cb6bc4de47a4181fad9",
++        "node_id": "intent_parser",
++        "operation_id": "acf1ec3a45e148ca95da6b2ca8626a98",
++        "call_sequence": 1,
++        "retry_index": 0,
++        "retry_reason": null,
++        "retry_of_call_id": null,
++        "template_snapshot_id": "pt_c61175023dfaa7f9b7248cd3b30a2baa6eb9a1bff93889fba0183a285b441754",
++        "request_snapshot_id": "request_07f54a1c86244e7dab6d88efe5029a39",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_0cf8c784309c485ab53dd885f2bbb9cf",
++        "status": "succeeded",
++        "outcome_scope": "provider_protocol",
++        "started_at": "2026-10-31T13:37:40.938765+00:00",
++        "finished_at": "2026-10-31T13:37:43.705743+00:00",
++        "duration_ms": 2766.088917036541,
++        "error_code": null,
++        "response_hash": "36326a4d70a22965b23a4fd7bebf86f63d62885cb9c98f194eb1619f39f6b432"
++      },
++      {
++        "call_id": "call_adb5fe785b0743b99081fc5d27529c12",
++        "node_id": "analysis_planner",
++        "operation_id": "cfb2f82f34e84403ab7203a0e6dde813",
++        "call_sequence": 1,
++        "retry_index": 0,
++        "retry_reason": null,
++        "retry_of_call_id": null,
++        "template_snapshot_id": "pt_00d2887d1cbeb11e82cba23892064ef53a8603d6c4286cdc8eca73701bb9a272",
++        "request_snapshot_id": "request_f3ed6e60c7bb4f8ba177646981f152b3",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_9c4952a8f2fe477d929bce9ce5cb3a1c",
++        "status": "succeeded",
++        "outcome_scope": "provider_protocol",
++        "started_at": "2026-10-31T13:37:43.784650+00:00",
++        "finished_at": "2026-10-31T13:37:50.448122+00:00",
++        "duration_ms": 6632.36741698347,
++        "error_code": null,
++        "response_hash": "ddc88c9f59047684a9fbd3f458054aac6912032ab37646faeaadc7f9223e6cb4"
++      },
++      {
++        "call_id": "call_182e98a54ca44e68a598236c56c8c16c",
++        "node_id": "insight_generator",
++        "operation_id": "13999f4b28474c2f88b5d6ecd1baaeb3",
++        "call_sequence": 1,
++        "retry_index": 0,
++        "retry_reason": null,
++        "retry_of_call_id": null,
++        "template_snapshot_id": "pt_c2cb54912d2bf620ff6d1cecddecbf440606c6ed094a7706163e91734932dedb",
++        "request_snapshot_id": "request_c23c75b299ff456589a8e4f7cdd68659",
++        "run_id": "run_15c55fbf4a624e3c8ff4eb2c07abb526",
++        "span_id": "span_9944acf699364609bd14469998d67521",
++        "status": "succeeded",
++        "outcome_scope": "provider_protocol",
++        "started_at": "2026-10-31T13:37:50.649160+00:00",
++        "finished_at": "2026-10-31T13:37:57.072674+00:00",
++        "duration_ms": 6422.678750008345,
++        "error_code": null,
++        "response_hash": "5fa40a23dda9f13d34a93e265319623bee006845720422c11132267d41eb91b4"
++      }
++    ],
++    "report_artifact_runs": [
++      {
++        "run_id": "run_73539e80f42648a5a26dbb1787084f1f",
++        "execution_id": "exec_1739e70a5bd6468eb9ed55005379e3e2",
++        "attempt": 1,
++        "status": "complete",
++        "error_code": null,
++        "retry_of_run_id": null
++      }
++    ]
++  },
++  "collection": {
++    "status": "observed",
++    "findings": [],
++    "notice": "没有明确证据的缺席节点无法判断是否执行；不补齐预设节点。跨库读取不是分布式原子快照。"
++  }
++}--- before/admin/src/tests/navigation.test.tsx
++++ after/admin/src/tests/navigation.test.tsx
+@@ -50,3 +50,9 @@
+   expect(screen.getByRole('alert')).toHaveTextContent('权限检查未允许访问');
+   expect(screen.queryByRole('heading', { name: '尚未接入' })).not.toBeInTheDocument();
+ });
++
++it('maps Workflow observability details without stealing similarly named Run IDs', () => {
++  expect(currentNavigation('/traces/workflows').page?.key).toBe('workflow-explorer');
++  expect(currentNavigation('/traces/workflows/wf_real').page?.key).toBe('workflow-explorer');
++  expect(currentNavigation('/traces/workflows_other_run').page?.key).toBe('trace-detail');
++});
+--- before/admin/src/tests/workflows.test.tsx
++++ after/admin/src/tests/workflows.test.tsx
+@@ -0,0 +1,91 @@
++// Frozen real C2 response; modified copies are isolated component fault fixtures, never browser/server data.
++import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
++import { MemoryRouter } from 'react-router-dom';
++import { expect, it, vi } from 'vitest';
++import { AdminRoutes } from '../app/routes';
++import { isWorkflow, workflowApi } from '../api/workflows';
++import type { WorkflowView } from '../types/workflows';
++import fixture from './fixtures/workflow-c2.json';
++const source=()=>structuredClone(fixture) as unknown as WorkflowView;
++function page(items:unknown[]=[source()]) {return {schema_version:'workflow-observability-page-v1',items,total:items.length,limit:20,offset:0,sort:'created_at DESC, workflow_id ASC',notice:'readonly'};}
++function view(path:string) {render(<MemoryRouter initialEntries={[path]}><AdminRoutes /></MemoryRouter>);}
++function response(value:unknown,status=200) {return new Response(JSON.stringify(value),{status,headers:{'content-type':'application/json'}});}
++
++it('uses the frozen real C2 sample for list-to-detail and fourteen actual nodes',async()=>{
++  const fetcher=vi.fn(async(input:RequestInfo|URL,_init?:RequestInit)=>response(String(input).includes('/workflow-observability/'+fixture.workflow_id)?source():page()));vi.stubGlobal('fetch',fetcher);
++  view('/traces/workflows');
++  fireEvent.click(await screen.findByRole('link',{name:fixture.workflow_id}));
++  expect(await screen.findByRole('heading',{name:'生命周期时间线'})).toBeVisible();
++  expect(screen.getAllByTestId('workflow-node')).toHaveLength(14);
++  expect(screen.getByText(/14 个实际 Span/)).toHaveTextContent('3 条已采集 LLM 调用');
++  expect(screen.getByText(fixture.root_run_id)).toBeVisible();
++  expect(screen.getByText('分析已完成')).toBeVisible();
++  expect(screen.queryByRole('button',{name:/批准|开始分析|恢复执行|重试分析/})).not.toBeInTheDocument();
++  const node=screen.getAllByTestId('workflow-node').find(n=>n.textContent?.includes('analysis_engine'))!;
++  fireEvent.click(within(node).getByText('分析执行'));
++  expect(within(node).getAllByText(fixture.trace.executions[0].execution_id).length).toBeGreaterThan(0);
++  expect(fetcher.mock.calls.every(([,init])=>!init||init.method===undefined||init.method==='GET')).toBe(true);
++});
++
++it('submits exact filters in the URL and paginates without a control API',async()=>{
++  const fetcher=vi.fn(async(_input:RequestInfo|URL)=>response({...page(),total:21}));vi.stubGlobal('fetch',fetcher);
++  view('/traces/workflows');await screen.findByText('21 条真实 Workflow');
++  fireEvent.change(screen.getByLabelText('Workflow ID'),{target:{value:fixture.workflow_id}});
++  fireEvent.change(screen.getByLabelText('业务生命周期'),{target:{value:'succeeded'}});
++  fireEvent.click(screen.getByRole('button',{name:'查询'}));
++  await waitFor(()=>expect(String(fetcher.mock.calls.at(-1)?.[0])).toContain('workflow_id='+fixture.workflow_id));
++  await waitFor(()=>expect(screen.getByRole('button',{name:'下一页'})).toBeEnabled());
++  fireEvent.click(screen.getByRole('button',{name:'下一页'}));
++  await waitFor(()=>expect(String(fetcher.mock.calls.at(-1)?.[0])).toContain('offset=20'));
++});
++
++it('keeps delivered business status when Trace is unavailable without fabricating nodes',async()=>{
++  const data=source();data.trace!.nodes=[];data.trace!.events=[];data.trace!.llm_calls=[];
++  data.collection.status='incomplete';data.collection.findings=[{category:'executed_trace_missing',code:'EXECUTION_SPAN_NOT_COLLECTED',evidence_refs:[fixture.trace.executions[0].execution_id]}];
++  vi.stubGlobal('fetch',vi.fn(async()=>response(data)));view('/traces/workflows/'+fixture.workflow_id);
++  expect(await screen.findByText('分析已完成')).toBeVisible();
++  expect(screen.getByText('已执行，Trace 缺失')).toBeVisible();
++  expect(screen.queryAllByTestId('workflow-node')).toHaveLength(0);
++  expect(screen.getByText('暂无可读取的实际节点')).toBeVisible();
++});
++
++it('distinguishes explicit skip, incomplete observation, inconsistency and unknown',async()=>{
++  const data=source();data.collection.findings=[
++    {category:'not_executed',code:'NO_EVIDENCE',evidence_refs:['unit_skip_event']},
++    {category:'observation_incomplete',code:'RECORDED_COLLECTION_GAP',evidence_refs:[]},
++    {category:'inconsistent',code:'WORKFLOW_TRACE_IDENTITY_MISMATCH',evidence_refs:[]},
++    {category:'unknown',code:'ROOT_NOT_COLLECTED',evidence_refs:[]}];data.collection.status='incomplete';
++  vi.stubGlobal('fetch',vi.fn(async()=>response(data)));view('/traces/workflows/'+fixture.workflow_id);
++  expect(await screen.findByText('明确未执行')).toBeVisible();
++  for(const text of ['观测不完整','业务与关联不一致','尚无法判断'])expect(screen.getByText(text)).toBeVisible();
++  expect(screen.getAllByTestId('workflow-node')).toHaveLength(14);
++});
++
++it('renders retry metadata and events without an executable retry button',async()=>{
++  const data=source();data.trace!.llm_calls[0].retry_index=1;data.trace!.llm_calls[0].retry_of_call_id='call_unit_previous';
++  vi.stubGlobal('fetch',vi.fn(async()=>response(data)));view('/traces/workflows/'+fixture.workflow_id);
++  const nodes=await screen.findAllByTestId('workflow-node');const node=nodes.find(n=>n.textContent?.includes('intent_parser'))!;
++  fireEvent.click(within(node).getByText('需求理解'));
++  expect(within(node).getByText(/请求重试 #1/)).toBeVisible();
++  expect(within(node).getByText(/call_unit_previous/)).toBeVisible();
++  expect(within(node).getByText('span.started')).toBeVisible();
++});
++it('supports empty filtered results',async()=>{
++  vi.stubGlobal('fetch',vi.fn(async()=>response(page([]))));view('/traces/workflows?session_id=missing');
++  expect(await screen.findByRole('heading',{name:'没有匹配的 Workflow'})).toBeVisible();
++});
++it('shows authorization failure rather than simulated records',async()=>{
++  vi.stubGlobal('fetch',vi.fn(async()=>response({},403)));view('/traces/workflows');
++  expect(await screen.findByRole('heading',{name:'需要管理员只读访问'})).toBeVisible();
++});
++it('rejects wrong ownership in API payloads',async()=>{
++  expect(isWorkflow(source())).toBe(true);const wrong=source();wrong.trace!.root_run_id='other';expect(isWorkflow(wrong)).toBe(false);
++  vi.stubGlobal('fetch',vi.fn(async()=>response(wrong)));
++  await expect(workflowApi.get(fixture.workflow_id)).rejects.toThrow('Workflow 详情结构或归属不正确');
++});
++
++it('does not invent historical content for an unknown Workflow ID',async()=>{
++  vi.stubGlobal('fetch',vi.fn(async()=>response({},404)));view('/traces/workflows/wf_not_registered');
++  expect(await screen.findByRole('heading',{name:'Workflow 不存在或未登记'})).toBeVisible();
++  expect(screen.queryAllByTestId('workflow-node')).toHaveLength(0);
++});
+--- before/admin/src/types/workflows.ts
++++ after/admin/src/types/workflows.ts
+@@ -0,0 +1,20 @@
++import type { TraceRun, TraceSpan, TraceEvent, Metadata } from './traces';
++export const businessStatuses = ['created','running','waiting_input','waiting_approval','succeeded','partially_succeeded','failed','interrupted','unknown'] as const;
++export type BusinessStatus = typeof businessStatuses[number];
++export type FindingCategory = 'not_executed' | 'executed_trace_missing' | 'observation_incomplete' | 'inconsistent' | 'unknown';
++export interface Finding { category: FindingCategory; code: string; node_key?: string; evidence_refs: string[] }
++export interface WorkflowCall { call_id: string; node_id: string; span_id: string | null; status: string; call_sequence: number; retry_index: number; retry_of_call_id?: string | null; duration_ms: number | null; request_snapshot_id: string; template_snapshot_id: string }
++export interface WorkflowObservation {
++  workflow_id: string; root_run_id: string; session_id: string; root: TraceRun | null;
++  nodes: TraceSpan[]; events: TraceEvent[]; llm_calls: WorkflowCall[];
++  plan_versions: Metadata[]; approvals: Metadata[]; executions: Metadata[]; report_generations: Metadata[]; reports: Metadata[]; report_artifact_runs: Metadata[];
++}
++export interface WorkflowView {
++  schema_version: 'workflow-observability-v1'; workflow_id: string; session_id: string; root_run_id: string;
++  business_lifecycle: { status: BusinessStatus; execution_status: string | null; report_generation_status: string | null; report_status: string | null; report_delivery: string; goal_coverage: string | null };
++  activity: string; reason_codes: string[]; source_refs: Metadata; consistency: { status: string; issues: string[] };
++  created_at: string; updated_at: string | null; ended_at: string | null; duration_ms: number | null; duration_basis: string | null;
++  has_exception: boolean; collection: { status: 'observed' | 'incomplete'; findings: Finding[]; notice: string };
++  trace?: WorkflowObservation | null;
++}
++export interface WorkflowPage { schema_version: 'workflow-observability-page-v1'; items: WorkflowView[]; total: number; limit: number; offset: number; sort: string; notice: string }
+--- before/admin/tsconfig.json
++++ after/admin/tsconfig.json
+@@ -4,6 +4,7 @@
+     "lib": ["ES2022", "DOM", "DOM.Iterable"],
+     "module": "ESNext",
+     "moduleResolution": "bundler",
++    "resolveJsonModule": true,
+     "jsx": "react-jsx",
+     "strict": true,
+     "noEmit": true,

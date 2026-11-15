@@ -1,0 +1,536 @@
+{
+  "analysis_goal": {
+    "analysis_object": "operations数据",
+    "business_goal": "比较各项目投入工时与任务数量，不据此断定效率",
+    "decision_goal": null
+  },
+  "goal_coverage": "complete",
+  "original_query": "比较各项目投入工时与任务数量，不据此断定效率",
+  "constraints": {
+    "time_range": null,
+    "filters": [],
+    "metric_requirements": [],
+    "analysis_limits": []
+  },
+  "constraints_confirmed": false,
+  "scope_context": [
+    {
+      "task_id": "A01",
+      "approved_steps": [
+        "按项目分组",
+        "拟用统计口径：工时 · 合计",
+        "拟用统计口径：记录数"
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "field_id": "field_0001",
+      "name": "项目",
+      "logical_type": "text",
+      "upload_missing_count": 0
+    },
+    {
+      "field_id": "field_0002",
+      "name": "工时",
+      "logical_type": "integer",
+      "upload_missing_count": 0
+    }
+  ],
+  "uncompleted_tasks": [],
+  "task_sample_context": [
+    {
+      "task_id": "A01",
+      "status": "success",
+      "valid_sample_count": 4,
+      "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+      "metric_valid_counts": {}
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "A01",
+      "priority": "P0",
+      "business_question": "项目工时与任务数量"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E0022",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "hours",
+      "evidence_type": "comparison",
+      "value": {
+        "metric_field": "hours",
+        "dimension_field": "field_0001",
+        "source_scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+        "unit": "%",
+        "rounding": "half_up_1_decimal",
+        "left": "乙",
+        "right": "甲",
+        "left_value": "30",
+        "right_value": "20",
+        "difference": "10",
+        "formula": "(left_value - right_value) / right_value * 100",
+        "comparison_kind": "relative_lead",
+        "numerator": "10",
+        "denominator": "20",
+        "percent": "50.0"
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。；仅比较当前返回的同口径分组。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；relative_lead：(left_value - right_value) / right_value * 100；字段 hours，分子 10，分母 20；分母必须为正，百分比四舍五入一位小数。",
+      "statement": "在当前返回结果中，乙的工时合计比甲高 10，相对甲领先约 50.0%。",
+      "source_row_indices": [
+        1,
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0016",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "tasks",
+      "evidence_type": "difference",
+      "value": {
+        "left": "甲",
+        "right": "乙",
+        "left_value": 2,
+        "right_value": 1,
+        "difference": 1
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算值相减：tasks[0] - tasks[1]；不是因果或显著性检验。",
+      "statement": "在该任务完整分组结果中，甲与乙的记录 · 数量差值为 1条。",
+      "source_row_indices": [
+        0,
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0023",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "hours",
+      "evidence_type": "comparison",
+      "value": {
+        "metric_field": "hours",
+        "dimension_field": "field_0001",
+        "source_scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+        "unit": "%",
+        "rounding": "half_up_1_decimal",
+        "left": "丙",
+        "right": "乙",
+        "left_value": "5",
+        "right_value": "30",
+        "formula": "left_value / right_value * 100",
+        "comparison_kind": "relative_ratio",
+        "numerator": "5",
+        "denominator": "30",
+        "percent": "16.7"
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。；仅比较当前返回的同口径分组。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；relative_ratio：left_value / right_value * 100；字段 hours，分子 5，分母 30；分母必须为正，百分比四舍五入一位小数。",
+      "statement": "在当前返回结果中，丙的工时合计为 5，约为乙的 16.7%。",
+      "source_row_indices": [
+        2,
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0011",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "tasks",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "甲",
+        "value": 2,
+        "rank": 1
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 tasks 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，甲的记录 · 数量为 2条，并列值采用同一名次，排名 1。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0024",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "hours",
+      "evidence_type": "comparison",
+      "value": {
+        "metric_field": "hours",
+        "dimension_field": "field_0001",
+        "source_scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+        "unit": "%",
+        "rounding": "half_up_1_decimal",
+        "left": "乙",
+        "right": "甲",
+        "left_value": "30",
+        "right_value": "20",
+        "returned_group_count": 3,
+        "denominator_scope": "returned_groups_only",
+        "formula": "(left_value + right_value) / returned_group_sum * 100",
+        "comparison_kind": "returned_concentration",
+        "numerator": "50",
+        "denominator": "55",
+        "percent": "90.9"
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。；分母仅为本次完整返回的分组合计，不是全部筛选范围或整体市场。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；returned_concentration：(left_value + right_value) / returned_group_sum * 100；字段 hours，分子 50，分母 55；分母必须为正，百分比四舍五入一位小数。",
+      "statement": "乙和甲合计占本次返回 3 个分组工时合计合计的约 90.9%；分母仅为返回分组合计，不代表全部筛选范围或整体市场占比。",
+      "source_row_indices": [
+        1,
+        0,
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0012",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "tasks",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "乙",
+        "value": 1,
+        "rank": 2
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 tasks 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，乙的记录 · 数量为 1条，并列值采用同一名次，排名 2。",
+      "source_row_indices": [
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0007",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "hours",
+      "evidence_type": "difference",
+      "value": {
+        "left": "乙",
+        "right": "甲",
+        "left_value": 30,
+        "right_value": 20,
+        "difference": 10
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算值相减：hours[1] - hours[0]；不是因果或显著性检验。",
+      "statement": "在该任务完整分组结果中，乙与甲的工时 · 合计差值为 10。",
+      "source_row_indices": [
+        1,
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0013",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "tasks",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "丙",
+        "value": 1,
+        "rank": 2
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 tasks 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，丙的记录 · 数量为 1条，并列值采用同一名次，排名 2。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0002",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "hours",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "乙",
+        "value": 30,
+        "rank": 1
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 hours 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，乙的工时 · 合计为 30，并列值采用同一名次，排名 1。",
+      "source_row_indices": [
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0021",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "tasks",
+      "evidence_type": "metric",
+      "value": {
+        "value": 4,
+        "unit": "条",
+        "label": "本次返回分组合计（记录 · 数量）"
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；仅将当前完整返回表中的可加指标相加；含 Top N 时只代表所选分组，不作为总体占比分母。",
+      "statement": "本次返回的 3 个分组的记录 · 数量合计为 4条。",
+      "source_row_indices": [
+        0,
+        1,
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0003",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "hours",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "甲",
+        "value": 20,
+        "rank": 2
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 hours 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，甲的工时 · 合计为 20，并列值采用同一名次，排名 2。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0017",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "tasks",
+      "evidence_type": "proportion",
+      "value": {
+        "category": "甲",
+        "numerator": 2,
+        "denominator": 4.0,
+        "percent": 50
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+      "statement": "甲的记录 · 数量占该任务同口径总体约 50%。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0004",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "hours",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "丙",
+        "value": 5,
+        "rank": 3
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 hours 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，丙的工时 · 合计为 5，并列值采用同一名次，排名 3。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0018",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "tasks",
+      "evidence_type": "proportion",
+      "value": {
+        "category": "乙",
+        "numerator": 1,
+        "denominator": 4.0,
+        "percent": 25
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+      "statement": "乙的记录 · 数量占该任务同口径总体约 25%。",
+      "source_row_indices": [
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0020",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "hours",
+      "evidence_type": "metric",
+      "value": {
+        "value": 55,
+        "unit": null,
+        "label": "本次返回分组合计（工时 · 合计）"
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；仅将当前完整返回表中的可加指标相加；含 Top N 时只代表所选分组，不作为总体占比分母。",
+      "statement": "本次返回的 3 个分组的工时 · 合计合计为 55。",
+      "source_row_indices": [
+        0,
+        1,
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0019",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "tasks",
+      "evidence_type": "proportion",
+      "value": {
+        "category": "丙",
+        "numerator": 1,
+        "denominator": 4.0,
+        "percent": 25
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+      "statement": "丙的记录 · 数量占该任务同口径总体约 25%。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0008",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "hours",
+      "evidence_type": "proportion",
+      "value": {
+        "category": "乙",
+        "numerator": 30,
+        "denominator": 55.0,
+        "percent": 54.54545454545455
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+      "statement": "乙的工时 · 合计占该任务同口径总体约 54.54545454545455%。",
+      "source_row_indices": [
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0014",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "tasks",
+      "evidence_type": "maximum",
+      "value": {
+        "value": 2,
+        "category": "甲",
+        "tie_count": 1
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；读取 tasks 的最大值，保留并列来源行。",
+      "statement": "该任务完整分组结果的记录 · 数量最大值为 2条，对应 甲等 1 个分组。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0009",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "hours",
+      "evidence_type": "proportion",
+      "value": {
+        "category": "甲",
+        "numerator": 20,
+        "denominator": 55.0,
+        "percent": 36.36363636363637
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+      "statement": "甲的工时 · 合计占该任务同口径总体约 36.36363636363637%。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0015",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "tasks",
+      "evidence_type": "minimum",
+      "value": {
+        "value": 1,
+        "category": "乙",
+        "tie_count": 2
+      },
+      "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；读取 tasks 的最小值，保留并列来源行。",
+      "statement": "该任务完整分组结果的记录 · 数量最小值为 1条，对应 乙等 2 个分组。",
+      "source_row_indices": [
+        1,
+        2
+      ],
+      "related_result_refs": []
+    }
+  ],
+  "evidence_groups": [
+    {
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "hours",
+      "evidence_ids": [
+        "E0022",
+        "E0023",
+        "E0024",
+        "E0007",
+        "E0002",
+        "E0003",
+        "E0004",
+        "E0020",
+        "E0008",
+        "E0009"
+      ]
+    },
+    {
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "tasks",
+      "evidence_ids": [
+        "E0016",
+        "E0011",
+        "E0012",
+        "E0013",
+        "E0021",
+        "E0017",
+        "E0018",
+        "E0019",
+        "E0014",
+        "E0015"
+      ]
+    }
+  ],
+  "limitations": [
+    "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+    "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+    "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+  ]
+}

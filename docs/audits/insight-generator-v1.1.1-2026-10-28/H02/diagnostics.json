@@ -1,0 +1,351 @@
+{
+  "case_id": "H02",
+  "query": "比较服务组工单数量前三名，不能当作整体客户占比",
+  "split": "holdout",
+  "historical_report_error": {
+    "code": "REPORT_UNVERIFIED_FACT",
+    "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+    "node_name": null,
+    "retryable": false,
+    "details": {}
+  },
+  "candidates": [
+    {
+      "candidate_number": 1,
+      "raw_candidate": {
+        "primary_evidence_id": "E0009",
+        "evidence_refs": [
+          "E0002",
+          "E0003",
+          "E0007",
+          "E0009"
+        ],
+        "finding_type": "difference",
+        "implication": "红组与蓝组的工单数量差额值得结合具体服务类型或客户构成评估，当前数据不足以判断造成差异的具体业务原因。",
+        "recommendation": "建议比较这两个服务组对应的工单类别分布、平均处理时长及关联客户特征，核查是否存在结构性差异；补充分析尚未执行。",
+        "limitations": [
+          "结论仅适用于当前返回范围，不能外推整体市场。"
+        ]
+      },
+      "references": [
+        {
+          "evidence_id": "E0002",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较服务组工单数量前三名，不能当作整体客户占比；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "在当前返回结果中，红组的记录 · 数量为 4条，并列值采用同一名次，排名 1。",
+          "source_row_indices": [
+            0
+          ],
+          "value": {
+            "category": "红组",
+            "value": 4,
+            "rank": 1
+          }
+        },
+        {
+          "evidence_id": "E0003",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较服务组工单数量前三名，不能当作整体客户占比；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "在当前返回结果中，蓝组的记录 · 数量为 2条，并列值采用同一名次，排名 2。",
+          "source_row_indices": [
+            1
+          ],
+          "value": {
+            "category": "蓝组",
+            "value": 2,
+            "rank": 2
+          }
+        },
+        {
+          "evidence_id": "E0007",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较服务组工单数量前三名，不能当作整体客户占比；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "在当前返回结果中，红组与蓝组的记录 · 数量差值为 2条。",
+          "source_row_indices": [
+            0,
+            1
+          ],
+          "value": {
+            "left": "红组",
+            "right": "蓝组",
+            "left_value": 4,
+            "right_value": 2,
+            "difference": 2
+          }
+        },
+        {
+          "evidence_id": "E0009",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较服务组工单数量前三名，不能当作整体客户占比；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "在当前返回结果中，红组的记录数量比蓝组高 2，相对蓝组领先约 100.0%。",
+          "source_row_indices": [
+            0,
+            1
+          ],
+          "value": {
+            "metric_field": "value",
+            "dimension_field": "field_0001",
+            "source_scope": "比较服务组工单数量前三名，不能当作整体客户占比；仅限当前上传数据与批准任务范围。",
+            "unit": "%",
+            "rounding": "half_up_1_decimal",
+            "left": "红组",
+            "right": "蓝组",
+            "left_value": "4",
+            "right_value": "2",
+            "difference": "2",
+            "formula": "(left_value - right_value) / right_value * 100",
+            "comparison_kind": "relative_lead",
+            "numerator": "2",
+            "denominator": "2",
+            "percent": "100.0"
+          }
+        }
+      ],
+      "actual_candidate_outcome": "rejected",
+      "actual_first_error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {}
+      },
+      "text_diagnostics": [
+        {
+          "role": "implication",
+          "original_text": "红组与蓝组的工单数量差额值得结合具体服务类型或客户构成评估，当前数据不足以判断造成差异的具体业务原因。",
+          "normalized_checked_text": "红组与蓝组的工单数量差额值得结合具体服务类型或客户构成评估，当前数据不足以判断造成差异的具体业务原因。",
+          "matches": [
+            {
+              "rule": "UNSUPPORTED_ASSERTION",
+              "match": "造成",
+              "span": [
+                39,
+                41
+              ],
+              "pattern": "导致|造成|归因于|证明|必然|保证|因果|显著|最高|最低|排名|占比|翻倍|全部|所有|超过.*半|大多数"
+            }
+          ],
+          "outcome": "rejected",
+          "error": {
+            "code": "REPORT_UNVERIFIED_FACT",
+            "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+            "node_name": null,
+            "retryable": false,
+            "details": {}
+          }
+        },
+        {
+          "role": "recommendation",
+          "original_text": "建议比较这两个服务组对应的工单类别分布、平均处理时长及关联客户特征，核查是否存在结构性差异；补充分析尚未执行。",
+          "normalized_checked_text": "建议比较这两个服务组对应的工单类别分布、平均处理时长及关联客户特征，核查是否存在结构性差异；补充分析尚未执行。",
+          "matches": [
+            {
+              "rule": "NUMERIC",
+              "match": "两个",
+              "span": [
+                5,
+                7
+              ],
+              "pattern": "[0-9０-９]|[零〇一二三四五六七八九十百千万亿两点]{2,}|第[一二三四五六七八九十百千万两]+|[一二三四五六七八九十两](?:成|倍|条|个|名|位|年|月)|百分之|半数|一半"
+            }
+          ],
+          "outcome": "rejected",
+          "error": {
+            "code": "REPORT_UNVERIFIED_FACT",
+            "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+            "node_name": null,
+            "retryable": false,
+            "details": {}
+          }
+        },
+        {
+          "role": "limitation",
+          "original_text": "结论仅适用于当前返回范围，不能外推整体市场。",
+          "outcome": "accepted"
+        }
+      ]
+    },
+    {
+      "candidate_number": 2,
+      "raw_candidate": {
+        "primary_evidence_id": "E0011",
+        "evidence_refs": [
+          "E0008",
+          "E0011"
+        ],
+        "finding_type": "concentration",
+        "implication": "前两个排名分组在已返回结果中占据较高比例，需确认这是否反映了真实的服务负载集中情况，还是受限于查询范围的偏差。",
+        "recommendation": "建议核查未包含在本次Top 3筛选中的其他服务组记录数，并对比全量数据的分布结构，以验证集中度的普遍性；补充分析尚未执行。",
+        "limitations": [
+          "结论仅适用于当前返回范围，不能外推整体市场。",
+          "分母仅为本次完整返回的分组合计，不是全部筛选范围或整体市场占比。"
+        ]
+      },
+      "references": [
+        {
+          "evidence_id": "E0008",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较服务组工单数量前三名，不能当作整体客户占比；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "本次返回的 3 个分组的记录 · 数量合计为 7条。",
+          "source_row_indices": [
+            0,
+            1,
+            2
+          ],
+          "value": {
+            "value": 7,
+            "unit": "条",
+            "label": "本次返回分组合计（记录 · 数量）"
+          }
+        },
+        {
+          "evidence_id": "E0011",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较服务组工单数量前三名，不能当作整体客户占比；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "红组和蓝组合计占本次返回 3 个分组记录数量合计的约 85.7%；分母仅为返回分组合计，不代表全部筛选范围或整体市场占比。",
+          "source_row_indices": [
+            0,
+            1,
+            2
+          ],
+          "value": {
+            "metric_field": "value",
+            "dimension_field": "field_0001",
+            "source_scope": "比较服务组工单数量前三名，不能当作整体客户占比；仅限当前上传数据与批准任务范围。",
+            "unit": "%",
+            "rounding": "half_up_1_decimal",
+            "left": "红组",
+            "right": "蓝组",
+            "left_value": "4",
+            "right_value": "2",
+            "returned_group_count": 3,
+            "denominator_scope": "returned_groups_only",
+            "formula": "(left_value + right_value) / returned_group_sum * 100",
+            "comparison_kind": "returned_concentration",
+            "numerator": "6",
+            "denominator": "7",
+            "percent": "85.7"
+          }
+        }
+      ],
+      "actual_candidate_outcome": "rejected",
+      "actual_first_error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {}
+      },
+      "text_diagnostics": [
+        {
+          "role": "implication",
+          "original_text": "前两个排名分组在已返回结果中占据较高比例，需确认这是否反映了真实的服务负载集中情况，还是受限于查询范围的偏差。",
+          "normalized_checked_text": "前两个排名分组在已返回结果中占据较高比例，需确认这是否反映了真实的服务负载集中情况，还是受限于查询范围的偏差。",
+          "matches": [
+            {
+              "rule": "NUMERIC",
+              "match": "两个",
+              "span": [
+                1,
+                3
+              ],
+              "pattern": "[0-9０-９]|[零〇一二三四五六七八九十百千万亿两点]{2,}|第[一二三四五六七八九十百千万两]+|[一二三四五六七八九十两](?:成|倍|条|个|名|位|年|月)|百分之|半数|一半"
+            },
+            {
+              "rule": "UNSUPPORTED_ASSERTION",
+              "match": "排名",
+              "span": [
+                3,
+                5
+              ],
+              "pattern": "导致|造成|归因于|证明|必然|保证|因果|显著|最高|最低|排名|占比|翻倍|全部|所有|超过.*半|大多数"
+            }
+          ],
+          "outcome": "rejected",
+          "error": {
+            "code": "REPORT_UNVERIFIED_FACT",
+            "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+            "node_name": null,
+            "retryable": false,
+            "details": {}
+          }
+        },
+        {
+          "role": "recommendation",
+          "original_text": "建议核查未包含在本次Top 3筛选中的其他服务组记录数，并对比全量数据的分布结构，以验证集中度的普遍性；补充分析尚未执行。",
+          "normalized_checked_text": "建议核查未包含在本次Top 3筛选中的其他服务组记录数，并对比全量数据的分布结构，以验证集中度的普遍性；补充分析尚未执行。",
+          "matches": [
+            {
+              "rule": "NUMERIC",
+              "match": "3",
+              "span": [
+                14,
+                15
+              ],
+              "pattern": "[0-9０-９]|[零〇一二三四五六七八九十百千万亿两点]{2,}|第[一二三四五六七八九十百千万两]+|[一二三四五六七八九十两](?:成|倍|条|个|名|位|年|月)|百分之|半数|一半"
+            }
+          ],
+          "outcome": "rejected",
+          "error": {
+            "code": "REPORT_UNVERIFIED_FACT",
+            "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+            "node_name": null,
+            "retryable": false,
+            "details": {}
+          }
+        },
+        {
+          "role": "limitation",
+          "original_text": "结论仅适用于当前返回范围，不能外推整体市场。",
+          "outcome": "accepted"
+        },
+        {
+          "role": "limitation",
+          "original_text": "分母仅为本次完整返回的分组合计，不是全部筛选范围或整体市场占比。",
+          "outcome": "accepted"
+        }
+      ]
+    }
+  ],
+  "assembly_replay": {
+    "status": "rejected",
+    "error": {
+      "code": "REPORT_UNVERIFIED_FACT",
+      "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+      "node_name": null,
+      "retryable": false,
+      "details": {}
+    }
+  },
+  "historical_error_reproduced": true
+}

@@ -1,0 +1,161 @@
+--- docs/implementations/evaluation-admin-c1-2026-11-13/before/admin/src/app/routes.tsx	2026-11-13 12:39:46
++++ admin/src/app/routes.tsx	2026-11-13 12:44:53
+@@ -20,13 +20,17 @@
+ import { PromptCallPage } from '../pages/PromptCallPage';
+ import { BadCasesPage } from '../pages/BadCasesPage';
+ import { BadCaseDetailPage } from '../pages/BadCaseDetailPage';
+-import { GoldenSetPage } from '../pages/GoldenSetPage';
++import { EvaluationDatasetsPage } from '../pages/EvaluationDatasetsPage';
++import { EvaluationDatasetDetailPage } from '../pages/EvaluationDatasetDetailPage';
++import { EvaluationRunsPage } from '../pages/EvaluationRunsPage';
++import { EvaluationRunDetailPage } from '../pages/EvaluationRunDetailPage';
++import { EvaluationCasePlaceholderPage } from '../pages/EvaluationCasePlaceholderPage';
+ import { RegressionsPage } from '../pages/RegressionsPage';
+ import { RegressionDetailPage } from '../pages/RegressionDetailPage';
+ import { ReplaysPage } from '../pages/ReplaysPage';
+ import { ReplayDetailPage } from '../pages/ReplayDetailPage';
+ 
+-const pages = { 'test-datasets': GoldenSetPage, 'bad-case-replay': ReplaysPage, 'regression-comparison': RegressionsPage, 'bad-case-list': BadCasesPage, 'workflow-explorer': WorkflowsPage, dashboard: DashboardPage, 'run-explorer': TracesPage, 'version-comparison': VersionsPage, environment: SettingsPage, 'prompt-list': PromptsPage, 'prompt-versions': PromptComparePage };
++const pages = { 'test-datasets': EvaluationDatasetsPage, 'evaluation-runs': EvaluationRunsPage, 'bad-case-replay': ReplaysPage, 'regression-comparison': RegressionsPage, 'bad-case-list': BadCasesPage, 'workflow-explorer': WorkflowsPage, dashboard: DashboardPage, 'run-explorer': TracesPage, 'version-comparison': VersionsPage, environment: SettingsPage, 'prompt-list': PromptsPage, 'prompt-versions': PromptComparePage };
+ export function AdminRoutes({ resolveAccess }: { resolveAccess?: AccessResolver }) {
+   return <Routes><Route element={<AdminLayout />}>
+     <Route index element={<Navigate to="/traces/workflows" replace />} />
+@@ -39,6 +43,9 @@
+     <Route path="/traces/workflows/:workflowId" element={<AccessBoundary permission="traces:view" resolve={resolveAccess}><WorkflowDetailPage /></AccessBoundary>} />
+     <Route path="/traces/compare" element={<AccessBoundary permission="traces:view" resolve={resolveAccess}><TraceComparisonPage /></AccessBoundary>} />
+     <Route path="/traces/:runId" element={<AccessBoundary permission="traces:view" resolve={resolveAccess}><TraceDetailPage /></AccessBoundary>} />
++    <Route path="/evaluations/datasets/:datasetId" element={<AccessBoundary permission="evaluations:view" resolve={resolveAccess}><EvaluationDatasetDetailPage /></AccessBoundary>} />
++    <Route path="/evaluations/runs/:runId" element={<AccessBoundary permission="evaluations:view" resolve={resolveAccess}><EvaluationRunDetailPage /></AccessBoundary>} />
++    <Route path="/evaluations/runs/:runId/cases/:caseId" element={<AccessBoundary permission="evaluations:view" resolve={resolveAccess}><EvaluationCasePlaceholderPage /></AccessBoundary>} />
+     <Route path="/evaluations/regressions/:runId" element={<AccessBoundary permission="evaluations:view" resolve={resolveAccess}><RegressionDetailPage /></AccessBoundary>} />
+     <Route path="/bad-cases/replays/:runId" element={<AccessBoundary permission="bad-cases:view" resolve={resolveAccess}><ReplayDetailPage /></AccessBoundary>} />
+     <Route path="/bad-cases/:caseId" element={<AccessBoundary permission="bad-cases:view" resolve={resolveAccess}><BadCaseDetailPage /></AccessBoundary>} />
+--- docs/implementations/evaluation-admin-c1-2026-11-13/before/admin/src/app/navigation.ts	2026-11-13 12:39:46
++++ admin/src/app/navigation.ts	2026-11-13 12:44:56
+@@ -41,7 +41,7 @@
+   ] },
+   { key: 'evaluations', label: '评测中心', icon: FlaskConical, children: [
+     { key: 'test-datasets', path: '/evaluations/datasets', label: '测试数据集', permission: 'evaluations:view', enabled: true },
+-    { key: 'evaluation-runs', path: '/evaluations/runs', label: 'Evaluation Runs', permission: 'evaluations:view', description: '评测运行列表与调度接口尚未接入，不展示模拟分数或运行结果。' },
++    { key: 'evaluation-runs', path: '/evaluations/runs', label: 'Evaluation Runs', permission: 'evaluations:view', enabled: true },
+     { key: 'regression-comparison', path: '/evaluations/regressions', label: '回归对比', permission: 'evaluations:view', enabled: true },
+   ] },
+   { key: 'bad-cases', label: 'Bad Case', icon: Bug, children: [
+@@ -61,7 +61,9 @@
+   const key = pathname.startsWith('/traces') ? 'workflow-explorer' : pathname.startsWith('/prompts/') && !['/prompts/versions', '/prompts/playground'].includes(pathname) ? 'prompt-list'
+     : pathname.startsWith('/bad-cases/replays') ? 'bad-case-replay'
+     : /^\/bad-cases\/[^/]+$/.test(pathname) ? 'bad-case-detail'
+-    : pathname.startsWith('/evaluations/regressions/') ? 'regression-comparison' : undefined;
++    : pathname.startsWith('/evaluations/regressions/') ? 'regression-comparison'
++    : pathname.startsWith('/evaluations/runs/') ? 'evaluation-runs'
++    : pathname.startsWith('/evaluations/datasets/') ? 'test-datasets' : undefined;
+   const page = key ? navigationPages.find(item => item.key === key) : navigationPages.find(item => item.path === pathname);
+   const group = navigationGroups.find(item => item.children.some(child => child.key === page?.key));
+   return { page, group };
+--- docs/implementations/evaluation-admin-c1-2026-11-13/before/admin/src/api/client.ts	2026-11-13 12:39:46
++++ admin/src/api/client.ts	2026-11-13 12:41:41
+@@ -3,12 +3,26 @@
+ export type ApiErrorCode = 'HTTP_ERROR' | 'NETWORK_ERROR' | 'INVALID_RESPONSE' | 'REQUEST_TIMEOUT' | 'REQUEST_ABORTED';
+ 
+ export class ApiError extends Error {
+-  constructor(public readonly code: ApiErrorCode, message: string, public readonly status?: number) {
++  constructor(
++    public readonly code: ApiErrorCode, message: string, public readonly status?: number,
++    public readonly serverCode?: string, public readonly details?: Record<string, unknown>,
++  ) {
+     super(message);
+     this.name = 'ApiError';
+   }
+ }
+ 
++// Only the machine-readable code and details are kept; the server message is not surfaced to users.
++async function errorBody(response: Response): Promise<{ code?: string; details?: Record<string, unknown> }> {
++  try {
++    const body = await response.json() as { error?: { code?: unknown; details?: unknown } };
++    const code = typeof body?.error?.code === 'string' ? body.error.code : undefined;
++    const details = body?.error?.details && typeof body.error.details === 'object' && !Array.isArray(body.error.details)
++      ? body.error.details as Record<string, unknown> : undefined;
++    return { code, details };
++  } catch { return {}; }
++}
++
+ export interface RequestOptions extends Omit<RequestInit, 'body' | 'signal'> {
+   body?: unknown;
+   signal?: AbortSignal;
+@@ -43,7 +57,10 @@
+         ...rest, credentials: 'same-origin', headers, signal: controller.signal,
+         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+       });
+-      if (!response.ok) throw new ApiError('HTTP_ERROR', `请求未完成，服务返回 ${response.status}。`, response.status);
++      if (!response.ok) {
++        const { code, details } = await errorBody(response);
++        throw new ApiError('HTTP_ERROR', `请求未完成，服务返回 ${response.status}。`, response.status, code, details);
++      }
+       if (response.status === 204) return undefined as T;
+       try { return await response.json() as T; }
+       catch { throw new ApiError('INVALID_RESPONSE', '服务返回的内容不是有效 JSON。'); }
+--- docs/implementations/evaluation-admin-c1-2026-11-13/before/admin/src/pages/GoldenSetPage.tsx	2026-11-13 12:39:46
++++ admin/src/pages/GoldenSetPage.tsx	2026-11-13 12:43:04
+@@ -1,5 +1,9 @@
+ import golden from '../features/evaluations/golden-set.json';
+ 
++// SHA-256 of the bundled golden-set.json bytes. The content tables render only when the
++// dataset API reports the same hash, so a drifted copy is never shown as the current dataset.
++export const GOLDEN_BUNDLED_SHA256 = 'fe52a92cc77bb16fa5425f5618c7d7a9dd633f0790eaf341a3c434554a052142';
++
+ interface GoldenCase {
+   case_id: string; user_input: string; oracle: Record<string, number>;
+   error_controls: { code: string; label: string; result: Record<string, number> }[];
+@@ -12,12 +16,8 @@
+   return Object.entries(result).map(([city, count]) => `${city} ${count}`).join('、');
+ }
+ 
+-export function GoldenSetPage() {
+-  return <div className="wf-page">
+-    <header className="wf-heading"><div>
+-      <h1>测试数据集</h1>
+-      <p>需求保真 Golden Set 固定为 5 条。五条共用下面同一份 9 行，页面只展示冻结内容，不启动评测。</p>
+-    </div></header>
++export function GoldenSetContent() {
++  return <>
+     <section aria-labelledby="golden-rows">
+       <div className="wf-table-top"><strong id="golden-rows">固定 9 行测试数据</strong><span>编号 J01–J09，五条用例不另增行</span></div>
+       <div className="wf-table-scroll"><table className="wf-table"><caption className="visually-hidden">固定 9 行测试数据</caption>
+@@ -40,5 +40,5 @@
+         </tr>)}</tbody>
+       </table></div>
+     </section>
+-  </div>;
++  </>;
+ }
+--- docs/implementations/evaluation-admin-c1-2026-11-13/before/admin/src/tests/golden-set.test.tsx	2026-11-13 12:39:46
++++ admin/src/tests/golden-set.test.tsx	2026-11-13 12:47:15
+@@ -1,11 +1,13 @@
+ import { render, screen, within } from '@testing-library/react';
+ import { MemoryRouter } from 'react-router-dom';
+-import { expect, it } from 'vitest';
++import { expect, it, vi } from 'vitest';
+ import { AdminRoutes } from '../app/routes';
++import datasetGolden from './fixtures/evaluations/dataset-golden.json';
+ 
+-it('shows the frozen five-case golden set and the shared nine rows', () => {
+-  render(<MemoryRouter initialEntries={['/evaluations/datasets']}><AdminRoutes /></MemoryRouter>);
+-  const data = screen.getByRole('table', { name: '固定 9 行测试数据' });
++it('shows the five-case golden set and the shared nine rows inside the golden dataset detail', async () => {
++  vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(datasetGolden), { status: 200, headers: { 'content-type': 'application/json' } })));
++  render(<MemoryRouter initialEntries={['/evaluations/datasets/requirement-fidelity-golden-v1']}><AdminRoutes /></MemoryRouter>);
++  const data = await screen.findByRole('table', { name: '固定 9 行测试数据' });
+   expect(within(data).getAllByRole('row')).toHaveLength(10);
+   expect(within(data).getByText('J09')).toBeVisible();
+   expect(within(data).getByText('杭州')).toBeVisible();
+@@ -16,3 +18,10 @@
+   expect(within(cases).getByText('深圳 3、北京 1、杭州 1')).toBeVisible();
+   expect(within(cases).queryByText('RF-06')).not.toBeInTheDocument();
+ });
++
++it('does not show the bundled copy when the API reports a different hash', async () => {
++  vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ ...datasetGolden, dataset_hash: 'e'.repeat(64) }), { status: 200, headers: { 'content-type': 'application/json' } })));
++  render(<MemoryRouter initialEntries={['/evaluations/datasets/requirement-fidelity-golden-v1']}><AdminRoutes /></MemoryRouter>);
++  expect(await screen.findByText(/前端打包的 Golden 副本与当前来源哈希不同/)).toBeVisible();
++  expect(screen.queryByRole('table', { name: '需求保真 Golden Set' })).not.toBeInTheDocument();
++});

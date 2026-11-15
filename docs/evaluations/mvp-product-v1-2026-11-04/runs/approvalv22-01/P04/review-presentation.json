@@ -1,0 +1,228 @@
+{
+  "session_id": "76500003f5094f8a921efa4e4e7dde98",
+  "revision": 8,
+  "plan_id": "plan_029f3c5a39ff4867b44e3dbb8e85aad8",
+  "plan_version": 1,
+  "goal": "计算平均工时",
+  "coverage": "已安排核心问题的分析",
+  "conditions": [
+    {
+      "label": "统计指标",
+      "text": "平均工时",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.metric_requirements[0]"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：工时 · 均值",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S1"
+    }
+  ],
+  "directions": [
+    {
+      "task_id": "T1",
+      "title": "计算平均工时",
+      "question": "所有项目的平均工时是多少？",
+      "importance": "核心分析",
+      "reason": "核心需求为计算平均工时，删除此任务将无法回答用户问题。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "拟用统计口径：工时 · 均值"
+      ],
+      "gaps": [],
+      "can_remove": true
+    }
+  ],
+  "issues": [],
+  "warnings": [],
+  "can_approve": true,
+  "can_execute": false,
+  "audit": {
+    "audit_version": "2.2",
+    "binding": {
+      "dataset_id": "51a704c305084d6e9d3980b0ce940ead",
+      "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+      "plan_id": "plan_029f3c5a39ff4867b44e3dbb8e85aad8",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "registry_version": "1.0"
+    },
+    "digest": "b61b13d5d4a2f5063734fe0685c94dc20552612096c9b23f81f9b110cb9a85f8",
+    "all_verified": true,
+    "items": [
+      {
+        "source": "intent.constraints.metric_requirements[0]",
+        "raw_text": "平均工时",
+        "status": "verified",
+        "category": "metric_requirements",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0004"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S1",
+            "operation": "aggregate",
+            "metric": {
+              "function": "avg",
+              "field": "field_0004",
+              "alias": "avg_work_hours"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "technical_details": {
+    "record": {
+      "session_id": "76500003f5094f8a921efa4e4e7dde98",
+      "plan_id": "plan_029f3c5a39ff4867b44e3dbb8e85aad8",
+      "plan_version": 1,
+      "dataset_id": "51a704c305084d6e9d3980b0ce940ead",
+      "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+      "validation_version": "1.0",
+      "created_at": "2026-11-05T04:15:12.450708+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "51a704c305084d6e9d3980b0ce940ead",
+          "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+          "plan_id": "plan_029f3c5a39ff4867b44e3dbb8e85aad8",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T1",
+              "title": "计算平均工时",
+              "business_question": "所有项目的平均工时是多少？",
+              "priority": "P0",
+              "priority_reason": "核心需求为计算平均工时，删除此任务将无法回答用户问题。",
+              "requirement_ids": [
+                "C01",
+                "C02"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S1",
+                  "operation": "aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "avg",
+                        "field": "field_0004",
+                        "alias": "avg_work_hours"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "计算平均工时"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "metric_requirements：平均工时"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T1",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T1"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "51a704c305084d6e9d3980b0ce940ead",
+          "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "平均工时",
+            "business_goal": "计算平均工时",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [
+              {
+                "raw_text": "平均工时",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "constraint_audit": {
+      "audit_version": "2.2",
+      "binding": {
+        "dataset_id": "51a704c305084d6e9d3980b0ce940ead",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_id": "plan_029f3c5a39ff4867b44e3dbb8e85aad8",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "b61b13d5d4a2f5063734fe0685c94dc20552612096c9b23f81f9b110cb9a85f8",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "平均工时",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "aggregate",
+              "metric": {
+                "function": "avg",
+                "field": "field_0004",
+                "alias": "avg_work_hours"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "session_status": "AWAITING_APPROVAL",
+    "revision": 8
+  }
+}

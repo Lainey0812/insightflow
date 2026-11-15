@@ -1,0 +1,37 @@
+...........F............................................................ [ 43%]
+........................................................................ [ 86%]
+.......................                                                  [100%]
+=================================== FAILURES ===================================
+___________ test_restart_interruption_waiting_and_resume_reuse_root ____________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-149/test_restart_interruption_wait0')
+
+    def test_restart_interruption_waiting_and_resume_reuse_root(tmp_path):
+        control=ControlledWorkflowProvider(planner=lambda _:(_ for _ in ()).throw(AppError('LLM_TIMEOUT','timeout')))
+        app=create_app(config(tmp_path),control)
+        with TestClient(app) as client:
+            initial=create_real(client);record=root(app,initial);repo=app.state.traces.repository;token=client.headers['X-Session-Token']
+            def mid_retry(s):s.status=type(s.status).PLANNING;s.error=None
+            state=app.state.repository.mutate(initial['id'],mid_retry)
+            record.status='running';record.finished_at=None;repo.update_run(record)
+            handle=SpanHandle(TraceContext(app.state.traces,record),'analysis_planner');interrupted_id=handle.record.span_id
+        restarted=create_app(config(tmp_path),ControlledWorkflowProvider())
+        with TestClient(restarted) as client:
+            client.headers['X-Session-Token']=token;repo=restarted.state.traces.repository
+            observed=repo.get(record.run_id);span=repo.span(interrupted_id)
+>           assert observed.status=='interrupted' and observed.duration_ms is None and observed.finished_at is None
+E           AssertionError: assert ('failed' == 'interrupted'
+E             
+E             - interrupted
+E             + failed)
+
+backend/tests/test_workflow_trace_v031.py:166: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_workflow_trace_v031.py::test_restart_interruption_waiting_and_resume_reuse_root
+1 failed, 166 passed, 1 warning in 19.81s

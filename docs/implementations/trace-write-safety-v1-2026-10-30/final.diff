@@ -1,0 +1,632 @@
+--- before/backend/app/domain/tracing.py
++++ after/backend/app/domain/tracing.py
+@@ -24,6 +24,9 @@
+     execution_id: str | None = None
+     workflow_run_id: str | None = None
+     business_revision: int | None = None
++    # Observation CAS token, independent of Session revisions and node retries.
++    # Legacy JSON rows read as zero; no new table or Attempt entity is required.
++    observation_revision: int = Field(default=0, ge=0)
+     attempt: int = Field(ge=1)
+     retry_of_run_id: str | None = None
+     owner_instance: str
+--- before/backend/app/observability/workflow.py
++++ after/backend/app/observability/workflow.py
+@@ -49,12 +49,21 @@
+         return
+     run = trace.run
+     previous = run.status
++    if previous == 'running':
++        # A second dispatch must not take ownership of an active observation.
++        trace.event('workflow.callback_ignored', error_code='TRACE_STALE_CALLBACK', session_revision=revision)
++        trace.run = None
++        return
+     run.status, run.business_revision = 'running', revision
+     run.started_at = run.started_at or datetime.now(timezone.utc).isoformat()
+     run.finished_at, run.duration_ms, run.error_code, run.error_message = None, None, None, None
+-    trace.call(lambda: trace.owner.repository.update_run(run))
+-    trace.event('workflow.started' if previous == 'queued' else 'workflow.resumed',
+-                status='running', previous_status=previous, session_revision=revision)
++    accepted = trace.call(lambda: trace.owner.repository.update_run(run))
++    if accepted:
++        trace.event('workflow.started' if previous == 'queued' else 'workflow.resumed',
++                    status='running', previous_status=previous, session_revision=revision)
++    elif accepted is False:
++        trace.event('workflow.callback_ignored', error_code='TRACE_STALE_CALLBACK', session_revision=revision)
++        trace.run = None
+ 
+ 
+ def checkpoint(trace, state):
+@@ -70,11 +79,14 @@
+         run.duration_ms = None
+         run.error_code = error_code(state.error.code) if state.error else 'WORKFLOW_PREPARATION_FAILED'
+         run.error_message = safe_error_message(run.error_code)
+-    trace.event('workflow.' + status, status=status, session_revision=state.revision,
+-                error_code=run.error_code, error_message=run.error_message)
+     if trace.gaps:
+         run.integrity = 'incomplete'
+-    trace.call(lambda: trace.owner.repository.update_run(run))
++    accepted = trace.call(lambda: trace.owner.repository.update_run(run))
++    if accepted:
++        trace.event('workflow.' + status, status=status, session_revision=state.revision,
++                    error_code=run.error_code, error_message=run.error_message)
++    elif accepted is False:
++        trace.event('workflow.callback_ignored', error_code='TRACE_STALE_CALLBACK', session_revision=state.revision)
+ 
+ 
+ def interrupt(trace, error):
+@@ -85,5 +97,8 @@
+     trace.run.error_message = safe_error_message(trace.run.error_code)
+     trace.run.finished_at = datetime.now(timezone.utc).isoformat()
+     trace.run.duration_ms = None
+-    trace.event('workflow.interrupted', error_code=trace.run.error_code)
+-    trace.call(lambda: trace.owner.repository.update_run(trace.run))
++    accepted = trace.call(lambda: trace.owner.repository.update_run(trace.run))
++    if accepted:
++        trace.event('workflow.interrupted', error_code=trace.run.error_code)
++    elif accepted is False:
++        trace.event('workflow.callback_ignored', error_code='TRACE_STALE_CALLBACK')
+--- before/backend/app/storage/report_repository.py
++++ after/backend/app/storage/report_repository.py
+@@ -69,7 +69,7 @@
+             row = conn.execute('SELECT record FROM report_generations WHERE execution_id=?', (execution_id,)).fetchone()
+             record = ReportGeneration.model_validate_json(row['record']) if row else None
+             if not record or record.attempt != attempt or record.status not in {'queued', 'generating'}:
+-                return
++                return False
+             if report:
+                 conn.execute('INSERT INTO analysis_reports VALUES (?, ?, ?)',
+                     (report.report_id, report.model_dump_json(), json.dumps(audit, ensure_ascii=False, allow_nan=False)))
+@@ -79,6 +79,7 @@
+                 record.status, record.error = 'failed', error
+             record.finished_at = now()
+             self._write_generation(conn, record)
++        return True
+ 
+     def _write_generation(self, conn, record):
+         from app.domain.models import SessionState, now
+--- before/backend/app/storage/trace_repository.py
++++ after/backend/app/storage/trace_repository.py
+@@ -59,24 +59,45 @@
+ 
+     def update_run(self, run):
+         with closing(self.connect()) as conn, conn:
++            # Read, compare and write under one lock. The JSON token also fences
++            # separate callbacks which carry the same business revision.
++            conn.execute('BEGIN IMMEDIATE')
+             row=conn.execute('SELECT record FROM trace_runs WHERE id=?',(run.run_id,)).fetchone()
+             if row is None: raise ValueError('Trace run missing')
+             previous=TraceRun.model_validate_json(row['record'])
+             if previous.manifest != run.manifest: raise ValueError('Manifest is immutable')
++            if any(getattr(run,key)!=getattr(previous,key) for key in
++                   ('kind','session_id','execution_id','attempt','retry_of_run_id','owner_instance','queued_at','workflow_run_id')):
++                raise ValueError('Run identity is immutable')
++            if run.observation_revision != previous.observation_revision:
++                return False
+             if previous.kind == 'workflow':
+                 if run.kind != 'workflow' or run.status not in {'queued','running','waiting_input','waiting_approval','failed','interrupted'}:
+                     raise ValueError('Unsupported preparation root transition')
+-                if (previous.business_revision is not None and run.business_revision is not None
+-                        and run.business_revision < previous.business_revision): return
++                if (previous.business_revision is not None
++                        and (run.business_revision is None or run.business_revision < previous.business_revision)): return False
++                allowed_root = {
++                    'queued': {'running', 'interrupted'},
++                    'running': {'running', 'waiting_input', 'waiting_approval', 'failed', 'interrupted'},
++                    'waiting_input': {'running'}, 'waiting_approval': set(),
++                    'failed': {'running'}, 'interrupted': {'running'},
++                }
++                if run.status not in allowed_root.get(previous.status, set()):
++                    return False
++                if previous.status in {'waiting_input','failed','interrupted'} and (
++                        run.business_revision is None or
++                        run.business_revision <= (previous.business_revision if previous.business_revision is not None else -1)):
++                    return False
+                 if previous.integrity == 'incomplete': run.integrity = 'incomplete'
+-            elif previous.status not in {'queued','running'}: return
++            elif previous.status not in {'queued','running'}: return False
+             allowed={'queued':{'queued','running','interrupted'},
+                      'running':{'running','complete','partial','failed','unavailable','interrupted'}}
+             if previous.kind != 'workflow' and run.status not in allowed[previous.status]: raise ValueError('Invalid observation transition')
+-            if any(getattr(run,key)!=getattr(previous,key) for key in
+-                   ('kind','session_id','execution_id','attempt','retry_of_run_id','owner_instance','queued_at','workflow_run_id')):
+-                raise ValueError('Run identity is immutable')
+-            conn.execute('UPDATE trace_runs SET status=?,record=? WHERE id=?',(run.status,run.model_dump_json(),run.run_id))
++            saved = run.model_copy(update={'observation_revision': previous.observation_revision + 1})
++            conn.execute('UPDATE trace_runs SET status=?,record=? WHERE id=?',(saved.status,saved.model_dump_json(),saved.run_id))
++        # Advance the caller's token only after a successful database commit.
++        run.observation_revision = saved.observation_revision
++        return True
+ 
+     def reserve_workflow_span(self, span):
+         with closing(self.connect()) as conn, conn:
+@@ -173,9 +194,11 @@
+     def recover(self):
+         # Same single-process deployment boundary as the business recovery code.
+         with closing(self.connect()) as conn, conn:
++            conn.execute('BEGIN IMMEDIATE')
+             for row in conn.execute("SELECT record FROM trace_runs WHERE status IN ('queued','running')").fetchall():
+                 run=TraceRun.model_validate_json(row['record'])
+                 run.status,run.error_code,run.integrity='interrupted','TRACE_PROCESS_INTERRUPTED','incomplete'
++                run.observation_revision += 1
+                 run.recovered_at=now()
+                 run.duration_ms=None
+                 conn.execute('UPDATE trace_runs SET status=?,record=? WHERE id=?',(run.status,run.model_dump_json(),run.run_id))
+--- before/backend/app/workflow/orchestrator.py
++++ after/backend/app/workflow/orchestrator.py
+@@ -45,9 +45,9 @@
+         register_root(self.traces, state, self.intent_parser.parser,
+                       self.real_planner.planner if self.real_planner else None)
+ 
+-    async def observed_node(self, trace, name, node, request):
++    async def observed_node(self, trace, name, node, request, guard=None):
+         with trace.span(name, {'node_name': node.name}) as span:
+-            data = self.real_output(await node.run(request))
++            data = self.real_output(await node.run(request), guard)
+             if name == 'intent_parser':
+                 span.attributes(next_action=data.next_action)
+             elif name == 'analysis_planner':
+@@ -58,12 +58,14 @@
+                                 row_count=data.row_count, column_count=data.column_count)
+             return data
+ 
+-    def record(self, output: NodeOutput[Any]) -> Any:
++    def record(self, output: NodeOutput[Any], guard=None) -> Any:
+         def change(state: SessionState):
+             state.node_runs.append(NodeRun(run_id=output.run_id, node_name=output.node_name,
+                                            status=output.status, provenance=output.provenance,
+                                            error=output.error))
+-        self.repository.mutate(output.session_id, change)
++        state = self.repository.mutate(output.session_id, change, guard['revision'] if guard is not None else None)
++        if guard is not None:
++            guard['revision'] = state.revision
+         if output.status == "error":
+             raise NodeFailure(output.error)
+         return output.data
+@@ -193,38 +195,63 @@
+                 self.fail(item["id"], WorkflowError(code="PROCESS_INTERRUPTED",
+                     message="上次处理因服务重启中断，请新建会话重新提交。"))
+ 
+-    def real_output(self, output):
++    def real_output(self, output, guard=None):
+         """A scripted/Mock service can never silently enter the real workflow."""
+         if output.status == "success":
+             llm = getattr(output.data, "llm", None)
+             if output.provenance.source == "mock" or (llm is not None and llm.is_mock):
+                 raise NodeFailure(WorkflowError(code="MOCK_SOURCE_FORBIDDEN", node_name=output.node_name,
+                     message="真实流程拒绝Mock节点输出，未生成批准或执行结果。"))
+-        return self.record(output)
+-
+-    def fail_real(self, session_id, error):
++        return self.record(output, guard)
++
++    def fail_real(self, session_id, error, guard=None):
+         state = self.repository.get(session_id)
+         safe = error.model_copy(deep=True)
+         safe.details = {**safe.details, "workflow_stage": state.status.value}
+         safe.retryable = safe.retryable or state.status in {S.PARSING_INTENT, S.PLANNING, S.VALIDATING}
+-        return self.fail(session_id, safe)
++        if guard is None:
++            return self.fail(session_id, safe)
++        def fail_current(current):
++            transition(current, S.FAILED)
++            current.error = safe
++            current.messages.append(Message(role='assistant', kind='error', content=safe.message))
++        return self.preparation_mutate(session_id, fail_current, guard)
++
++    def preparation_mutate(self, session_id, change, guard):
++        # Reuse the business revision as an optimistic callback fence. This is
++        # local dispatch state, not a persisted Attempt or a new Trace layer.
++        state = self.repository.mutate(session_id, change, guard['revision'])
++        guard['revision'] = state.revision
++        return state
+ 
+     async def prepare_real(self, session_id):
++        guard = {'revision': self.repository.get(session_id).revision}
+         trace = preparation_context(self.traces, session_id)
+         with bind_trace(trace):
+-            start_preparation(trace, self.repository.get(session_id).revision)
++            start_preparation(trace, guard['revision'])
+             try:
+-                result = await self._prepare_real(session_id, trace)
++                result = await self._prepare_real(session_id, trace, guard)
+                 checkpoint(trace, result)
+                 return result
+-            except BaseException as error:
++            except AppError as error:
++                if error.error.code == 'STALE_SESSION':
++                    trace.event('workflow.callback_ignored', error_code='STALE_SESSION', session_revision=guard['revision'])
++                    return self.repository.get(session_id)
+                 interrupt(trace, error)
+                 raise
+-
+-    async def _prepare_real(self, session_id, trace):
++            except BaseException as error:
++                if self.repository.get(session_id).revision == guard['revision']:
++                    interrupt(trace, error)
++                else:
++                    trace.event('workflow.callback_ignored', error_code='STALE_SESSION', session_revision=guard['revision'])
++                raise
++
++    async def _prepare_real(self, session_id, trace, guard):
+         """Checkpointed real branch; approval/execution remain the existing services."""
+         try:
+             state = self.repository.get(session_id)
++            if state.revision != guard['revision']:
++                raise AppError('STALE_SESSION', '准备回调已过期，当前流程未修改。', 409)
+             if state.workflow_kind != "real_v1":
+                 raise AppError("REAL_WORKFLOW_REQUIRED", "当前会话不属于真实Workflow。", 409)
+             if state.status == S.CREATED:
+@@ -233,23 +260,23 @@
+                         raise AppError("WORKFLOW_ALREADY_STARTED", "该流程已经启动。", 409)
+                     transition(current, S.PROFILING)
+                     current.messages.append(Message(role="assistant", kind="status", content="正在解析上传文件并计算真实数据画像。"))
+-                state = self.repository.mutate(session_id, start)
++                state = self.preparation_mutate(session_id, start, guard)
+             if state.status == S.PROFILING:
+                 profile = await self.observed_node(trace, 'data_profiler', self.data_profiler, NodeInput(session_id=session_id,
+-                    payload=ProfileInput(file=state.file, options=state.profile_options)))
++                    payload=ProfileInput(file=state.file, options=state.profile_options)), guard)
+                 def profiled(current):
+                     current.profile = profile
+                     current.dataset_ref = DatasetRef(dataset_id=profile.dataset_id, dataset_version=profile.dataset_version)
+                     transition(current, S.PARSING_INTENT)
+                     current.messages.append(Message(role="assistant", kind="status", content=
+                         f"真实画像完成：{profile.row_count}行、{profile.column_count}列；正在理解分析需求。"))
+-                state = self.repository.mutate(session_id, profiled)
++                state = self.preparation_mutate(session_id, profiled, guard)
+             if state.status == S.PARSING_INTENT:
+                 ref = state.dataset_ref
+                 profile = self.datasets.profile(ref.dataset_id, ref.dataset_version)
+                 intent = await self.observed_node(trace, 'intent_parser', self.intent_parser, NodeInput(session_id=session_id,
+                     payload=IntentInput(user_query=state.user_goal, profile=profile,
+-                                        clarification_answers=state.clarification_answers)))
++                                        clarification_answers=state.clarification_answers)), guard)
+                 if intent.next_action == "proceed" and (intent.llm is None or intent.parse_origin != "llm"):
+                     raise AppError("REAL_INTENT_REQUIRED", "继续分析必须具备真实模型意图结果。", 409)
+                 def interpreted(current):
+@@ -263,7 +290,7 @@
+                     else:
+                         transition(current, S.PLANNING)
+                         current.messages.append(Message(role="assistant", kind="status", content="需求已理解，正在生成受控分析计划。"))
+-                state = self.repository.mutate(session_id, interpreted)
++                state = self.preparation_mutate(session_id, interpreted, guard)
+             if state.status == S.WAITING_FOR_CLARIFICATION:
+                 return state
+             if state.status == S.PLANNING:
+@@ -271,28 +298,32 @@
+                     raise AppError("PLANNER_NOT_AVAILABLE", "真实Planner尚未配置。", 503)
+                 ref = state.dataset_ref
+                 candidate = await self.observed_node(trace, 'analysis_planner', self.real_planner, NodeInput(session_id=session_id,
+-                    payload=PlannerV1Input(intent=state.intent, profile=self.datasets.profile(ref.dataset_id, ref.dataset_version))))
++                    payload=PlannerV1Input(intent=state.intent, profile=self.datasets.profile(ref.dataset_id, ref.dataset_version))), guard)
+                 if candidate.llm is None or candidate.llm.is_mock:
+                     raise AppError("REAL_PLANNER_REQUIRED", "真实流程必须使用真实模型计划。", 409)
+                 def planned(current):
+                     current.planner_result = candidate
+                     transition(current, S.VALIDATING)
+-                state = self.repository.mutate(session_id, planned)
++                state = self.preparation_mutate(session_id, planned, guard)
+             if state.status == S.VALIDATING:
+-                return self.save_generated_plan(session_id)
++                return self.save_generated_plan(session_id, guard)
+             return state
+         except NodeFailure as exc:
+-            return self.fail_real(session_id, exc.error)
++            return self.fail_real(session_id, exc.error, guard)
+         except AppError as exc:
+-            return self.fail_real(session_id, exc.error)
++            if exc.error.code == 'STALE_SESSION':
++                raise
++            return self.fail_real(session_id, exc.error, guard)
+         except Exception:
+             return self.fail_real(session_id, WorkflowError(code="WORKFLOW_PREPARATION_FAILED",
+-                message="真实流程准备失败，已保存可用检查点，未使用示例结果替代。"))
+-
+-    def save_generated_plan(self, session_id):
++                message="真实流程准备失败，已保存可用检查点，未使用示例结果替代。"), guard)
++
++    def save_generated_plan(self, session_id, guard=None):
+         # This adapter saves generated drafts; it does not change manual-import
+         # goal matching, validation, approval or execution rules.
+         with self.review.audit.transaction(session_id) as (conn, state):
++            if guard is not None:
++                self.review.revision_guard(state, guard['revision'])
+             if state.workflow_kind != "real_v1" or state.status != S.VALIDATING or state.review_plan is not None:
+                 raise AppError("GENERATED_PLAN_STATE_INVALID", "当前状态不能保存生成计划。", 409)
+             candidate = state.planner_result
+@@ -312,6 +343,8 @@
+             transition(state, S.AWAITING_APPROVAL)
+             state.messages.append(Message(role="assistant", kind="plan", plan_version=1,
+                 content=f"真实计划已保存，目标覆盖：{checked.coverage_status}。请审核任务、未满足需求和约束；批准前不会计算。"))
++        if guard is not None:
++            guard['revision'] = state.revision
+         return state
+ 
+     def begin_real_clarification(self, session_id, answer, expected_revision):
+--- before/backend/app/workflow/reporting.py
++++ after/backend/app/workflow/reporting.py
+@@ -50,25 +50,35 @@
+             if getattr(self.service,'prompt_source',None):
+                 PROMPT_VERSION = self.service.prompt_source.version
+             with trace.span('report_persistence'):
+-                self.reports.finish(execution_id, attempt, report=report, audit={
++                accepted = self.reports.finish(execution_id, attempt, report=report, audit={
+                     'session_id': execution.session_id, 'execution_id': execution_id,
+                     'approval_id': approval.approval_id, 'dataset_id': execution.dataset_id,
+                     'dataset_version': execution.dataset_version, 'plan_id': plan.plan_id,
+                     'plan_version': plan.plan_version, 'prompt_version': PROMPT_VERSION,
+                     'schema_version': 'analysis-report-v1', 'original_query': session.user_goal,
+                     'constraints_confirmed': approval.constraints_confirmed})
++                if not accepted:
++                    raise AppError('REPORT_STALE_CALLBACK', '报告尝试已被替代，未提交旧报告。', 409)
+             from app.observability.snapshots import report_projection
+             trace.snapshot('report',report,lambda:report_projection(report))
+             trace.finish(report.report_status, report=report)
+             closed = True
+         except AppError as exc:
+             error = exc.error.model_copy(update={'retryable': True})
+-            self.reports.finish(execution_id, attempt, error=error)
+-            trace.finish('failed', error=exc)
++            accepted = False if error.code == 'REPORT_STALE_CALLBACK' else self.reports.finish(execution_id, attempt, error=error)
++            if accepted:
++                trace.finish('failed', error=exc)
++            else:
++                trace.event('report.callback_ignored', error_code='REPORT_STALE_CALLBACK')
++                trace.finish('interrupted', error=AppError('REPORT_STALE_CALLBACK', '旧报告回调未提交。', 409))
+             closed = True
+         except Exception:
+-            self.reports.finish(execution_id, attempt, error=WorkflowError(
++            accepted = self.reports.finish(execution_id, attempt, error=WorkflowError(
+                 code='REPORT_GENERATION_FAILED', message='报告生成失败，原始计算结果已保存，可重试。', retryable=True))
++            if not accepted:
++                trace.event('report.callback_ignored', error_code='REPORT_STALE_CALLBACK')
++                trace.finish('interrupted', error=AppError('REPORT_STALE_CALLBACK', '旧报告回调未提交。', 409))
++                closed = True
+         except BaseException as exc:
+             trace.finish('interrupted', error=exc)
+             closed = True
+--- before/backend/tests/test_workflow_trace_v031.py
++++ after/backend/tests/test_workflow_trace_v031.py
+@@ -157,7 +157,9 @@
+         initial=create_real(client);record=root(app,initial);repo=app.state.traces.repository;token=client.headers['X-Session-Token']
+         def mid_retry(s):s.status=type(s.status).PLANNING;s.error=None
+         state=app.state.repository.mutate(initial['id'],mid_retry)
+-        record.status='running';record.finished_at=None;repo.update_run(record)
++        # Simulate an accepted business retry, not a same-revision late callback.
++        record.business_revision=state.revision
++        record.status='running';record.finished_at=None;assert repo.update_run(record)
+         handle=SpanHandle(TraceContext(app.state.traces,record),'analysis_planner');interrupted_id=handle.record.span_id
+     restarted=create_app(config(tmp_path),ControlledWorkflowProvider())
+     with TestClient(restarted) as client:
+--- /dev/null
++++ after/backend/tests/test_trace_write_safety.py
+@@ -0,0 +1,228 @@
++"""Concurrency and stale callback regressions over real temporary repositories."""
++import asyncio
++from concurrent.futures import ThreadPoolExecutor
++import json
++from threading import Barrier
++from types import SimpleNamespace
++
++import pytest
++from fastapi.testclient import TestClient
++
++from app.core.config import Settings
++from app.domain.errors import AppError
++from app.domain.models import WorkflowError
++from app.domain.tracing import RunManifest, TraceRun, TraceSpan
++from app.main import create_app
++from app.observability.recorder import TraceContext, TraceRecorder
++from app.observability.workflow import checkpoint, interrupt, start_preparation
++from app.storage.trace_repository import TraceRepository
++from test_report_workflow import Provider, run as report_run
++from workflow_v1_fixtures import ControlledWorkflowProvider, create_real
++
++
++def root_record(identity='root'):
++    return TraceRun(run_id=identity, session_id='session', workflow_run_id=identity,
++        kind='workflow', owner_instance='test', attempt=1, status='running',
++        business_revision=1, queued_at='2026-10-30T00:00:00Z', manifest=RunManifest())
++
++
++def test_atomic_concurrent_root_callbacks_have_one_winner(tmp_path):
++    repo = TraceRepository(tmp_path)
++    original = repo.create(root_record())
++    callbacks = [original.model_copy(deep=True), original.model_copy(deep=True)]
++    callbacks[0].status = 'waiting_approval'
++    callbacks[1].status = 'failed'
++    barrier = Barrier(2)
++    def apply(candidate):
++        barrier.wait(timeout=5)
++        return repo.update_run(candidate)
++    with ThreadPoolExecutor(max_workers=2) as pool:
++        outcomes = list(pool.map(apply, callbacks))
++    assert sorted(outcomes) == [False, True]
++    winner = callbacks[outcomes.index(True)]
++    saved = repo.get(original.run_id)
++    assert saved == winner and saved.observation_revision == 1
++    assert repo.update_run(callbacks[outcomes.index(False)]) is False
++    assert repo.get(saved.run_id) == saved
++
++
++def test_new_business_revision_cannot_be_overwritten_by_old_or_null_revision(tmp_path):
++    repo = TraceRepository(tmp_path)
++    old = repo.create(root_record())
++    newer = old.model_copy(update={'business_revision': 20, 'status': 'waiting_approval'})
++    assert repo.update_run(newer)
++    old.status, old.business_revision = 'failed', 10
++    assert repo.update_run(old) is False
++    fresh = repo.get(old.run_id)
++    fresh.status, fresh.business_revision = 'failed', None
++    assert repo.update_run(fresh) is False
++    assert repo.get(old.run_id) == newer
++
++
++def test_same_business_revision_stale_checkpoint_and_interrupt_are_only_ignored_events(tmp_path):
++    repo = TraceRepository(tmp_path)
++    original = repo.create(root_record())
++    recorder = TraceRecorder(repo)
++    stale = TraceContext(recorder, original.model_copy(deep=True))
++    current = original.model_copy(update={'status': 'waiting_approval'})
++    assert repo.update_run(current)
++    # Both callbacks carry the same business revision, but an obsolete CAS token.
++    interrupt(stale, AppError('LLM_TIMEOUT', 'late'))
++    checkpoint(stale, SimpleNamespace(status=SimpleNamespace(value='FAILED'), revision=1,
++        error=WorkflowError(code='LLM_TIMEOUT', message='late')))
++    assert repo.get(original.run_id) == current
++    events = repo.run_events(original.run_id)
++    assert [e.event_type for e in events] == ['workflow.callback_ignored', 'workflow.callback_ignored']
++    assert not any(e.event_type in {'workflow.interrupted', 'workflow.failed'} for e in events)
++
++
++def test_retry_keeps_root_and_historical_span_but_requires_new_business_revision(tmp_path):
++    repo = TraceRepository(tmp_path)
++    old = repo.create(root_record())
++    span = TraceSpan(span_id='old-node', run_id=old.run_id, name='analysis_planner',
++        node_key='analysis_planner', node_attempt=1, status='failed',
++        started_at=old.queued_at, error_code='LLM_TIMEOUT')
++    repo.save_span(span)
++    old.status = 'failed'
++    assert repo.update_run(old)
++    failed = repo.get(old.run_id)
++    same_revision = failed.model_copy(update={'status': 'running'})
++    assert repo.update_run(same_revision) is False
++    ctx = TraceContext(TraceRecorder(repo), failed)
++    start_preparation(ctx, 2)
++    saved = repo.get(old.run_id)
++    assert saved.status == 'running' and saved.business_revision == 2
++    assert saved.run_id == old.run_id and saved.attempt == 1
++    assert repo.span(span.span_id) == span
++    # Even a newly read object cannot regress a closed preparation to failed.
++    saved.status = 'waiting_approval'
++    assert repo.update_run(saved)
++    late = repo.get(old.run_id)
++    late.status = 'failed'
++    assert repo.update_run(late) is False
++
++
++def test_legacy_json_default_token_and_report_terminal_compatibility(tmp_path):
++    repo = TraceRepository(tmp_path)
++    legacy = root_record()
++    repo.create(legacy)
++    with repo.connect() as conn:
++        payload = legacy.model_dump()
++        payload.pop('observation_revision')
++        conn.execute('UPDATE trace_runs SET record=? WHERE id=?', (json.dumps(payload), legacy.run_id))
++        tables_before = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
++    loaded = repo.get(legacy.run_id)
++    assert loaded.observation_revision == 0
++    loaded.status = 'failed'
++    assert repo.update_run(loaded)
++    report = TraceRun(run_id='report', session_id='session', execution_id='exec', attempt=1,
++        owner_instance='test', status='queued', queued_at=legacy.queued_at, manifest=RunManifest())
++    report = repo.create(report)
++    report.status = 'running'
++    assert repo.update_run(report)
++    report.status = 'partial'
++    assert repo.update_run(report)
++    partial = repo.get(report.run_id)
++    report.status = 'running'
++    assert repo.update_run(report) is False
++    assert repo.get(report.run_id) == partial
++    assert repo.get(legacy.run_id).manifest == legacy.manifest
++    with repo.connect() as conn:
++        assert {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")} == tables_before
++
++
++@pytest.mark.parametrize('late_error', [False, True])
++def test_late_planner_result_or_error_cannot_modify_resumed_session(tmp_path, late_error):
++    provider = ControlledWorkflowProvider()
++    app = create_app(Settings(tmp_path), provider)
++    with TestClient(app) as client:
++        workflow = app.state.workflow
++        prepare = workflow.prepare_real
++        async def defer(_):
++            pass
++        workflow.prepare_real = defer
++        initial = create_real(client)
++        workflow.prepare_real = prepare
++        async def scenario():
++            started, release = asyncio.Event(), asyncio.Event()
++            generate = provider.generate
++            held = False
++            async def delayed(request):
++                nonlocal held
++                value = await generate(request)
++                if request.purpose == 'analysis_planner_v1' and not held:
++                    held = True
++                    started.set()
++                    await release.wait()
++                    if late_error:
++                        raise AppError('LLM_TIMEOUT', 'obsolete model error', 504)
++                return value
++            provider.generate = delayed
++            old_task = asyncio.create_task(prepare(initial['id']))
++            await asyncio.wait_for(started.wait(), 5)
++            interrupted = workflow.fail_real(initial['id'], WorkflowError(
++                code='PROCESS_INTERRUPTED', message='test recovery', retryable=True))
++            app.state.traces.recover()
++            resumed = workflow.begin_real_retry(initial['id'], interrupted.revision)
++            assert resumed.id == initial['id']
++            await prepare(initial['id'])
++            current = app.state.repository.get(initial['id'])
++            root = app.state.traces.repository.workflow(initial['id'])
++            assert current.status.value == 'AWAITING_APPROVAL'
++            release.set()
++            await asyncio.wait_for(old_task, 5)
++            assert app.state.repository.get(initial['id']) == current
++            assert app.state.traces.repository.workflow(initial['id']) == root
++            spans = app.state.traces.repository.spans(root.run_id)
++            planner = [s for s in spans if s.name == 'analysis_planner']
++            assert [(s.node_attempt, s.status) for s in planner] == [(1, 'interrupted'), (2, 'complete')]
++            assert len([r for r in app.state.traces.repository.runs()[0] if r.kind == 'workflow']) == 1
++        asyncio.run(scenario())
++
++
++@pytest.mark.parametrize('recover_trace', [False, True])
++@pytest.mark.parametrize('late_error', [False, True])
++def test_report_trace_success_requires_accepted_commit(tmp_path, recover_trace, late_error):
++    app = create_app(Settings(tmp_path), Provider())
++    with TestClient(app) as client:
++        service = app.state.report_service
++        generate = service.generate
++        old_report_ids = []
++        async def superseded(*args, **kwargs):
++            report = await generate(*args, **kwargs)
++            old_report_ids.append(report.report_id)
++            app.state.reports.recover_interrupted()
++            if recover_trace:
++                app.state.traces.recover()
++            record, fresh = app.state.report_workflow.enqueue(report.execution_id, 1)
++            assert fresh and record.attempt == 2
++            if late_error:
++                raise AppError('LLM_TIMEOUT', 'late report failure', 504)
++            return report
++        service.generate = superseded
++        _, execution, session = report_run(client)
++        eid = execution['execution_id']
++        repo = app.state.traces.repository
++        generation = app.state.reports.generation(eid)
++        assert generation.attempt == 2 and generation.status == 'queued'
++        old = repo.attempt(eid, 1)
++        assert old.status == 'interrupted' and old.report_id is None
++        assert not any(s.kind == 'report' for s in repo.snapshots(old.run_id))
++        with app.state.repository.database.connect() as conn:
++            assert conn.execute('SELECT COUNT(*) FROM analysis_reports WHERE id=?', (old_report_ids[0],)).fetchone()[0] == 0
++        if not recover_trace and not late_error:
++            assert any(s.name == 'report_persistence' and s.status == 'failed' and
++                s.error_code == 'REPORT_STALE_CALLBACK' for s in repo.spans(old.run_id))
++        assert not any(e.event_type == 'run.finished' and e.payload.get('report_status') == 'complete'
++            for e in repo.run_events(old.run_id))
++        old_saved = repo.get(old.run_id)
++        service.generate = generate
++        asyncio.run(app.state.report_workflow.generate(eid, 2))
++        new = repo.attempt(eid, 2)
++        job = app.state.reports.generation(eid)
++        assert job.status == 'completed' and new.status == 'complete'
++        assert job.report_id == new.report_id == app.state.reports.get(job.report_id).report_id
++        assert new.retry_of_run_id == old.run_id and new.workflow_run_id == old.workflow_run_id
++        assert repo.get(old.run_id) == old_saved
++        assert app.state.executions.get(eid).execution_status == 'success'
++        assert app.state.repository.get(session['id']).status.value == 'COMPLETED'

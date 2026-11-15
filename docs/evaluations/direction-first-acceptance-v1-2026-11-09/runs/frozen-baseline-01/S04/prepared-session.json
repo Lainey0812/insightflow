@@ -1,0 +1,846 @@
+{
+  "workflow_id": "wf_87cc70c881e94d72801d838a06ed3ed0",
+  "root_run_id": "run_0afdc06f6a1845cb9fcddfa627820537",
+  "id": "971303828c954766a046d74768fcda0e",
+  "title": "按城市比较利润总额。",
+  "status": "AWAITING_APPROVAL",
+  "revision": 8,
+  "created_at": "2026-11-09T07:30:54.992448+00:00",
+  "updated_at": "2026-11-09T07:31:03.939116+00:00",
+  "data_source": "uploaded",
+  "workflow_kind": "real_v1",
+  "profile_options": {
+    "header_row": 1,
+    "sheet_name": null,
+    "encoding": "utf-8-sig",
+    "delimiter": ","
+  },
+  "planner_result": {
+    "plan": {
+      "dataset_id": "b0763765c57a4f5f88401d254ddefc49",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "plan_id": "plan_e56333255ace45408218c0f0f5c8632a",
+      "plan_version": 1,
+      "tasks": [
+        {
+          "task_id": "T1",
+          "title": "按城市汇总销售额作为利润总额代理指标",
+          "business_question": "各城市的销售额总和是多少？（注：数据集中无“利润”字段，此处以“销售额”作为核心决策指标的代理，需确认是否接受此替代或补充成本数据）",
+          "priority": "P0",
+          "priority_reason": "用户核心需求为比较各城市“利润总额”。当前数据集仅包含“销售额”，缺少“成本”或“利润”字段。根据规则，若核心指标缺失但存在强相关数值字段（如收入侧），应保留P0任务并明确标注缺失输入，以便代码校验器判断可行性或触发澄清。删除此任务将无法回答任何关于金额分布的问题。",
+          "requirement_ids": [
+            "C01",
+            "C02"
+          ],
+          "depends_on": [],
+          "missing_inputs": [
+            "利润计算所需的成本字段或直接的利润字段（当前仅有销售额，无法直接计算利润）"
+          ],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0005",
+                    "alias": "total_sales_amount"
+                  }
+                ],
+                "dimensions": [
+                  "field_0003"
+                ]
+              }
+            },
+            {
+              "step_id": "S2",
+              "operation": "sort",
+              "params": {
+                "field": "total_sales_amount",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ],
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "按城市比较利润总额"
+        },
+        {
+          "requirement_id": "C02",
+          "description": "metric_requirements：利润总额"
+        }
+      ]
+    },
+    "validation_results": [
+      {
+        "task_id": "T1",
+        "feasibility": "F0",
+        "reason_code": "MISSING_FIELD",
+        "validation_issues": [
+          {
+            "code": "MISSING_FIELD",
+            "message": "任务明确缺少必要输入：利润计算所需的成本字段或直接的利润字段（当前仅有销售额，无法直接计算利润）",
+            "step_id": null,
+            "field": null
+          }
+        ],
+        "executable": false
+      }
+    ],
+    "unmet_core_requirements": [
+      {
+        "requirement_id": "C01",
+        "description": "按城市比较利润总额",
+        "task_ids": [
+          "T1"
+        ],
+        "reason_codes": [
+          "MISSING_FIELD"
+        ]
+      },
+      {
+        "requirement_id": "C02",
+        "description": "metric_requirements：利润总额",
+        "task_ids": [
+          "T1"
+        ],
+        "reason_codes": [
+          "MISSING_FIELD"
+        ]
+      }
+    ],
+    "coverage_status": "blocked",
+    "executable_task_ids": [],
+    "blocked_task_ids": [
+      "T1"
+    ],
+    "fully_executable": false,
+    "validation_version": "1.0",
+    "registry_version": "1.0",
+    "approval_required": true,
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "b0763765c57a4f5f88401d254ddefc49",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "plan_version": 1,
+      "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+    },
+    "intent_snapshot": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "各城市利润总额",
+        "business_goal": "按城市比较利润总额",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "利润总额",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    }
+  },
+  "workflow_events": [
+    {
+      "status": "CREATED",
+      "recorded_at": "2026-11-09T07:30:54.993037+00:00"
+    },
+    {
+      "status": "PROFILING",
+      "recorded_at": "2026-11-09T07:30:55.034795+00:00"
+    },
+    {
+      "status": "PARSING_INTENT",
+      "recorded_at": "2026-11-09T07:30:55.041679+00:00"
+    },
+    {
+      "status": "PLANNING",
+      "recorded_at": "2026-11-09T07:30:57.623706+00:00"
+    },
+    {
+      "status": "VALIDATING",
+      "recorded_at": "2026-11-09T07:31:03.932182+00:00"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "recorded_at": "2026-11-09T07:31:03.938962+00:00"
+    }
+  ],
+  "file": {
+    "id": "b0763765c57a4f5f88401d254ddefc49",
+    "name": "sales.csv",
+    "size": 605,
+    "extension": ".csv",
+    "content_sha256": "ab26d151610f84c760e61c0f78ae78d421415ba0cb87ff424a346d346d242c3d"
+  },
+  "user_goal": "按城市比较利润总额。",
+  "analysis_mode": "goal_driven",
+  "intent": {
+    "analysis_mode": "goal_driven",
+    "next_action": "proceed",
+    "analysis_goal": {
+      "analysis_object": "各城市利润总额",
+      "business_goal": "按城市比较利润总额",
+      "decision_goal": null
+    },
+    "constraints": {
+      "time_range": null,
+      "filters": [],
+      "metric_requirements": [
+        {
+          "raw_text": "利润总额",
+          "validation_status": "unverified"
+        }
+      ],
+      "analysis_limits": []
+    },
+    "uncertainties": [],
+    "clarification_questions": [],
+    "user_query": "按城市比较利润总额。",
+    "clarification_answers": [],
+    "dataset_ref": {
+      "dataset_id": "b0763765c57a4f5f88401d254ddefc49",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106"
+    },
+    "parse_origin": "llm",
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "b0763765c57a4f5f88401d254ddefc49",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "plan_version": null,
+      "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+    },
+    "parser_version": "1.1",
+    "prompt_version": "intent-v1.3.3",
+    "llm_attempts": 1,
+    "parse_id": "55c7d694289740f395935c3427921253"
+  },
+  "intent_history": [
+    {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "各城市利润总额",
+        "business_goal": "按城市比较利润总额",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "利润总额",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "按城市比较利润总额。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "b0763765c57a4f5f88401d254ddefc49",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "b0763765c57a4f5f88401d254ddefc49",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "55c7d694289740f395935c3427921253"
+    }
+  ],
+  "clarification_answers": [],
+  "profile": {
+    "dataset_id": "b0763765c57a4f5f88401d254ddefc49",
+    "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+    "schema_version": "1.0",
+    "profiler_version": "1.1.0",
+    "content_sha256": "ab26d151610f84c760e61c0f78ae78d421415ba0cb87ff424a346d346d242c3d",
+    "file_name": "sales.csv",
+    "file_format": "csv",
+    "sheet_name": null,
+    "available_sheets": [],
+    "options": {
+      "header_row": 1,
+      "sheet_name": null,
+      "encoding": "utf-8-sig",
+      "delimiter": ","
+    },
+    "row_count": 10,
+    "column_count": 7,
+    "total_cell_count": 70,
+    "missing_cell_count": 0,
+    "missing_cell_rate": 0.0,
+    "duplicate_row_count": 0,
+    "duplicate_row_rate": 0.0,
+    "fields": [
+      {
+        "field_id": "field_0001",
+        "position": 1,
+        "original_name": "订单日期",
+        "display_name": "订单日期",
+        "physical_type": "string",
+        "logical_type": "date",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 10,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "date": 10
+        },
+        "samples": [
+          {
+            "value": "2026-01-03",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-02-04",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-01-05",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-03-06",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-02-07",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0002",
+        "position": 2,
+        "original_name": "地区",
+        "display_name": "地区",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 2,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "text": 10
+        },
+        "samples": [
+          {
+            "value": "华东",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "华北",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0003",
+        "position": 3,
+        "original_name": "城市",
+        "display_name": "城市",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 5,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "text": 10
+        },
+        "samples": [
+          {
+            "value": "济南",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "南京",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "上海",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "杭州",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "北京",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0004",
+        "position": 4,
+        "original_name": "订单状态",
+        "display_name": "订单状态",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "text": 10
+        },
+        "samples": [
+          {
+            "value": "已完成",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "已取消",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "待付款",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0005",
+        "position": 5,
+        "original_name": "销售额",
+        "display_name": "销售额",
+        "physical_type": "string",
+        "logical_type": "integer",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 10,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "integer": 10
+        },
+        "samples": [
+          {
+            "value": "15000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "6250",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "20000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "250",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "5760",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0006",
+        "position": 6,
+        "original_name": "订单编号",
+        "display_name": "订单编号",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 10,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "text": 10
+        },
+        "samples": [
+          {
+            "value": "S01",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "S02",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "S03",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "S04",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "S05",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0007",
+        "position": 7,
+        "original_name": "产品类别",
+        "display_name": "产品类别",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 10,
+        "unique_count": 2,
+        "physical_type_counts": {
+          "string": 10
+        },
+        "logical_type_counts": {
+          "text": 10
+        },
+        "samples": [
+          {
+            "value": "软件",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "服务",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      }
+    ],
+    "quality_issues": [],
+    "provenance": {
+      "source": "uploaded",
+      "dataset": "b0763765c57a4f5f88401d254ddefc49",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "plan_version": null,
+      "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+    }
+  },
+  "dataset_ref": {
+    "dataset_id": "b0763765c57a4f5f88401d254ddefc49",
+    "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106"
+  },
+  "plans": [],
+  "current_plan_version": 1,
+  "approved_plan_version": null,
+  "node_runs": [
+    {
+      "run_id": "130f3a4bf21f4d0290f03ba976c23ad9",
+      "node_name": "data_profiler",
+      "status": "success",
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "b0763765c57a4f5f88401d254ddefc49",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_version": null,
+        "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+      },
+      "error": null,
+      "finished_at": "2026-11-09T07:30:55.039548+00:00"
+    },
+    {
+      "run_id": "a7123a1b963648fe9197159d74436051",
+      "node_name": "intent_parser",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "b0763765c57a4f5f88401d254ddefc49",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "error": null,
+      "finished_at": "2026-11-09T07:30:57.616970+00:00"
+    },
+    {
+      "run_id": "687078604ea746b08bf54dc768083f24",
+      "node_name": "analysis_planner_v1",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "b0763765c57a4f5f88401d254ddefc49",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "error": null,
+      "finished_at": "2026-11-09T07:31:03.928343+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "id": "880769c9f6c144359f72101e8421f7e8",
+      "role": "user",
+      "kind": "text",
+      "content": "按城市比较利润总额。",
+      "plan_version": null,
+      "created_at": "2026-11-09T07:30:54.992433+00:00"
+    },
+    {
+      "id": "74e95a36bd9a4e2ca0a56c699bcac31e",
+      "role": "assistant",
+      "kind": "status",
+      "content": "正在解析上传文件并计算真实数据画像。",
+      "plan_version": null,
+      "created_at": "2026-11-09T07:30:55.034789+00:00"
+    },
+    {
+      "id": "8d61e7f13af54a43afb2c15e75b71d6e",
+      "role": "assistant",
+      "kind": "status",
+      "content": "真实画像完成：10行、7列；正在理解分析需求。",
+      "plan_version": null,
+      "created_at": "2026-11-09T07:30:55.041676+00:00"
+    },
+    {
+      "id": "563cf84d64a24075bf0939f49847070f",
+      "role": "assistant",
+      "kind": "status",
+      "content": "需求已理解，正在生成受控分析计划。",
+      "plan_version": null,
+      "created_at": "2026-11-09T07:30:57.623688+00:00"
+    },
+    {
+      "id": "35d119ebcf2e49a3aa7513b106a27be1",
+      "role": "assistant",
+      "kind": "plan",
+      "content": "真实计划已保存，目标覆盖：blocked。请审核任务、未满足需求和约束；批准前不会计算。",
+      "plan_version": 1,
+      "created_at": "2026-11-09T07:31:03.938955+00:00"
+    }
+  ],
+  "review_plan": {
+    "session_id": "971303828c954766a046d74768fcda0e",
+    "plan_id": "plan_e56333255ace45408218c0f0f5c8632a",
+    "plan_version": 1,
+    "dataset_id": "b0763765c57a4f5f88401d254ddefc49",
+    "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+    "validation_version": "1.0",
+    "created_at": "2026-11-09T07:31:03.938333+00:00",
+    "change_type": "created",
+    "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "b0763765c57a4f5f88401d254ddefc49",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_id": "plan_e56333255ace45408218c0f0f5c8632a",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "按城市汇总销售额作为利润总额代理指标",
+            "business_question": "各城市的销售额总和是多少？（注：数据集中无“利润”字段，此处以“销售额”作为核心决策指标的代理，需确认是否接受此替代或补充成本数据）",
+            "priority": "P0",
+            "priority_reason": "用户核心需求为比较各城市“利润总额”。当前数据集仅包含“销售额”，缺少“成本”或“利润”字段。根据规则，若核心指标缺失但存在强相关数值字段（如收入侧），应保留P0任务并明确标注缺失输入，以便代码校验器判断可行性或触发澄清。删除此任务将无法回答任何关于金额分布的问题。",
+            "requirement_ids": [
+              "C01",
+              "C02"
+            ],
+            "depends_on": [],
+            "missing_inputs": [
+              "利润计算所需的成本字段或直接的利润字段（当前仅有销售额，无法直接计算利润）"
+            ],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "sum",
+                      "field": "field_0005",
+                      "alias": "total_sales_amount"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0003"
+                  ]
+                }
+              },
+              {
+                "step_id": "S2",
+                "operation": "sort",
+                "params": {
+                  "field": "total_sales_amount",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "按城市比较利润总额"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：利润总额"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F0",
+          "reason_code": "MISSING_FIELD",
+          "validation_issues": [
+            {
+              "code": "MISSING_FIELD",
+              "message": "任务明确缺少必要输入：利润计算所需的成本字段或直接的利润字段（当前仅有销售额，无法直接计算利润）",
+              "step_id": null,
+              "field": null
+            }
+          ],
+          "executable": false
+        }
+      ],
+      "unmet_core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "按城市比较利润总额",
+          "task_ids": [
+            "T1"
+          ],
+          "reason_codes": [
+            "MISSING_FIELD"
+          ]
+        },
+        {
+          "requirement_id": "C02",
+          "description": "metric_requirements：利润总额",
+          "task_ids": [
+            "T1"
+          ],
+          "reason_codes": [
+            "MISSING_FIELD"
+          ]
+        }
+      ],
+      "coverage_status": "blocked",
+      "executable_task_ids": [],
+      "blocked_task_ids": [
+        "T1"
+      ],
+      "fully_executable": false,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "b0763765c57a4f5f88401d254ddefc49",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_version": 1,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "各城市利润总额",
+          "business_goal": "按城市比较利润总额",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "利润总额",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    }
+  },
+  "review_status": "awaiting_review",
+  "engine_approval": null,
+  "engine_execution_ids": [],
+  "report_generations": [],
+  "execution_result": null,
+  "report": null,
+  "error": null
+}

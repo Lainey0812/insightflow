@@ -1,0 +1,154 @@
+{
+  "dataset_id": "report-dataset",
+  "dataset_version": "3676b18573bfe83397388a3cc14122b8f8abe65b269590e6f85a9b09a647f6e6",
+  "report_id": "report_08c2c53b3de04dd1860e5d80a893accb",
+  "execution_id": "exec_kernel_test",
+  "plan_version": 1,
+  "report_status": "unavailable",
+  "goal_coverage": "blocked",
+  "analysis_goal": "分析销售额，指标均缺失时不能生成结论",
+  "dataset_name": "recruiting.csv",
+  "dataset_row_count": 2,
+  "execution_source": "imported",
+  "summary": {
+    "headline": "暂无可生成报告的有效证据",
+    "overview": "围绕「分析销售额，指标均缺失时不能生成结论」，基于 0 个任务的可用结果整理。另有 1 个任务未形成有效报告结果，详见局限性。",
+    "evidence_refs": []
+  },
+  "key_metrics": [],
+  "insights": [],
+  "charts": [],
+  "recommendations": [],
+  "limitations": [
+    "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+    "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+    "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。",
+    "上传范围内，销售额有 1 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。",
+    "未完成任务：筛选范围内缺失的销售额；结果没有可用于报告的有效数据证据。",
+    "没有有效计算证据，未调用模型生成总结。"
+  ],
+  "uncompleted_tasks": [
+    {
+      "task_id": "A01",
+      "title": "筛选范围内缺失的销售额",
+      "priority": "P0",
+      "reason": "结果没有可用于报告的有效数据证据。"
+    }
+  ],
+  "evidence": [],
+  "result_data": {
+    "R001": {
+      "result_id": "R001",
+      "columns": [
+        {
+          "field": "field_0001",
+          "label": "城市",
+          "logical_type": "text",
+          "role": "dimension",
+          "unit": null
+        },
+        {
+          "field": "sales",
+          "label": "岗位数量",
+          "logical_type": "number",
+          "role": "metric",
+          "unit": null
+        }
+      ],
+      "rows": [
+        {
+          "field_0001": "乙",
+          "sales": null
+        }
+      ],
+      "truncated": false,
+      "total_result_rows": 1,
+      "row_offset": 0,
+      "total_refs": []
+    }
+  },
+  "execution_metadata": {
+    "A01": {
+      "task_id": "A01",
+      "status": "success",
+      "effective_row_count": 1,
+      "valid_sample_count": 1,
+      "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+      "scope": "本次上传样本及任务筛选范围",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。",
+      "failure_reason": null,
+      "result_id": null,
+      "result_ref": null,
+      "row_count": null,
+      "execution_metadata": null,
+      "error": null,
+      "insight_generation_version": "evidence-composition-v1.1.1",
+      "rejected_insights": [],
+      "text_validation": [],
+      "missing_core_metrics": [],
+      "approved_scope": [
+        "选用 为 是",
+        "按城市分组",
+        "拟用统计口径：销售额 · 均值"
+      ],
+      "original_query": null
+    }
+  },
+  "task_metadata": {
+    "A01": {
+      "task_id": "A01",
+      "title": "筛选范围内缺失的销售额",
+      "business_question": "筛选范围内没有有效销售额时不可生成结论",
+      "priority": "P0",
+      "priority_reason": "删除后无法比较城市岗位数量，核心问题将无法回答。",
+      "requirement_ids": [
+        "C01"
+      ],
+      "depends_on": [],
+      "missing_inputs": [],
+      "steps": [
+        {
+          "step_id": "S01",
+          "operation": "filter",
+          "params": {
+            "conditions": [
+              {
+                "field": "field_0003",
+                "operator": "eq",
+                "value": "是"
+              }
+            ]
+          }
+        },
+        {
+          "step_id": "S02",
+          "operation": "group_aggregate",
+          "params": {
+            "dimensions": [
+              "field_0001"
+            ],
+            "metrics": [
+              {
+                "function": "avg",
+                "field": "field_0002",
+                "alias": "sales"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "fact_validation": "structured_facts_verified_interpretations_unverified",
+  "llm": null,
+  "provenance": {
+    "source": "uploaded",
+    "dataset": "report-dataset",
+    "dataset_version": "3676b18573bfe83397388a3cc14122b8f8abe65b269590e6f85a9b09a647f6e6",
+    "plan_version": 1,
+    "notice": "事实来自执行结果和确定性证据；解释性陈述未严格验证。"
+  },
+  "preview_url": "/reports/report_08c2c53b3de04dd1860e5d80a893accb",
+  "download_url": "/api/v1/reports/report_08c2c53b3de04dd1860e5d80a893accb/download",
+  "generated_at": "2026-10-28T03:25:34.430138+00:00"
+}

@@ -1,0 +1,173 @@
+{
+  "case_id": "R03",
+  "query": "比较城市岗位数量，存在并列时不编造唯一名次",
+  "split": "development",
+  "historical_report_error": {
+    "code": "REPORT_UNVERIFIED_FACT",
+    "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+    "node_name": null,
+    "retryable": false,
+    "details": {}
+  },
+  "candidates": [
+    {
+      "candidate_number": 1,
+      "raw_candidate": {
+        "primary_evidence_id": "E0005",
+        "evidence_refs": [
+          "E0005",
+          "E0002",
+          "E0003",
+          "E0004"
+        ],
+        "finding_type": "highlight",
+        "implication": "返回结果中所有分组岗位数量完全一致，无差异分布。",
+        "recommendation": "核查数据源是否包含未返回城市及岗位统计口径完整性；补充分析尚未执行。",
+        "limitations": [
+          "结论仅适用于当前返回范围，不能外推整体市场。",
+          "任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。"
+        ]
+      },
+      "references": [
+        {
+          "evidence_id": "E0005",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较城市岗位数量，存在并列时不编造唯一名次；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "当前返回结果的记录 · 数量最大值为 1条，对应 甲等 3 个分组。",
+          "source_row_indices": [
+            0,
+            1,
+            2
+          ],
+          "value": {
+            "value": 1,
+            "category": "甲",
+            "tie_count": 3
+          }
+        },
+        {
+          "evidence_id": "E0002",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较城市岗位数量，存在并列时不编造唯一名次；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "在当前返回结果中，甲的记录 · 数量为 1条，并列值采用同一名次，排名 1。",
+          "source_row_indices": [
+            0
+          ],
+          "value": {
+            "category": "甲",
+            "value": 1,
+            "rank": 1
+          }
+        },
+        {
+          "evidence_id": "E0003",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较城市岗位数量，存在并列时不编造唯一名次；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "在当前返回结果中，乙的记录 · 数量为 1条，并列值采用同一名次，排名 1。",
+          "source_row_indices": [
+            1
+          ],
+          "value": {
+            "category": "乙",
+            "value": 1,
+            "rank": 1
+          }
+        },
+        {
+          "evidence_id": "E0004",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "value",
+            "source_scope": "比较城市岗位数量，存在并列时不编造唯一名次；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "在当前返回结果中，丙的记录 · 数量为 1条，并列值采用同一名次，排名 1。",
+          "source_row_indices": [
+            2
+          ],
+          "value": {
+            "category": "丙",
+            "value": 1,
+            "rank": 1
+          }
+        }
+      ],
+      "actual_candidate_outcome": "rejected",
+      "actual_first_error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {}
+      },
+      "text_diagnostics": [
+        {
+          "role": "implication",
+          "original_text": "返回结果中所有分组岗位数量完全一致，无差异分布。",
+          "normalized_checked_text": "返回结果中所有分组岗位数量完全一致，无差异分布。",
+          "matches": [
+            {
+              "rule": "UNSUPPORTED_ASSERTION",
+              "match": "所有",
+              "span": [
+                5,
+                7
+              ],
+              "pattern": "导致|造成|归因于|证明|必然|保证|因果|显著|最高|最低|排名|占比|翻倍|全部|所有|超过.*半|大多数"
+            }
+          ],
+          "outcome": "rejected",
+          "error": {
+            "code": "REPORT_UNVERIFIED_FACT",
+            "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+            "node_name": null,
+            "retryable": false,
+            "details": {}
+          }
+        },
+        {
+          "role": "recommendation",
+          "original_text": "核查数据源是否包含未返回城市及岗位统计口径完整性；补充分析尚未执行。",
+          "outcome": "accepted"
+        },
+        {
+          "role": "limitation",
+          "original_text": "结论仅适用于当前返回范围，不能外推整体市场。",
+          "outcome": "accepted"
+        },
+        {
+          "role": "limitation",
+          "original_text": "任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。",
+          "outcome": "accepted"
+        }
+      ]
+    }
+  ],
+  "assembly_replay": {
+    "status": "rejected",
+    "error": {
+      "code": "REPORT_UNVERIFIED_FACT",
+      "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+      "node_name": null,
+      "retryable": false,
+      "details": {}
+    }
+  },
+  "historical_error_reproduced": true
+}

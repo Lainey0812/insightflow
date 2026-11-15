@@ -1,0 +1,6 @@
+{
+  "text": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T1\",\n      \"title\": \"按城市汇总销售额作为利润总额代理指标\",\n      \"business_question\": \"各城市的销售额总和是多少？（注：数据集中无“利润”字段，此处以“销售额”作为核心决策指标的代理，需确认是否接受此替代或补充成本数据）\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"用户核心需求为比较各城市“利润总额”。当前数据集仅包含“销售额”，缺少“成本”或“利润”字段。根据规则，若核心指标缺失但存在强相关数值字段（如收入侧），应保留P0任务并明确标注缺失输入，以便代码校验器判断可行性或触发澄清。删除此任务将无法回答任何关于金额分布的问题。\",\n      \"requirement_ids\": [\n        \"C01\",\n        \"C02\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [\n        \"利润计算所需的成本字段或直接的利润字段（当前仅有销售额，无法直接计算利润）\"\n      ],\n      \"steps\": [\n        {\n          \"step_id\": \"S1\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"sum\",\n                \"field\": \"field_0005\",\n                \"alias\": \"total_sales_amount\"\n              }\n            ],\n            \"dimensions\": [\n              \"field_0003\"\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S2\",\n          \"operation\": \"sort\",\n          \"params\": {\n            \"field\": \"total_sales_amount\",\n            \"direction\": \"desc\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+  "provider": "compatible",
+  "is_mock": false,
+  "model": "qwen3.8-flash"
+}

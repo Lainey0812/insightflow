@@ -1,0 +1,1073 @@
+{
+  "version": "lifecycle-contract-v1.1",
+  "status": "目标",
+  "frozen_scope": "文档契约；非运行Policy Validator",
+  "implementation_labels": [
+    "现有",
+    "结构已具备",
+    "目标"
+  ],
+  "business_lifecycle": [
+    "created",
+    "running",
+    "waiting_input",
+    "waiting_approval",
+    "succeeded",
+    "partially_succeeded",
+    "failed",
+    "interrupted",
+    "unknown"
+  ],
+  "activity": [
+    "not_started",
+    "preparing",
+    "profiling",
+    "parsing_intent",
+    "planning",
+    "validating",
+    "clarification",
+    "review",
+    "approved_not_started",
+    "executing",
+    "report_not_started",
+    "report_queued",
+    "reporting",
+    "finished",
+    "unknown"
+  ],
+  "legacy_control_transitions": {
+    "status": "现有",
+    "matrix": {
+      "CREATED": [
+        "FAILED",
+        "PREPARING",
+        "PROFILING"
+      ],
+      "PROFILING": [
+        "FAILED",
+        "PARSING_INTENT"
+      ],
+      "PARSING_INTENT": [
+        "FAILED",
+        "PLANNING",
+        "WAITING_FOR_CLARIFICATION"
+      ],
+      "PLANNING": [
+        "FAILED",
+        "VALIDATING"
+      ],
+      "VALIDATING": [
+        "AWAITING_APPROVAL",
+        "FAILED"
+      ],
+      "PREPARING": [
+        "AWAITING_APPROVAL",
+        "FAILED",
+        "WAITING_FOR_CLARIFICATION"
+      ],
+      "WAITING_FOR_CLARIFICATION": [
+        "PARSING_INTENT",
+        "PREPARING"
+      ],
+      "AWAITING_APPROVAL": [
+        "APPROVED",
+        "AWAITING_APPROVAL"
+      ],
+      "APPROVED": [
+        "AWAITING_APPROVAL",
+        "RUNNING"
+      ],
+      "RUNNING": [
+        "COMPLETED",
+        "FAILED"
+      ],
+      "COMPLETED": [
+        "AWAITING_APPROVAL"
+      ],
+      "FAILED": [
+        "AWAITING_APPROVAL",
+        "PARSING_INTENT",
+        "PLANNING",
+        "PROFILING",
+        "VALIDATING"
+      ]
+    }
+  },
+  "target_control_transitions": {
+    "status": "目标",
+    "matrix": {
+      "CREATED": [
+        "PROFILING",
+        "FAILED"
+      ],
+      "PREPARING": [],
+      "PROFILING": [
+        "PARSING_INTENT",
+        "FAILED"
+      ],
+      "PARSING_INTENT": [
+        "WAITING_FOR_CLARIFICATION",
+        "PLANNING",
+        "FAILED"
+      ],
+      "PLANNING": [
+        "VALIDATING",
+        "FAILED"
+      ],
+      "VALIDATING": [
+        "AWAITING_APPROVAL",
+        "FAILED"
+      ],
+      "WAITING_FOR_CLARIFICATION": [
+        "PARSING_INTENT"
+      ],
+      "AWAITING_APPROVAL": [
+        "AWAITING_APPROVAL",
+        "APPROVED"
+      ],
+      "APPROVED": [
+        "AWAITING_APPROVAL",
+        "RUNNING"
+      ],
+      "RUNNING": [
+        "COMPLETED",
+        "FAILED"
+      ],
+      "COMPLETED": [],
+      "FAILED": [
+        "PROFILING",
+        "PARSING_INTENT",
+        "PLANNING",
+        "VALIDATING"
+      ]
+    }
+  },
+  "legacy_root_transitions": {
+    "status": "现有",
+    "matrix": {
+      "queued": [
+        "running",
+        "interrupted"
+      ],
+      "running": [
+        "running",
+        "waiting_input",
+        "waiting_approval",
+        "failed",
+        "interrupted"
+      ],
+      "waiting_input": [
+        "running"
+      ],
+      "waiting_approval": [],
+      "failed": [
+        "running"
+      ],
+      "interrupted": [
+        "running"
+      ],
+      "complete": [],
+      "partial": [],
+      "unavailable": []
+    }
+  },
+  "target_root_transitions": {
+    "status": "目标",
+    "matrix": {
+      "queued": [
+        "running",
+        "interrupted"
+      ],
+      "running": [
+        "running",
+        "waiting_input",
+        "waiting_approval",
+        "complete",
+        "partial",
+        "failed",
+        "interrupted"
+      ],
+      "waiting_input": [
+        "running"
+      ],
+      "waiting_approval": [
+        "running"
+      ],
+      "failed": [
+        "running"
+      ],
+      "interrupted": [
+        "running"
+      ],
+      "partial": [
+        "running"
+      ],
+      "complete": [],
+      "unavailable": []
+    }
+  },
+  "generation_transitions": {
+    "status": "现有",
+    "matrix": {
+      "queued": [
+        "generating",
+        "completed",
+        "failed",
+        "unavailable"
+      ],
+      "generating": [
+        "completed",
+        "failed",
+        "unavailable"
+      ],
+      "failed": [
+        "queued"
+      ],
+      "completed": [],
+      "unavailable": []
+    }
+  },
+  "commands": [
+    {
+      "id": "C01",
+      "status": "目标",
+      "name": "开始准备",
+      "owner": "control",
+      "source": "CREATED",
+      "target": "PROFILING",
+      "guard": "固定输入、当前 revision 和新活动令牌",
+      "persistent_evidence": "接纳命令、输入绑定和状态同事务"
+    },
+    {
+      "id": "C02",
+      "status": "目标",
+      "name": "画像完成",
+      "owner": "control",
+      "source": "PROFILING",
+      "target": "PARSING_INTENT",
+      "guard": "画像文件版本/hash/选项一致，当前活动令牌",
+      "persistent_evidence": "DatasetProfile+固定DatasetRef+状态检查点"
+    },
+    {
+      "id": "C03",
+      "status": "目标",
+      "name": "意图可规划",
+      "owner": "control",
+      "source": "PARSING_INTENT",
+      "target": "PLANNING",
+      "guard": "真实合法 Intent.next_action=proceed",
+      "persistent_evidence": "保存意图、parse标识与输入绑定"
+    },
+    {
+      "id": "C04",
+      "status": "目标",
+      "name": "意图需澄清",
+      "owner": "control",
+      "source": "PARSING_INTENT",
+      "target": "WAITING_FOR_CLARIFICATION",
+      "guard": "合法 Intent.next_action=clarify",
+      "persistent_evidence": "意图与澄清问题已保存"
+    },
+    {
+      "id": "C05",
+      "status": "目标",
+      "name": "补充澄清",
+      "owner": "control",
+      "source": "WAITING_FOR_CLARIFICATION",
+      "target": "PARSING_INTENT",
+      "guard": "同目标回答、revision；不复用旧Planner检查点",
+      "persistent_evidence": "消息、答案集、新活动令牌、状态"
+    },
+    {
+      "id": "C06",
+      "status": "目标",
+      "name": "Planner回调",
+      "owner": "control",
+      "source": "PLANNING",
+      "target": "VALIDATING",
+      "guard": "意图快照/参数/活动令牌未替换",
+      "persistent_evidence": "真实候选及来源保存"
+    },
+    {
+      "id": "C07",
+      "status": "目标",
+      "name": "保存验证计划",
+      "owner": "control",
+      "source": "VALIDATING",
+      "target": "AWAITING_APPROVAL",
+      "guard": "候选精确匹配；保留F0/P0；版本不可变",
+      "persistent_evidence": "PlanVersion+归属+validation+当前指针"
+    },
+    {
+      "id": "C08",
+      "status": "目标",
+      "name": "待审批删除任务",
+      "owner": "control",
+      "source": "AWAITING_APPROVAL",
+      "target": "AWAITING_APPROVAL",
+      "guard": "精确版本；无执行；删除任务合法",
+      "persistent_evidence": "新PlanVersion+验证；清有效批准；历史保留"
+    },
+    {
+      "id": "C09",
+      "status": "目标",
+      "name": "已批准但未执行修订",
+      "owner": "control",
+      "source": "APPROVED",
+      "target": "AWAITING_APPROVAL",
+      "guard": "无已claim执行/报告；明确撤销当前批准引用",
+      "persistent_evidence": "新版本+验证；原批准仅失去当前资格"
+    },
+    {
+      "id": "C10",
+      "status": "目标",
+      "name": "批准当前计划",
+      "owner": "control",
+      "source": "AWAITING_APPROVAL",
+      "target": "APPROVED",
+      "guard": "完整批准资格；精确版本/约束审计/告警确认",
+      "persistent_evidence": "批准快照+归属链接+当前批准+审计"
+    },
+    {
+      "id": "C11",
+      "status": "目标",
+      "name": "执行claim",
+      "owner": "control",
+      "source": "APPROVED",
+      "target": "RUNNING",
+      "guard": "有效批准；幂等请求；加载版本未变化",
+      "persistent_evidence": "新Execution+批准快照+归属+当前执行+新活动令牌"
+    },
+    {
+      "id": "C12",
+      "status": "目标",
+      "name": "Engine成功结束",
+      "owner": "control",
+      "source": "RUNNING",
+      "target": "COMPLETED",
+      "guard": "当前execution、令牌、revision；全部任务结果已存",
+      "persistent_evidence": "ExecutionResult.success+控制检查点"
+    },
+    {
+      "id": "C13",
+      "status": "目标",
+      "name": "Engine部分成功结束",
+      "owner": "control",
+      "source": "RUNNING",
+      "target": "COMPLETED",
+      "guard": "当前execution；真实任务失败/skipped不可丢",
+      "persistent_evidence": "ExecutionResult.partial_success+控制检查点"
+    },
+    {
+      "id": "C14",
+      "status": "目标",
+      "name": "Engine全部失败结束",
+      "owner": "control",
+      "source": "RUNNING",
+      "target": "FAILED",
+      "guard": "当前execution；没有成功任务",
+      "persistent_evidence": "ExecutionResult.failed+错误+控制检查点"
+    },
+    {
+      "id": "C15-CREATED",
+      "status": "目标",
+      "name": "准备失败/中断收敛",
+      "owner": "control",
+      "source": "CREATED",
+      "target": "FAILED",
+      "guard": "仅当前准备作业；保存错误；recover需旧worker隔离",
+      "persistent_evidence": "失败阶段+错误+有效检查点"
+    },
+    {
+      "id": "C15-PROFILING",
+      "status": "目标",
+      "name": "准备失败/中断收敛",
+      "owner": "control",
+      "source": "PROFILING",
+      "target": "FAILED",
+      "guard": "仅当前准备作业；保存错误；recover需旧worker隔离",
+      "persistent_evidence": "失败阶段+错误+有效检查点"
+    },
+    {
+      "id": "C15-PARSING_INTENT",
+      "status": "目标",
+      "name": "准备失败/中断收敛",
+      "owner": "control",
+      "source": "PARSING_INTENT",
+      "target": "FAILED",
+      "guard": "仅当前准备作业；保存错误；recover需旧worker隔离",
+      "persistent_evidence": "失败阶段+错误+有效检查点"
+    },
+    {
+      "id": "C15-PLANNING",
+      "status": "目标",
+      "name": "准备失败/中断收敛",
+      "owner": "control",
+      "source": "PLANNING",
+      "target": "FAILED",
+      "guard": "仅当前准备作业；保存错误；recover需旧worker隔离",
+      "persistent_evidence": "失败阶段+错误+有效检查点"
+    },
+    {
+      "id": "C15-VALIDATING",
+      "status": "目标",
+      "name": "准备失败/中断收敛",
+      "owner": "control",
+      "source": "VALIDATING",
+      "target": "FAILED",
+      "guard": "仅当前准备作业；保存错误；recover需旧worker隔离",
+      "persistent_evidence": "失败阶段+错误+有效检查点"
+    },
+    {
+      "id": "C16-PROFILING",
+      "status": "目标",
+      "name": "准备显式Retry",
+      "owner": "control",
+      "source": "FAILED",
+      "target": "PROFILING",
+      "guard": "只限retryable准备失败；无已保存审核计划/执行；选择有效检查点",
+      "persistent_evidence": "新活动令牌+revision+重试接纳；保留旧失败"
+    },
+    {
+      "id": "C16-PARSING_INTENT",
+      "status": "目标",
+      "name": "准备显式Retry",
+      "owner": "control",
+      "source": "FAILED",
+      "target": "PARSING_INTENT",
+      "guard": "只限retryable准备失败；无已保存审核计划/执行；选择有效检查点",
+      "persistent_evidence": "新活动令牌+revision+重试接纳；保留旧失败"
+    },
+    {
+      "id": "C16-PLANNING",
+      "status": "目标",
+      "name": "准备显式Retry",
+      "owner": "control",
+      "source": "FAILED",
+      "target": "PLANNING",
+      "guard": "只限retryable准备失败；无已保存审核计划/执行；选择有效检查点",
+      "persistent_evidence": "新活动令牌+revision+重试接纳；保留旧失败"
+    },
+    {
+      "id": "C16-VALIDATING",
+      "status": "目标",
+      "name": "准备显式Retry",
+      "owner": "control",
+      "source": "FAILED",
+      "target": "VALIDATING",
+      "guard": "只限retryable准备失败；无已保存审核计划/执行；选择有效检查点",
+      "persistent_evidence": "新活动令牌+revision+重试接纳；保留旧失败"
+    },
+    {
+      "id": "C17",
+      "status": "目标",
+      "name": "首次报告排队",
+      "owner": "generation",
+      "source": null,
+      "target": "queued",
+      "guard": "精确已结束Execution与批准；全失败仅诊断，不生成成功事实",
+      "persistent_evidence": "generation attempt=1+当前作用域/报告令牌"
+    },
+    {
+      "id": "C18",
+      "status": "目标",
+      "name": "报告启动",
+      "owner": "generation",
+      "source": "queued",
+      "target": "generating",
+      "guard": "当前attempt/报告令牌；重复start不重复调用",
+      "persistent_evidence": "generation.started_at+作业检查点"
+    },
+    {
+      "id": "C19",
+      "status": "目标",
+      "name": "提交可交付报告",
+      "owner": "generation",
+      "source": "generating",
+      "target": "completed",
+      "guard": "合法证据、覆盖与有效当前分支；accepted=True",
+      "persistent_evidence": "报告+归属+generation.report_id同事务"
+    },
+    {
+      "id": "C20",
+      "status": "目标",
+      "name": "提交不可生成记录",
+      "owner": "generation",
+      "source": "generating",
+      "target": "unavailable",
+      "guard": "无有效证据或无有效核心洞察；不得complete",
+      "persistent_evidence": "unavailable报告记录+原因+generation同事务"
+    },
+    {
+      "id": "C21-queued",
+      "status": "目标",
+      "name": "报告失败/Recover",
+      "owner": "generation",
+      "source": "queued",
+      "target": "failed",
+      "guard": "当前attempt；Recover须确认旧worker退出",
+      "persistent_evidence": "失败记录+错误；Execution不变"
+    },
+    {
+      "id": "C21-generating",
+      "status": "目标",
+      "name": "报告失败/Recover",
+      "owner": "generation",
+      "source": "generating",
+      "target": "failed",
+      "guard": "当前attempt；Recover须确认旧worker退出",
+      "persistent_evidence": "失败记录+错误；Execution不变"
+    },
+    {
+      "id": "C22",
+      "status": "目标",
+      "name": "报告显式Retry",
+      "owner": "generation",
+      "source": "failed",
+      "target": "queued",
+      "guard": "expected_attempt匹配、当前分支有效且未交付；已知Root只能running/partial/failed/interrupted，缺Trace不阻断",
+      "persistent_evidence": "attempt+1+新报告活动令牌+排队检查点"
+    },
+    {
+      "id": "C23",
+      "status": "目标",
+      "name": "提交任务进度",
+      "owner": "control",
+      "source": "RUNNING",
+      "target": "RUNNING",
+      "guard": "当前execution/task、revision与活动令牌；不重复任务结果",
+      "persistent_evidence": "任务状态+完整结果/引用同事务"
+    },
+    {
+      "id": "C24",
+      "status": "目标",
+      "name": "创建独立新目标",
+      "owner": "creation",
+      "source": null,
+      "target": "CREATED",
+      "guard": "新创建键；同Session消息文件授权；原Workflow不变",
+      "persistent_evidence": "Workflow+origin/root_id/幂等键同事务"
+    }
+  ],
+  "engine_report_matrix": [
+    {
+      "id": "ER01",
+      "status": "目标",
+      "execution_outcome": "success",
+      "report_stage": "absent",
+      "delivery_status": "not_delivered",
+      "business_lifecycle": "running",
+      "activity": "report_not_started",
+      "consistency": "consistent",
+      "reason_codes": [
+        "report_not_started",
+        "report_not_delivered"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER02",
+      "status": "目标",
+      "execution_outcome": "success",
+      "report_stage": "queued",
+      "delivery_status": "not_delivered",
+      "business_lifecycle": "running",
+      "activity": "report_queued",
+      "consistency": "consistent",
+      "reason_codes": [
+        "report_not_delivered"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER03",
+      "status": "目标",
+      "execution_outcome": "success",
+      "report_stage": "generating",
+      "delivery_status": "not_delivered",
+      "business_lifecycle": "running",
+      "activity": "reporting",
+      "consistency": "consistent",
+      "reason_codes": [
+        "report_not_delivered"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER04",
+      "status": "目标",
+      "execution_outcome": "success",
+      "report_stage": "failed",
+      "delivery_status": "not_delivered",
+      "business_lifecycle": "partially_succeeded",
+      "activity": "finished",
+      "consistency": "consistent",
+      "reason_codes": [
+        "report_failed",
+        "report_not_delivered"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER05",
+      "status": "目标",
+      "execution_outcome": "success",
+      "report_stage": "unavailable",
+      "delivery_status": "not_delivered",
+      "business_lifecycle": "partially_succeeded",
+      "activity": "finished",
+      "consistency": "consistent",
+      "reason_codes": [
+        "report_unavailable",
+        "report_not_delivered"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER06",
+      "status": "目标",
+      "execution_outcome": "success",
+      "report_stage": "delivered_complete",
+      "delivery_status": "delivered",
+      "business_lifecycle": "succeeded",
+      "activity": "finished",
+      "consistency": "consistent",
+      "reason_codes": [],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER07",
+      "status": "目标",
+      "execution_outcome": "success",
+      "report_stage": "delivered_partial",
+      "delivery_status": "delivered",
+      "business_lifecycle": "partially_succeeded",
+      "activity": "finished",
+      "consistency": "consistent",
+      "reason_codes": [
+        "report_partial"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER08",
+      "status": "目标",
+      "execution_outcome": "partial_success",
+      "report_stage": "absent",
+      "delivery_status": "not_delivered",
+      "business_lifecycle": "partially_succeeded",
+      "activity": "report_not_started",
+      "consistency": "consistent",
+      "reason_codes": [
+        "execution_partial",
+        "report_not_started",
+        "report_not_delivered"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER09",
+      "status": "目标",
+      "execution_outcome": "partial_success",
+      "report_stage": "queued",
+      "delivery_status": "not_delivered",
+      "business_lifecycle": "partially_succeeded",
+      "activity": "report_queued",
+      "consistency": "consistent",
+      "reason_codes": [
+        "execution_partial",
+        "report_not_delivered"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER10",
+      "status": "目标",
+      "execution_outcome": "partial_success",
+      "report_stage": "generating",
+      "delivery_status": "not_delivered",
+      "business_lifecycle": "partially_succeeded",
+      "activity": "reporting",
+      "consistency": "consistent",
+      "reason_codes": [
+        "execution_partial",
+        "report_not_delivered"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER11",
+      "status": "目标",
+      "execution_outcome": "partial_success",
+      "report_stage": "failed",
+      "delivery_status": "not_delivered",
+      "business_lifecycle": "partially_succeeded",
+      "activity": "finished",
+      "consistency": "consistent",
+      "reason_codes": [
+        "execution_partial",
+        "report_failed",
+        "report_not_delivered"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER12",
+      "status": "目标",
+      "execution_outcome": "partial_success",
+      "report_stage": "unavailable",
+      "delivery_status": "not_delivered",
+      "business_lifecycle": "partially_succeeded",
+      "activity": "finished",
+      "consistency": "consistent",
+      "reason_codes": [
+        "execution_partial",
+        "report_unavailable",
+        "report_not_delivered"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER13",
+      "status": "目标",
+      "execution_outcome": "partial_success",
+      "report_stage": "delivered_complete",
+      "delivery_status": "delivered",
+      "business_lifecycle": "partially_succeeded",
+      "activity": "finished",
+      "consistency": "consistent",
+      "reason_codes": [
+        "execution_partial"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER14",
+      "status": "目标",
+      "execution_outcome": "partial_success",
+      "report_stage": "delivered_partial",
+      "delivery_status": "delivered",
+      "business_lifecycle": "partially_succeeded",
+      "activity": "finished",
+      "consistency": "consistent",
+      "reason_codes": [
+        "execution_partial",
+        "report_partial"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER15",
+      "status": "目标",
+      "execution_outcome": "failed",
+      "report_stage": "absent",
+      "delivery_status": "not_delivered",
+      "business_lifecycle": "failed",
+      "activity": "report_not_started",
+      "consistency": "consistent",
+      "reason_codes": [
+        "execution_failed",
+        "report_not_started",
+        "report_not_delivered"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER16",
+      "status": "目标",
+      "execution_outcome": "failed",
+      "report_stage": "queued",
+      "delivery_status": "not_delivered",
+      "business_lifecycle": "failed",
+      "activity": "report_queued",
+      "consistency": "consistent",
+      "reason_codes": [
+        "execution_failed",
+        "report_not_delivered"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER17",
+      "status": "目标",
+      "execution_outcome": "failed",
+      "report_stage": "generating",
+      "delivery_status": "not_delivered",
+      "business_lifecycle": "failed",
+      "activity": "reporting",
+      "consistency": "consistent",
+      "reason_codes": [
+        "execution_failed",
+        "report_not_delivered"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER18",
+      "status": "目标",
+      "execution_outcome": "failed",
+      "report_stage": "failed",
+      "delivery_status": "not_delivered",
+      "business_lifecycle": "failed",
+      "activity": "finished",
+      "consistency": "consistent",
+      "reason_codes": [
+        "execution_failed",
+        "report_failed",
+        "report_not_delivered"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER19",
+      "status": "目标",
+      "execution_outcome": "failed",
+      "report_stage": "unavailable",
+      "delivery_status": "not_delivered",
+      "business_lifecycle": "failed",
+      "activity": "finished",
+      "consistency": "consistent",
+      "reason_codes": [
+        "execution_failed",
+        "report_unavailable",
+        "report_not_delivered"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER20",
+      "status": "目标",
+      "execution_outcome": "failed",
+      "report_stage": "delivered_complete",
+      "delivery_status": "unknown",
+      "business_lifecycle": "unknown",
+      "activity": "unknown",
+      "consistency": "inconsistent",
+      "reason_codes": [
+        "execution_failed",
+        "business_state_conflict"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    },
+    {
+      "id": "ER21",
+      "status": "目标",
+      "execution_outcome": "failed",
+      "report_stage": "delivered_partial",
+      "delivery_status": "unknown",
+      "business_lifecycle": "unknown",
+      "activity": "unknown",
+      "consistency": "inconsistent",
+      "reason_codes": [
+        "execution_failed",
+        "report_partial",
+        "business_state_conflict"
+      ],
+      "scope": "固定当前分支；无process interruption；complete交付还要求plan/goal coverage均complete"
+    }
+  ],
+  "acceptance_cases": [
+    {
+      "id": "A01",
+      "status": "目标",
+      "given": "仅control=COMPLETED，无可读取ExecutionResult",
+      "expected": "unknown/record_missing；禁止succeeded"
+    },
+    {
+      "id": "A02",
+      "status": "目标",
+      "given": "Engine.partial_success，Report.generating",
+      "expected": "partially_succeeded/reporting；execution_partial保留；非running覆盖失败"
+    },
+    {
+      "id": "A03",
+      "status": "目标",
+      "given": "Engine.success，Report.failed",
+      "expected": "partially_succeeded/finished；report_failed+report_not_delivered"
+    },
+    {
+      "id": "A04",
+      "status": "目标",
+      "given": "Engine.success，交付complete但goal_coverage=partial",
+      "expected": "partially_succeeded/delivered；不能succeeded"
+    },
+    {
+      "id": "A05",
+      "status": "目标",
+      "given": "Engine.success，plan coverage=partial但report goal coverage=complete",
+      "expected": "unknown/inconsistent；不能伪造完整覆盖"
+    },
+    {
+      "id": "A06",
+      "status": "目标",
+      "given": "Root.complete，删除任务或重新执行",
+      "expected": "拒绝；原Root/Plan/Approval/Execution/Report均不修改"
+    },
+    {
+      "id": "A07",
+      "status": "现有",
+      "given": "legacy Session.COMPLETED，合法删除任务",
+      "expected": "仍按原服务创建新版本并AWAITING_APPROVAL；不移除兼容路径"
+    },
+    {
+      "id": "A08",
+      "status": "目标",
+      "given": "Report.unavailable，用户Retry",
+      "expected": "不提供Retry；重复queue仅查询原记录；不发LLM"
+    },
+    {
+      "id": "A09",
+      "status": "目标",
+      "given": "Engine中断前有任务已保存，尚有未完成任务",
+      "expected": "Recover保留已存结果，未完成skipped，不自动Resume"
+    },
+    {
+      "id": "A10",
+      "status": "现有",
+      "given": "同execution_request_id，相同参数且原Execution.finished",
+      "expected": "返回原结果，不新增执行/任务结果"
+    },
+    {
+      "id": "A11",
+      "status": "现有",
+      "given": "同execution_request_id，不同参数",
+      "expected": "EXECUTION_REQUEST_CONFLICT；不覆盖旧请求"
+    },
+    {
+      "id": "A12",
+      "status": "目标",
+      "given": "Planner旧回调，revision或active key或Intent hash不匹配",
+      "expected": "拒绝业务提交；不能换取新key后重放"
+    },
+    {
+      "id": "A13",
+      "status": "目标",
+      "given": "旧Execution回调，当前execution_id不同",
+      "expected": "拒绝当前业务/Workflow写入；历史可读，不能覆盖新分支"
+    },
+    {
+      "id": "A14",
+      "status": "现有",
+      "given": "旧report attempt finish=False",
+      "expected": "不保存旧Report；旧Report Run不得complete，记录stale/interrupted"
+    },
+    {
+      "id": "A15",
+      "status": "目标",
+      "given": "两个Session中的不同Workflow引用同一Plan locator",
+      "expected": "拒绝跨Session/Workflow归属；不同Workflow可以各自version1"
+    },
+    {
+      "id": "A16",
+      "status": "目标",
+      "given": "创建阶段尚无DatasetProfile/Plan/Approval/Execution",
+      "expected": "允许创建；需要origin消息/授权inputfile/root预留/幂等键，不要求未来ID非空"
+    },
+    {
+      "id": "A17",
+      "status": "目标",
+      "given": "报告queue/start合法更新revision",
+      "expected": "worker只通过自己成功提交得到新revision；不误判自身检查点过期"
+    },
+    {
+      "id": "A18",
+      "status": "目标",
+      "given": "新Node Span.parent_span_id非空",
+      "expected": "拒绝新采集结构；Node Span.run_id必须等于Workflow.root_run_id"
+    },
+    {
+      "id": "A19",
+      "status": "现有",
+      "given": "历史嵌套Span/独立Report Run",
+      "expected": "兼容读取、不重写、不删除、不伪装为新Root节点"
+    },
+    {
+      "id": "A20",
+      "status": "现有",
+      "given": "Report已提交成功，Trace写失败",
+      "expected": "业务报告保留；collection降级，不重跑报告"
+    },
+    {
+      "id": "A21",
+      "status": "现有",
+      "given": "PromptRegistry.begin快照失败",
+      "expected": "HTTP未发送，LLM_SNAPSHOT_UNAVAILABLE；不能套用Trace fail-open"
+    },
+    {
+      "id": "A22",
+      "status": "目标",
+      "given": "Root同business_revision，两并发observation_revision旧对象",
+      "expected": "一个CAS提交，另一个False；不得覆盖新状态"
+    },
+    {
+      "id": "A23",
+      "status": "目标",
+      "given": "旧Worker仍运行，启动Recover",
+      "expected": "禁止接管；先排空或fence；不能只按queued/running判断失主"
+    },
+    {
+      "id": "A24",
+      "status": "目标",
+      "given": "业务必要引用缺失或跨库错位",
+      "expected": "unknown/inconsistent，默认拒绝新写；可查历史"
+    },
+    {
+      "id": "A25",
+      "status": "目标",
+      "given": "Engine Recover返回partial_success且无ReportGeneration",
+      "expected": "partially_succeeded/report_not_started；process_interrupted保留，不盖掉execution_partial"
+    },
+    {
+      "id": "A26",
+      "status": "目标",
+      "given": "Engine Recover返回failed且无ReportGeneration",
+      "expected": "interrupted/finished；execution_outcome=failed，保留EXECUTION_INTERRUPTED"
+    },
+    {
+      "id": "A27",
+      "status": "目标",
+      "given": "报告进程Recover将generating改failed，Engine.success",
+      "expected": "partially_succeeded/finished；只可显式Retry报告，不重跑Engine"
+    },
+    {
+      "id": "A28",
+      "status": "目标",
+      "given": "Root.partial且报告已部分交付，Retry或修订原计划",
+      "expected": "拒绝；generation.completed不是可重试failed，新需求新Workflow"
+    },
+    {
+      "id": "A29",
+      "status": "目标",
+      "given": "Root.partial因report.failed，精确显式报告Retry",
+      "expected": "Root.running观测新执行活动；Engine.partial时business仍partially_succeeded"
+    },
+    {
+      "id": "A30",
+      "status": "目标",
+      "given": "Engine.failed，Report.generating诊断",
+      "expected": "failed/reporting，不隐藏执行失败；禁止成功事实，仅真实无证据说明"
+    }
+  ],
+  "dimension_mapping": {
+    "status": "目标",
+    "execution_outcome": {
+      "values": [
+        null,
+        "running",
+        "success",
+        "partial_success",
+        "failed"
+      ],
+      "current_field": "business_lifecycle.execution_status"
+    },
+    "delivery_status": {
+      "values": [
+        "delivered",
+        "not_delivered",
+        "unknown"
+      ],
+      "current_field": "business_lifecycle.report_delivery"
+    },
+    "api_modified": false
+  }
+}

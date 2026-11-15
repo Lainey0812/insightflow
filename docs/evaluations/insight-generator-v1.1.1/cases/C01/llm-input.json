@@ -1,0 +1,260 @@
+{
+  "analysis_goal": {
+    "analysis_object": "support数据",
+    "business_goal": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因",
+    "decision_goal": null
+  },
+  "goal_coverage": "complete",
+  "original_query": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因",
+  "constraints": {
+    "time_range": null,
+    "filters": [],
+    "metric_requirements": [],
+    "analysis_limits": []
+  },
+  "constraints_confirmed": false,
+  "scope_context": [
+    {
+      "task_id": "A01",
+      "approved_steps": [
+        "按类别分组",
+        "拟用统计口径：响应分钟 · 均值"
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "field_id": "field_0001",
+      "name": "类别",
+      "logical_type": "text",
+      "upload_missing_count": 0
+    },
+    {
+      "field_id": "field_0002",
+      "name": "响应分钟",
+      "logical_type": "integer",
+      "upload_missing_count": 0
+    }
+  ],
+  "uncompleted_tasks": [],
+  "task_sample_context": [
+    {
+      "task_id": "A01",
+      "status": "success",
+      "valid_sample_count": 5,
+      "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+      "metric_valid_counts": {}
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "A01",
+      "priority": "P0",
+      "business_question": "工单类别平均响应分钟"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E0008",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "comparison",
+      "value": {
+        "metric_field": "value",
+        "dimension_field": "field_0001",
+        "source_scope": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因；仅限当前上传数据与批准任务范围。",
+        "unit": "%",
+        "rounding": "half_up_1_decimal",
+        "left": "投诉",
+        "right": "退款",
+        "left_value": "40.0",
+        "right_value": "25.0",
+        "difference": "15.0",
+        "formula": "(left_value - right_value) / right_value * 100",
+        "comparison_kind": "relative_lead",
+        "numerator": "15.0",
+        "denominator": "25.0",
+        "percent": "60.0"
+      },
+      "scope": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因；仅限当前上传数据与批准任务范围。；仅比较当前返回的同口径分组。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；relative_lead：(left_value - right_value) / right_value * 100；字段 value，分子 15.0，分母 25.0；分母必须为正，百分比四舍五入一位小数。",
+      "statement": "在当前返回结果中，投诉的响应分钟平均值比退款高 15，相对退款领先约 60.0%。",
+      "source_row_indices": [
+        0,
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0009",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "comparison",
+      "value": {
+        "metric_field": "value",
+        "dimension_field": "field_0001",
+        "source_scope": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因；仅限当前上传数据与批准任务范围。",
+        "unit": "%",
+        "rounding": "half_up_1_decimal",
+        "left": "咨询",
+        "right": "投诉",
+        "left_value": "12.0",
+        "right_value": "40.0",
+        "formula": "left_value / right_value * 100",
+        "comparison_kind": "relative_ratio",
+        "numerator": "12.0",
+        "denominator": "40.0",
+        "percent": "30.0"
+      },
+      "scope": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因；仅限当前上传数据与批准任务范围。；仅比较当前返回的同口径分组。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；relative_ratio：left_value / right_value * 100；字段 value，分子 12.0，分母 40.0；分母必须为正，百分比四舍五入一位小数。",
+      "statement": "在当前返回结果中，咨询的响应分钟平均值为 12，约为投诉的 30.0%。",
+      "source_row_indices": [
+        1,
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0007",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "difference",
+      "value": {
+        "left": "投诉",
+        "right": "退款",
+        "left_value": 40.0,
+        "right_value": 25.0,
+        "difference": 15
+      },
+      "scope": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算值相减：value[0] - value[2]；不是因果或显著性检验。",
+      "statement": "在该任务完整分组结果中，投诉与退款的响应分钟 · 平均值差值为 15。",
+      "source_row_indices": [
+        0,
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0002",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "投诉",
+        "value": 40.0,
+        "rank": 1
+      },
+      "scope": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，投诉的响应分钟 · 平均值为 40，并列值采用同一名次，排名 1。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0003",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "退款",
+        "value": 25.0,
+        "rank": 2
+      },
+      "scope": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，退款的响应分钟 · 平均值为 25，并列值采用同一名次，排名 2。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0004",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "咨询",
+        "value": 12.0,
+        "rank": 3
+      },
+      "scope": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，咨询的响应分钟 · 平均值为 12，并列值采用同一名次，排名 3。",
+      "source_row_indices": [
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0005",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "maximum",
+      "value": {
+        "value": 40.0,
+        "category": "投诉",
+        "tie_count": 1
+      },
+      "scope": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；读取 value 的最大值，保留并列来源行。",
+      "statement": "该任务完整分组结果的响应分钟 · 平均值最大值为 40，对应 投诉等 1 个分组。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0006",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "minimum",
+      "value": {
+        "value": 12.0,
+        "category": "咨询",
+        "tie_count": 1
+      },
+      "scope": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；读取 value 的最小值，保留并列来源行。",
+      "statement": "该任务完整分组结果的响应分钟 · 平均值最小值为 12，对应 咨询等 1 个分组。",
+      "source_row_indices": [
+        1
+      ],
+      "related_result_refs": []
+    }
+  ],
+  "evidence_groups": [
+    {
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_ids": [
+        "E0008",
+        "E0009",
+        "E0007",
+        "E0002",
+        "E0003",
+        "E0004",
+        "E0005",
+        "E0006"
+      ]
+    }
+  ],
+  "limitations": [
+    "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+    "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+    "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+  ]
+}

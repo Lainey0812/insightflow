@@ -1,0 +1,328 @@
+........................................................................ [  4%]
+........................................................................ [  9%]
+........................................................................ [ 14%]
+........................................................................ [ 19%]
+........................................................................ [ 24%]
+........................................................................ [ 29%]
+........................................................................ [ 34%]
+........................................................................ [ 39%]
+........................................................................ [ 44%]
+........................................................................ [ 49%]
+.............................................................F.......... [ 54%]
+FF...................................................................... [ 59%]
+........................................................................ [ 64%]
+........................................................................ [ 69%]
+........................................................................ [ 74%]
+........................................................................ [ 79%]
+........................................................................ [ 84%]
+........................................................................ [ 89%]
+........................................................................ [ 94%]
+...............FFFFF...............F..F...........F..................... [ 99%]
+...                                                                      [100%]
+=================================== FAILURES ===================================
+_______ test_report_trace_success_requires_accepted_commit[False-False] ________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-178/test_report_trace_success_requ0')
+recover_trace = False, late_error = False
+
+    @pytest.mark.parametrize('recover_trace', [False, True])
+    @pytest.mark.parametrize('late_error', [False, True])
+    def test_report_trace_success_requires_accepted_commit(tmp_path, recover_trace, late_error):
+        app = create_app(Settings(tmp_path), Provider())
+        with TestClient(app) as client:
+            service = app.state.report_service
+            generate = service.generate
+            old_report_ids = []
+            async def superseded(*args, **kwargs):
+                report = await generate(*args, **kwargs)
+                old_report_ids.append(report.report_id)
+                app.state.reports.recover_interrupted()
+                if recover_trace:
+                    app.state.traces.recover()
+                record, fresh = app.state.report_workflow.enqueue(report.execution_id, 1)
+                assert fresh and record.attempt == 2
+                if late_error:
+                    raise AppError('LLM_TIMEOUT', 'late report failure', 504)
+                return report
+            service.generate = superseded
+            _, execution, session = report_run(client)
+            eid = execution['execution_id']
+            repo = app.state.traces.repository
+            generation = app.state.reports.generation(eid)
+            assert generation.attempt == 2 and generation.status == 'queued'
+            old = repo.attempt(eid, 1)
+            assert old.status == 'interrupted' and old.report_id is None
+            assert not any(s.kind == 'report' for s in repo.snapshots(old.run_id))
+            with app.state.repository.database.connect() as conn:
+                assert conn.execute('SELECT COUNT(*) FROM analysis_reports WHERE id=?', (old_report_ids[0],)).fetchone()[0] == 0
+            if not recover_trace and not late_error:
+>               assert any(s.name == 'report_persistence' and s.status == 'failed' and
+                    s.error_code == 'REPORT_STALE_CALLBACK' for s in repo.spans(old.run_id))
+E               assert False
+E                +  where False = any(<generator object test_report_trace_success_requires_accepted_commit.<locals>.<genexpr> at 0x13603f850>)
+
+backend/tests/test_trace_write_safety.py:214: AssertionError
+_______ test_engine_finish_fencing_gap_is_reproducible_in_isolated_state _______
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-178/test_engine_finish_fencing_gap0')
+
+    def test_engine_finish_fencing_gap_is_reproducible_in_isolated_state(tmp_path):
+        """A synthetic branch drift proves the primitive lacks a guard, not a public API exploit."""
+        app=make(tmp_path)
+        with TestClient(app) as client:
+            state=create_real(client);approved=client.post('/api/v1/sessions/'+state['id']+'/approvals',json=approval(state)).json()
+            request=ExecutionRequest(**execution(approved))
+            current=app.state.repository.get(state['id']);engine=app.state.analysis_engine
+            claim=app.state.executions.claim(request,current.revision,engine.check_approval)
+            result=engine.outcome(claim['execution_id'],request,claim['approval'],claim['started_at'],[],0)
+            def branch_drift(s):s.current_plan_version+=1
+            app.state.repository.mutate(state['id'],branch_drift)
+>           app.state.executions.finish(result)
+
+backend/tests/test_vertical_slice02_hitl.py:109: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/app/storage/execution_repository.py:97: in finish
+    link = current_execution(conn,state,result.execution_id,result.plan_version,result.approval_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x16d26b790>
+state = SessionState(workflow_id='wf_29b37829270e4421ae106b2571462f21', root_run_id='run_2e711f98a1b9424a812e5caa9a58eae5', id...n_ids=['exec_14b77a3c7eac40c5a3dc57bac8ac2e4d'], report_generations=[], execution_result=None, report=None, error=None)
+execution_id = 'exec_14b77a3c7eac40c5a3dc57bac8ac2e4d', plan_version = 1
+approval_id = 'approval_2658b44303024cf79df1b6d245c8fbcc'
+
+    def current_execution(conn,state,execution_id,plan_version,approval_id):
+        wf=identity(conn,state)
+        if wf is None:return None
+        link=conn.execute('SELECT * FROM workflow_execution_links WHERE execution_id=?',(execution_id,)).fetchone()
+        if (not link or link['workflow_id']!=state.workflow_id or link['approval_id']!=approval_id or
+            not state.engine_execution_ids or state.engine_execution_ids[-1]!=execution_id or
+            state.current_plan_version!=plan_version or state.file.id!=state.dataset_ref.dataset_id):
+>           raise AppError('WORKFLOW_EXECUTION_STALE','执行已不属于当前流程分支。',409)
+E           app.domain.errors.AppError: ('WORKFLOW_EXECUTION_STALE', '执行已不属于当前流程分支。', 409)
+
+backend/app/storage/workflow_bindings.py:67: AppError
+____________ test_report_attempt_guard_does_not_fence_changed_plan _____________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-178/test_report_attempt_guard_does0')
+
+    def test_report_attempt_guard_does_not_fence_changed_plan(tmp_path):
+        """Only synthetic Session drift is used; the full observed production path is not enabled."""
+        app=create_app(Settings(tmp_path),Provider())
+        with TestClient(app) as client:
+            state=create_real(client,SALES,'sales.csv',QUERY)
+            approved=client.post('/api/v1/sessions/'+state['id']+'/approvals',json=approval(state)).json()
+            execution_result=app.state.analysis_engine.execute(ExecutionRequest(**execution(approved)))
+            record,fresh=app.state.report_workflow.enqueue(execution_result.execution_id)
+            assert fresh
+            assert app.state.reports.start(execution_result.execution_id,record.attempt)
+            def branch_drift(s):s.current_plan_version+=1
+            app.state.repository.mutate(state['id'],branch_drift)
+            # The real commit primitive accepts the old attempt after the synthetic branch changes.
+            accepted=app.state.reports.finish(execution_result.execution_id,record.attempt,
+                error=AppError('TEST_FAILURE','isolated test').error)
+>           assert accepted and app.state.reports.generation(execution_result.execution_id).status=='failed'
+E           assert (False)
+
+backend/tests/test_vertical_slice02_hitl.py:131: AssertionError
+___ test_complete_real_workflow_trace_manifest_steps_idempotency_and_restart ___
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-178/test_complete_real_workflow_tr0')
+
+    def test_complete_real_workflow_trace_manifest_steps_idempotency_and_restart(tmp_path):
+        p=Provider();app=create_app(settings(tmp_path),p)
+        with TestClient(app) as client:
+            approved,result,final=run(client)
+            item=listing(client)[0]
+            assert item['execution_id']==result['execution_id'] and item['session_id']==final['id']
+            assert item['status']=='complete' and item['report_id']==final['report_generations'][0]['report_id']
+            assert item['integrity']=='observed' and item['duration_ms']>=0
+            manifest=item['manifest']
+            assert manifest['bindings']['dataset_version']==result['dataset_version']
+            assert manifest['bindings']['approval_id']==result['approval_id']
+            assert manifest['versions']['prompt_version']=='report-insights-v1.1.9'
+            assert manifest['versions']['schema_version']=='analysis-report-v1' and manifest['source_sha256']
+            assert manifest['raw_content_retained'] is False
+            detail=client.get('/admin/runs/'+item['run_id'],headers=headers()).json()
+            assert detail['business_source']['status']=='completed' and detail['business_source']['report_status']=='complete'
+            spans=client.get('/admin/runs/'+item['run_id']+'/spans',headers=headers()).json()['items']
+>           assert [s['name'] for s in spans]==['evidence_builder','insight_generator','fact_validator','report_assembler','report_persistence']
+E           AssertionError: assert [] == ['evidence_bu..._persistence']
+E             
+E             Right contains 5 more items, first extra item: 'evidence_builder'
+E             Use -v to get more diff
+
+backend/tests/test_workflow_trace.py:53: AssertionError
+___________ test_failed_llm_and_explicit_retry_preserve_old_attempt ____________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-178/test_failed_llm_and_explicit_r0')
+
+    def test_failed_llm_and_explicit_retry_preserve_old_attempt(tmp_path):
+        p=Provider(report_error=AppError('LLM_TIMEOUT','timeout contains private text',504))
+        app=create_app(settings(tmp_path),p)
+        with TestClient(app) as client:
+            _,result,_=run(client)
+            first=listing(client)[0]
+            assert first['status']=='failed' and first['error_code']=='LLM_TIMEOUT'
+            spans=app.state.traces.repository.spans(first['run_id'])
+>           gen=next(s for s in spans if s.name=='insight_generator')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           StopIteration
+
+backend/tests/test_workflow_trace.py:80: StopIteration
+_______ test_partial_all_rejected_and_invalid_json[partial-partial-None] _______
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-178/test_partial_all_rejected_and_0')
+mode = 'partial', status = 'partial', rule = None
+
+    @pytest.mark.parametrize('mode,status,rule',[('partial','partial',None),('bad','failed','FREE_TEXT_GUARD'),('json','failed',None)])
+    def test_partial_all_rejected_and_invalid_json(tmp_path,mode,status,rule):
+        app=create_app(settings(tmp_path),CandidateProvider(mode))
+        with TestClient(app) as client:
+            _,result,_=run(client)
+            record=listing(client)[0]
+            assert record['status']==status
+            spans=app.state.traces.repository.spans(record['run_id'])
+            if mode=='json':
+                assert next(s for s in spans if s.name=='insight_generator').attributes['candidate_count'] is None
+            else:
+>               stage=next(s for s in spans if s.name=='fact_validator')
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               StopIteration
+
+backend/tests/test_workflow_trace.py:117: StopIteration
+____ test_partial_all_rejected_and_invalid_json[bad-failed-FREE_TEXT_GUARD] ____
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-178/test_partial_all_rejected_and_1')
+mode = 'bad', status = 'failed', rule = 'FREE_TEXT_GUARD'
+
+    @pytest.mark.parametrize('mode,status,rule',[('partial','partial',None),('bad','failed','FREE_TEXT_GUARD'),('json','failed',None)])
+    def test_partial_all_rejected_and_invalid_json(tmp_path,mode,status,rule):
+        app=create_app(settings(tmp_path),CandidateProvider(mode))
+        with TestClient(app) as client:
+            _,result,_=run(client)
+            record=listing(client)[0]
+            assert record['status']==status
+            spans=app.state.traces.repository.spans(record['run_id'])
+            if mode=='json':
+                assert next(s for s in spans if s.name=='insight_generator').attributes['candidate_count'] is None
+            else:
+>               stage=next(s for s in spans if s.name=='fact_validator')
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               StopIteration
+
+backend/tests/test_workflow_trace.py:117: StopIteration
+_________ test_partial_all_rejected_and_invalid_json[json-failed-None] _________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-178/test_partial_all_rejected_and_2')
+mode = 'json', status = 'failed', rule = None
+
+    @pytest.mark.parametrize('mode,status,rule',[('partial','partial',None),('bad','failed','FREE_TEXT_GUARD'),('json','failed',None)])
+    def test_partial_all_rejected_and_invalid_json(tmp_path,mode,status,rule):
+        app=create_app(settings(tmp_path),CandidateProvider(mode))
+        with TestClient(app) as client:
+            _,result,_=run(client)
+            record=listing(client)[0]
+            assert record['status']==status
+            spans=app.state.traces.repository.spans(record['run_id'])
+            if mode=='json':
+>               assert next(s for s in spans if s.name=='insight_generator').attributes['candidate_count'] is None
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               StopIteration
+
+backend/tests/test_workflow_trace.py:115: StopIteration
+________ test_two_report_workflows_can_overlap_without_candidate_mixing ________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-178/test_two_report_workflows_can_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x16d883690>
+
+    def test_two_report_workflows_can_overlap_without_candidate_mixing(tmp_path,monkeypatch):
+        from uuid import uuid4
+        monkeypatch.setattr('test_report_workflow.execution',lambda state:{**execution(state),'execution_request_id':uuid4().hex})
+        p=Provider(report_error=AppError('LLM_TIMEOUT','first attempts only',504))
+        app=create_app(settings(tmp_path),p)
+        with TestClient(app) as client:
+            _,first,_=run(client);_,second,_=run(client)
+            ids=[first['execution_id'],second['execution_id']]
+            for eid in ids:app.state.report_workflow.enqueue(eid,1)
+            p.report_provider.error=None
+            async def generate():
+                await asyncio.gather(*(app.state.report_workflow.generate(eid,2) for eid in ids))
+            asyncio.run(generate())
+            records=listing(client)
+            for eid in ids:
+                current=next(r for r in records if r['execution_id']==eid and r['attempt']==2)
+                assert current['status']=='complete'
+                assert current['retry_of_run_id']==next(r['run_id'] for r in records if r['execution_id']==eid and r['attempt']==1)
+                stages=app.state.traces.repository.spans(current['run_id'])
+                assert all(s.run_id==current['run_id'] for s in stages)
+>               assert next(s for s in stages if s.name=='fact_validator').attributes['accepted_count']==1
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               StopIteration
+
+backend/tests/test_workflow_trace.py:278: StopIteration
+__________ test_report_persistence_failure_is_not_observed_as_success __________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-178/test_report_persistence_failur0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x131b79390>
+
+    def test_report_persistence_failure_is_not_observed_as_success(tmp_path,monkeypatch):
+        app=create_app(settings(tmp_path),Provider());original=app.state.reports.finish
+        def fail_save(*args,**kwargs):
+            if kwargs.get('report'):raise AppError('REPORT_STORAGE_FAILED','storage test only',503)
+            return original(*args,**kwargs)
+        monkeypatch.setattr(app.state.reports,'finish',fail_save)
+        with TestClient(app) as client:
+            _,result,final=run(client)
+            assert result['execution_status']=='success' and final['report_generations'][0]['status']=='failed'
+            observed=listing(client)[0]
+            assert observed['status']=='failed' and observed['error_code']=='REPORT_STORAGE_FAILED'
+            spans=app.state.traces.repository.spans(observed['run_id'])
+>           assert next(s for s in spans if s.name=='report_assembler').status=='complete'
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           StopIteration
+
+backend/tests/test_workflow_trace.py:318: StopIteration
+_____________ test_historical_missing_and_report_child_association _____________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-178/test_historical_missing_and_re0')
+
+    def test_historical_missing_and_report_child_association(tmp_path):
+        app=create_app(config(tmp_path),ReportProvider())
+        with TestClient(app) as client:
+            _,result,final=report_run(client);workflow=root(app,final)
+            report=app.state.traces.repository.attempt(result['execution_id'],1)
+            assert report.kind=='report_generation' and report.workflow_run_id==workflow.run_id
+            assert report.manifest.capture_scope=='report_generation' and report.manifest.bindings['execution_id']==result['execution_id']
+            response=client.get('/admin/workflows/old-uncollected',headers=AUTH).json()
+            assert response['availability']=='not_collected' and response['run'] is None
+>           assert len(app.state.traces.repository.spans(report.run_id))==5
+E           AssertionError: assert 0 == 5
+E            +  where 0 = len([])
+E            +    where [] = spans('run_26eda3f652634b649e1945238d57cdcc')
+E            +      where spans = <app.storage.trace_repository.TraceRepository object at 0x16cfe9310>.spans
+E            +        where <app.storage.trace_repository.TraceRepository object at 0x16cfe9310> = <app.observability.recorder.TraceRecorder object at 0x122606190>.repository
+E            +          where <app.observability.recorder.TraceRecorder object at 0x122606190> = <starlette.datastructures.State object at 0x12699a4e0>.traces
+E            +            where <starlette.datastructures.State object at 0x12699a4e0> = <fastapi.applications.FastAPI object at 0x116a22e40>.state
+E            +      and   'run_26eda3f652634b649e1945238d57cdcc' = TraceRun(run_id='run_26eda3f652634b649e1945238d57cdcc', kind='report_generation', session_id='8bd7f98ecdc64633932d8033...da4883dc6d3926da806544ae4f5facf7480b158fafa064aa91ccdf683'}, prompt_template_snapshots={}, raw_content_retained=False)).run_id
+
+backend/tests/test_workflow_trace_v031.py:139: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_trace_write_safety.py::test_report_trace_success_requires_accepted_commit[False-False]
+FAILED backend/tests/test_vertical_slice02_hitl.py::test_engine_finish_fencing_gap_is_reproducible_in_isolated_state
+FAILED backend/tests/test_vertical_slice02_hitl.py::test_report_attempt_guard_does_not_fence_changed_plan
+FAILED backend/tests/test_workflow_trace.py::test_complete_real_workflow_trace_manifest_steps_idempotency_and_restart
+FAILED backend/tests/test_workflow_trace.py::test_failed_llm_and_explicit_retry_preserve_old_attempt
+FAILED backend/tests/test_workflow_trace.py::test_partial_all_rejected_and_invalid_json[partial-partial-None]
+FAILED backend/tests/test_workflow_trace.py::test_partial_all_rejected_and_invalid_json[bad-failed-FREE_TEXT_GUARD]
+FAILED backend/tests/test_workflow_trace.py::test_partial_all_rejected_and_invalid_json[json-failed-None]
+FAILED backend/tests/test_workflow_trace.py::test_two_report_workflows_can_overlap_without_candidate_mixing
+FAILED backend/tests/test_workflow_trace.py::test_report_persistence_failure_is_not_observed_as_success
+FAILED backend/tests/test_workflow_trace_v031.py::test_historical_missing_and_report_child_association
+11 failed, 1432 passed, 1 warning in 62.52s (0:01:02)

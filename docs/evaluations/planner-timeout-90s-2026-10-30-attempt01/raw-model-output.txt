@@ -1,0 +1,83 @@
+{
+  "tasks": [
+    {
+      "task_id": "T01",
+      "title": "2026年华东地区已完成订单城市销售额Top3",
+      "business_question": "2026年华东地区已完成订单中，各城市销售额总和按降序排列后的前三个城市及其销售额是多少？",
+      "priority": "P0",
+      "priority_reason": "删除该任务后无法回答核心问题：按城市汇总并降序排名取前三名2026年华东地区已完成订单的销售额；也无法同时保留 time_range：2026 年、filters：华东地区/已完成订单、metric_requirements：销售额、analysis_limits：按照城市汇总并降序排名，取前三名。",
+      "requirement_ids": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05"
+      ],
+      "depends_on": [],
+      "missing_inputs": [],
+      "steps": [
+        {
+          "step_id": "S01",
+          "operation": "filter",
+          "params": {
+            "conditions": [
+              {
+                "field": "field_0002",
+                "operator": "gte",
+                "value": "2026-01-01"
+              },
+              {
+                "field": "field_0002",
+                "operator": "lt",
+                "value": "2027-01-01"
+              },
+              {
+                "field": "field_0003",
+                "operator": "eq",
+                "value": "华东地区"
+              },
+              {
+                "field": "field_0006",
+                "operator": "eq",
+                "value": "已完成订单"
+              }
+            ]
+          }
+        },
+        {
+          "step_id": "S02",
+          "operation": "group_aggregate",
+          "params": {
+            "metrics": [
+              {
+                "function": "sum",
+                "field": "field_0011",
+                "alias": "sales_sum_by_city"
+              }
+            ],
+            "dimensions": [
+              "field_0005"
+            ]
+          }
+        },
+        {
+          "step_id": "S03",
+          "operation": "sort",
+          "params": {
+            "field": "sales_sum_by_city",
+            "direction": "desc"
+          }
+        },
+        {
+          "step_id": "S04",
+          "operation": "top_n",
+          "params": {
+            "field": "sales_sum_by_city",
+            "direction": "desc",
+            "n": 3
+          }
+        }
+      ]
+    }
+  ]
+}

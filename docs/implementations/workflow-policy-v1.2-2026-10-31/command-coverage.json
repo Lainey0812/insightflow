@@ -1,0 +1,832 @@
+{
+  "scope": "native_v1.2",
+  "mapped": 33,
+  "allowed": 33,
+  "rows": [
+    {
+      "command_id": "C01",
+      "owner": "control",
+      "source": "CREATED",
+      "target": "PROFILING",
+      "preconditions": "固定输入、当前 revision 和新活动令牌",
+      "required_evidence": "接纳命令、输入绑定和状态同事务",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C01",
+        "expected_transition": {
+          "owner": "control",
+          "source": "CREATED",
+          "target": "PROFILING"
+        },
+        "required_evidence": [
+          "接纳命令、输入绑定和状态同事务"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C02",
+      "owner": "control",
+      "source": "PROFILING",
+      "target": "PARSING_INTENT",
+      "preconditions": "画像文件版本/hash/选项一致，当前活动令牌",
+      "required_evidence": "DatasetProfile+固定DatasetRef+状态检查点",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C02",
+        "expected_transition": {
+          "owner": "control",
+          "source": "PROFILING",
+          "target": "PARSING_INTENT"
+        },
+        "required_evidence": [
+          "DatasetProfile+固定DatasetRef+状态检查点"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C03",
+      "owner": "control",
+      "source": "PARSING_INTENT",
+      "target": "PLANNING",
+      "preconditions": "真实合法 Intent.next_action=proceed",
+      "required_evidence": "保存意图、parse标识与输入绑定",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C03",
+        "expected_transition": {
+          "owner": "control",
+          "source": "PARSING_INTENT",
+          "target": "PLANNING"
+        },
+        "required_evidence": [
+          "保存意图、parse标识与输入绑定"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C04",
+      "owner": "control",
+      "source": "PARSING_INTENT",
+      "target": "WAITING_FOR_CLARIFICATION",
+      "preconditions": "合法 Intent.next_action=clarify",
+      "required_evidence": "意图与澄清问题已保存",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C04",
+        "expected_transition": {
+          "owner": "control",
+          "source": "PARSING_INTENT",
+          "target": "WAITING_FOR_CLARIFICATION"
+        },
+        "required_evidence": [
+          "意图与澄清问题已保存"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C05",
+      "owner": "control",
+      "source": "WAITING_FOR_CLARIFICATION",
+      "target": "PARSING_INTENT",
+      "preconditions": "同目标回答、revision；不复用旧Planner检查点",
+      "required_evidence": "消息、答案集、新活动令牌、状态",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C05",
+        "expected_transition": {
+          "owner": "control",
+          "source": "WAITING_FOR_CLARIFICATION",
+          "target": "PARSING_INTENT"
+        },
+        "required_evidence": [
+          "消息、答案集、新活动令牌、状态"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C06",
+      "owner": "control",
+      "source": "PLANNING",
+      "target": "VALIDATING",
+      "preconditions": "意图快照/参数/活动令牌未替换",
+      "required_evidence": "真实候选及来源保存",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C06",
+        "expected_transition": {
+          "owner": "control",
+          "source": "PLANNING",
+          "target": "VALIDATING"
+        },
+        "required_evidence": [
+          "真实候选及来源保存"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C07",
+      "owner": "control",
+      "source": "VALIDATING",
+      "target": "AWAITING_APPROVAL",
+      "preconditions": "候选精确匹配；保留F0/P0；版本不可变",
+      "required_evidence": "PlanVersion+归属+validation+当前指针",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C07",
+        "expected_transition": {
+          "owner": "control",
+          "source": "VALIDATING",
+          "target": "AWAITING_APPROVAL"
+        },
+        "required_evidence": [
+          "PlanVersion+归属+validation+当前指针"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C08",
+      "owner": "control",
+      "source": "AWAITING_APPROVAL",
+      "target": "AWAITING_APPROVAL",
+      "preconditions": "精确版本；无执行；删除任务合法",
+      "required_evidence": "新PlanVersion+验证；清有效批准；历史保留",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C08",
+        "expected_transition": {
+          "owner": "control",
+          "source": "AWAITING_APPROVAL",
+          "target": "AWAITING_APPROVAL"
+        },
+        "required_evidence": [
+          "新PlanVersion+验证；清有效批准；历史保留"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C09",
+      "owner": "control",
+      "source": "APPROVED",
+      "target": "AWAITING_APPROVAL",
+      "preconditions": "无已claim执行/报告；明确撤销当前批准引用",
+      "required_evidence": "新版本+验证；原批准仅失去当前资格",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C09",
+        "expected_transition": {
+          "owner": "control",
+          "source": "APPROVED",
+          "target": "AWAITING_APPROVAL"
+        },
+        "required_evidence": [
+          "新版本+验证；原批准仅失去当前资格"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C10",
+      "owner": "control",
+      "source": "AWAITING_APPROVAL",
+      "target": "APPROVED",
+      "preconditions": "完整批准资格；精确版本/约束审计/告警确认",
+      "required_evidence": "批准快照+归属链接+当前批准+审计",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C10",
+        "expected_transition": {
+          "owner": "control",
+          "source": "AWAITING_APPROVAL",
+          "target": "APPROVED"
+        },
+        "required_evidence": [
+          "批准快照+归属链接+当前批准+审计"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C11",
+      "owner": "control",
+      "source": "APPROVED",
+      "target": "RUNNING",
+      "preconditions": "有效批准；幂等请求；加载版本未变化",
+      "required_evidence": "新Execution+批准快照+归属+当前执行+新活动令牌",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C11",
+        "expected_transition": {
+          "owner": "control",
+          "source": "APPROVED",
+          "target": "RUNNING"
+        },
+        "required_evidence": [
+          "新Execution+批准快照+归属+当前执行+新活动令牌"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C12",
+      "owner": "control",
+      "source": "RUNNING",
+      "target": "COMPLETED",
+      "preconditions": "当前execution、令牌、revision；全部任务结果已存",
+      "required_evidence": "ExecutionResult.success+控制检查点",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C12",
+        "expected_transition": {
+          "owner": "control",
+          "source": "RUNNING",
+          "target": "COMPLETED"
+        },
+        "required_evidence": [
+          "ExecutionResult.success+控制检查点"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C13",
+      "owner": "control",
+      "source": "RUNNING",
+      "target": "COMPLETED",
+      "preconditions": "当前execution；真实任务失败/skipped不可丢",
+      "required_evidence": "ExecutionResult.partial_success+控制检查点",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C13",
+        "expected_transition": {
+          "owner": "control",
+          "source": "RUNNING",
+          "target": "COMPLETED"
+        },
+        "required_evidence": [
+          "ExecutionResult.partial_success+控制检查点"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C14",
+      "owner": "control",
+      "source": "RUNNING",
+      "target": "FAILED",
+      "preconditions": "当前execution；没有成功任务",
+      "required_evidence": "ExecutionResult.failed+错误+控制检查点",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C14",
+        "expected_transition": {
+          "owner": "control",
+          "source": "RUNNING",
+          "target": "FAILED"
+        },
+        "required_evidence": [
+          "ExecutionResult.failed+错误+控制检查点"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C15-CREATED",
+      "owner": "control",
+      "source": "CREATED",
+      "target": "FAILED",
+      "preconditions": "仅当前准备作业；保存错误；recover需旧worker隔离",
+      "required_evidence": "失败阶段+错误+有效检查点",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C15-CREATED",
+        "expected_transition": {
+          "owner": "control",
+          "source": "CREATED",
+          "target": "FAILED"
+        },
+        "required_evidence": [
+          "失败阶段+错误+有效检查点"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C15-PROFILING",
+      "owner": "control",
+      "source": "PROFILING",
+      "target": "FAILED",
+      "preconditions": "仅当前准备作业；保存错误；recover需旧worker隔离",
+      "required_evidence": "失败阶段+错误+有效检查点",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C15-PROFILING",
+        "expected_transition": {
+          "owner": "control",
+          "source": "PROFILING",
+          "target": "FAILED"
+        },
+        "required_evidence": [
+          "失败阶段+错误+有效检查点"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C15-PARSING_INTENT",
+      "owner": "control",
+      "source": "PARSING_INTENT",
+      "target": "FAILED",
+      "preconditions": "仅当前准备作业；保存错误；recover需旧worker隔离",
+      "required_evidence": "失败阶段+错误+有效检查点",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C15-PARSING_INTENT",
+        "expected_transition": {
+          "owner": "control",
+          "source": "PARSING_INTENT",
+          "target": "FAILED"
+        },
+        "required_evidence": [
+          "失败阶段+错误+有效检查点"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C15-PLANNING",
+      "owner": "control",
+      "source": "PLANNING",
+      "target": "FAILED",
+      "preconditions": "仅当前准备作业；保存错误；recover需旧worker隔离",
+      "required_evidence": "失败阶段+错误+有效检查点",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C15-PLANNING",
+        "expected_transition": {
+          "owner": "control",
+          "source": "PLANNING",
+          "target": "FAILED"
+        },
+        "required_evidence": [
+          "失败阶段+错误+有效检查点"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C15-VALIDATING",
+      "owner": "control",
+      "source": "VALIDATING",
+      "target": "FAILED",
+      "preconditions": "仅当前准备作业；保存错误；recover需旧worker隔离",
+      "required_evidence": "失败阶段+错误+有效检查点",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C15-VALIDATING",
+        "expected_transition": {
+          "owner": "control",
+          "source": "VALIDATING",
+          "target": "FAILED"
+        },
+        "required_evidence": [
+          "失败阶段+错误+有效检查点"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C16-PROFILING",
+      "owner": "control",
+      "source": "FAILED",
+      "target": "PROFILING",
+      "preconditions": "只限retryable准备失败；无已保存审核计划/执行；选择有效检查点",
+      "required_evidence": "新活动令牌+revision+重试接纳；保留旧失败",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C16-PROFILING",
+        "expected_transition": {
+          "owner": "control",
+          "source": "FAILED",
+          "target": "PROFILING"
+        },
+        "required_evidence": [
+          "新活动令牌+revision+重试接纳；保留旧失败"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C16-PARSING_INTENT",
+      "owner": "control",
+      "source": "FAILED",
+      "target": "PARSING_INTENT",
+      "preconditions": "只限retryable准备失败；无已保存审核计划/执行；选择有效检查点",
+      "required_evidence": "新活动令牌+revision+重试接纳；保留旧失败",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C16-PARSING_INTENT",
+        "expected_transition": {
+          "owner": "control",
+          "source": "FAILED",
+          "target": "PARSING_INTENT"
+        },
+        "required_evidence": [
+          "新活动令牌+revision+重试接纳；保留旧失败"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C16-PLANNING",
+      "owner": "control",
+      "source": "FAILED",
+      "target": "PLANNING",
+      "preconditions": "只限retryable准备失败；无已保存审核计划/执行；选择有效检查点",
+      "required_evidence": "新活动令牌+revision+重试接纳；保留旧失败",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C16-PLANNING",
+        "expected_transition": {
+          "owner": "control",
+          "source": "FAILED",
+          "target": "PLANNING"
+        },
+        "required_evidence": [
+          "新活动令牌+revision+重试接纳；保留旧失败"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C16-VALIDATING",
+      "owner": "control",
+      "source": "FAILED",
+      "target": "VALIDATING",
+      "preconditions": "只限retryable准备失败；无已保存审核计划/执行；选择有效检查点",
+      "required_evidence": "新活动令牌+revision+重试接纳；保留旧失败",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C16-VALIDATING",
+        "expected_transition": {
+          "owner": "control",
+          "source": "FAILED",
+          "target": "VALIDATING"
+        },
+        "required_evidence": [
+          "新活动令牌+revision+重试接纳；保留旧失败"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C17",
+      "owner": "generation",
+      "source": null,
+      "target": "queued",
+      "preconditions": "精确已结束Execution与批准；全失败仅诊断，不生成成功事实",
+      "required_evidence": "generation attempt=1+当前作用域/报告令牌",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C17",
+        "expected_transition": {
+          "owner": "generation",
+          "source": null,
+          "target": "queued"
+        },
+        "required_evidence": [
+          "generation attempt=1+当前作用域/报告令牌"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C18",
+      "owner": "generation",
+      "source": "queued",
+      "target": "generating",
+      "preconditions": "当前attempt/报告令牌；重复start不重复调用",
+      "required_evidence": "generation.started_at+作业检查点",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C18",
+        "expected_transition": {
+          "owner": "generation",
+          "source": "queued",
+          "target": "generating"
+        },
+        "required_evidence": [
+          "generation.started_at+作业检查点"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C20",
+      "owner": "generation",
+      "source": "generating",
+      "target": "unavailable",
+      "preconditions": "无有效证据或无有效核心洞察；不得complete",
+      "required_evidence": "unavailable报告记录+原因+generation同事务",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C20",
+        "expected_transition": {
+          "owner": "generation",
+          "source": "generating",
+          "target": "unavailable"
+        },
+        "required_evidence": [
+          "unavailable报告记录+原因+generation同事务"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C21-queued",
+      "owner": "generation",
+      "source": "queued",
+      "target": "failed",
+      "preconditions": "当前attempt；Recover须确认旧worker退出",
+      "required_evidence": "失败记录+错误；Execution不变",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C21-queued",
+        "expected_transition": {
+          "owner": "generation",
+          "source": "queued",
+          "target": "failed"
+        },
+        "required_evidence": [
+          "失败记录+错误；Execution不变"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C21-generating",
+      "owner": "generation",
+      "source": "generating",
+      "target": "failed",
+      "preconditions": "当前attempt；Recover须确认旧worker退出",
+      "required_evidence": "失败记录+错误；Execution不变",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C21-generating",
+        "expected_transition": {
+          "owner": "generation",
+          "source": "generating",
+          "target": "failed"
+        },
+        "required_evidence": [
+          "失败记录+错误；Execution不变"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C22",
+      "owner": "generation",
+      "source": "failed",
+      "target": "queued",
+      "preconditions": "expected_attempt匹配、当前分支有效且未交付；已知Root只能running/partial/failed/interrupted，缺Trace不阻断",
+      "required_evidence": "attempt+1+新报告活动令牌+排队检查点",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C22",
+        "expected_transition": {
+          "owner": "generation",
+          "source": "failed",
+          "target": "queued"
+        },
+        "required_evidence": [
+          "attempt+1+新报告活动令牌+排队检查点"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C23",
+      "owner": "control",
+      "source": "RUNNING",
+      "target": "RUNNING",
+      "preconditions": "当前execution/task、revision与活动令牌；不重复任务结果",
+      "required_evidence": "任务状态+完整结果/引用同事务",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C23",
+        "expected_transition": {
+          "owner": "control",
+          "source": "RUNNING",
+          "target": "RUNNING"
+        },
+        "required_evidence": [
+          "任务状态+完整结果/引用同事务"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C24",
+      "owner": "creation",
+      "source": null,
+      "target": "CREATED",
+      "preconditions": "新创建键；同Session消息文件授权；原Workflow不变",
+      "required_evidence": "Workflow+origin/root_id/幂等键同事务",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C24",
+        "expected_transition": {
+          "owner": "creation",
+          "source": null,
+          "target": "CREATED"
+        },
+        "required_evidence": [
+          "Workflow+origin/root_id/幂等键同事务"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C19-A",
+      "owner": "generation",
+      "source": "generating",
+      "target": "completed",
+      "preconditions": "提交前验证当前Workflow、Execution、attempt、有效generating状态、revision和active key；合法报告与证据；不要求accepted",
+      "required_evidence": "未来业务事务原子提交Report、ReportGeneration、归属链接及提交元数据；此处仅授权尝试事务",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_ALLOWED",
+        "action": "execute",
+        "policy_scope": "native_v1.2",
+        "command_id": "C19-A",
+        "expected_transition": {
+          "owner": "generation",
+          "source": "generating",
+          "target": "completed"
+        },
+        "required_evidence": [
+          "未来业务事务原子提交Report、ReportGeneration、归属链接及提交元数据；此处仅授权尝试事务"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    },
+    {
+      "command_id": "C19-B",
+      "owner": "span",
+      "source": "running",
+      "target": "complete",
+      "preconditions": "由已提交持久事实核对得出accepted=True；精确Report/Generation/归属及提交身份与对应Span一致；不使用仅内存返回值",
+      "required_evidence": "只允许对应report_persistence Span完成；不得改业务事实、Root或其他Span；终态相同完成只读幂等",
+      "actual": {
+        "decision": "allow",
+        "reason_code": "POLICY_OBSERVATION_ALLOWED",
+        "action": "observe",
+        "policy_scope": "native_v1.2",
+        "command_id": "C19-B",
+        "expected_transition": {
+          "owner": "span",
+          "source": "running",
+          "target": "complete"
+        },
+        "required_evidence": [
+          "只允许对应report_persistence Span完成；不得改业务事实、Root或其他Span；终态相同完成只读幂等"
+        ],
+        "replay_ref": null,
+        "detail_fields": []
+      }
+    }
+  ]
+}

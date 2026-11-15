@@ -1,0 +1,437 @@
+{
+  "session_id": "60768ab2b0564a9b9fa04e69c429c9aa",
+  "revision": 8,
+  "plan_id": "plan_fb159f7697a04e5d80132c3f526d7445",
+  "plan_version": 1,
+  "goal": "只看本科岗位，按城市计算薪资元平均值，并按平均值升序排名。",
+  "coverage": "已安排核心问题的分析",
+  "conditions": [
+    {
+      "label": "分析条件",
+      "text": "只看本科岗位，按城市计算薪资元平均值，并按平均值升序排名。",
+      "verification": "已核对分析步骤",
+      "source": "intent.analysis_goal.business_goal"
+    },
+    {
+      "label": "筛选范围",
+      "text": "只看本科岗位",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.filters[0]"
+    },
+    {
+      "label": "统计指标",
+      "text": "薪资元平均值",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.metric_requirements[0]"
+    },
+    {
+      "label": "分析要求",
+      "text": "按平均值升序排名",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.analysis_limits[0]"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按城市分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S02"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：薪资元 · 均值",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S02"
+    },
+    {
+      "label": "拟用排序与展示",
+      "text": "按薪资元 · 均值从低到高排列",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S03"
+    }
+  ],
+  "directions": [
+    {
+      "task_id": "T01",
+      "title": "本科岗位按城市薪资元平均值升序排名",
+      "question": "只看本科岗位，计算各城市的薪资元平均值，并按该平均值升序排列。",
+      "importance": "核心分析",
+      "reason": "直接回答核心分析目标“本科岗位按城市薪资元平均值”及决策支持需求“按平均值升序排名”。删除此任务将无法获得任何有效结果。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "学历 为 本科",
+        "按城市分组",
+        "拟用统计口径：薪资元 · 均值",
+        "按薪资元 · 均值从低到高排列"
+      ],
+      "gaps": [],
+      "can_remove": true
+    }
+  ],
+  "issues": [],
+  "warnings": [],
+  "can_approve": true,
+  "can_execute": false,
+  "audit": {
+    "audit_version": "2.2",
+    "binding": {
+      "dataset_id": "d1722f310c664f9193167640452f418b",
+      "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+      "plan_id": "plan_fb159f7697a04e5d80132c3f526d7445",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "registry_version": "1.0"
+    },
+    "digest": "23cb0a99cc430f3eb67f33c56a1e1fff73e216627479c4b2eb5d0272b6b0c96b",
+    "all_verified": true,
+    "items": [
+      {
+        "source": "intent.analysis_goal.business_goal",
+        "raw_text": "只看本科岗位，按城市计算薪资元平均值，并按平均值升序排名。",
+        "status": "verified",
+        "category": "goal_dimensions",
+        "message": "目标中的明确字段分组已核对。",
+        "field_ids": [
+          "field_0001"
+        ],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S02",
+            "operation": "group_aggregate",
+            "dimensions": [
+              "field_0001"
+            ]
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.filters[0]",
+        "raw_text": "只看本科岗位",
+        "status": "verified",
+        "category": "filters",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0002"
+        ],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S01",
+            "operation": "filter",
+            "condition": {
+              "field": "field_0002",
+              "operator": "eq",
+              "value": "本科"
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.metric_requirements[0]",
+        "raw_text": "薪资元平均值",
+        "status": "verified",
+        "category": "metric_requirements",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0003"
+        ],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S02",
+            "operation": "group_aggregate",
+            "metric": {
+              "function": "avg",
+              "field": "field_0003",
+              "alias": "avg_salary_yuan"
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.analysis_limits[0]",
+        "raw_text": "按平均值升序排名",
+        "status": "verified",
+        "category": "analysis_limits",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S03",
+            "operation": "sort",
+            "metric": {
+              "function": "avg",
+              "field": "field_0003",
+              "alias": "avg_salary_yuan"
+            },
+            "params": {
+              "field": "avg_salary_yuan",
+              "direction": "asc"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "technical_details": {
+    "record": {
+      "session_id": "60768ab2b0564a9b9fa04e69c429c9aa",
+      "plan_id": "plan_fb159f7697a04e5d80132c3f526d7445",
+      "plan_version": 1,
+      "dataset_id": "d1722f310c664f9193167640452f418b",
+      "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+      "validation_version": "1.0",
+      "created_at": "2026-11-05T04:17:10.577411+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "d1722f310c664f9193167640452f418b",
+          "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+          "plan_id": "plan_fb159f7697a04e5d80132c3f526d7445",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T01",
+              "title": "本科岗位按城市薪资元平均值升序排名",
+              "business_question": "只看本科岗位，计算各城市的薪资元平均值，并按该平均值升序排列。",
+              "priority": "P0",
+              "priority_reason": "直接回答核心分析目标“本科岗位按城市薪资元平均值”及决策支持需求“按平均值升序排名”。删除此任务将无法获得任何有效结果。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03",
+                "C04"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "field_0002",
+                        "operator": "eq",
+                        "value": "本科"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "avg",
+                        "field": "field_0003",
+                        "alias": "avg_salary_yuan"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0001"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S03",
+                  "operation": "sort",
+                  "params": {
+                    "field": "avg_salary_yuan",
+                    "direction": "asc"
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "只看本科岗位，按城市计算薪资元平均值，并按平均值升序排名。"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "filters：只看本科岗位"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "metric_requirements：薪资元平均值"
+            },
+            {
+              "requirement_id": "C04",
+              "description": "analysis_limits：按平均值升序排名"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "d1722f310c664f9193167640452f418b",
+          "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "本科岗位按城市薪资元平均值",
+            "business_goal": "只看本科岗位，按城市计算薪资元平均值，并按平均值升序排名。",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [
+              {
+                "raw_text": "只看本科岗位",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "薪资元平均值",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按平均值升序排名",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "constraint_audit": {
+      "audit_version": "2.2",
+      "binding": {
+        "dataset_id": "d1722f310c664f9193167640452f418b",
+        "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+        "plan_id": "plan_fb159f7697a04e5d80132c3f526d7445",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "23cb0a99cc430f3eb67f33c56a1e1fff73e216627479c4b2eb5d0272b6b0c96b",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "只看本科岗位，按城市计算薪资元平均值，并按平均值升序排名。",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0001"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0001"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "只看本科岗位",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0002"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0002",
+                "operator": "eq",
+                "value": "本科"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "薪资元平均值",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "avg",
+                "field": "field_0003",
+                "alias": "avg_salary_yuan"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "按平均值升序排名",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S03",
+              "operation": "sort",
+              "metric": {
+                "function": "avg",
+                "field": "field_0003",
+                "alias": "avg_salary_yuan"
+              },
+              "params": {
+                "field": "avg_salary_yuan",
+                "direction": "asc"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "session_status": "AWAITING_APPROVAL",
+    "revision": 8
+  }
+}

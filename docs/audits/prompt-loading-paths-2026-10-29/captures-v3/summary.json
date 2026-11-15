@@ -1,0 +1,320 @@
+{
+  "evidence_class": "synthetic_local_transport_capture",
+  "external_calls": 0,
+  "sqlite_connections": 0,
+  "scenario_count": 13,
+  "outbound_request_count": 12,
+  "production_sources_modified": false,
+  "model_name_is_only_request_config_not_real_model_execution": true,
+  "observations": {
+    "intent": {
+      "source": "backend/app/intent/prompt.py",
+      "prompt_version": "intent-v1.3.3",
+      "system_utf8_sha256": "9504f36790ff8a3b90610b1f8175226d90e6b2572cdcfad3c5c8e2a954ac81e2",
+      "system_canonical_json_sha256": "9366d0073183c264b904949b5034a90e7b9df022b99233e6a79fa4c0181a3de8",
+      "system_characters": 7946
+    },
+    "planner": {
+      "source": "backend/app/planning/prompt.py",
+      "prompt_version": "planner-v1.2",
+      "system_utf8_sha256": "42594e5314dc7c34d8dfe84f82a3017fa94e039b8e444d89bcab4ca1603beddc",
+      "system_canonical_json_sha256": "8bab1eaa6beee8954a4e0687a15c724e9eec93fd8e50ab998966a42141f07fe0",
+      "system_characters": 3971
+    },
+    "report": {
+      "source": "backend/app/reporting/prompt.py",
+      "prompt_version": "report-insights-v1.1.9",
+      "system_utf8_sha256": "0fb9fdb223e321234403eca792bd4421d80719469f028230cb4b31d2d5e551ef",
+      "system_canonical_json_sha256": "f81d3ed3d29f173ef98c4b10c7eb12997028dba8040ff86cd0112e0de0da7fc1",
+      "system_characters": 2953
+    }
+  },
+  "checks": [
+    {
+      "check": "13 production assembly scenarios captured",
+      "passed": true
+    },
+    {
+      "check": "intent normal first call succeeds",
+      "passed": true
+    },
+    {
+      "check": "intent JSON retry adds actual failure code",
+      "passed": true
+    },
+    {
+      "check": "intent grounding retry selects different static instruction",
+      "passed": true
+    },
+    {
+      "check": "intent retry does not append assistant conversation",
+      "passed": true
+    },
+    {
+      "check": "intent profile samples are empty",
+      "passed": true
+    },
+    {
+      "check": "empty input has zero calls",
+      "passed": true
+    },
+    {
+      "check": "missing profile prevents provider call",
+      "passed": true
+    },
+    {
+      "check": "planner first call returns validated plan",
+      "passed": true
+    },
+    {
+      "check": "planner retry preserves context and adds feedback",
+      "passed": true
+    },
+    {
+      "check": "clarify blocks planner before provider",
+      "passed": true
+    },
+    {
+      "check": "planner schema includes six operation branches",
+      "passed": true
+    },
+    {
+      "check": "report imported call returns report",
+      "passed": true
+    },
+    {
+      "check": "report approved context uses original query and approval flag",
+      "passed": true
+    },
+    {
+      "check": "report independent fallback uses business goal",
+      "passed": true
+    },
+    {
+      "check": "report user message contains readable generated scope",
+      "passed": true
+    },
+    {
+      "check": "report output enum equals selected evidence IDs",
+      "passed": true
+    },
+    {
+      "check": "report schema changes with selected evidence",
+      "passed": true
+    },
+    {
+      "check": "no evidence produces unavailable with zero calls",
+      "passed": true
+    },
+    {
+      "check": "report HTTP failure has no inner retry",
+      "passed": true
+    },
+    {
+      "check": "all outbound bodies are precisely two messages with strict schema",
+      "passed": true
+    },
+    {
+      "check": "provider does not set temperature or top_p",
+      "passed": true
+    },
+    {
+      "check": "intent loaded service system equals prompt module at audit time",
+      "passed": true
+    },
+    {
+      "check": "intent wire system equals loaded service system",
+      "passed": true
+    },
+    {
+      "check": "planner loaded service system equals prompt module at audit time",
+      "passed": true
+    },
+    {
+      "check": "planner wire system equals loaded service system",
+      "passed": true
+    },
+    {
+      "check": "report loaded service system equals prompt module at audit time",
+      "passed": true
+    },
+    {
+      "check": "report wire system equals loaded service system",
+      "passed": true
+    },
+    {
+      "check": "main app not imported (no default app/stores initialization)",
+      "passed": true
+    },
+    {
+      "check": "all 108 backend source files unchanged",
+      "passed": true
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "I01-first",
+      "node": "intent",
+      "evidence_class": "synthetic_local_transport_capture",
+      "not_real_llm": true,
+      "database_access_forbidden": true,
+      "outcome": {
+        "kind": "returned",
+        "object_type": "IntentArtifact",
+        "parse_origin": "llm"
+      },
+      "call_count": 1
+    },
+    {
+      "case_id": "I02-json-retry",
+      "node": "intent",
+      "evidence_class": "synthetic_local_transport_capture",
+      "not_real_llm": true,
+      "database_access_forbidden": true,
+      "outcome": {
+        "kind": "returned",
+        "object_type": "IntentArtifact",
+        "parse_origin": "llm"
+      },
+      "call_count": 2
+    },
+    {
+      "case_id": "I03-grounding-retry",
+      "node": "intent",
+      "evidence_class": "synthetic_local_transport_capture",
+      "not_real_llm": true,
+      "database_access_forbidden": true,
+      "outcome": {
+        "kind": "returned",
+        "object_type": "IntentArtifact",
+        "parse_origin": "llm"
+      },
+      "call_count": 2
+    },
+    {
+      "case_id": "I04-empty-guard",
+      "node": "intent",
+      "evidence_class": "synthetic_local_transport_capture",
+      "not_real_llm": true,
+      "database_access_forbidden": true,
+      "outcome": {
+        "kind": "returned",
+        "object_type": "IntentArtifact",
+        "parse_origin": "input_guard"
+      },
+      "call_count": 0
+    },
+    {
+      "case_id": "I05-missing-profile",
+      "node": "intent",
+      "evidence_class": "synthetic_local_transport_capture",
+      "not_real_llm": true,
+      "database_access_forbidden": true,
+      "outcome": {
+        "kind": "error",
+        "code": "DATASET_CONTEXT_REQUIRED"
+      },
+      "call_count": 0
+    },
+    {
+      "case_id": "P01-first",
+      "node": "planner",
+      "evidence_class": "synthetic_local_transport_capture",
+      "not_real_llm": true,
+      "database_access_forbidden": true,
+      "outcome": {
+        "kind": "returned",
+        "object_type": "ValidatedAnalysisPlan"
+      },
+      "call_count": 1
+    },
+    {
+      "case_id": "P02-json-retry",
+      "node": "planner",
+      "evidence_class": "synthetic_local_transport_capture",
+      "not_real_llm": true,
+      "database_access_forbidden": true,
+      "outcome": {
+        "kind": "returned",
+        "object_type": "ValidatedAnalysisPlan"
+      },
+      "call_count": 2
+    },
+    {
+      "case_id": "P03-clarify-guard",
+      "node": "planner",
+      "evidence_class": "synthetic_local_transport_capture",
+      "not_real_llm": true,
+      "database_access_forbidden": true,
+      "outcome": {
+        "kind": "error",
+        "code": "INTENT_CLARIFICATION_REQUIRED"
+      },
+      "call_count": 0
+    },
+    {
+      "case_id": "R01-imported",
+      "node": "report",
+      "evidence_class": "synthetic_local_transport_capture",
+      "not_real_llm": true,
+      "database_access_forbidden": true,
+      "outcome": {
+        "kind": "returned",
+        "object_type": "AnalysisReport",
+        "report_status": "complete"
+      },
+      "call_count": 1
+    },
+    {
+      "case_id": "R02-approved-context",
+      "node": "report",
+      "evidence_class": "synthetic_local_transport_capture",
+      "not_real_llm": true,
+      "database_access_forbidden": true,
+      "outcome": {
+        "kind": "returned",
+        "object_type": "AnalysisReport",
+        "report_status": "complete"
+      },
+      "call_count": 1
+    },
+    {
+      "case_id": "R03-no-evidence",
+      "node": "report",
+      "evidence_class": "synthetic_local_transport_capture",
+      "not_real_llm": true,
+      "database_access_forbidden": true,
+      "outcome": {
+        "kind": "returned",
+        "object_type": "AnalysisReport",
+        "report_status": "unavailable"
+      },
+      "call_count": 0
+    },
+    {
+      "case_id": "R04-http-failure",
+      "node": "report",
+      "evidence_class": "synthetic_local_transport_capture",
+      "not_real_llm": true,
+      "database_access_forbidden": true,
+      "outcome": {
+        "kind": "error",
+        "code": "LLM_HTTP_ERROR"
+      },
+      "call_count": 1
+    },
+    {
+      "case_id": "R05-multi-task-schema",
+      "node": "report",
+      "evidence_class": "synthetic_local_transport_capture",
+      "not_real_llm": true,
+      "database_access_forbidden": true,
+      "outcome": {
+        "kind": "returned",
+        "object_type": "AnalysisReport",
+        "report_status": "complete"
+      },
+      "call_count": 1
+    }
+  ]
+}

@@ -1,0 +1,676 @@
+{
+  "session_id": "d71f627f16a04288972b3a6d6de56e29",
+  "revision": 8,
+  "plan_id": "plan_4515964e0e9f45d48fc3d7307cd104f0",
+  "plan_version": 1,
+  "goal": "分析2026年华东地区已完成订单的销售额，按城市汇总并降序排名取前三名",
+  "coverage": "已安排核心问题的分析",
+  "conditions": [
+    {
+      "label": "分析条件",
+      "text": "分析2026年华东地区已完成订单的销售额，按城市汇总并降序排名取前三名",
+      "verification": "已核对分析步骤",
+      "source": "intent.analysis_goal.business_goal"
+    },
+    {
+      "label": "时间范围",
+      "text": "2026年",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.time_range"
+    },
+    {
+      "label": "筛选范围",
+      "text": "华东地区",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.filters[0]"
+    },
+    {
+      "label": "筛选范围",
+      "text": "已完成订单",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.filters[1]"
+    },
+    {
+      "label": "统计指标",
+      "text": "销售额",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.metric_requirements[0]"
+    },
+    {
+      "label": "分析要求",
+      "text": "按照城市汇总并降序排名，取前三名",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.analysis_limits[0]"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按城市分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S4"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：销售额 · 合计",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S4"
+    },
+    {
+      "label": "拟用排序与展示",
+      "text": "按销售额 · 合计从高到低排列",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S5"
+    },
+    {
+      "label": "拟用排序与展示",
+      "text": "按销售额 · 合计从高到低排列，取前 3 名",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S6"
+    }
+  ],
+  "directions": [
+    {
+      "task_id": "T1",
+      "title": "2026年华东地区已完成订单销售额城市排名Top3",
+      "question": "在2026年、华东地区且状态为“已完成”的订单中，各城市的销售额总和是多少？请按销售额降序排列并取前三名。",
+      "importance": "核心分析",
+      "reason": "删除此任务将无法回答核心业务目标（分析特定条件下的销售额分布与头部城市），直接阻碍决策支持。该任务完整覆盖了时间、地域、状态筛选及指标聚合排序的所有约束。",
+      "readiness": "完成已支持的数据转换后可分析",
+      "executable": true,
+      "details": [
+        "地区 为 华东",
+        "订单状态 为 已完成",
+        "从订单日期提取年份，再分析",
+        "订单日期的年份 为 2026",
+        "按城市分组",
+        "拟用统计口径：销售额 · 合计",
+        "按销售额 · 合计从高到低排列",
+        "按销售额 · 合计从高到低排列，取前 3 名"
+      ],
+      "gaps": [],
+      "can_remove": true
+    }
+  ],
+  "issues": [],
+  "warnings": [],
+  "can_approve": true,
+  "can_execute": false,
+  "audit": {
+    "audit_version": "2.2",
+    "binding": {
+      "dataset_id": "98954030ae5a4bea80aeff50912cf747",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "plan_id": "plan_4515964e0e9f45d48fc3d7307cd104f0",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "registry_version": "1.0"
+    },
+    "digest": "c722888deb87bdd02fa8e33838b4d3ec4b8f9224e5ac63e69e86544fc0151dbc",
+    "all_verified": true,
+    "items": [
+      {
+        "source": "intent.analysis_goal.business_goal",
+        "raw_text": "分析2026年华东地区已完成订单的销售额，按城市汇总并降序排名取前三名",
+        "status": "verified",
+        "category": "goal_dimensions",
+        "message": "目标中的明确字段分组已核对。",
+        "field_ids": [
+          "field_0003"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S4",
+            "operation": "group_aggregate",
+            "dimensions": [
+              "field_0003"
+            ]
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.time_range",
+        "raw_text": "2026年",
+        "status": "verified",
+        "category": "time_range",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0001"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S2",
+            "operation": "derive",
+            "params": {
+              "function": "extract_year",
+              "field": "field_0001",
+              "alias": "order_year"
+            }
+          },
+          {
+            "task_id": "T1",
+            "step_id": "S3",
+            "operation": "filter",
+            "condition": {
+              "field": "order_year",
+              "operator": "eq",
+              "value": 2026
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.filters[0]",
+        "raw_text": "华东地区",
+        "status": "verified",
+        "category": "filters",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0002"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S1",
+            "operation": "filter",
+            "condition": {
+              "field": "field_0002",
+              "operator": "eq",
+              "value": "华东"
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.filters[1]",
+        "raw_text": "已完成订单",
+        "status": "verified",
+        "category": "filters",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0004"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S1",
+            "operation": "filter",
+            "condition": {
+              "field": "field_0004",
+              "operator": "eq",
+              "value": "已完成"
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.metric_requirements[0]",
+        "raw_text": "销售额",
+        "status": "verified",
+        "category": "metric_requirements",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0005"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S4",
+            "operation": "group_aggregate",
+            "metric": {
+              "function": "sum",
+              "field": "field_0005",
+              "alias": "total_sales"
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.analysis_limits[0]",
+        "raw_text": "按照城市汇总并降序排名，取前三名",
+        "status": "verified",
+        "category": "analysis_limits",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0003"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S4",
+            "operation": "group_aggregate",
+            "dimension": "field_0003"
+          },
+          {
+            "task_id": "T1",
+            "step_id": "S6",
+            "operation": "top_n",
+            "metric": {
+              "function": "sum",
+              "field": "field_0005",
+              "alias": "total_sales"
+            },
+            "params": {
+              "field": "total_sales",
+              "direction": "desc",
+              "n": 3
+            }
+          },
+          {
+            "task_id": "T1",
+            "step_id": "S6",
+            "operation": "top_n",
+            "metric": {
+              "function": "sum",
+              "field": "field_0005",
+              "alias": "total_sales"
+            },
+            "params": {
+              "field": "total_sales",
+              "direction": "desc",
+              "n": 3
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "technical_details": {
+    "record": {
+      "session_id": "d71f627f16a04288972b3a6d6de56e29",
+      "plan_id": "plan_4515964e0e9f45d48fc3d7307cd104f0",
+      "plan_version": 1,
+      "dataset_id": "98954030ae5a4bea80aeff50912cf747",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "validation_version": "1.0",
+      "created_at": "2026-11-05T14:28:03.981660+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "98954030ae5a4bea80aeff50912cf747",
+          "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+          "plan_id": "plan_4515964e0e9f45d48fc3d7307cd104f0",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T1",
+              "title": "2026年华东地区已完成订单销售额城市排名Top3",
+              "business_question": "在2026年、华东地区且状态为“已完成”的订单中，各城市的销售额总和是多少？请按销售额降序排列并取前三名。",
+              "priority": "P0",
+              "priority_reason": "删除此任务将无法回答核心业务目标（分析特定条件下的销售额分布与头部城市），直接阻碍决策支持。该任务完整覆盖了时间、地域、状态筛选及指标聚合排序的所有约束。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03",
+                "C04",
+                "C05"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S1",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "field_0002",
+                        "operator": "eq",
+                        "value": "华东"
+                      },
+                      {
+                        "field": "field_0004",
+                        "operator": "eq",
+                        "value": "已完成"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S2",
+                  "operation": "derive",
+                  "params": {
+                    "function": "extract_year",
+                    "field": "field_0001",
+                    "alias": "order_year"
+                  }
+                },
+                {
+                  "step_id": "S3",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "order_year",
+                        "operator": "eq",
+                        "value": 2026
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S4",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0005",
+                        "alias": "total_sales"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0003"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S5",
+                  "operation": "sort",
+                  "params": {
+                    "field": "total_sales",
+                    "direction": "desc"
+                  }
+                },
+                {
+                  "step_id": "S6",
+                  "operation": "top_n",
+                  "params": {
+                    "field": "total_sales",
+                    "direction": "desc",
+                    "n": 3
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "分析2026年华东地区已完成订单的销售额，按城市汇总并降序排名取前三名"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "time_range：2026年"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "filters：华东地区；已完成订单"
+            },
+            {
+              "requirement_id": "C04",
+              "description": "metric_requirements：销售额"
+            },
+            {
+              "requirement_id": "C05",
+              "description": "analysis_limits：按照城市汇总并降序排名，取前三名"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T1",
+            "feasibility": "F1",
+            "reason_code": "REQUIRES_TRANSFORMATION",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T1"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "98954030ae5a4bea80aeff50912cf747",
+          "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "2026年华东地区已完成订单的销售额",
+            "business_goal": "分析2026年华东地区已完成订单的销售额，按城市汇总并降序排名取前三名",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": {
+              "raw_text": "2026年",
+              "validation_status": "unverified"
+            },
+            "filters": [
+              {
+                "raw_text": "华东地区",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "已完成订单",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "销售额",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按照城市汇总并降序排名，取前三名",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "constraint_audit": {
+      "audit_version": "2.2",
+      "binding": {
+        "dataset_id": "98954030ae5a4bea80aeff50912cf747",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_id": "plan_4515964e0e9f45d48fc3d7307cd104f0",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "c722888deb87bdd02fa8e33838b4d3ec4b8f9224e5ac63e69e86544fc0151dbc",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "分析2026年华东地区已完成订单的销售额，按城市汇总并降序排名取前三名",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S4",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0003"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.time_range",
+          "raw_text": "2026年",
+          "status": "verified",
+          "category": "time_range",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0001"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "derive",
+              "params": {
+                "function": "extract_year",
+                "field": "field_0001",
+                "alias": "order_year"
+              }
+            },
+            {
+              "task_id": "T1",
+              "step_id": "S3",
+              "operation": "filter",
+              "condition": {
+                "field": "order_year",
+                "operator": "eq",
+                "value": 2026
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "华东地区",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0002"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0002",
+                "operator": "eq",
+                "value": "华东"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[1]",
+          "raw_text": "已完成订单",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0004",
+                "operator": "eq",
+                "value": "已完成"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "销售额",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0005"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S4",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "sum",
+                "field": "field_0005",
+                "alias": "total_sales"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "按照城市汇总并降序排名，取前三名",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S4",
+              "operation": "group_aggregate",
+              "dimension": "field_0003"
+            },
+            {
+              "task_id": "T1",
+              "step_id": "S6",
+              "operation": "top_n",
+              "metric": {
+                "function": "sum",
+                "field": "field_0005",
+                "alias": "total_sales"
+              },
+              "params": {
+                "field": "total_sales",
+                "direction": "desc",
+                "n": 3
+              }
+            },
+            {
+              "task_id": "T1",
+              "step_id": "S6",
+              "operation": "top_n",
+              "metric": {
+                "function": "sum",
+                "field": "field_0005",
+                "alias": "total_sales"
+              },
+              "params": {
+                "field": "total_sales",
+                "direction": "desc",
+                "n": 3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "session_status": "AWAITING_APPROVAL",
+    "revision": 8
+  },
+  "report_capacity": {
+    "policy_version": "report-capacity-v1",
+    "supported": true,
+    "metric_count": 1,
+    "core_metric_count": 1,
+    "estimated_batches": 1,
+    "max_groups_per_call": 8,
+    "max_groups": 64,
+    "max_batches": 8,
+    "estimated_metadata_bytes": 2691,
+    "context_estimate_only": true,
+    "message": "本方案包含 1 个核心指标、共 1 个指标，预计一次生成报告。 实际证据大小和模型生成结果将在执行后核验。"
+  }
+}

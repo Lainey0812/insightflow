@@ -1,0 +1,192 @@
+{
+  "approval_id": "approval_2410f7ce1183459387e13e44f3694e06",
+  "approval_request_id": "b9e2bd1e-f382-41b9-a3ce-c625f349b545",
+  "session_id": "a8f4816ff2cd483e8e7d52f2958c4be2",
+  "plan_id": "plan_8fe231bf8f5540518639431cfda8674f",
+  "plan_version": 2,
+  "validation_version": "1.0",
+  "dataset_id": "52fa000421184f7cbe3dff80cbc72082",
+  "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424",
+  "approved_at": "2026-10-27T08:34:57.577826+00:00",
+  "approval_status": "approved",
+  "acknowledged_warnings": [],
+  "snapshot": {
+    "approval_id": "approval_2410f7ce1183459387e13e44f3694e06",
+    "approved_at": "2026-10-27T08:34:57.577826+00:00",
+    "status": "approved",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "52fa000421184f7cbe3dff80cbc72082",
+        "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424",
+        "plan_id": "plan_8fe231bf8f5540518639431cfda8674f",
+        "plan_version": 2,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "整体销售额概况",
+            "business_question": "数据的总体销售规模是多少？（总销售额、平均单笔销售额及极值）",
+            "priority": "P0",
+            "priority_reason": "探索数据主要特征的基础，提供全局视角。删除后无法回答核心问题中关于‘主要特征’的部分。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "sum",
+                      "field": "field_0003",
+                      "alias": "total_sales"
+                    },
+                    {
+                      "function": "avg",
+                      "field": "field_0003",
+                      "alias": "avg_sales"
+                    },
+                    {
+                      "function": "max",
+                      "field": "field_0003",
+                      "alias": "max_sales"
+                    },
+                    {
+                      "function": "min",
+                      "field": "field_0003",
+                      "alias": "min_sales"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "task_id": "T2",
+            "title": "按地区分析销售分布与差异",
+            "business_question": "不同地区的销售表现有何差异？哪个地区贡献最大？",
+            "priority": "P0",
+            "priority_reason": "探索‘差异’的核心维度之一。通过分组聚合揭示地域间的业务不平衡性，是理解数据结构的关键。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "sum",
+                      "field": "field_0003",
+                      "alias": "region_total_sales"
+                    },
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "region_record_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0001"
+                  ]
+                }
+              },
+              {
+                "step_id": "S2",
+                "operation": "sort",
+                "params": {
+                  "field": "region_total_sales",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "探索这份数据的主要特征和差异"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        },
+        {
+          "task_id": "T2",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T1",
+        "T2"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "52fa000421184f7cbe3dff80cbc72082",
+        "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424",
+        "plan_version": 2,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "exploratory",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "workflow-sales.csv数据",
+          "business_goal": "探索这份数据的主要特征和差异",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "intent": {
+      "analysis_mode": "exploratory",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "workflow-sales.csv数据",
+        "business_goal": "探索这份数据的主要特征和差异",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    },
+    "resolved_uncertainty_ids": [],
+    "constraints_confirmed": false,
+    "session_id": "a8f4816ff2cd483e8e7d52f2958c4be2",
+    "acknowledged_warnings": []
+  }
+}

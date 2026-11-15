@@ -1,0 +1,646 @@
+--- before/backend/app/observability/recorder.py
++++ after/backend/app/observability/recorder.py
+@@ -9,14 +9,16 @@
+ from uuid import uuid4
+ 
+ from app.domain.models import now
+-from app.domain.tracing import RunManifest, TraceRun, TraceSpan, TraceEvent
++from app.domain.tracing import RunManifest, TraceRun, TraceSpan, TraceEvent, TraceSnapshot
++
++from app.observability.provenance import digest, git_snapshot, input_fingerprints
+ 
+ logger=logging.getLogger('app.trace')
+ SAFE_KEYS={'candidate_status','evidence_count','selected_evidence_count','evidence_refs','candidate_count','accepted_count',
+     'rejected_count','candidate_index','primary_evidence_id','error_code','rule','rule_ids','role',
+     'input_bytes','output_bytes','provider','model','is_mock','purpose','prompt_version','schema_version',
+     'generation_version','timeout_seconds','enable_thinking','skip_reason','report_status','goal_coverage',
+-    'insight_count','chart_count','dropped_events','observation_gap','report_id'}
++    'inputs_match','insight_count','chart_count','dropped_events','observation_gap','report_id'}
+ 
+ def safe(data):
+     result={}
+@@ -35,8 +37,11 @@
+     def __init__(self, context, name, attributes=None, skip=False):
+         self.context=context
+         self.skipped=skip
++        parent_key=(context.active.record.node_key+'#'+str(context.active.record.node_attempt)) if context.active and context.active.record else None
++        key=(parent_key+'/' if parent_key else '')+name
++        context.node_attempts[key]=context.node_attempts.get(key,0)+1
+         self.record=TraceSpan(span_id='span_'+uuid4().hex,run_id=context.run.run_id,
+-            name=name,status='running',started_at=now(),attributes=safe(attributes or {}),
++            name=name,node_key=key,node_attempt=context.node_attempts[key],status='running',started_at=now(),attributes=safe(attributes or {}),
+             parent_span_id=context.active.record.span_id if context.active and context.active.record else None) if context.run else None
+         self.timer=perf_counter()
+         if self.record:
+@@ -63,6 +68,7 @@
+         self.sequence,self.gaps,self.emitted=0,0,0
+         self.timer=perf_counter()
+         self.active=None
++        self.node_attempts={}
+     def call(self, action):
+         ok,value=self.owner.call(action)
+         if not ok: self.gaps+=1
+@@ -94,6 +100,21 @@
+             raise
+         else: handle.finish()
+         finally: self.active=previous
++    def verify_inputs(self, execution, approval, profile, goal):
++        if not self.run: return
++        def verify():
++            actual=input_fingerprints(execution,approval,profile,goal)
++            self.event('inputs.verified',inputs_match=actual==self.run.manifest.input_sha256)
++        self.call(verify)
++    def snapshot(self, kind, content, projection):
++        # Everything, including projection construction, is inside fail-open observation boundary.
++        if not self.run: return
++        def save():
++            value=TraceSnapshot(snapshot_id='snap_'+uuid4().hex,run_id=self.run.run_id,
++                span_id=self.active.record.span_id if self.active and self.active.record else None,
++                kind=kind,captured_at=now(),content_sha256=(hashlib.sha256(content.encode()).hexdigest() if isinstance(content,str) else digest(content)),projection=projection())
++            self.owner.repository.save_snapshot(value)
++        self.call(save)
+     def candidate(self,payload):
+         if self.active:
+             self.active.attributes(**{k:v for k,v in payload.items() if k in {'candidate_count','accepted_count','rejected_count'}})
+@@ -126,24 +147,31 @@
+                                extra={'event':'trace_write_failed','error_code':'TRACE_WRITE_FAILED'})
+                 self.warning_count+=1
+             return False,None
+-    def queue(self,execution,record,approval_reader,service):
++    def queue(self,execution,record,approval_reader,service,input_reader=None):
+         def create():
+-            from app.reporting.prompt import PROMPT_VERSION,GENERATION_VERSION
++            from app.reporting.prompt import PROMPT_VERSION,GENERATION_VERSION,SYSTEM_PROMPT
+             approval=approval_reader()
+             checked=approval.validated_plan
+             root=Path(__file__).resolve().parents[1]
+             paths=['services/analysis_report.py','workflow/reporting.py','reporting/evidence.py',
+                    'reporting/fact_validation.py','reporting/claims.py','reporting/prompt.py',
+                    'reporting/selection.py','reporting/contracts.py','reporting/visualization.py',
+-                   'domain/analysis_report.py','domain/tracing.py','observability/recorder.py']
+-            manifest=RunManifest(bindings={'session_id':execution.session_id,'execution_id':execution.execution_id,
++                   'domain/analysis_report.py','domain/tracing.py','observability/recorder.py',
++                   'observability/provenance.py','observability/snapshots.py','llm/compatible_provider.py']
++            fingerprints=input_fingerprints(*input_reader()) if input_reader else {}
++            manifest=RunManifest(schema_version='workflow-trace-v0.3',capture_scope='report_generation',
++                git=git_snapshot(root.parents[1]),input_sha256=fingerprints,bindings={'session_id':execution.session_id,'execution_id':execution.execution_id,
+                 'approval_id':execution.approval_id,'dataset_id':execution.dataset_id,'dataset_version':execution.dataset_version,
+                 'plan_id':execution.plan_id,'plan_version':execution.plan_version},
+                 versions={'prompt_version':PROMPT_VERSION,'generation_version':GENERATION_VERSION,
+-                    'schema_version':'analysis-report-v1','validation_version':checked.validation_version,
++                    'schema_version':'analysis-report-v1','prompt_sha256':digest(SYSTEM_PROMPT),
++                    'fact_validator_sha256':digest([(root/p).read_text() for p in ('reporting/fact_validation.py','reporting/claims.py')]),
++                    'validation_version':checked.validation_version,
+                     'registry_version':checked.registry_version},
+                 model_config_snapshot={'provider':type(service.provider).__name__,
+-                    'model':getattr(service.provider,'model',None),'timeout_seconds':service.timeout_seconds,
++                    'model':getattr(service.provider,'model',None),
++                    'endpoint_sha256':digest(service.provider.url) if isinstance(getattr(service.provider,'url',None),str) else None,
++                    'timeout_seconds':service.timeout_seconds,
+                     'enable_thinking':service.enable_thinking,'temperature':None,'top_p':None,'usage':None},
+                 source_sha256={p:hashlib.sha256((root/p).read_bytes()).hexdigest() for p in paths})
+             previous=self.repository.attempt(execution.execution_id,record.attempt-1)
+--- before/backend/app/storage/trace_repository.py
++++ after/backend/app/storage/trace_repository.py
+@@ -1,8 +1,8 @@
+-"""SQLite sidecar: observations only, no copies of analysis results or approvals."""
++"""Existing SQLite sidecar: observations and controlled projections, never authoritative business records."""
+ from contextlib import closing
+ from pathlib import Path
+ import sqlite3
+-from app.domain.tracing import TraceRun, TraceSpan, TraceEvent
++from app.domain.tracing import TraceRun, TraceSpan, TraceEvent, TraceSnapshot
+ from app.domain.models import now
+ 
+ class TraceRepository:
+@@ -24,6 +24,10 @@
+                     span_id TEXT REFERENCES trace_spans(id), sequence INTEGER NOT NULL, record TEXT NOT NULL,
+                     UNIQUE(run_id, sequence));
+                 CREATE INDEX IF NOT EXISTS events_span ON trace_events(span_id, sequence);
++                CREATE TABLE IF NOT EXISTS trace_snapshots (
++                    id TEXT PRIMARY KEY, run_id TEXT NOT NULL REFERENCES trace_runs(id),
++                    span_id TEXT REFERENCES trace_spans(id), kind TEXT NOT NULL, record TEXT NOT NULL,
++                    UNIQUE(run_id,kind));
+             ''')
+         self.path.chmod(0o600)
+ 
+@@ -67,6 +71,10 @@
+             previous=conn.execute('SELECT run_id,record FROM trace_spans WHERE id=?',(span.span_id,)).fetchone()
+             if previous and (previous['run_id'] != span.run_id or TraceSpan.model_validate_json(previous['record']).status != 'running'):
+                 raise ValueError('Span is immutable after completion')
++            if previous:
++                old = TraceSpan.model_validate_json(previous['record'])
++                if any(getattr(old,k) != getattr(span,k) for k in ('name','parent_span_id','node_key','node_attempt')):
++                    raise ValueError('Span identity is immutable')
+             conn.execute('INSERT INTO trace_spans VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET record=excluded.record',
+                          (span.span_id,span.run_id,span.model_dump_json()))
+ 
+@@ -141,3 +149,28 @@
+                         span.recovered_at=run.recovered_at
+                         span.duration_ms=None
+                         conn.execute('UPDATE trace_spans SET record=? WHERE id=?',(span.model_dump_json(),span.span_id))
++
++    def save_snapshot(self, snapshot):
++        if len(snapshot.model_dump_json().encode()) > 256*1024:
++            raise ValueError('Controlled snapshot too large')
++        with closing(self.connect()) as conn, conn:
++            if snapshot.span_id:
++                row=conn.execute('SELECT run_id FROM trace_spans WHERE id=?',(snapshot.span_id,)).fetchone()
++                if not row or row['run_id'] != snapshot.run_id: raise ValueError('Cross-run snapshot')
++            old=conn.execute('SELECT record FROM trace_snapshots WHERE run_id=? AND kind=?',
++                             (snapshot.run_id,snapshot.kind)).fetchone()
++            if old:
++                if old['record'] != snapshot.model_dump_json(): raise ValueError('Snapshot is immutable')
++                return
++            conn.execute('INSERT INTO trace_snapshots VALUES (?,?,?,?,?)',
++                (snapshot.snapshot_id,snapshot.run_id,snapshot.span_id,snapshot.kind,snapshot.model_dump_json()))
++
++    def snapshots(self, run_id):
++        with closing(self.connect()) as conn:
++            rows=conn.execute('SELECT record FROM trace_snapshots WHERE run_id=? ORDER BY kind',(run_id,)).fetchall()
++        return [TraceSnapshot.model_validate_json(r['record']) for r in rows]
++
++    def run_events(self, run_id):
++        with closing(self.connect()) as conn:
++            rows=conn.execute('SELECT record FROM trace_events WHERE run_id=? ORDER BY sequence',(run_id,)).fetchall()
++        return [TraceEvent.model_validate_json(r['record']) for r in rows]
+--- before/backend/app/workflow/reporting.py
++++ after/backend/app/workflow/reporting.py
+@@ -19,7 +19,10 @@
+             raise AppError('REPORT_REAL_WORKFLOW_REQUIRED', '此入口仅用于真实分析会话。', 422)
+         record, fresh = self.reports.queue(execution_id, result.session_id, expected_attempt)
+         if fresh:
+-            self.traces.queue(result, record, lambda: self.executions.approved_snapshot(execution_id), self.service)
++            self.traces.queue(result, record, lambda: self.executions.approved_snapshot(execution_id), self.service,
++                input_reader=lambda: (self.executions.complete(execution_id),
++                    self.executions.approved_snapshot(execution_id),
++                    self.datasets.profile(result.dataset_id,result.dataset_version),session.user_goal))
+         return record, fresh
+ 
+     async def generate(self, execution_id, attempt):
+@@ -38,6 +41,7 @@
+                     (execution.plan_id, execution.plan_version, execution.dataset_id, execution.dataset_version)):
+                 raise AppError('REPORT_APPROVAL_MISMATCH', '执行结果与保存的批准快照不一致。', 422)
+             profile = self.datasets.profile(execution.dataset_id, execution.dataset_version)
++            trace.verify_inputs(execution,approval,profile,session.user_goal)
+             report = await self.service.generate(approval.intent, approval.validated_plan, execution, profile,
+                 approved_snapshot=approval, original_query=session.user_goal, trace=trace)
+             if report.llm and report.llm.is_mock:
+@@ -51,6 +55,8 @@
+                     'plan_version': plan.plan_version, 'prompt_version': PROMPT_VERSION,
+                     'schema_version': 'analysis-report-v1', 'original_query': session.user_goal,
+                     'constraints_confirmed': approval.constraints_confirmed})
++            from app.observability.snapshots import report_projection
++            trace.snapshot('report',report,lambda:report_projection(report))
+             trace.finish(report.report_status, report=report)
+             closed = True
+         except AppError as exc:
+--- before/backend/app/api/admin.py
++++ after/backend/app/api/admin.py
+@@ -58,7 +58,7 @@
+         if traces.repository is None:
+             raise AppError('TRACE_UNAVAILABLE','追踪存储暂不可用，业务结果请通过原接口查询。',503)
+ 
+-    router=APIRouter(prefix='/admin',tags=['Admin Trace V0.2'])
++    router=APIRouter(prefix='/admin',tags=['Admin Trace V0.3'])
+     protected=[Depends(authorize)]
+ 
+     @router.post('/access')
+@@ -108,6 +108,19 @@
+             'retention':{'metadata':'keep_until_explicit_policy_change','raw_content':'not_collected',
+                 'max_events_per_run':256,'max_event_payload_bytes':8192}}
+ 
++    @router.get('/comparison',dependencies=protected)
++    def comparison(left:str=Query(min_length=1,max_length=160),right:str=Query(min_length=1,max_length=160)):
++        from app.observability.comparison import compare
++        a,b=find_run(left),find_run(right)
++        if left==right:raise AppError('TRACE_DISTINCT_RUNS_REQUIRED','请选择两次不同运行。',422)
++        return read(lambda:compare(traces.repository,reports,a,b))
++
++    @router.get('/runs/{run_id}/snapshots',dependencies=protected)
++    def snapshots(run_id:str):
++        from app.observability.comparison import artifacts
++        record=find_run(run_id)
++        return {'artifacts':read(lambda:artifacts(traces.repository,reports,record))}
++
+     @router.get('/runs/{run_id}',response_model=RunDetail,dependencies=protected)
+     def run(run_id:str):
+         record=find_run(run_id)
+--- before/backend/app/domain/tracing.py
++++ after/backend/app/domain/tracing.py
+@@ -6,11 +6,14 @@
+     model_config = ConfigDict(extra='forbid')
+ 
+ class RunManifest(TraceModel):
+-    schema_version: Literal['workflow-trace-v0.1'] = 'workflow-trace-v0.1'
++    schema_version: Literal['workflow-trace-v0.1','workflow-trace-v0.3'] = 'workflow-trace-v0.1'
+     bindings: dict = Field(default_factory=dict)
+     versions: dict = Field(default_factory=dict)
+     model_config_snapshot: dict = Field(default_factory=dict)
+     source_sha256: dict[str, str] = Field(default_factory=dict)
++    capture_scope: str | None = None
++    git: dict = Field(default_factory=dict)
++    input_sha256: dict[str, str] = Field(default_factory=dict)
+     raw_content_retained: Literal[False] = False
+ 
+ class TraceRun(TraceModel):
+@@ -37,6 +40,8 @@
+     run_id: str
+     parent_span_id: str | None = None
+     name: str
++    node_key: str | None = None
++    node_attempt: int | None = Field(default=None, ge=1)
+     status: Literal['running','complete','partial','failed','skipped','interrupted']
+     started_at: str
+     finished_at: str | None = None
+@@ -53,3 +58,14 @@
+     event_type: str
+     recorded_at: str
+     payload: dict = Field(default_factory=dict)
++
++class TraceSnapshot(TraceModel):
++    snapshot_id: str
++    run_id: str
++    span_id: str | None = None
++    kind: Literal['evidence','llm_output','report']
++    captured_at: str
++    content_sha256: str = Field(pattern=r'^[a-f0-9]{64}$')
++    projection: dict = Field(default_factory=dict)
++    schema_version: Literal['controlled-projection-v1'] = 'controlled-projection-v1'
++    raw_content_retained: Literal[False] = False
+--- before/backend/app/services/analysis_report.py
++++ after/backend/app/services/analysis_report.py
+@@ -23,6 +23,7 @@
+ from app.reporting.selection import select_evidence
+ from app.reporting.visualization import VisualizationBuilder
+ from app.services.intent_parser import strict_json
++from app.observability.snapshots import evidence_projection, llm_projection
+ from app.observability.recorder import TraceContext, TraceRecorder
+ 
+ 
+@@ -51,6 +52,7 @@
+         with trace.span('evidence_builder') as stage:
+             evidence = EvidenceBuilder().build(execution, profile, descriptions)
+             stage.attributes(evidence_count=len(evidence))
++            trace.snapshot('evidence',[e.model_dump(mode='json') for e in evidence],lambda:evidence_projection(evidence))
+         # Stable task priority ordering, retaining evidence IDs and row references.
+         evidence.sort(key=lambda item: (tasks[item.task_id].priority, item.evidence_id))
+         evidenced_tasks = {item.task_id for item in evidence}
+@@ -131,6 +133,7 @@
+                 try:
+                     generation.event('llm.started', purpose=request.purpose)
+                     response = await asyncio.wait_for(self.provider.generate(request), timeout=self.timeout_seconds)
++                    trace.snapshot('llm_output',response.text,lambda:llm_projection(response))
+                     generation.event('llm.returned', provider=response.provider, model=response.model,
+                         is_mock=response.is_mock, output_bytes=len(response.text.encode()))
+                 except TimeoutError:
+--- before/admin/src/styles.css
++++ after/admin/src/styles.css
+@@ -160,3 +160,25 @@
+ @media (max-width:1150px) { .trace-detail-grid { grid-template-columns:1fr; } .span-panel { position:static; } .span-tree { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } }
+ @media (max-width:800px) { .trace-filters { grid-template-columns:1fr 1fr; } .run-summary-grid .trace-keyvalues { display:block; } .trace-heading { flex-direction:column; gap:10px; } .trace-actions { padding:0; } }
+ @media (max-width:500px) { .trace-filters { grid-template-columns:1fr; } .trace-card { padding:16px; } .trace-table-wrap { padding:0; } .span-tree { display:block; } .trace-keyvalues>div { grid-template-columns:1fr; gap:3px; } .trace-actions .secondary-button { font-size:11px; padding:8px; } }
++
++/* Trace V0.3: precise historical comparisons, with bounded controlled projections. */
++.compare-selection, .comparison-form { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-bottom: 18px; }
++.comparison-form label { display: grid; gap: 8px; flex: 1; min-width: 220px; }
++.comparison-form input { width: 100%; padding: 10px; border: 1px solid var(--border, #d7dde6); border-radius: 8px; }
++.comparison-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
++.comparison-columns > * { min-width: 0; }
++.comparison-table { table-layout: fixed; width: 100%; }
++.comparison-table td, .comparison-table th { overflow-wrap: anywhere; }
++.comparison-same { color: #24664a; }
++.comparison-different { color: #a34b18; font-weight: 600; }
++.comparison-unknown { color: #667184; }
++.artifact-hash { display: block; overflow-wrap: anywhere; font-size: 11px; }
++.controlled-projection { font-size: 12px; background: #f6f8fc; padding: 14px; border-radius: 8px; max-height: 380px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
++.artifact-section { border-top: 1px solid #e8ecf2; margin-top: 14px; padding-top: 14px; }
++.diagnostic-list { padding-left: 18px; max-height: 480px; overflow: auto; }
++.diagnostic-list li { margin-bottom: 16px; overflow-wrap: anywhere; }
++.diagnostic-list dl > div { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; }
++.diagnostic-list dd { margin: 0; overflow-wrap: anywhere; }
++@media (max-width: 800px) { .comparison-columns { grid-template-columns: minmax(0, 1fr); } .comparison-table { min-width: 680px; } }
++.comparison-table th { white-space: normal; }
++.trace-table th small { display: block; white-space: normal; overflow-wrap: anywhere; font-size: 10px; color: #82768d; margin-top: 6px; }
+--- before/admin/src/types/traces.ts
++++ after/admin/src/types/traces.ts
+@@ -1,6 +1,7 @@
+ export type RunStatus = 'queued' | 'running' | 'complete' | 'partial' | 'unavailable' | 'failed' | 'interrupted';
+ export type Metadata = Record<string, unknown>;
+ export interface RunManifest {
++  git?: Metadata; input_sha256?: Record<string, string>; capture_scope?: string;
+   schema_version?: string; bindings?: Metadata; versions?: Metadata;
+   model_config_snapshot?: Metadata; source_sha256?: Record<string, string>; raw_content_retained?: boolean;
+ }
+@@ -11,7 +12,7 @@
+   report_id?: string | null; error_code?: string | null; integrity?: string; manifest?: RunManifest;
+ }
+ export interface TraceSpan {
+-  span_id: string; run_id: string; parent_span_id?: string | null; name: string; status: string;
++  span_id: string; run_id: string; parent_span_id?: string | null; node_key?: string | null; node_attempt?: number | null; name: string; status: string;
+   started_at?: string; finished_at?: string | null; recovered_at?: string | null;
+   duration_ms?: number | null; error_code?: string | null; attributes?: Metadata;
+ }
+@@ -27,3 +28,13 @@
+   run: TraceRun; business_source?: Metadata; collector_degraded?: boolean; coverage_notice?: string;
+ }
+ export interface EventPage { items: TraceEvent[]; limit: number; offset: number }
++export interface CompareCheck { key: string; left?: unknown; right?: unknown; status: 'same' | 'different' | 'unknown'; basis?: string }
++export interface SavedArtifact { availability: 'available' | 'unknown'; source?: string | null; content_sha256?: string; snapshot_id?: string; captured_at?: string; projection?: Metadata | null; reason?: string }
++export interface RunComparison {
++  left: TraceRun; right: TraceRun; scope: string; live: boolean;
++  comparability: { status: 'comparable' | 'partially_comparable' | 'unknown'; checks: CompareCheck[]; bindings: CompareCheck[]; versions: CompareCheck[]; models: CompareCheck[]; git: CompareCheck; notice: string };
++  source_files?: CompareCheck[];
++  spans: { node_key: string; node_attempt?: number | null; match_basis: string; left?: TraceSpan | null; right?: TraceSpan | null }[];
++  artifacts: { left: Record<string, SavedArtifact>; right: Record<string, SavedArtifact> };
++  diagnostics: { left: { span_id?: string | null; event_type: string; sequence: number; payload: Metadata }[]; right: { span_id?: string | null; event_type: string; sequence: number; payload: Metadata }[] };
++}
+--- before/admin/src/app/routes.tsx
++++ after/admin/src/app/routes.tsx
+@@ -2,6 +2,7 @@
+ import { AdminLayout } from '../layouts/AdminLayout';
+ import { DashboardPage } from '../pages/DashboardPage';
+ import { TracesPage } from '../pages/TracesPage';
++import { TraceComparisonPage } from '../pages/TraceComparisonPage';
+ import { TraceDetailPage } from '../pages/TraceDetailPage';
+ import { VersionsPage } from '../pages/VersionsPage';
+ import { SettingsPage } from '../pages/SettingsPage';
+@@ -24,6 +25,7 @@
+       const Page = pages[item.path];
+       return <Route key={item.path} path={item.path} element={<AccessBoundary permission={item.permission} resolve={resolveAccess}><Page /></AccessBoundary>} />;
+     })}
++    <Route path="/traces/compare" element={<AccessBoundary permission="traces:view" resolve={resolveAccess}><TraceComparisonPage /></AccessBoundary>} />
+     <Route path="/traces/:runId" element={<AccessBoundary permission="traces:view" resolve={resolveAccess}><TraceDetailPage /></AccessBoundary>} />
+     <Route path="*" element={<NotFoundPage />} />
+   </Route></Routes>;
+--- before/admin/src/tests/trace-service.test.ts
++++ after/admin/src/tests/trace-service.test.ts
+@@ -25,3 +25,11 @@
+     await expect(traceApi.runs('limit=20')).rejects.toMatchObject({ status: 403 });
+   });
+ });
++
++it('sends comparison IDs in the authenticated namespace and rejects mismatched runs', async () => {
++  const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response('{"left":{"run_id":"wrong"},"right":{"run_id":"b"}}'));
++  vi.stubGlobal('fetch', fetcher);
++  await expect(traceApi.comparison('a', 'b')).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
++  expect(String(fetcher.mock.calls[0][0])).toBe('http://localhost:5174/api/v1/admin/comparison?left=a&right=b');
++  expect(fetcher.mock.calls[0][1]?.credentials).toBe('same-origin');
++});
+--- before/admin/src/tests/traces.test.tsx
++++ after/admin/src/tests/traces.test.tsx
+@@ -89,7 +89,7 @@
+     expect(inspector).toHaveTextContent('REPORT_UNVERIFIED_FACT');
+     await waitFor(() => expect(inspector).toHaveTextContent('FREE_TEXT_GUARD'));
+     expect(inspector).toHaveTextContent('implication'); expect(inspector).toHaveTextContent('E01');
+-    expect(inspector).toHaveTextContent('不可用（V0.1 未采集）');
++    expect(inspector).toHaveTextContent('完整原始输入、输出、候选文本：未保留');
+     expect(screen.queryByText('SHOULD_NOT_RENDER_PRIVATE_TEXT')).not.toBeInTheDocument();
+     expect(screen.getByRole('link', { name: '查看上一次运行' })).toHaveAttribute('href', '/traces/run_previous');
+     expect(document.querySelector('.run-summary .status-partial')).toBeInTheDocument();
+--- before/admin/src/tests/routes.test.tsx
++++ after/admin/src/tests/routes.test.tsx
+@@ -7,7 +7,7 @@
+ describe('independent admin routes', () => {
+   it.each([
+     ['/dashboard', '运行概览', '暂无运行数据'],
+-    ['/versions', '版本对比', '尚未接入版本数据'],
++    ['/versions', '版本对比', '从真实 Run 追溯版本'],
+     ['/settings', '系统设置', '本地配置'],
+   ])('directly renders %s without API calls or fabricated monitoring data', (path, title, content) => {
+     const fetcher = vi.fn(); vi.stubGlobal('fetch', fetcher);
+--- before/admin/src/layouts/AdminLayout.tsx
++++ after/admin/src/layouts/AdminLayout.tsx
+@@ -13,12 +13,12 @@
+       <NavLink className="brand" to="/dashboard"><span className="brand-symbol"><Layers3 size={23} /></span><span>InsightFlow<small>ADMIN CONSOLE</small></span></NavLink>
+       <div className="nav-section-label">测试管理</div>
+       <nav aria-label="主导航">{navigation.map(({ path, label, icon: Icon }) => <NavLink key={path} to={path} aria-label={label} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} end={path !== '/traces'}><Icon size={19} strokeWidth={1.7} /><span>{label}</span><ChevronRight className="nav-arrow" size={14} /></NavLink>)}</nav>
+-      <div className="sidebar-footer"><span className="local-marker">LOCAL / V0.2</span><p>只读诊断</p><small>Trace 已接入；其他模块仍为占位。</small></div>
++      <div className="sidebar-footer"><span className="local-marker">LOCAL / V0.3</span><p>只读诊断</p><small>Trace 诊断与运行对比。</small></div>
+     </aside>
+     <div className="workspace">
+-      <header className="topbar"><div className="topbar-start"><button className="icon-button" aria-label={expanded ? '收起侧边栏' : '展开侧边栏'} aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? <PanelLeftClose size={19} /> : <PanelLeftOpen size={19} />}</button><span className="breadcrumb">管理控制台 <ChevronRight size={14} /><strong>{title}</strong></span></div><span className="preview-badge">V0.2 · Trace 诊断</span></header>
++      <header className="topbar"><div className="topbar-start"><button className="icon-button" aria-label={expanded ? '收起侧边栏' : '展开侧边栏'} aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? <PanelLeftClose size={19} /> : <PanelLeftOpen size={19} />}</button><span className="breadcrumb">管理控制台 <ChevronRight size={14} /><strong>{title}</strong></span></div><span className="preview-badge">V0.3 · Trace 诊断</span></header>
+       <main id="main-content" className="main-content" tabIndex={-1}>
+-        <div className="framework-notice"><span className="neutral-dot" />Trace 使用服务端只读访问；其他模块仍为工程占位。</div>
++        <div className="framework-notice"><span className="neutral-dot" />Trace 使用服务端只读访问，支持历史追溯与对比；运行概览和设置仍为占位。</div>
+         <Outlet />
+         <footer className="page-footer"><span>InsightFlow Admin Console</span><span>仅展示已采集记录 · 缺失信息不推断</span></footer>
+       </main>
+--- before/admin/src/api/traces.ts
++++ after/admin/src/api/traces.ts
+@@ -1,5 +1,5 @@
+ import { ApiError, createAdminClient } from './client';
+-import type { EventPage, RunDetail, RunPage, TraceSpan } from '../types/traces';
++import type { EventPage, RunDetail, RunPage, TraceSpan, RunComparison } from '../types/traces';
+ 
+ const client = createAdminClient();
+ function invalid(): never { throw new ApiError('INVALID_RESPONSE', '追踪接口返回结构不正确。'); }
+@@ -25,6 +25,13 @@
+     if (!value || !Array.isArray(value.items) || value.items.some(e => !e || e.span_id !== id || typeof e.event_id !== 'string')) invalid();
+     return value;
+   },
++  async comparison(left: string, right: string, signal?: AbortSignal): Promise<RunComparison> {
++    const query = new URLSearchParams({ left, right });
++    const value = await client.get<RunComparison>('comparison?' + query, { signal, cache: 'no-store' });
++    if (!value || value.left?.run_id !== left || value.right?.run_id !== right || !Array.isArray(value.spans) ||
++        !value.comparability || !Array.isArray(value.comparability.checks) || !value.artifacts || !value.diagnostics) invalid();
++    return value;
++  },
+   grant(token: string) { return client.request('access', { method: 'POST', headers: { 'X-Admin-Token': token }, cache: 'no-store' }); },
+   revoke() { return client.request('access', { method: 'DELETE', headers: { 'X-Admin-Request': '1' }, cache: 'no-store' }); },
+ };
+--- before/admin/src/pages/TraceDetailPage.tsx
++++ after/admin/src/pages/TraceDetailPage.tsx
+@@ -46,8 +46,9 @@
+             {warning && <em>{warning}</em>}{span.error_code && <code>{span.error_code}</code>}
+           </button></div>;
+         })}</div> : <p>此 Run 没有已保存的 Span。可能在阶段开始前失败或发生追踪缺口。</p>}
+-        <p className="muted">节点级重试次数：未采集。Run 级尝试次数：{valueText(run.attempt)}。</p>
++        <p className="muted">节点身份 / 重试序号：{valueText(selected?.node_key)} / {valueText(selected?.node_attempt)}。Run 级尝试次数：{valueText(run.attempt)}。</p>
+       </section>{selected ? <NodeInspector key={`${selected.span_id}:${refresh}`} span={selected} manifest={run.manifest} /> : <section className="trace-card trace-message"><h2>节点 Inspector</h2><p>{selectedId ? 'URL 中所选节点不属于当前 Run，请从左侧重新选择。' : '没有可检查的节点。'}</p></section>}</div>
++      <p><Link className="trace-link" to={'/traces/compare?' + new URLSearchParams({ left: runId, ...(run.retry_of_run_id ? { right: run.retry_of_run_id } : {}) })}>与另一次运行对比</Link></p>
+       <ManifestView manifest={run.manifest} />
+     </>}
+   </>;
+--- before/admin/src/pages/TracesPage.tsx
++++ after/admin/src/pages/TracesPage.tsx
+@@ -15,6 +15,12 @@
+ }
+ export function TracesPage() {
+   const [params, setParams] = useSearchParams();
++  const selected = params.getAll('compare').slice(0, 2);
++  function selectRun(id: string) {
++    const next = new URLSearchParams(params); next.delete('compare');
++    const chosen = selected.includes(id) ? selected.filter(item => item !== id) : [...selected, id].slice(-2);
++    chosen.forEach(item => next.append('compare', item)); setParams(next);
++  }
+   const [page, setPage] = useState<RunPage | null>(null), [error, setError] = useState<unknown>(null);
+   const [loading, setLoading] = useState(true), [refresh, setRefresh] = useState(0), [formError, setFormError] = useState('');
+   const limit = positive(params.get('limit'), 20, 1, 100), offset = positive(params.get('offset'), 0, 0, 1000000);
+@@ -56,10 +62,14 @@
+       <div className="filter-actions"><button className="primary-button" type="submit">应用筛选</button><button className="secondary-button" type="button" onClick={() => { setFormError(''); setParams({ limit: String(limit) }); }}>重置</button></div>
+       {formError && <p role="alert">{formError}</p>}
+     </form>
++    <div className="trace-card compare-selection"><span>选择两次历史运行 · 已选 {selected.length}/2（跨页保留）</span>
++      {selected.length === 2 ? <Link className="primary-button" to={'/traces/compare?' + new URLSearchParams({ left: selected[0], right: selected[1] })}>对比所选运行</Link> : <span className="muted">勾选列表中的两次运行</span>}
++      <Link className="trace-link" to="/traces/compare">通过 Run ID 对比</Link>
++    </div>
+     <CoverageNotice degraded={page?.collector_degraded} />
+     {loading ? <div className="trace-message" role="status">正在读取后端运行记录…</div> : error ? <TraceError error={error} retry={reload} /> : page && <>
+-      {page.items.length === 0 ? <EmptyState icon={Workflow} title={offset ? '当前页没有记录' : '没有匹配的运行记录'} description="接口已返回空结果。可调整筛选条件或等待新的报告尝试；未生成演示数据。" note="历史报告没有埋点时不会自动出现 Trace。" /> : <div className="trace-card trace-table-wrap"><table className="trace-table"><caption className="visually-hidden">真实运行列表</caption><thead><tr><th>运行</th><th>状态</th><th>排队时间</th><th>整体耗时</th><th>版本</th><th>尝试</th><th>操作</th></tr></thead><tbody>{page.items.map(run => <tr key={run.run_id}>
+-        <td><code className="run-id">{run.run_id}</code><small>执行：{valueText(run.execution_id)}</small>{run.integrity === 'incomplete' && <span className="integrity-tag">追踪不完整</span>}</td><td><StatusBadge status={run.status} /></td><td>{timeText(run.queued_at)}</td><td>{durationText(run.duration_ms)}</td><td><span>{valueText(metadata(run.manifest?.versions).prompt_version)}</span><small>{valueText(metadata(run.manifest?.versions).schema_version)}</small></td><td>{typeof run.attempt === 'number' ? `第 ${run.attempt} 次` : '未采集'}</td><td><Link className="trace-link" to={'/traces/' + encodeURIComponent(run.run_id)}>查看详情 <ArrowUpRight size={13} /></Link></td>
++      {page.items.length === 0 ? <EmptyState icon={Workflow} title={offset ? '当前页没有记录' : '没有匹配的运行记录'} description="接口已返回空结果。可调整筛选条件或等待新的报告尝试；未生成演示数据。" note="历史报告没有埋点时不会自动出现 Trace。" /> : <div className="trace-card trace-table-wrap"><table className="trace-table"><caption className="visually-hidden">真实运行列表</caption><thead><tr><th>对比</th><th>运行</th><th>状态</th><th>排队时间</th><th>整体耗时</th><th>版本</th><th>尝试</th><th>操作</th></tr></thead><tbody>{page.items.map(run => <tr key={run.run_id}>
++        <td><input type="checkbox" aria-label={'选择对比 ' + run.run_id} checked={selected.includes(run.run_id)} onChange={() => selectRun(run.run_id)} /></td><td><code className="run-id">{run.run_id}</code><small>执行：{valueText(run.execution_id)}</small>{run.integrity === 'incomplete' && <span className="integrity-tag">追踪不完整</span>}</td><td><StatusBadge status={run.status} /></td><td>{timeText(run.queued_at)}</td><td>{durationText(run.duration_ms)}</td><td><span>{valueText(metadata(run.manifest?.versions).prompt_version)}</span><small>{valueText(metadata(run.manifest?.versions).schema_version)}</small></td><td>{typeof run.attempt === 'number' ? `第 ${run.attempt} 次` : '未采集'}</td><td><Link className="trace-link" to={'/traces/' + encodeURIComponent(run.run_id)}>查看详情 <ArrowUpRight size={13} /></Link></td>
+       </tr>)}</tbody></table></div>}
+       <div className="trace-pagination"><span>匹配 {page.total} 条 · 第 {Math.floor(offset / limit) + 1} 页</span><label>每页<select aria-label="每页记录数" value={limit} onChange={e => { const next = new URLSearchParams(params); next.set('limit', e.target.value); next.delete('offset'); setParams(next); }}>{Array.from(new Set([limit, 10, 20, 50, 100])).sort((a, b) => a - b).map(value => <option key={value} value={value}>{value}</option>)}</select></label><button className="secondary-button" disabled={offset === 0} onClick={() => move(Math.max(0, offset - limit))}>上一页</button><button className="secondary-button" disabled={offset + limit >= page.total} onClick={() => move(offset + limit)}>下一页</button></div>
+     </>}
+--- before/admin/src/pages/VersionsPage.tsx
++++ after/admin/src/pages/VersionsPage.tsx
+@@ -1,7 +1,6 @@
+-import { GitCompareArrows } from 'lucide-react';
+-import { EmptyState } from '../components/EmptyState';
+-
++import { Link } from 'react-router-dom';
+ export function VersionsPage() {
+-  return <><div className="page-heading"><span className="eyebrow">VERSION COMPARISON</span><h1>版本对比</h1><p>为后续对比需求、实现版本与评测结果预留入口。</p></div>
+-    <EmptyState icon={GitCompareArrows} title="尚未接入版本数据" description="版本查询 API 尚未实现。已有版本档案继续保存在项目本地，本页面暂不读取或比较。" note="本阶段不新增版本管理后端，也不展示虚构的版本列表或评测分数。" /></>;
++  return <><div className="page-heading"><span className="eyebrow">VERSION COMPARISON</span><h1>版本对比</h1><p>查看历史运行实际保存的版本，核对两次报告生成记录。</p></div>
++    <section className="trace-card"><h2>从真实 Run 追溯版本</h2><p>每次运行的不可变 RunManifest 保存当时采集的 Prompt、模型、校验器、源码和输入指纹。没有采集的信息显示 unknown。</p><p><Link className="primary-button" to="/traces">选择两次历史运行</Link> <Link className="trace-link" to="/traces/compare">通过 Run ID 对比</Link></p><p className="muted">本页不提供评测分数、Prompt 编辑或版本发布管理。需求与源码历史档案继续保存在项目本地。</p></section>
++  </>;
+ }
+--- before/admin/src/features/traces/NodeInspector.tsx
++++ after/admin/src/features/traces/NodeInspector.tsx
+@@ -5,7 +5,7 @@
+ import { KeyValues, StatusBadge } from './TraceShared';
+ import { durationText, metadata, nodeLabels, ruleLabels, timeText, valueText } from './presentation';
+ 
+-const attributeFields = { evidence_count: '生成证据数', selected_evidence_count: '传入模型的证据数', input_bytes: '请求字节数', output_bytes: '返回字节数', candidate_count: '候选数', accepted_count: '合法候选数', rejected_count: '拒绝候选数', evidence_refs: '证据引用', provider: '实际 Provider', model: '实际模型', is_mock: 'Mock 标记', purpose: '调用目的', skip_reason: '跳过原因', report_status: '报告内容状态', goal_coverage: '目标覆盖', insight_count: '保存洞察数', chart_count: '图表数' };
++const attributeFields = { evidence_count: '生成证据数', selected_evidence_count: '传入模型的证据数', input_bytes: '请求字节数', output_bytes: '返回字节数', candidate_count: '候选数', accepted_count: '合法候选数', rejected_count: '拒绝候选数', evidence_refs: '证据引用', provider: 'Provider 返回标识', model: 'Provider 模型标识', is_mock: 'Mock 标记', purpose: '调用目的', skip_reason: '跳过原因', report_status: '报告内容状态', goal_coverage: '目标覆盖', insight_count: '保存洞察数', chart_count: '图表数' };
+ const eventFields = { candidate_index: '候选序号（从 0 开始）', candidate_status: '校验结果', primary_evidence_id: '主证据', evidence_refs: '证据引用', error_code: '错误代码', role: '触发字段', rule: '规则', rule_ids: '规则 ID', candidate_count: '候选数', accepted_count: '合法数', rejected_count: '拒绝数', input_bytes: '输入字节', output_bytes: '输出字节', provider: 'Provider', model: '模型', is_mock: 'Mock 标记', observation_gap: '追踪缺口', dropped_events: '未写入次数' };
+ const eventNames: Record<string, string> = { 'span.started': '阶段开始', 'span.finished': '阶段结束', 'span.skipped': '跳过阶段', 'llm.started': '模型调用开始', 'llm.returned': '模型已返回', 'candidate.validated': '候选校验', 'candidates.summarized': '候选汇总' };
+ export function NodeInspector({ span, manifest }: { span: TraceSpan; manifest?: RunManifest }) {
+@@ -40,7 +40,7 @@
+     {span.error_code && <div className="trace-danger"><strong>错误代码</strong><code>{span.error_code}</code><p>详细定位以候选事件的字段与规则为准。未采集的异常原文不可用。</p></div>}
+     <KeyValues source={{ start: timeText(span.started_at), finish: timeText(span.finished_at), recovered: timeText(span.recovered_at), duration: durationText(span.duration_ms), parent: span.parent_span_id === null ? '无（根节点）' : span.parent_span_id }} fields={{ start: '实际开始', finish: '实际结束', duration: '实际耗时', recovered: '恢复发现时间', parent: '父 Span' }} />
+     <h3>输入 / 输出摘要</h3>{Object.keys(relevantFields).length ? <KeyValues source={attributes} fields={relevantFields} /> : <p className="muted">此节点未采集独立输入输出摘要。</p>}
+-    <div className="unavailable-note">原始输入、输出、候选文本快照：不可用（V0.1 未采集）。仅展示已保存的元信息，不从业务数据补造原文。</div>
++    <div className="unavailable-note">完整原始输入、输出、候选文本：未保留。运行对比可查看已采集的受控投影与哈希；历史未采集内容不可用，不补造原文。</div>
+     <h3>模型与版本</h3>{span.name === 'insight_generator' ? <KeyValues source={{ ...metadata(manifest?.model_config_snapshot), ...attributes, prompt_version: versions.prompt_version, schema_version: versions.schema_version }} fields={{ provider: 'Provider', model: '模型', prompt_version: 'Prompt 版本', schema_version: '输出 Schema', timeout_seconds: '超时（秒）', enable_thinking: '思考配置', usage: 'Token 用量' }} /> : <p className="muted">此节点未记录独立模型调用。Run 级模型配置见下方 Manifest。</p>}
+     <h3>候选与拒绝诊断</h3><p className="muted">规则说明解释命中类别，不代表已经人工确认该候选有错。合法/拒绝总数来自后端汇总，不根据当前事件页推算。</p>
+     {candidates.length ? <div className="candidate-list">{candidates.map(event => {
+--- before/admin/src/features/traces/TraceShared.tsx
++++ after/admin/src/features/traces/TraceShared.tsx
+@@ -1,5 +1,5 @@
+ import type { Metadata, RunManifest } from '../../types/traces';
+-import { metadata, statusLabels, valueText } from './presentation';
++import { statusLabels, valueText } from './presentation';
+ 
+ export function StatusBadge({ status }: { status: string }) {
+   const known = Object.hasOwn(statusLabels, status);
+@@ -12,14 +12,17 @@
+   return <div className={`trace-notice ${degraded || incomplete ? 'trace-warning' : ''}`} role="note">
+     {degraded || incomplete ? '检测到追踪缺口或采集器降级。' : ''} 当前仅覆盖报告生成尝试；记录缺失不代表业务没有运行或没有失败。</div>;
+ }
+-const hashes = ['services/analysis_report.py', 'workflow/reporting.py', 'reporting/evidence.py', 'reporting/fact_validation.py', 'reporting/claims.py', 'reporting/prompt.py', 'reporting/selection.py', 'reporting/contracts.py', 'reporting/visualization.py', 'domain/analysis_report.py', 'domain/tracing.py', 'observability/recorder.py'];
++const hashes = ['services/analysis_report.py', 'workflow/reporting.py', 'reporting/evidence.py', 'reporting/fact_validation.py', 'reporting/claims.py', 'reporting/prompt.py', 'reporting/selection.py', 'reporting/contracts.py', 'reporting/visualization.py', 'domain/analysis_report.py', 'domain/tracing.py', 'observability/recorder.py', 'observability/provenance.py', 'observability/snapshots.py', 'llm/compatible_provider.py'];
+ export function ManifestView({ manifest }: { manifest?: RunManifest }) {
+   return <details className="trace-card manifest-panel"><summary>RunManifest · 本次运行的版本与关联</summary>
+     {!manifest && <p>历史记录未采集 RunManifest。</p>}
+-    <KeyValues source={metadata(manifest?.bindings)} fields={{ session_id: '会话 ID', execution_id: '执行 ID', approval_id: '审批 ID', dataset_id: '数据集 ID', dataset_version: '数据集版本', plan_id: '计划 ID', plan_version: '计划版本' }} />
+-    <KeyValues source={metadata(manifest?.versions)} fields={{ prompt_version: 'Prompt 版本', generation_version: '生成策略', schema_version: '报告 Schema', validation_version: 'Validator 版本', registry_version: 'Registry 版本' }} />
+-    <KeyValues source={metadata(manifest?.model_config_snapshot)} fields={{ provider: '配置 Provider', model: '配置模型', timeout_seconds: '超时（秒）', enable_thinking: '思考配置', temperature: 'temperature', top_p: 'top_p', usage: 'Token 用量' }} />
+-    <details><summary>实现文件指纹</summary><KeyValues source={metadata(manifest?.source_sha256)} fields={Object.fromEntries(hashes.map(key => [key, key]))} /></details>
+-    <p className="muted">只展示已知的元信息字段。未采集原始数据或候选文本快照。</p>
++    <p className="muted">不可变的运行时记录。unknown 表示当时未采集，不使用当前配置填补。</p>
++    <KeyValues source={{ scope: manifest?.capture_scope ?? 'unknown', commit: manifest?.git?.commit ?? 'unknown', dirty: manifest?.git?.dirty ?? 'unknown' }} fields={{ scope: '采集范围', commit: 'Git Commit', dirty: 'Git 工作区有修改' }} />
++    <KeyValues source={Object.fromEntries(['dataset','profile','user_goal','intent','approved_plan','execution'].map(k => [k, manifest?.input_sha256?.[k] ?? 'unknown']))} fields={{ dataset: '数据集指纹', profile: '画像指纹', user_goal: '用户目标指纹', intent: 'Intent 指纹', approved_plan: '审批快照指纹', execution: '执行结果指纹' }} />
++    <KeyValues source={Object.fromEntries(['session_id','execution_id','approval_id','dataset_id','dataset_version','plan_id','plan_version'].map(k => [k, manifest?.bindings?.[k] ?? 'unknown']))} fields={{ session_id: '会话 ID', execution_id: '执行 ID', approval_id: '审批 ID', dataset_id: '数据集 ID', dataset_version: '数据集版本', plan_id: '计划 ID', plan_version: '计划版本' }} />
++    <KeyValues source={Object.fromEntries(['prompt_version','generation_version','schema_version','validation_version','registry_version','prompt_sha256','fact_validator_sha256'].map(k => [k, manifest?.versions?.[k] ?? 'unknown']))} fields={{ prompt_version: 'Prompt 版本', generation_version: '生成策略', schema_version: '报告 Schema', validation_version: 'Validator 版本', registry_version: 'Registry 版本', prompt_sha256: 'Prompt 内容指纹', fact_validator_sha256: '报告事实校验器指纹' }} />
++    <KeyValues source={Object.fromEntries(['provider','model','timeout_seconds','enable_thinking','temperature','top_p','usage','endpoint_sha256'].map(k => [k, manifest?.model_config_snapshot?.[k] ?? 'unknown']))} fields={{ provider: '配置 Provider', model: '配置模型', timeout_seconds: '超时（秒）', enable_thinking: '思考配置', temperature: 'temperature', top_p: 'top_p', usage: 'Token 用量', endpoint_sha256: '模型端点指纹' }} />
++    <details><summary>实现文件指纹</summary><KeyValues source={Object.fromEntries(hashes.map(k => [k, manifest?.source_sha256?.[k] ?? 'unknown']))} fields={Object.fromEntries(hashes.map(key => [key, key]))} /></details>
++    <p className="muted">temperature / top_p 为 unknown 时没有已知采样默认值。源码 SHA 来自运行时磁盘，不替代 Git Commit。受控投影仅保留数值、引用和文本哈希；不保留完整原始内容。</p>
+   </details>;
+ }
+--- before/admin/package.json
++++ after/admin/package.json
+@@ -1,7 +1,7 @@
+ {
+   "name": "insightflow-admin",
+   "private": true,
+-  "version": "0.2.0",
++  "version": "0.3.0",
+   "type": "module",
+   "engines": {
+     "node": ">=22.12.0"
+--- before/admin/package-lock.json
++++ after/admin/package-lock.json
+@@ -1,12 +1,12 @@
+ {
+   "name": "insightflow-admin",
+-  "version": "0.2.0",
++  "version": "0.3.0",
+   "lockfileVersion": 3,
+   "requires": true,
+   "packages": {
+     "": {
+       "name": "insightflow-admin",
+-      "version": "0.2.0",
++      "version": "0.3.0",
+       "dependencies": {
+         "lucide-react": "0.468.0",
+         "react": "19.3.1",
+--- before/admin/README.md
++++ after/admin/README.md
+@@ -1,6 +1,6 @@
+-# InsightFlow Admin Console V0.2
++# InsightFlow Admin Console V0.3
+ 
+-独立的本地测试管理界面。Trace 列表、详情和 Node Inspector 已接入 V0.1 后端记录；Dashboard、版本对比仍为占位。当前使用管理员只读访问，没有多用户账户、版本评测或 Prompt 编辑。
++独立的本地测试管理界面。Trace 列表、详情、Node Inspector 和两次运行对比已接入真实后端记录；Dashboard、设置仍为占位。当前使用管理员只读访问，没有多用户账户、版本评测或 Prompt 编辑。
+ 
+ ## 安装与启动
+ 
+@@ -12,7 +12,7 @@
+ npm run dev
+ ```
+ 
+-访问 http://127.0.0.1:5174/dashboard。也可直接访问 `/traces`、`/versions`、`/settings`；根路径跳转到 `/dashboard`。未知路径显示 404。
++访问 http://127.0.0.1:5174/dashboard。也可直接访问 `/traces`、`/traces/compare`、`/versions`、`/settings`；根路径跳转到 `/dashboard`。未知路径显示 404。
+ 
+ 默认仅绑定 127.0.0.1，端口被占用时明确失败，不会自动选择其他端口。退出之前启动的服务后重试，或通过独立配置修改端口。
+ 
+@@ -51,7 +51,7 @@
+ └── src/
+     ├── app/             # App、路由和导航元信息
+     ├── layouts/         # 侧边栏、顶部导航、内容容器
+-    ├── pages/           # Trace 列表、详情及其他占位页面、404
++    ├── pages/           # Trace 列表、详情、对比与其他占位页面、404
+     ├── features/traces/ # 访问表单、层级、Inspector、诊断展示
+     ├── types/           # 复用 V0.1 的 Trace 数据契约
+     ├── components/      # 空状态和渲染错误边界
+@@ -70,3 +70,12 @@
+ 当前运行示例、权限配置及验收记录见 [Trace V0.2](../docs/admin-trace-v0.2.md)。工程框架历史见 [V0.1 工程说明](../docs/admin-console-v0.1.md)。
+ 
+ 访问 `/traces/:runId` 可直接刷新；筛选和分页保存在 URL，`span` 参数恢复选中节点。Cookie 方案要求同源代理；生产静态部署需配置 SPA 回退。管理员只读凭证配置在后端进程环境的 `INSIGHTFLOW_ADMIN_READ_TOKEN`，不要使用模型 API Key。
++
++
++## Trace V0.3 版本追溯与对比
++
++在 `/traces` 勾选两条历史 Run，进入 `/traces/compare?left=...&right=...`；URL 可刷新恢复。Manifest 保存当时采集的版本与输入指纹，缺失为 unknown；旧记录不补当前配置。对比页按节点身份和节点内重试序号对齐，展示状态、耗时、错误、规则和受控 Evidence/LLM/报告投影。
++
++管理员凭证仍仅由 backend 的 `INSIGHTFLOW_ADMIN_READ_TOKEN` 配置。浏览器按需输入现有凭证，不能写入 VITE_ 变量。新增只读接口 `/api/v1/admin/comparison` 与 `/api/v1/admin/runs/{id}/snapshots` 沿用相同权限；没有编辑或执行权限。
++
++原始数据和完整模型文字不保留在 Trace；数值与引用可读，类别/自由文本只比较哈希，历史未采集内容不可用。Git 不存在时显示 unknown。完整来源、可比性定义、真实示例和限制见 [Trace V0.3](../docs/admin-trace-v0.3.md)。
+--- before/README.md
++++ after/README.md
+@@ -260,3 +260,9 @@
+ `/traces` 现已接入真实运行列表、组合筛选和分页，`/traces/:runId` 提供阶段层级、失败定位、事件和候选拒绝诊断。复用 V0.1 记录与权限，新增短期 HttpOnly Cookie 只读访问；没有创建第二套运行记录或加入自动修复。
+ 
+ 使用方式、真实成功/失败/部分成功案例与验证结果见 [Trace V0.2](docs/admin-trace-v0.2.md)。本轮需求 REQ-0045，V0.1 历史及所有失败记录继续保留。
++
++## Admin Trace V0.3
++
++`/traces` 支持选择两次历史运行，`/traces/compare?left=...&right=...` 提供输入/版本可比性、节点身份与重试对齐、状态/错误/拒绝规则及受控证据与报告比较。缺失字段显示 unknown，不回填历史，不自动归因 Prompt。
++
++新增快照仍存于既有 Trace sidecar，权限与业务流程保持原样。用法、API、真实比较和隐私/历史限制见 [Trace V0.3](docs/admin-trace-v0.3.md)，需求 REQ-0046。

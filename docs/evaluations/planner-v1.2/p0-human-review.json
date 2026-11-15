@@ -1,0 +1,1741 @@
+{
+  "human_reviewed": true,
+  "human_review_count": 32,
+  "case_count": 32,
+  "records": [
+    {
+      "suite": "regression",
+      "case_id": "S01",
+      "query": "按地区汇总销售额。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T1",
+          "title": "按地区汇总销售额",
+          "business_question": "各地区（field_0002）的销售额（field_0004）总和是多少？",
+          "priority": "P0",
+          "priority_reason": "直接回答核心业务目标“按地区汇总销售额”，删除后无法完成主要分析任务。",
+          "requirement_ids": [
+            "C01",
+            "C02"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0004",
+                    "alias": "total_sales"
+                  }
+                ],
+                "dimensions": [
+                  "field_0002"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "用户可读性：问题中出现内部字段ID。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "S02",
+      "query": "按地区比较销售额与成本总和。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T1",
+          "title": "按地区统计销售额与成本总和",
+          "business_question": "各地区的销售额总和与成本总和分别是多少？",
+          "priority": "P0",
+          "priority_reason": "直接回答核心业务目标“按地区比较销售额与成本总和”，若删除则无法完成主要分析任务。",
+          "requirement_ids": [
+            "C01",
+            "C02"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0004",
+                    "alias": "total_sales_sum"
+                  },
+                  {
+                    "function": "sum",
+                    "field": "field_0005",
+                    "alias": "total_cost_sum"
+                  }
+                ],
+                "dimensions": [
+                  "field_0002"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "S03",
+      "query": "探索销售数据的主要差异和规律。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T1",
+          "title": "按地区分析销售额分布",
+          "business_question": "不同地区的总销售额是多少？以识别主要差异。",
+          "priority": "P0",
+          "priority_reason": "核心需求为探索销售数据的主要差异和规律，地区是关键的分类维度，删除此任务将无法回答关于地域差异的核心问题。",
+          "requirement_ids": [
+            "C01"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0004",
+                    "alias": "total_sales_by_region"
+                  }
+                ],
+                "dimensions": [
+                  "field_0002"
+                ]
+              }
+            },
+            {
+              "step_id": "S2",
+              "operation": "sort",
+              "params": {
+                "field": "total_sales_by_region",
+                "direction": "desc"
+              }
+            }
+          ]
+        },
+        {
+          "task_id": "T2",
+          "title": "按品类分析销售额分布",
+          "business_question": "不同品类的总销售额是多少？以识别产品类别间的差异。",
+          "priority": "P0",
+          "priority_reason": "核心需求为探索销售数据的主要差异和规律，品类是关键的分类维度，删除此任务将无法回答关于产品类别差异的核心问题。",
+          "requirement_ids": [
+            "C01"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0004",
+                    "alias": "total_sales_by_category"
+                  }
+                ],
+                "dimensions": [
+                  "field_0003"
+                ]
+              }
+            },
+            {
+              "step_id": "S2",
+              "operation": "sort",
+              "params": {
+                "field": "total_sales_by_category",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "探索式P0边界需人工判断：删除其中一个维度是否仍足以探索主要差异？",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "S04",
+      "query": "只看2026年华东地区已完成订单，排除硬件，按地区销售额总和降序取前三名。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T1",
+          "title": "2026年华东非硬件订单地区销售额Top3",
+          "business_question": "在2026年、华东地区、已完成且排除硬件的订单中，按地区汇总销售额总和并降序取前三名是多少？",
+          "priority": "P0",
+          "priority_reason": "直接回答核心业务目标：特定时间（2026）、特定区域（华东）、特定状态（已完成）及品类约束（排除硬件）下的销售额排名。删除此任务将无法获得决策所需的销售分布数据。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03",
+            "C04",
+            "C05"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "field_0001",
+                    "operator": "gte",
+                    "value": "2026-01-01"
+                  },
+                  {
+                    "field": "field_0001",
+                    "operator": "lt",
+                    "value": "2027-01-01"
+                  },
+                  {
+                    "field": "field_0002",
+                    "operator": "eq",
+                    "value": "华东"
+                  },
+                  {
+                    "field": "field_0006",
+                    "operator": "eq",
+                    "value": "已完成"
+                  },
+                  {
+                    "field": "field_0003",
+                    "operator": "ne",
+                    "value": "硬件"
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0004",
+                    "alias": "sales_sum"
+                  }
+                ],
+                "dimensions": [
+                  "field_0002"
+                ]
+              }
+            },
+            {
+              "step_id": "S3",
+              "operation": "sort",
+              "params": {
+                "field": "sales_sum",
+                "direction": "desc"
+              }
+            },
+            {
+              "step_id": "S4",
+              "operation": "top_n",
+              "params": {
+                "field": "sales_sum",
+                "direction": "desc",
+                "n": 3
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "S05",
+      "query": "计算各地区利润率，不能用销售额或订单数量替代。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "计算各地区利润率",
+          "business_question": "各地区的利润率是多少？（需基于销售额和成本计算，不能用销售额或订单数量替代）",
+          "priority": "P0",
+          "priority_reason": "核心业务目标明确要求计算利润率。由于当前能力目录不支持自定义公式派生（如 (sum(销售额)-sum(成本))/sum(销售额)），无法直接生成利润率数值字段。删除此任务将导致无法回答核心问题，故保留为P0并标记缺失输入。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03"
+          ],
+          "depends_on": [],
+          "missing_inputs": [
+            "缺少支持利润率计算公式的派生能力（derive function: profit_margin_ratio 或类似自定义聚合后计算能力）。现有derive仅支持日期提取，无法从group_aggregate输出的销售额总和与成本总和计算比率。"
+          ],
+          "steps": []
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "S06",
+      "query": "按地区汇总销售额，不要分析成本。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T1",
+          "title": "按地区汇总销售额",
+          "business_question": "各地区的销售额总和是多少？（明确不分析成本）",
+          "priority": "P0",
+          "priority_reason": "删除后无法回答核心业务目标“按地区汇总销售额”，且违反“不要分析成本”的约束边界。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0004",
+                    "alias": "sales_total"
+                  }
+                ],
+                "dimensions": [
+                  "field_0002"
+                ]
+              }
+            },
+            {
+              "step_id": "S2",
+              "operation": "sort",
+              "params": {
+                "field": "sales_total",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "R01",
+      "query": "统计各城市岗位数量。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "各城市岗位数量统计",
+          "business_question": "统计各城市的岗位数量是多少？",
+          "priority": "P0",
+          "priority_reason": "删除后无法回答核心问题“统计各城市岗位数量”，直接支持业务目标。",
+          "requirement_ids": [
+            "C01",
+            "C02"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "job_count"
+                  }
+                ],
+                "dimensions": [
+                  "field_0001"
+                ]
+              }
+            },
+            {
+              "step_id": "S02",
+              "operation": "sort",
+              "params": {
+                "field": "job_count",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "R02",
+      "query": "计算薪资区间的平均薪资，不接受其他指标替代。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "薪资区间平均薪资计算（数据缺失）",
+          "business_question": "各薪资区间的平均薪资是多少？不接受其他指标替代。",
+          "priority": "P0",
+          "priority_reason": "核心需求明确要求计算‘平均薪资’且‘不接受其他指标替代’。当前数据集中‘薪资区间’为文本类型（如'20-30K'），缺乏可计算的数值型薪资字段，且系统能力不支持从文本解析薪资数值。此任务直接对应核心决策目标，无法通过现有手段完成，必须保留以标记数据/能力缺口。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03"
+          ],
+          "depends_on": [],
+          "missing_inputs": [
+            "需要数值类型的薪资字段或支持从文本薪资区间解析出数值的能力（当前仅支持日期提取，不支持薪资解析）"
+          ],
+          "steps": []
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "R03",
+      "query": "抽取JD中的技能并比较技能频次。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "JD技能抽取与频次比较",
+          "business_question": "从JD文本字段中抽取具体技能名称，并统计各技能的出现频次以进行比较。",
+          "priority": "P0",
+          "priority_reason": "核心业务目标明确要求“抽取JD中的技能”，这是回答该问题的唯一途径。当前能力目录仅支持日期提取（extract_year/month），不支持文本语义分析或技能实体抽取。因此该任务无法通过现有步骤执行，必须保留为P0并标记缺失能力，以便系统识别需求未满足状态。",
+          "requirement_ids": [
+            "C01",
+            "C02"
+          ],
+          "depends_on": [],
+          "missing_inputs": [
+            "能力缺失：不支持从非结构化文本（JD）中进行自然语言处理、关键词提取或技能实体识别。仅支持基于结构化字段的聚合与简单派生。"
+          ],
+          "steps": []
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "R04",
+      "query": "只看北京和上海，按城市岗位数量降序取前两名。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T1",
+          "title": "北京和上海岗位数量排名",
+          "business_question": "只看北京和上海，按城市统计岗位数量并降序取前两名。",
+          "priority": "P0",
+          "priority_reason": "删除后无法回答核心业务问题：特定城市的岗位数量分布及排名。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03",
+            "C04"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "field_0001",
+                    "operator": "in",
+                    "value": [
+                      "北京",
+                      "上海"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "job_count"
+                  }
+                ],
+                "dimensions": [
+                  "field_0001"
+                ]
+              }
+            },
+            {
+              "step_id": "S3",
+              "operation": "sort",
+              "params": {
+                "field": "job_count",
+                "direction": "desc"
+              }
+            },
+            {
+              "step_id": "S4",
+              "operation": "top_n",
+              "params": {
+                "field": "job_count",
+                "direction": "desc",
+                "n": 2
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "R05",
+      "query": "不排除北京，统计各城市岗位数量，不要分析薪资。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T1",
+          "title": "各城市岗位数量统计",
+          "business_question": "不排除北京，统计各城市的岗位数量是多少？不要分析薪资。",
+          "priority": "P0",
+          "priority_reason": "删除后无法回答核心问题“统计各城市岗位数量”，且违反约束“不排除北京”和“不要分析薪资”。该任务直接对应核心需求C01、C02及C03中的限制条件。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "job_count"
+                  }
+                ],
+                "dimensions": [
+                  "field_0001"
+                ]
+              }
+            },
+            {
+              "step_id": "S2",
+              "operation": "sort",
+              "params": {
+                "field": "job_count",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "R06",
+      "query": "按城市统计AI产品经理岗位数量。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "统计各城市AI产品经理岗位数量",
+          "business_question": "按城市统计AI产品经理岗位的数量是多少？",
+          "priority": "P0",
+          "priority_reason": "直接回答核心业务目标，若删除则无法提供决策所需的基础数据。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "field_0002",
+                    "operator": "eq",
+                    "value": "AI产品经理"
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "job_count"
+                  }
+                ],
+                "dimensions": [
+                  "field_0001"
+                ]
+              }
+            },
+            {
+              "step_id": "S03",
+              "operation": "sort",
+              "params": {
+                "field": "job_count",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "C01",
+      "query": "比较各类工单的平均响应分钟。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "各类工单平均响应分钟比较",
+          "business_question": "比较各类工单的平均响应分钟。",
+          "priority": "P0",
+          "priority_reason": "直接回答核心业务目标“比较各类工单的平均响应分钟”，删除后无法支持该决策，属于最高优先级。",
+          "requirement_ids": [
+            "C01",
+            "C02"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "avg",
+                    "field": "field_0003",
+                    "alias": "avg_response_minutes"
+                  }
+                ],
+                "dimensions": [
+                  "field_0002"
+                ]
+              }
+            },
+            {
+              "step_id": "S02",
+              "operation": "sort",
+              "params": {
+                "field": "avg_response_minutes",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "C02",
+      "query": "探索工单数据的主要特征和异常。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "工单类别分布概况",
+          "business_question": "各类别的工单数量是多少？以识别主要业务类型。",
+          "priority": "P0",
+          "priority_reason": "删除后无法了解数据的基本构成，是探索“主要特征”的核心起点。关联C01。",
+          "requirement_ids": [
+            "C01"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "ticket_count"
+                  }
+                ],
+                "dimensions": [
+                  "field_0002"
+                ]
+              }
+            },
+            {
+              "step_id": "S02",
+              "operation": "sort",
+              "params": {
+                "field": "ticket_count",
+                "direction": "desc"
+              }
+            }
+          ]
+        },
+        {
+          "task_id": "T02",
+          "title": "整体响应时间统计",
+          "business_question": "所有工单的平均和中位响应分钟数是多少？以评估服务效率基线及潜在异常值影响。",
+          "priority": "P0",
+          "priority_reason": "响应时间是衡量服务质量的关键指标，直接反映数据的主要特征。关联C01。",
+          "requirement_ids": [
+            "C01"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "avg",
+                    "field": "field_0003",
+                    "alias": "avg_response_minutes"
+                  },
+                  {
+                    "function": "median",
+                    "field": "field_0003",
+                    "alias": "median_response_minutes"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "探索式多个P0的必要性需人工判断，服务效率统计是否都属于不可删除核心？",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "C03",
+      "query": "只看2026年VIP客户已解决工单，按类别平均响应分钟升序取前两名。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "2026年VIP已解决工单类别平均响应时间排名",
+          "business_question": "在2026年的VIP客户且状态为“已解决”的工单中，各业务类别的平均响应分钟数是多少？请按升序排列并找出前两名。注意：仅分析满足上述筛选条件的数据，不进行其他维度的扩展。",
+          "priority": "P0",
+          "priority_reason": "删除后无法回答核心业务目标（2026年VIP已解决工单的类别平均响应时间Top2）。这是唯一直接支持决策的任务，必须包含所有约束条件（时间、客户等级、解决状态、指标、排序限制）。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03",
+            "C04",
+            "C05"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "field_0001",
+                    "operator": "gte",
+                    "value": "2026-01-01"
+                  },
+                  {
+                    "field": "field_0001",
+                    "operator": "lt",
+                    "value": "2027-01-01"
+                  },
+                  {
+                    "field": "field_0005",
+                    "operator": "eq",
+                    "value": "VIP"
+                  },
+                  {
+                    "field": "field_0004",
+                    "operator": "eq",
+                    "value": true
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "avg",
+                    "field": "field_0003",
+                    "alias": "avg_response_minutes"
+                  }
+                ],
+                "dimensions": [
+                  "field_0002"
+                ]
+              }
+            },
+            {
+              "step_id": "S03",
+              "operation": "sort",
+              "params": {
+                "field": "avg_response_minutes",
+                "direction": "asc"
+              }
+            },
+            {
+              "step_id": "S04",
+              "operation": "top_n",
+              "params": {
+                "field": "avg_response_minutes",
+                "direction": "asc",
+                "n": 2
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "C04",
+      "query": "只统计各类别工单数量，不要求计算响应分钟，也不要按客服人员排名。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "各类别工单数量统计",
+          "business_question": "按类别统计工单数量是多少？（明确不计算响应分钟，不按客服人员排名）",
+          "priority": "P0",
+          "priority_reason": "直接回答核心业务目标“只统计各类别工单数量”，删除后无法完成主要分析任务。同时满足指标要求及禁止排名的约束。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "ticket_count"
+                  }
+                ],
+                "dimensions": [
+                  "field_0002"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "措辞风险：原文不要求响应分钟，部分任务说明写成不计算或排除；结合只统计数量的范围，需判断是在描述本计划未安排，还是误称用户禁令。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "C05",
+      "query": "比较各类别客户满意度。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "按类别比较客户满意度指标（待确认统计口径）",
+          "business_question": "各类别的客户满意度是多少？需确认使用何种数值字段及统计函数（如均值/中位数）进行比较。",
+          "priority": "P0",
+          "priority_reason": "核心需求要求比较各类别客户满意度，但当前数据画像中不存在名为“客户满意度”的数值字段，且未指定具体的统计口径（如响应分钟、是否解决等代理指标或真实评分）。删除此任务将无法回答核心问题。保留为P0以标记缺失关键输入。",
+          "requirement_ids": [
+            "C01",
+            "C02"
+          ],
+          "depends_on": [],
+          "missing_inputs": [
+            "缺少直接表示“客户满意度”的数值型字段（profile.fields中无对应ID）",
+            "需在计划审批时确认用于衡量满意度的具体字段及统计口径（例如：若用响应时间作为负向代理，需明确是看平均响应时间还是其他指标；若有隐含的评分字段未在元数据中展示，需提供字段ID）"
+          ],
+          "steps": []
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "C06",
+      "query": "比较各类别响应分钟，没有指定均值还是中位数。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "各类别响应分钟统计口径确认",
+          "business_question": "比较各类别的响应分钟，但用户未指定使用均值还是中位数作为统计口径。需在计划审批时确认具体指标定义后执行分组聚合。",
+          "priority": "P0",
+          "priority_reason": "核心需求要求比较响应分钟，但统计基准（均值/中位数）缺失且被标记为defer，导致无法直接生成可执行的聚合步骤。删除此任务将无法回答核心问题。",
+          "requirement_ids": [
+            "C01",
+            "C02"
+          ],
+          "depends_on": [],
+          "missing_inputs": [
+            "需在计划审批时确认比较响应分钟的统计口径（均值或中位数）"
+          ],
+          "steps": []
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "保守暂停：统计口径待审批，保留P0缺口，无计算链。冻结参考原要求complete，自动判失败；不能改分掩盖差异。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "P01",
+      "query": "汇总各项目实际工时。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "各项目实际工时汇总",
+          "business_question": "按项目分组，计算每个项目的实际工时总和。",
+          "priority": "P0",
+          "priority_reason": "直接响应核心业务目标“汇总各项目实际工时”，若删除此任务则无法回答用户关于项目工时分布的核心问题。",
+          "requirement_ids": [
+            "C01",
+            "C02"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0005",
+                    "alias": "total_actual_hours"
+                  }
+                ],
+                "dimensions": [
+                  "field_0001"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "P02",
+      "query": "比较各项目任务数量和实际工时合计。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T1",
+          "title": "各项目任务数量与实际工时合计统计",
+          "business_question": "按项目分组，统计每个项目的任务数量（行数）和实际工时的总和。",
+          "priority": "P0",
+          "priority_reason": "核心需求明确要求比较各项目的任务数量和实际工时合计。删除此任务将无法回答关于项目维度下工作量分布及总投入时间的核心问题。",
+          "requirement_ids": [
+            "C01",
+            "C02"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "task_count"
+                  },
+                  {
+                    "function": "sum",
+                    "field": "field_0005",
+                    "alias": "actual_hours_sum"
+                  }
+                ],
+                "dimensions": [
+                  "field_0001"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "P03",
+      "query": "按截止年份汇总实际工时。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "按截止年份汇总实际工时",
+          "business_question": "各截止年份的实际工时总和是多少？",
+          "priority": "P0",
+          "priority_reason": "核心需求C01和C02要求按截止年份汇总实际工时。删除此任务将无法回答核心业务问题。",
+          "requirement_ids": [
+            "C01",
+            "C02"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "derive",
+              "params": {
+                "function": "extract_year",
+                "field": "field_0004",
+                "alias": "deadline_year"
+              }
+            },
+            {
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0005",
+                    "alias": "total_actual_hours"
+                  }
+                ],
+                "dimensions": [
+                  "deadline_year"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "P04",
+      "query": "只看今年已完成任务，按项目汇总实际工时。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "今年已完成任务按项目汇总实际工时",
+          "business_question": "只看今年已完成任务，按项目汇总实际工时。",
+          "priority": "P0",
+          "priority_reason": "删除后无法回答核心业务问题“按项目汇总实际工时”，且直接支持决策目标。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03",
+            "C04"
+          ],
+          "depends_on": [],
+          "missing_inputs": [
+            "需在计划审批时确认“今年”的具体年份范围（例如2023或2024），当前数据字段为截止日期，需基于此筛选。"
+          ],
+          "steps": []
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "今年未获得确定基准，当前保留待确认，不猜年份。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "P05",
+      "query": "比较各项目任务数量，不要建议裁员。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "各项目任务数量统计",
+          "business_question": "比较各项目任务数量，不要建议裁员。",
+          "priority": "P0",
+          "priority_reason": "直接回答核心业务目标“比较各项目任务数量”，是决策支持的基础数据。若删除此任务，无法获取项目维度的任务分布情况，且必须保留“不要建议裁员”的约束边界。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "task_count"
+                  }
+                ],
+                "dimensions": [
+                  "field_0001"
+                ]
+              }
+            },
+            {
+              "step_id": "S02",
+              "operation": "sort",
+              "params": {
+                "field": "task_count",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "regression",
+      "case_id": "P06",
+      "query": "比较各项目实际工时，帮助我确定需要进一步核查的项目。",
+      "source_sha256": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "各项目实际工时汇总与对比",
+          "business_question": "各项目的实际工时总和是多少？通过比较各项目工时，帮助确定需要进一步核查的项目。",
+          "priority": "P0",
+          "priority_reason": "核心需求是“比较各项目实际工时”以辅助决策。删除此任务将无法获得按项目聚合的工时数据，无法回答核心问题或支持核查决策。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0005",
+                    "alias": "total_actual_hours"
+                  }
+                ],
+                "dimensions": [
+                  "field_0001"
+                ]
+              }
+            },
+            {
+              "step_id": "S02",
+              "operation": "sort",
+              "params": {
+                "field": "total_actual_hours",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "unseen",
+      "case_id": "U01",
+      "query": "排除软件品类，按地区比较成本总和，只保留成本最高的两个地区。",
+      "source_sha256": "e4cdb18b5c1e329365867e786c90cfe4a385cbd1d6c0832fc95da6a9d01c2c59",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "排除软件品类后按地区统计成本总和并取Top2",
+          "business_question": "在排除“软件”品类的前提下，各地区的成本总和是多少？请仅保留成本最高的两个地区。",
+          "priority": "P0",
+          "priority_reason": "删除此任务将无法回答核心业务问题（比较非软件品类的地区成本）并支持相关决策。该任务直接对应所有核心约束：过滤条件、指标定义及排名限制。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03",
+            "C04"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "field_0003",
+                    "operator": "ne",
+                    "value": "软件"
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0005",
+                    "alias": "cost_sum"
+                  }
+                ],
+                "dimensions": [
+                  "field_0002"
+                ]
+              }
+            },
+            {
+              "step_id": "S03",
+              "operation": "top_n",
+              "params": {
+                "field": "cost_sum",
+                "direction": "desc",
+                "n": 2
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "unseen",
+      "case_id": "U02",
+      "query": "仅分析2025年已完成订单，按品类汇总销售额，禁止分析成本。",
+      "source_sha256": "e4cdb18b5c1e329365867e786c90cfe4a385cbd1d6c0832fc95da6a9d01c2c59",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "2025年已完成订单各品类销售额汇总",
+          "business_question": "在仅分析2025年已完成订单且禁止分析成本的约束下，按品类汇总的销售额是多少？",
+          "priority": "P0",
+          "priority_reason": "直接回答核心业务目标：按品类汇总2025年已完成订单的销售额。删除此任务将无法完成主要分析需求。严格遵循“禁止分析成本”的限制，仅使用销售额字段。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03",
+            "C04",
+            "C05"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01_1",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "field_0001",
+                    "operator": "gte",
+                    "value": "2025-01-01"
+                  },
+                  {
+                    "field": "field_0001",
+                    "operator": "lt",
+                    "value": "2026-01-01"
+                  },
+                  {
+                    "field": "field_0006",
+                    "operator": "eq",
+                    "value": "已完成"
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "S01_2",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0004",
+                    "alias": "sales_sum"
+                  }
+                ],
+                "dimensions": [
+                  "field_0003"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "unseen",
+      "case_id": "U03",
+      "query": "不要只看上海，按城市统计岗位数量，薪资分析非必选。",
+      "source_sha256": "e4cdb18b5c1e329365867e786c90cfe4a385cbd1d6c0832fc95da6a9d01c2c59",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "按城市统计岗位数量",
+          "business_question": "各城市的岗位数量分布如何？（注意：不要只看上海，需包含所有城市数据）",
+          "priority": "P0",
+          "priority_reason": "核心需求为“按城市统计岗位数量”，且明确约束“不要只看上海”。此任务直接回答业务目标，删除后无法完成核心分析。薪资分析为非必选项，故不纳入核心P0任务。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "job_count"
+                  }
+                ],
+                "dimensions": [
+                  "field_0001"
+                ]
+              }
+            },
+            {
+              "step_id": "S02",
+              "operation": "sort",
+              "params": {
+                "field": "job_count",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "unseen",
+      "case_id": "U04",
+      "query": "推断JD中的岗位技能等级并比较。",
+      "source_sha256": "e4cdb18b5c1e329365867e786c90cfe4a385cbd1d6c0832fc95da6a9d01c2c59",
+      "p0_tasks": [
+        {
+          "task_id": "T1",
+          "title": "推断JD中的岗位技能等级并比较",
+          "business_question": "如何从JD文本中推断出每个岗位的“技能等级”（如初级、中级、高级），并进行分布或对比分析？",
+          "priority": "P0",
+          "priority_reason": "核心业务目标要求推断和比较岗位技能等级，但当前能力目录不支持对自由文本进行语义分类、关键词提取或技能识别。这是回答核心问题的必要步骤，因此必须保留为P0任务，尽管无法直接执行。",
+          "requirement_ids": [
+            "C01",
+            "C02"
+          ],
+          "depends_on": [],
+          "missing_inputs": [
+            "NLP技能抽取能力：需要从field_0005 (JD)中提取结构化技能标签",
+            "技能等级映射规则：需要定义哪些技能组合对应初级/中级/高级",
+            "派生字段支持：需要基于JD内容生成新的'技能等级'分类字段"
+          ],
+          "steps": []
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "unseen",
+      "case_id": "U05",
+      "query": "排除退款类别，按客户等级统计工单数量，不要按客服人员排名。",
+      "source_sha256": "e4cdb18b5c1e329365867e786c90cfe4a385cbd1d6c0832fc95da6a9d01c2c59",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "排除退款后按客户等级统计工单数量",
+          "business_question": "在排除“退款”类别的前提下，各客户等级的工单数量是多少？（注意：不要按客服人员排名）",
+          "priority": "P0",
+          "priority_reason": "直接回答核心业务目标：排除特定类别后的分组计数。删除此任务将无法完成主要分析需求。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03",
+            "C04"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "field_0002",
+                    "operator": "ne",
+                    "value": "退款"
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "ticket_count"
+                  }
+                ],
+                "dimensions": [
+                  "field_0005"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "unseen",
+      "case_id": "U06",
+      "query": "按客户等级比较平均响应分钟，不需要计算响应分钟中位数。",
+      "source_sha256": "e4cdb18b5c1e329365867e786c90cfe4a385cbd1d6c0832fc95da6a9d01c2c59",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "按客户等级统计平均响应分钟",
+          "business_question": "不同客户等级的工单平均响应时间是多少？（明确不需要计算中位数）",
+          "priority": "P0",
+          "priority_reason": "直接回答核心业务目标“按客户等级比较平均响应分钟”，删除后无法支持该决策。关联需求C01和C02。",
+          "requirement_ids": [
+            "C01",
+            "C02"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "avg",
+                    "field": "field_0003",
+                    "alias": "avg_response_minutes"
+                  }
+                ],
+                "dimensions": [
+                  "field_0005"
+                ]
+              }
+            },
+            {
+              "step_id": "S02",
+              "operation": "sort",
+              "params": {
+                "field": "avg_response_minutes",
+                "direction": "asc"
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "unseen",
+      "case_id": "U07",
+      "query": "仅看项目A已完成任务，汇总实际工时并统计任务数量。",
+      "source_sha256": "e4cdb18b5c1e329365867e786c90cfe4a385cbd1d6c0832fc95da6a9d01c2c59",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "项目A已完成任务工时与数量汇总",
+          "business_question": "仅看项目A已完成任务，汇总实际工时并统计任务数量。",
+          "priority": "P0",
+          "priority_reason": "直接回答核心业务目标：获取特定筛选条件下的总工时和任务计数。删除此任务将无法提供决策所需的关键数据。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "field_0001",
+                    "operator": "eq",
+                    "value": "项目A"
+                  },
+                  {
+                    "field": "field_0003",
+                    "operator": "eq",
+                    "value": "已完成"
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "S02",
+              "operation": "aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0005",
+                    "alias": "total_actual_hours"
+                  },
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "task_count"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    },
+    {
+      "suite": "unseen",
+      "case_id": "U08",
+      "query": "按截止月份比较实际工时总和，不要据此给出裁员建议。",
+      "source_sha256": "e4cdb18b5c1e329365867e786c90cfe4a385cbd1d6c0832fc95da6a9d01c2c59",
+      "p0_tasks": [
+        {
+          "task_id": "T01",
+          "title": "按截止月份统计实际工时总和",
+          "business_question": "不同截止月份的实际工时总和分别是多少？（注意：不要据此给出裁员建议）",
+          "priority": "P0",
+          "priority_reason": "这是核心分析目标，直接回答“按截止月份比较实际工时总和”的需求。删除此任务将无法完成核心业务问题。同时需遵守“不要据此给出裁员建议”的限制。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01_1",
+              "operation": "derive",
+              "params": {
+                "function": "extract_month",
+                "field": "field_0004",
+                "alias": "deadline_month"
+              }
+            },
+            {
+              "step_id": "S01_2",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0005",
+                    "alias": "total_actual_hours"
+                  }
+                ],
+                "dimensions": [
+                  "deadline_month"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "human_review_status": "confirmed_p0_scope_and_priority",
+      "agent_review_note": "未识别额外关键问题；仍待用户逐例确认。",
+      "human_reviewed_at": "2026-10-27T15:35:36+08:00"
+    }
+  ],
+  "p0_task_count": 34,
+  "human_review_scope": "P0范围及优先级；非运行批准或全量语义保证",
+  "confirmation": {
+    "recorded_at": "2026-10-27T15:35:36+08:00",
+    "timezone": "Asia/Shanghai",
+    "source": "Direct human user reply in this chat",
+    "question": "请按案例编号复核32例真实计划及删除理由，特别查看C04非必选措辞、C06口径待确认及S03/C02探索任务P0是否过多。",
+    "answer": "已逐例复核，P0 范围及优先级均认可",
+    "prompt_version": "planner-v1.2",
+    "confirmed_scope": [
+      "P0 core-task scope in all 32 reviewed plans",
+      "P0 priority assignments in all 32 reviewed plans"
+    ],
+    "case_count": 32,
+    "p0_task_count": 34,
+    "case_ids": [
+      "S01",
+      "S02",
+      "S03",
+      "S04",
+      "S05",
+      "S06",
+      "R01",
+      "R02",
+      "R03",
+      "R04",
+      "R05",
+      "R06",
+      "C01",
+      "C02",
+      "C03",
+      "C04",
+      "C05",
+      "C06",
+      "P01",
+      "P02",
+      "P03",
+      "P04",
+      "P05",
+      "P06",
+      "U01",
+      "U02",
+      "U03",
+      "U04",
+      "U05",
+      "U06",
+      "U07",
+      "U08"
+    ],
+    "reviewed_material_sha256": "5350897f16f3c9cf5e3aac2e2afd65355429f2a8d0c69cf79df30e64474b9713",
+    "source_results_sha256": {
+      "regression-live.json": "26009d860466968092534a466986d6877bb4bdfaf1aa52e0e4adc55c725dbad5",
+      "unseen-live.json": "e4cdb18b5c1e329365867e786c90cfe4a385cbd1d6c0832fc95da6a9d01c2c59"
+    },
+    "scope_limits": [
+      "Does not change frozen scores, Gold labels or model outputs",
+      "Does not grant HITL approval or authorize execution of any plan",
+      "Does not assert universal semantic reliability or full operation-chain determinism"
+    ],
+    "p0_review_passed": true
+  }
+}

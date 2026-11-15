@@ -1,0 +1,205 @@
+{
+  "$defs": {
+    "AnalysisStep": {
+      "additionalProperties": false,
+      "properties": {
+        "step_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Step Id",
+          "type": "string"
+        },
+        "operation": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Operation",
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": true,
+          "title": "Params",
+          "type": "object"
+        }
+      },
+      "required": [
+        "step_id",
+        "operation",
+        "params"
+      ],
+      "title": "AnalysisStep",
+      "type": "object"
+    },
+    "AnalysisTask": {
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        },
+        "business_question": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Business Question",
+          "type": "string"
+        },
+        "priority": {
+          "enum": [
+            "P0",
+            "P1",
+            "P2"
+          ],
+          "title": "Priority",
+          "type": "string"
+        },
+        "priority_reason": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Priority Reason",
+          "type": "string"
+        },
+        "requirement_ids": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Requirement Ids",
+          "type": "array"
+        },
+        "depends_on": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Depends On",
+          "type": "array"
+        },
+        "missing_inputs": {
+          "items": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Missing Inputs",
+          "type": "array"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/AnalysisStep"
+          },
+          "maxItems": 20,
+          "title": "Steps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "task_id",
+        "title",
+        "business_question",
+        "priority",
+        "priority_reason",
+        "requirement_ids",
+        "depends_on",
+        "steps"
+      ],
+      "title": "AnalysisTask",
+      "type": "object"
+    },
+    "CoreRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "requirement_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Requirement Id",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "requirement_id",
+        "description"
+      ],
+      "title": "CoreRequirement",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "dataset_id": {
+      "minLength": 1,
+      "title": "Dataset Id",
+      "type": "string"
+    },
+    "dataset_version": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Dataset Version",
+      "type": "string"
+    },
+    "plan_id": {
+      "maxLength": 120,
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Plan Id",
+      "type": "string"
+    },
+    "plan_version": {
+      "minimum": 1,
+      "title": "Plan Version",
+      "type": "integer"
+    },
+    "tasks": {
+      "items": {
+        "$ref": "#/$defs/AnalysisTask"
+      },
+      "maxItems": 10,
+      "title": "Tasks",
+      "type": "array"
+    },
+    "core_requirements": {
+      "items": {
+        "$ref": "#/$defs/CoreRequirement"
+      },
+      "maxItems": 10,
+      "minItems": 1,
+      "title": "Core Requirements",
+      "type": "array"
+    }
+  },
+  "required": [
+    "dataset_id",
+    "dataset_version",
+    "plan_id",
+    "plan_version",
+    "tasks",
+    "core_requirements"
+  ],
+  "title": "AnalysisPlan",
+  "type": "object"
+}

@@ -1,0 +1,2714 @@
+[
+  {
+    "phase": "planner-v1.1",
+    "case_id": "S06",
+    "repeat": 1,
+    "dataset": "sales",
+    "query": "按地区汇总销售额，不要分析成本。",
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": null,
+        "business_goal": "按地区汇总销售额，不要分析成本。",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "销售额",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "不要分析成本",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    },
+    "expected": {
+      "metrics": [
+        {
+          "field": "销售额",
+          "function": "sum"
+        }
+      ],
+      "dimensions": [
+        "地区"
+      ],
+      "forbidden_fields": [
+        "成本"
+      ],
+      "max_tasks": 1
+    },
+    "output": {
+      "plan": {
+        "dataset_id": "planner_eval_sales",
+        "dataset_version": "678f492444dfe8cff66f970521a1aae977bd5db0ca708da8366a241859bf77dd",
+        "plan_id": "plan_5c11068f366145f29378525ebd1719e5",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "按地区汇总销售额",
+            "business_question": "各地区的销售总额是多少？",
+            "priority": "P0",
+            "priority_reason": "直接回答核心业务目标“按地区汇总销售额”，删除后无法完成主要分析任务。",
+            "requirement_ids": [
+              "C01",
+              "C02"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "sum",
+                      "field": "field_0004",
+                      "alias": "total_sales"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S2",
+                "operation": "sort",
+                "params": {
+                  "field": "total_sales",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "按地区汇总销售额，不要分析成本。"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：销售额"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "analysis_limits：不要分析成本"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [
+        {
+          "requirement_id": "C03",
+          "description": "analysis_limits：不要分析成本",
+          "task_ids": [],
+          "reason_codes": [
+            "CORE_NOT_COVERED"
+          ]
+        }
+      ],
+      "coverage_status": "partial",
+      "executable_task_ids": [
+        "T1"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": false,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "planner_eval_sales",
+        "dataset_version": "678f492444dfe8cff66f970521a1aae977bd5db0ca708da8366a241859bf77dd",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.1; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "按地区汇总销售额，不要分析成本。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "销售额",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "不要分析成本",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "error": null,
+    "attempts": [
+      {
+        "attempt": 1,
+        "status": "returned",
+        "text": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T1\",\n      \"title\": \"按地区汇总销售额\",\n      \"business_question\": \"各地区的销售总额是多少？\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"直接回答核心业务目标“按地区汇总销售额”，删除后无法完成主要分析任务。\",\n      \"requirement_ids\": [\n        \"C01\",\n        \"C02\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S1\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"sum\",\n                \"field\": \"field_0004\",\n                \"alias\": \"total_sales\"\n              }\n            ],\n            \"dimensions\": [\n              \"field_0002\"\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S2\",\n          \"operation\": \"sort\",\n          \"params\": {\n            \"field\": \"total_sales\",\n            \"direction\": \"desc\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+        "truncated": false,
+        "model": "qwen3.8-flash",
+        "is_mock": false,
+        "duration_seconds": 4.7681
+      }
+    ],
+    "signature": [
+      "{\"blocked\": false, \"priority\": \"P0\", \"steps\": [[\"group_aggregate\", {\"dimensions\": [\"field_0002\"], \"metrics\": [{\"alias\": \"alias_1\", \"field\": \"field_0004\", \"function\": \"sum\"}]}], [\"sort\", {\"direction\": \"desc\", \"field\": \"alias_1\"}]]}"
+    ],
+    "assessment": {
+      "passed": false,
+      "checks": [
+        {
+          "kind": "p0_retained",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "task_count",
+          "passed": true,
+          "details": 1,
+          "constraint": false
+        },
+        {
+          "kind": "technical_coverage",
+          "passed": false,
+          "details": "partial",
+          "constraint": false
+        },
+        {
+          "kind": "all_tasks_validated",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "no_duplicate_tasks",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "required_metric",
+          "passed": true,
+          "details": {
+            "field": "销售额",
+            "function": "sum"
+          },
+          "constraint": true
+        },
+        {
+          "kind": "no_unrequested_metrics",
+          "passed": true,
+          "details": null,
+          "constraint": true
+        },
+        {
+          "kind": "required_dimension",
+          "passed": true,
+          "details": "地区",
+          "constraint": true
+        },
+        {
+          "kind": "no_forbidden_field",
+          "passed": true,
+          "details": "成本",
+          "constraint": true
+        }
+      ],
+      "failures": [
+        {
+          "kind": "technical_coverage",
+          "passed": false,
+          "details": "partial",
+          "constraint": false
+        }
+      ]
+    }
+  },
+  {
+    "phase": "planner-v1.1",
+    "case_id": "C01",
+    "repeat": 1,
+    "dataset": "support",
+    "query": "比较各类工单的平均响应分钟。",
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": null,
+        "business_goal": "比较各类工单的平均响应分钟。",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "平均响应分钟",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    },
+    "expected": {
+      "metrics": [
+        {
+          "field": "响应分钟",
+          "function": "avg"
+        }
+      ],
+      "dimensions": [
+        "类别"
+      ],
+      "max_tasks": 1
+    },
+    "output": {
+      "plan": {
+        "dataset_id": "planner_eval_support",
+        "dataset_version": "5a9594bc85c759f86026c82c21b6c55fcbb9c2173f74be406317c73cc722b9e7",
+        "plan_id": "plan_f2f6e98955f0477a83a74e3ddf2a68b7",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T01",
+            "title": "按工单类别统计平均响应分钟",
+            "business_question": "各类工单的平均响应时间是多少？",
+            "priority": "P0",
+            "priority_reason": "直接回答核心业务目标“比较各类工单的平均响应分钟”，删除此任务将无法获取任何类别维度的响应时间数据，无法支持决策。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "avg",
+                      "field": "field_0003",
+                      "alias": "avg_response_minutes"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S02",
+                "operation": "sort",
+                "params": {
+                  "field": "avg_response_minutes",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "比较各类工单的平均响应分钟。"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：平均响应分钟"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T01",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [
+        {
+          "requirement_id": "C02",
+          "description": "metric_requirements：平均响应分钟",
+          "task_ids": [],
+          "reason_codes": [
+            "CORE_NOT_COVERED"
+          ]
+        }
+      ],
+      "coverage_status": "partial",
+      "executable_task_ids": [
+        "T01"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": false,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "planner_eval_support",
+        "dataset_version": "5a9594bc85c759f86026c82c21b6c55fcbb9c2173f74be406317c73cc722b9e7",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.1; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "比较各类工单的平均响应分钟。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "平均响应分钟",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "error": null,
+    "attempts": [
+      {
+        "attempt": 1,
+        "status": "returned",
+        "text": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T01\",\n      \"title\": \"按工单类别统计平均响应分钟\",\n      \"business_question\": \"各类工单的平均响应时间是多少？\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"直接回答核心业务目标“比较各类工单的平均响应分钟”，删除此任务将无法获取任何类别维度的响应时间数据，无法支持决策。\",\n      \"requirement_ids\": [\n       \"C01\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n       {\n      \"step_id\": \"S01\",\n      \"operation\": \"group_aggregate\",\n      \"params\": {\n       \"metrics\": [\n       {\"function\": \"avg\",\"field\": \"field_0003\",\"alias\": \"avg_response_minutes\"}],\n       \"dimensions\": [\"field_0002\"]\n      }\n    },\n    {\n      \"step_id\": \"S02\",\n      \"operation\": \"sort\",\n      \"params\": {\n       \"field\": \"avg_response_minutes\",\n       \"direction\": \"desc\"\n      }\n    }\n  ]\n}\n]\n}",
+        "truncated": false,
+        "model": "qwen3.8-flash",
+        "is_mock": false,
+        "duration_seconds": 5.0235
+      }
+    ],
+    "signature": [
+      "{\"blocked\": false, \"priority\": \"P0\", \"steps\": [[\"group_aggregate\", {\"dimensions\": [\"field_0002\"], \"metrics\": [{\"alias\": \"alias_1\", \"field\": \"field_0003\", \"function\": \"avg\"}]}], [\"sort\", {\"direction\": \"desc\", \"field\": \"alias_1\"}]]}"
+    ],
+    "assessment": {
+      "passed": false,
+      "checks": [
+        {
+          "kind": "p0_retained",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "task_count",
+          "passed": true,
+          "details": 1,
+          "constraint": false
+        },
+        {
+          "kind": "technical_coverage",
+          "passed": false,
+          "details": "partial",
+          "constraint": false
+        },
+        {
+          "kind": "all_tasks_validated",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "no_duplicate_tasks",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "required_metric",
+          "passed": true,
+          "details": {
+            "field": "响应分钟",
+            "function": "avg"
+          },
+          "constraint": true
+        },
+        {
+          "kind": "no_unrequested_metrics",
+          "passed": true,
+          "details": null,
+          "constraint": true
+        },
+        {
+          "kind": "required_dimension",
+          "passed": true,
+          "details": "类别",
+          "constraint": true
+        }
+      ],
+      "failures": [
+        {
+          "kind": "technical_coverage",
+          "passed": false,
+          "details": "partial",
+          "constraint": false
+        }
+      ]
+    }
+  },
+  {
+    "phase": "planner-v1.1",
+    "case_id": "C02",
+    "repeat": 1,
+    "dataset": "support",
+    "query": "探索工单数据的主要特征和异常。",
+    "intent": {
+      "analysis_mode": "exploratory",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": null,
+        "business_goal": "探索工单数据的主要特征和异常。",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    },
+    "expected": {
+      "metrics": [],
+      "dimensions": [],
+      "min_tasks": 2,
+      "max_tasks": 5
+    },
+    "output": {
+      "plan": {
+        "dataset_id": "planner_eval_support",
+        "dataset_version": "5a9594bc85c759f86026c82c21b6c55fcbb9c2173f74be406317c73cc722b9e7",
+        "plan_id": "plan_d15dbc18bd8d4ccaab1851db669a2193",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T01",
+            "title": "工单类别分布概况",
+            "business_question": "各类别下的工单数量是多少？",
+            "priority": "P0",
+            "priority_reason": "删除后无法了解工单数据的主要构成特征，直接阻碍对核心问题“主要特征”的回答。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "ticket_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S02",
+                "operation": "sort",
+                "params": {
+                  "field": "ticket_count",
+                  "direction": "desc"
+                }
+              }
+            ]
+          },
+          {
+            "task_id": "T02",
+            "title": "响应时间统计特征",
+            "business_question": "整体及分组的平均、中位、最长和最短响应分钟数是多少？",
+            "priority": "P0",
+            "priority_reason": "删除后无法量化服务效率这一关键业务特征，也无法通过极值识别潜在的异常高/低响应情况。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "avg",
+                      "field": "field_0003",
+                      "alias": "avg_response_min"
+                    },
+                    {
+                      "function": "median",
+                      "field": "field_0003",
+                      "alias": "median_response_min"
+                    },
+                    {
+                      "function": "max",
+                      "field": "field_0003",
+                      "alias": "max_response_min"
+                    },
+                    {
+                      "function": "min",
+                      "field": "field_0003",
+                      "alias": "min_response_min"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "task_id": "T03",
+            "title": "解决状态与客户等级交叉分析",
+            "business_question": "不同客户等级下的未解决工单比例或数量分布如何？",
+            "priority": "P1",
+            "priority_reason": "补充性分析，有助于发现特定客户群体的服务异常（如高等级客户大量未解决），提升对“异常”特征的洞察力，但非回答核心问题的唯一路径。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "total_tickets"
+                    },
+                    {
+                      "function": "sum",
+                      "field": "field_0004",
+                      "alias": "unresolved_count_proxy"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0005"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "task_id": "T04",
+            "title": "客服人员工作量与绩效概览",
+            "business_question": "每位客服人员的处理工单量及平均响应时间是多少？",
+            "priority": "P1",
+            "priority_reason": "提供人员维度的特征视图，帮助识别是否存在负载不均或个别人员响应异常的情况，属于探索式需求中的主要差异维度。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "agent_ticket_count"
+                    },
+                    {
+                      "function": "avg",
+                      "field": "field_0003",
+                      "alias": "agent_avg_response"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0006"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "探索工单数据的主要特征和异常。"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T01",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        },
+        {
+          "task_id": "T02",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        },
+        {
+          "task_id": "T03",
+          "feasibility": "F0",
+          "reason_code": "TYPE_MISMATCH",
+          "validation_issues": [
+            {
+              "code": "TYPE_MISMATCH",
+              "message": "数值聚合需要可计算数值字段；薪资区间文本不可直接求均值。",
+              "step_id": "S01",
+              "field": "field_0004"
+            }
+          ],
+          "executable": false
+        },
+        {
+          "task_id": "T04",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T01",
+        "T02",
+        "T04"
+      ],
+      "blocked_task_ids": [
+        "T03"
+      ],
+      "fully_executable": false,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "planner_eval_support",
+        "dataset_version": "5a9594bc85c759f86026c82c21b6c55fcbb9c2173f74be406317c73cc722b9e7",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.1; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "exploratory",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "探索工单数据的主要特征和异常。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "error": null,
+    "attempts": [
+      {
+        "attempt": 1,
+        "status": "returned",
+        "text": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T01\",\n      \"title\": \"工单类别分布概况\",\n      \"business_question\": \"各类别下的工单数量是多少？\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"删除后无法了解工单数据的主要构成特征，直接阻碍对核心问题“主要特征”的回答。\",\n      \"requirement_ids\": [\n        \"C01\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S01\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"count\",\n                \"field\": null,\n                \"alias\": \"ticket_count\"\n              }\n            ],\n            \"dimensions\": [\n              \"field_0002\"\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S02\",\n          \"operation\": \"sort\",\n          \"params\": {\n            \"field\": \"ticket_count\",\n            \"direction\": \"desc\"\n          }\n        }\n      ]\n    },\n    {\n      \"task_id\": \"T02\",\n      \"title\": \"响应时间统计特征\",\n      \"business_question\": \"整体及分组的平均、中位、最长和最短响应分钟数是多少？\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"删除后无法量化服务效率这一关键业务特征，也无法通过极值识别潜在的异常高/低响应情况。\",\n      \"requirement_ids\": [\n        \"C01\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S01\",\n          \"operation\": \"aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"avg\",\n                \"field\": \"field_0003\",\n                \"alias\": \"avg_response_min\"\n              },\n              {\n                \"function\": \"median\",\n                \"field\": \"field_0003\",\n                \"alias\": \"median_response_min\"\n              },\n              {\n                \"function\": \"max\",\n                \"field\": \"field_0003\",\n                \"alias\": \"max_response_min\"\n              },\n              {\n                \"function\": \"min\",\n                \"field\": \"field_0003\",\n                \"alias\": \"min_response_min\"\n              }\n            ]\n          }\n        }\n      ]\n    },\n    {\n      \"task_id\": \"T03\",\n      \"title\": \"解决状态与客户等级交叉分析\",\n      \"business_question\": \"不同客户等级下的未解决工单比例或数量分布如何？\",\n      \"priority\": \"P1\",\n      \"priority_reason\": \"补充性分析，有助于发现特定客户群体的服务异常（如高等级客户大量未解决），提升对“异常”特征的洞察力，但非回答核心问题的唯一路径。\",\n      \"requirement_ids\": [\n        \"C01\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S01\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"count\",\n                \"field\": null,\n                \"alias\": \"total_tickets\"\n              },\n              {\n                \"function\": \"sum\",\n                \"field\": \"field_0004\",\n                \"alias\": \"unresolved_count_proxy\" \n              }\n            ],\n            \"dimensions\": [\n              \"field_0005\"\n            ]\n          }\n        }\n      ]\n    },\n    {\n      \"task_id\": \"T04\",\n      \"title\": \"客服人员工作量与绩效概览\",\n      \"business_question\": \"每位客服人员的处理工单量及平均响应时间是多少？\",\n      \"priority\": \"P1\",\n      \"priority_reason\": \"提供人员维度的特征视图，帮助识别是否存在负载不均或个别人员响应异常的情况，属于探索式需求中的主要差异维度。\",\n      \"requirement_ids\": [\n        \"C01\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S01\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"count\",\n                \"field\": null,\n                \"alias\": \"agent_ticket_count\"\n              },\n              {\n                \"function\": \"avg\",\n                \"field\": \"field_0003\",\n                \"alias\": \"agent_avg_response\"\n              }\n            ],\n            \"dimensions\": [\n              \"field_0006\"\n            ]\n          }\n        }\n      ]\n    }\n  ]\n}",
+        "truncated": false,
+        "model": "qwen3.8-flash",
+        "is_mock": false,
+        "duration_seconds": 18.0053
+      }
+    ],
+    "signature": [
+      "{\"blocked\": false, \"priority\": \"P0\", \"steps\": [[\"aggregate\", {\"metrics\": [{\"alias\": \"alias_1\", \"field\": \"field_0003\", \"function\": \"avg\"}, {\"alias\": \"alias_2\", \"field\": \"field_0003\", \"function\": \"median\"}, {\"alias\": \"alias_3\", \"field\": \"field_0003\", \"function\": \"max\"}, {\"alias\": \"alias_4\", \"field\": \"field_0003\", \"function\": \"min\"}]}]]}",
+      "{\"blocked\": false, \"priority\": \"P0\", \"steps\": [[\"group_aggregate\", {\"dimensions\": [\"field_0002\"], \"metrics\": [{\"alias\": \"alias_1\", \"field\": null, \"function\": \"count\"}]}], [\"sort\", {\"direction\": \"desc\", \"field\": \"alias_1\"}]]}",
+      "{\"blocked\": false, \"priority\": \"P1\", \"steps\": [[\"group_aggregate\", {\"dimensions\": [\"field_0005\"], \"metrics\": [{\"alias\": \"alias_1\", \"field\": null, \"function\": \"count\"}, {\"alias\": \"alias_2\", \"field\": \"field_0004\", \"function\": \"sum\"}]}]]}",
+      "{\"blocked\": false, \"priority\": \"P1\", \"steps\": [[\"group_aggregate\", {\"dimensions\": [\"field_0006\"], \"metrics\": [{\"alias\": \"alias_1\", \"field\": null, \"function\": \"count\"}, {\"alias\": \"alias_2\", \"field\": \"field_0003\", \"function\": \"avg\"}]}]]}"
+    ],
+    "assessment": {
+      "passed": false,
+      "checks": [
+        {
+          "kind": "p0_retained",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "task_count",
+          "passed": true,
+          "details": 4,
+          "constraint": false
+        },
+        {
+          "kind": "technical_coverage",
+          "passed": true,
+          "details": "complete",
+          "constraint": false
+        },
+        {
+          "kind": "all_tasks_validated",
+          "passed": false,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "no_duplicate_tasks",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        }
+      ],
+      "failures": [
+        {
+          "kind": "all_tasks_validated",
+          "passed": false,
+          "details": null,
+          "constraint": false
+        }
+      ]
+    }
+  },
+  {
+    "phase": "planner-v1.1",
+    "case_id": "C04",
+    "repeat": 1,
+    "dataset": "support",
+    "query": "只统计各类别工单数量，不要求计算响应分钟，也不要按客服人员排名。",
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": null,
+        "business_goal": "只统计各类别工单数量，不要求计算响应分钟，也不要按客服人员排名。",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "工单数量",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "不要按客服人员排名",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    },
+    "expected": {
+      "metrics": [
+        {
+          "field": null,
+          "function": "count"
+        }
+      ],
+      "dimensions": [
+        "类别"
+      ],
+      "forbidden_fields": [
+        "响应分钟",
+        "客服人员"
+      ],
+      "max_tasks": 1
+    },
+    "output": {
+      "plan": {
+        "dataset_id": "planner_eval_support",
+        "dataset_version": "5a9594bc85c759f86026c82c21b6c55fcbb9c2173f74be406317c73cc722b9e7",
+        "plan_id": "plan_db8f7bc0f05f459b8f027ce6f812a858",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "统计各类别工单数量",
+            "business_question": "各工单类别的总数量是多少？",
+            "priority": "P0",
+            "priority_reason": "这是核心需求，直接回答“只统计各类别工单数量”的目标。删除此任务将无法完成主要分析目标。",
+            "requirement_ids": [
+              "C01",
+              "C02"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "ticket_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S2",
+                "operation": "sort",
+                "params": {
+                  "field": "ticket_count",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "只统计各类别工单数量，不要求计算响应分钟，也不要按客服人员排名。"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：工单数量"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "analysis_limits：不要按客服人员排名"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [
+        {
+          "requirement_id": "C03",
+          "description": "analysis_limits：不要按客服人员排名",
+          "task_ids": [],
+          "reason_codes": [
+            "CORE_NOT_COVERED"
+          ]
+        }
+      ],
+      "coverage_status": "partial",
+      "executable_task_ids": [
+        "T1"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": false,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "planner_eval_support",
+        "dataset_version": "5a9594bc85c759f86026c82c21b6c55fcbb9c2173f74be406317c73cc722b9e7",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.1; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "只统计各类别工单数量，不要求计算响应分钟，也不要按客服人员排名。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "工单数量",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "不要按客服人员排名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "error": null,
+    "attempts": [
+      {
+        "attempt": 1,
+        "status": "returned",
+        "text": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T1\",\n      \"title\": \"统计各类别工单数量\",\n      \"business_question\": \"各工单类别的总数量是多少？\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"这是核心需求，直接回答“只统计各类别工单数量”的目标。删除此任务将无法完成主要分析目标。\",\n      \"requirement_ids\": [\n        \"C01\",\n        \"C02\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S1\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"count\",\n                \"field\": null,\n                \"alias\": \"ticket_count\"\n              }\n            ],\n            \"dimensions\": [\n              \"field_0002\"\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S2\",\n          \"operation\": \"sort\",\n          \"params\": {\n            \"field\": \"ticket_count\",\n            \"direction\": \"desc\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+        "truncated": false,
+        "model": "qwen3.8-flash",
+        "is_mock": false,
+        "duration_seconds": 4.392
+      }
+    ],
+    "signature": [
+      "{\"blocked\": false, \"priority\": \"P0\", \"steps\": [[\"group_aggregate\", {\"dimensions\": [\"field_0002\"], \"metrics\": [{\"alias\": \"alias_1\", \"field\": null, \"function\": \"count\"}]}], [\"sort\", {\"direction\": \"desc\", \"field\": \"alias_1\"}]]}"
+    ],
+    "assessment": {
+      "passed": false,
+      "checks": [
+        {
+          "kind": "p0_retained",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "task_count",
+          "passed": true,
+          "details": 1,
+          "constraint": false
+        },
+        {
+          "kind": "technical_coverage",
+          "passed": false,
+          "details": "partial",
+          "constraint": false
+        },
+        {
+          "kind": "all_tasks_validated",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "no_duplicate_tasks",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "required_metric",
+          "passed": true,
+          "details": {
+            "field": null,
+            "function": "count"
+          },
+          "constraint": true
+        },
+        {
+          "kind": "no_unrequested_metrics",
+          "passed": true,
+          "details": null,
+          "constraint": true
+        },
+        {
+          "kind": "required_dimension",
+          "passed": true,
+          "details": "类别",
+          "constraint": true
+        },
+        {
+          "kind": "no_forbidden_field",
+          "passed": true,
+          "details": "响应分钟",
+          "constraint": true
+        },
+        {
+          "kind": "no_forbidden_field",
+          "passed": true,
+          "details": "客服人员",
+          "constraint": true
+        }
+      ],
+      "failures": [
+        {
+          "kind": "technical_coverage",
+          "passed": false,
+          "details": "partial",
+          "constraint": false
+        }
+      ]
+    }
+  },
+  {
+    "phase": "planner-v1.1",
+    "case_id": "C06",
+    "repeat": 1,
+    "dataset": "support",
+    "query": "比较各类别响应分钟，没有指定均值还是中位数。",
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": null,
+        "business_goal": "比较各类别响应分钟，没有指定均值还是中位数。",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "响应分钟",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": []
+      },
+      "uncertainties": [
+        {
+          "id": "statistic_basis",
+          "issue": "均值还是中位数未定。",
+          "reason": "比较口径待用户审批确认。",
+          "action": "defer",
+          "resolve_at": "plan_approval"
+        }
+      ],
+      "clarification_questions": []
+    },
+    "expected": {
+      "metrics": [],
+      "dimensions": [
+        "类别"
+      ],
+      "forbidden_functions": [
+        "avg",
+        "median"
+      ]
+    },
+    "output": {
+      "plan": {
+        "dataset_id": "planner_eval_support",
+        "dataset_version": "5a9594bc85c759f86026c82c21b6c55fcbb9c2173f74be406317c73cc722b9e7",
+        "plan_id": "plan_7b5656be406342bb9169aacc32735050",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "按类别统计响应分钟均值",
+            "business_question": "各类别的平均响应时间是多少？",
+            "priority": "P0",
+            "priority_reason": "核心需求是“比较各类别响应分钟”，虽然未指定均值还是中位数，但提供均值作为基础对比指标是回答该问题的必要步骤之一。若删除此任务，将无法获得类别间的数值差异以支持比较决策。",
+            "requirement_ids": [
+              "C01",
+              "C02"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "avg",
+                      "field": "field_0003",
+                      "alias": "avg_response_minutes"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S2",
+                "operation": "sort",
+                "params": {
+                  "field": "avg_response_minutes",
+                  "direction": "desc"
+                }
+              }
+            ]
+          },
+          {
+            "task_id": "T2",
+            "title": "按类别统计响应分钟中位数",
+            "business_question": "各类别的中位响应时间是多少？",
+            "priority": "P0",
+            "priority_reason": "用户明确指出的不确定性是“没有指定均值还是中位数”。为了全面覆盖核心比较需求并消除歧义，必须同时提供中位数视图。若删除此任务，当数据存在极端值时，仅看均值可能导致错误的业务判断，无法充分回答“比较”这一核心问题。",
+            "requirement_ids": [
+              "C01",
+              "C02"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "median",
+                      "field": "field_0003",
+                      "alias": "median_response_minutes"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S2",
+                "operation": "sort",
+                "params": {
+                  "field": "median_response_minutes",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "比较各类别响应分钟，没有指定均值还是中位数。"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：响应分钟"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        },
+        {
+          "task_id": "T2",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T1",
+        "T2"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "planner_eval_support",
+        "dataset_version": "5a9594bc85c759f86026c82c21b6c55fcbb9c2173f74be406317c73cc722b9e7",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.1; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "比较各类别响应分钟，没有指定均值还是中位数。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "响应分钟",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [
+          {
+            "id": "statistic_basis",
+            "issue": "均值还是中位数未定。",
+            "reason": "比较口径待用户审批确认。",
+            "action": "defer",
+            "resolve_at": "plan_approval"
+          }
+        ],
+        "clarification_questions": []
+      }
+    },
+    "error": null,
+    "attempts": [
+      {
+        "attempt": 1,
+        "status": "returned",
+        "text": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T1\",\n      \"title\": \"按类别统计响应分钟均值\",\n      \"business_question\": \"各类别的平均响应时间是多少？\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"核心需求是“比较各类别响应分钟”，虽然未指定均值还是中位数，但提供均值作为基础对比指标是回答该问题的必要步骤之一。若删除此任务，将无法获得类别间的数值差异以支持比较决策。\",\n      \"requirement_ids\": [\n       \"C01\",\n       \"C02\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n       {\n       \"step_id\": \"S1\",\n       \"operation\": \"group_aggregate\",\n       \"params\": {\n       \"metrics\": [\n       {\n       \"function\": \"avg\",\n       \"field\": \"field_0003\",\n       \"alias\": \"avg_response_minutes\"\n       }\n       ],\n       \"dimensions\": [\n       \"field_0002\"\n       ]\n       }\n       },\n       {\n       \"step_id\": \"S2\",\n       \"operation\": \"sort\",\n       \"params\": {\n       \"field\": \"avg_response_minutes\",\n       \"direction\": \"desc\"\n       }\n       }\n      ]\n    },\n    {\n      \"task_id\": \"T2\",\n      \"title\": \"按类别统计响应分钟中位数\",\n      \"business_question\": \"各类别的中位响应时间是多少？\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"用户明确指出的不确定性是“没有指定均值还是中位数”。为了全面覆盖核心比较需求并消除歧义，必须同时提供中位数视图。若删除此任务，当数据存在极端值时，仅看均值可能导致错误的业务判断，无法充分回答“比较”这一核心问题。\",\n      \"requirement_ids\": [\n       \"C01\",\n       \"C02\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n       {\n       \"step_id\": \"S1\",\n       \"operation\": \"group_aggregate\",\n       \"params\": {\n       \"metrics\": [\n       {\n       \"function\": \"median\",\n       \"field\": \"field_0003\",\n       \"alias\": \"median_response_minutes\"\n       }\n       ],\n       \"dimensions\": [\n       \"field_0002\"\n       ]\n       }\n       },\n       {\n       \"step_id\": \"S2\",\n       \"operation\": \"sort\",\n       \"params\": {\n       \"field\": \"median_response_minutes\",\n       \"direction\": \"desc\"\n       }\n       }\n      ]\n    }\n  ]\n}",
+        "truncated": false,
+        "model": "qwen3.8-flash",
+        "is_mock": false,
+        "duration_seconds": 9.9263
+      }
+    ],
+    "signature": [
+      "{\"blocked\": false, \"priority\": \"P0\", \"steps\": [[\"group_aggregate\", {\"dimensions\": [\"field_0002\"], \"metrics\": [{\"alias\": \"alias_1\", \"field\": \"field_0003\", \"function\": \"avg\"}]}], [\"sort\", {\"direction\": \"desc\", \"field\": \"alias_1\"}]]}",
+      "{\"blocked\": false, \"priority\": \"P0\", \"steps\": [[\"group_aggregate\", {\"dimensions\": [\"field_0002\"], \"metrics\": [{\"alias\": \"alias_1\", \"field\": \"field_0003\", \"function\": \"median\"}]}], [\"sort\", {\"direction\": \"desc\", \"field\": \"alias_1\"}]]}"
+    ],
+    "assessment": {
+      "passed": false,
+      "checks": [
+        {
+          "kind": "p0_retained",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "task_count",
+          "passed": true,
+          "details": 2,
+          "constraint": false
+        },
+        {
+          "kind": "technical_coverage",
+          "passed": true,
+          "details": "complete",
+          "constraint": false
+        },
+        {
+          "kind": "all_tasks_validated",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "no_duplicate_tasks",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "required_dimension",
+          "passed": true,
+          "details": "类别",
+          "constraint": true
+        },
+        {
+          "kind": "no_unconfirmed_statistic",
+          "passed": false,
+          "details": "avg",
+          "constraint": true
+        },
+        {
+          "kind": "no_unconfirmed_statistic",
+          "passed": false,
+          "details": "median",
+          "constraint": true
+        }
+      ],
+      "failures": [
+        {
+          "kind": "no_unconfirmed_statistic",
+          "passed": false,
+          "details": "avg",
+          "constraint": true
+        },
+        {
+          "kind": "no_unconfirmed_statistic",
+          "passed": false,
+          "details": "median",
+          "constraint": true
+        }
+      ]
+    }
+  },
+  {
+    "phase": "planner-v1.1",
+    "case_id": "P05",
+    "repeat": 1,
+    "dataset": "projects",
+    "query": "比较各项目任务数量，不要建议裁员。",
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": null,
+        "business_goal": "比较各项目任务数量，不要建议裁员。",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "任务数量",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "不要建议裁员",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    },
+    "expected": {
+      "metrics": [
+        {
+          "field": null,
+          "function": "count"
+        }
+      ],
+      "dimensions": [
+        "项目"
+      ],
+      "boundary_text": "不要建议裁员",
+      "max_tasks": 1
+    },
+    "output": {
+      "plan": {
+        "dataset_id": "planner_eval_projects",
+        "dataset_version": "9cd437dec3100db7e1f92eeade8712ab5d58b8697d575629410f74217648dc8b",
+        "plan_id": "plan_45a01c1e575349cc8f6eba4e4945d498",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "各项目任务数量统计与排序",
+            "business_question": "各项目的任务数量分别是多少？哪个项目任务最多？",
+            "priority": "P0",
+            "priority_reason": "直接响应核心业务目标“比较各项目任务数量”。删除此任务将无法回答用户关于项目间任务量差异的核心问题。同时明确不包含裁员建议，符合约束 C03。",
+            "requirement_ids": [
+              "C01",
+              "C02",
+              "C03"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "task_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0001"
+                  ]
+                }
+              },
+              {
+                "step_id": "S2",
+                "operation": "sort",
+                "params": {
+                  "field": "task_count",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "比较各项目任务数量，不要建议裁员。"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：任务数量"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "analysis_limits：不要建议裁员"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T1"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "planner_eval_projects",
+        "dataset_version": "9cd437dec3100db7e1f92eeade8712ab5d58b8697d575629410f74217648dc8b",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.1; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "比较各项目任务数量，不要建议裁员。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "任务数量",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "不要建议裁员",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "error": null,
+    "attempts": [
+      {
+        "attempt": 1,
+        "status": "returned",
+        "text": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T1\",\n      \"title\": \"各项目任务数量统计与排序\",\n      \"business_question\": \"各项目的任务数量分别是多少？哪个项目任务最多？\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"直接响应核心业务目标“比较各项目任务数量”。删除此任务将无法回答用户关于项目间任务量差异的核心问题。同时明确不包含裁员建议，符合约束 C03。\",\n      \"requirement_ids\": [\n        \"C01\",\n        \"C02\",\n        \"C03\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S1\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"count\",\n                \"field\": null,\n                \"alias\": \"task_count\"\n              }\n            ],\n            \"dimensions\": [\n              \"field_0001\"\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S2\",\n          \"operation\": \"sort\",\n          \"params\": {\n            \"field\": \"task_count\",\n            \"direction\": \"desc\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+        "truncated": false,
+        "model": "qwen3.8-flash",
+        "is_mock": false,
+        "duration_seconds": 4.9444
+      }
+    ],
+    "signature": [
+      "{\"blocked\": false, \"priority\": \"P0\", \"steps\": [[\"group_aggregate\", {\"dimensions\": [\"field_0001\"], \"metrics\": [{\"alias\": \"alias_1\", \"field\": null, \"function\": \"count\"}]}], [\"sort\", {\"direction\": \"desc\", \"field\": \"alias_1\"}]]}"
+    ],
+    "assessment": {
+      "passed": false,
+      "checks": [
+        {
+          "kind": "p0_retained",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "task_count",
+          "passed": true,
+          "details": 1,
+          "constraint": false
+        },
+        {
+          "kind": "technical_coverage",
+          "passed": true,
+          "details": "complete",
+          "constraint": false
+        },
+        {
+          "kind": "all_tasks_validated",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "no_duplicate_tasks",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "required_metric",
+          "passed": true,
+          "details": {
+            "field": null,
+            "function": "count"
+          },
+          "constraint": true
+        },
+        {
+          "kind": "no_unrequested_metrics",
+          "passed": true,
+          "details": null,
+          "constraint": true
+        },
+        {
+          "kind": "required_dimension",
+          "passed": true,
+          "details": "项目",
+          "constraint": true
+        },
+        {
+          "kind": "boundary_visible",
+          "passed": false,
+          "details": "不要建议裁员",
+          "constraint": true
+        }
+      ],
+      "failures": [
+        {
+          "kind": "boundary_visible",
+          "passed": false,
+          "details": "不要建议裁员",
+          "constraint": true
+        }
+      ]
+    }
+  },
+  {
+    "phase": "planner-v1.1",
+    "case_id": "C04",
+    "repeat": 1,
+    "dataset": "support",
+    "query": "只统计各类别工单数量，不要求计算响应分钟，也不要按客服人员排名。",
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": null,
+        "business_goal": "只统计各类别工单数量，不要求计算响应分钟，也不要按客服人员排名。",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "工单数量",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "不要按客服人员排名",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    },
+    "expected": {
+      "metrics": [
+        {
+          "field": null,
+          "function": "count"
+        }
+      ],
+      "dimensions": [
+        "类别"
+      ],
+      "forbidden_fields": [
+        "响应分钟",
+        "客服人员"
+      ],
+      "max_tasks": 1
+    },
+    "output": {
+      "plan": {
+        "dataset_id": "planner_eval_support",
+        "dataset_version": "5a9594bc85c759f86026c82c21b6c55fcbb9c2173f74be406317c73cc722b9e7",
+        "plan_id": "plan_9ba22e71d5ce4552bad8da18e3a1263d",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T01",
+            "title": "各类别工单数量统计",
+            "business_question": "不同类别的客服工单各自有多少条？",
+            "priority": "P0",
+            "priority_reason": "删除后无法回答核心业务目标“只统计各类别工单数量”，且直接对应C01和C02需求。",
+            "requirement_ids": [
+              "C01",
+              "C02"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "ticket_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S02",
+                "operation": "sort",
+                "params": {
+                  "field": "ticket_count",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "只统计各类别工单数量，不要求计算响应分钟，也不要按客服人员排名。"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：工单数量"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "analysis_limits：不要按客服人员排名"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T01",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [
+        {
+          "requirement_id": "C03",
+          "description": "analysis_limits：不要按客服人员排名",
+          "task_ids": [],
+          "reason_codes": [
+            "CORE_NOT_COVERED"
+          ]
+        }
+      ],
+      "coverage_status": "partial",
+      "executable_task_ids": [
+        "T01"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": false,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "planner_eval_support",
+        "dataset_version": "5a9594bc85c759f86026c82c21b6c55fcbb9c2173f74be406317c73cc722b9e7",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.1; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "只统计各类别工单数量，不要求计算响应分钟，也不要按客服人员排名。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "工单数量",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "不要按客服人员排名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "error": null,
+    "attempts": [
+      {
+        "attempt": 1,
+        "status": "returned",
+        "text": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T01\",\n      \"title\": \"各类别工单数量统计\",\n      \"business_question\": \"不同类别的客服工单各自有多少条？\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"删除后无法回答核心业务目标“只统计各类别工单数量”，且直接对应C01和C02需求。\",\n      \"requirement_ids\": [\n        \"C01\",\n        \"C02\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S01\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"count\",\n                \"field\": null,\n                \"alias\": \"ticket_count\"\n              }\n            ],\n            \"dimensions\": [\n              \"field_0002\"\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S02\",\n          \"operation\": \"sort\",\n          \"params\": {\n            \"field\": \"ticket_count\",\n            \"direction\": \"desc\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+        "truncated": false,
+        "model": "qwen3.8-flash",
+        "is_mock": false,
+        "duration_seconds": 3.5967
+      }
+    ],
+    "signature": [
+      "{\"blocked\": false, \"priority\": \"P0\", \"steps\": [[\"group_aggregate\", {\"dimensions\": [\"field_0002\"], \"metrics\": [{\"alias\": \"alias_1\", \"field\": null, \"function\": \"count\"}]}], [\"sort\", {\"direction\": \"desc\", \"field\": \"alias_1\"}]]}"
+    ],
+    "assessment": {
+      "passed": false,
+      "checks": [
+        {
+          "kind": "p0_retained",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "task_count",
+          "passed": true,
+          "details": 1,
+          "constraint": false
+        },
+        {
+          "kind": "technical_coverage",
+          "passed": false,
+          "details": "partial",
+          "constraint": false
+        },
+        {
+          "kind": "all_tasks_validated",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "no_duplicate_tasks",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "required_metric",
+          "passed": true,
+          "details": {
+            "field": null,
+            "function": "count"
+          },
+          "constraint": true
+        },
+        {
+          "kind": "no_unrequested_metrics",
+          "passed": true,
+          "details": null,
+          "constraint": true
+        },
+        {
+          "kind": "required_dimension",
+          "passed": true,
+          "details": "类别",
+          "constraint": true
+        },
+        {
+          "kind": "no_forbidden_field",
+          "passed": true,
+          "details": "响应分钟",
+          "constraint": true
+        },
+        {
+          "kind": "no_forbidden_field",
+          "passed": true,
+          "details": "客服人员",
+          "constraint": true
+        }
+      ],
+      "failures": [
+        {
+          "kind": "technical_coverage",
+          "passed": false,
+          "details": "partial",
+          "constraint": false
+        }
+      ]
+    }
+  },
+  {
+    "phase": "planner-v1.1",
+    "case_id": "C04",
+    "repeat": 2,
+    "dataset": "support",
+    "query": "只统计各类别工单数量，不要求计算响应分钟，也不要按客服人员排名。",
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": null,
+        "business_goal": "只统计各类别工单数量，不要求计算响应分钟，也不要按客服人员排名。",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "工单数量",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "不要按客服人员排名",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    },
+    "expected": {
+      "metrics": [
+        {
+          "field": null,
+          "function": "count"
+        }
+      ],
+      "dimensions": [
+        "类别"
+      ],
+      "forbidden_fields": [
+        "响应分钟",
+        "客服人员"
+      ],
+      "max_tasks": 1
+    },
+    "output": {
+      "plan": {
+        "dataset_id": "planner_eval_support",
+        "dataset_version": "5a9594bc85c759f86026c82c21b6c55fcbb9c2173f74be406317c73cc722b9e7",
+        "plan_id": "plan_644770f0749542fe9fd85d892e9a27a2",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "各类别工单数量统计",
+            "business_question": "不同类别的客服工单数量分别是多少？",
+            "priority": "P0",
+            "priority_reason": "直接回答核心业务目标“只统计各类别工单数量”。删除此任务将无法获得任何关于工单分布的数据，导致无法支持基础决策。",
+            "requirement_ids": [
+              "C01",
+              "C02"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "ticket_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S2",
+                "operation": "sort",
+                "params": {
+                  "field": "ticket_count",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "只统计各类别工单数量，不要求计算响应分钟，也不要按客服人员排名。"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：工单数量"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "analysis_limits：不要按客服人员排名"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [
+        {
+          "requirement_id": "C03",
+          "description": "analysis_limits：不要按客服人员排名",
+          "task_ids": [],
+          "reason_codes": [
+            "CORE_NOT_COVERED"
+          ]
+        }
+      ],
+      "coverage_status": "partial",
+      "executable_task_ids": [
+        "T1"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": false,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "planner_eval_support",
+        "dataset_version": "5a9594bc85c759f86026c82c21b6c55fcbb9c2173f74be406317c73cc722b9e7",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.1; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "只统计各类别工单数量，不要求计算响应分钟，也不要按客服人员排名。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "工单数量",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "不要按客服人员排名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "error": null,
+    "attempts": [
+      {
+        "attempt": 1,
+        "status": "returned",
+        "text": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T1\",\n      \"title\": \"各类别工单数量统计\",\n      \"business_question\": \"不同类别的客服工单数量分别是多少？\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"直接回答核心业务目标“只统计各类别工单数量”。删除此任务将无法获得任何关于工单分布的数据，导致无法支持基础决策。\",\n      \"requirement_ids\": [\n        \"C01\",\n        \"C02\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S1\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"count\",\n                \"field\": null,\n                \"alias\": \"ticket_count\"\n              }\n            ],\n            \"dimensions\": [\n              \"field_0002\"\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S2\",\n          \"operation\": \"sort\",\n          \"params\": {\n            \"field\": \"ticket_count\",\n            \"direction\": \"desc\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+        "truncated": false,
+        "model": "qwen3.8-flash",
+        "is_mock": false,
+        "duration_seconds": 4.358
+      }
+    ],
+    "signature": [
+      "{\"blocked\": false, \"priority\": \"P0\", \"steps\": [[\"group_aggregate\", {\"dimensions\": [\"field_0002\"], \"metrics\": [{\"alias\": \"alias_1\", \"field\": null, \"function\": \"count\"}]}], [\"sort\", {\"direction\": \"desc\", \"field\": \"alias_1\"}]]}"
+    ],
+    "assessment": {
+      "passed": false,
+      "checks": [
+        {
+          "kind": "p0_retained",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "task_count",
+          "passed": true,
+          "details": 1,
+          "constraint": false
+        },
+        {
+          "kind": "technical_coverage",
+          "passed": false,
+          "details": "partial",
+          "constraint": false
+        },
+        {
+          "kind": "all_tasks_validated",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "no_duplicate_tasks",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "required_metric",
+          "passed": true,
+          "details": {
+            "field": null,
+            "function": "count"
+          },
+          "constraint": true
+        },
+        {
+          "kind": "no_unrequested_metrics",
+          "passed": true,
+          "details": null,
+          "constraint": true
+        },
+        {
+          "kind": "required_dimension",
+          "passed": true,
+          "details": "类别",
+          "constraint": true
+        },
+        {
+          "kind": "no_forbidden_field",
+          "passed": true,
+          "details": "响应分钟",
+          "constraint": true
+        },
+        {
+          "kind": "no_forbidden_field",
+          "passed": true,
+          "details": "客服人员",
+          "constraint": true
+        }
+      ],
+      "failures": [
+        {
+          "kind": "technical_coverage",
+          "passed": false,
+          "details": "partial",
+          "constraint": false
+        }
+      ]
+    }
+  },
+  {
+    "phase": "planner-v1.1",
+    "case_id": "P03",
+    "repeat": 2,
+    "dataset": "projects",
+    "query": "按截止年份汇总实际工时。",
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": null,
+        "business_goal": "按截止年份汇总实际工时。",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "实际工时",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    },
+    "expected": {
+      "metrics": [
+        {
+          "field": "实际工时",
+          "function": "sum"
+        }
+      ],
+      "dimensions": [],
+      "derive": "extract_year",
+      "require_f1": true,
+      "max_tasks": 1
+    },
+    "output": {
+      "plan": {
+        "dataset_id": "planner_eval_projects",
+        "dataset_version": "9cd437dec3100db7e1f92eeade8712ab5d58b8697d575629410f74217648dc8b",
+        "plan_id": "plan_3aa5a92c960c4a6bb7551a16e68be1f5",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T01",
+            "title": "按截止年份汇总实际工时",
+            "business_question": "不同截止年份的项目任务总实际工时是多少？",
+            "priority": "P0",
+            "priority_reason": "核心需求要求按截止年份汇总实际工时，若删除此任务将无法回答业务目标。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "derive",
+                "params": {
+                  "function": "extract_year",
+                  "field": "field_0004",
+                  "alias": "deadline_year"
+                }
+              },
+              {
+                "step_id": "S02",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "sum",
+                      "field": "field_0005",
+                      "alias": "total_actual_hours"
+                    }
+                  ],
+                  "dimensions": [
+                    "deadline_year"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "按截止年份汇总实际工时。"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：实际工时"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T01",
+          "feasibility": "F1",
+          "reason_code": "REQUIRES_TRANSFORMATION",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [
+        {
+          "requirement_id": "C02",
+          "description": "metric_requirements：实际工时",
+          "task_ids": [],
+          "reason_codes": [
+            "CORE_NOT_COVERED"
+          ]
+        }
+      ],
+      "coverage_status": "partial",
+      "executable_task_ids": [
+        "T01"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": false,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "planner_eval_projects",
+        "dataset_version": "9cd437dec3100db7e1f92eeade8712ab5d58b8697d575629410f74217648dc8b",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.1; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "按截止年份汇总实际工时。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "实际工时",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "error": null,
+    "attempts": [
+      {
+        "attempt": 1,
+        "status": "returned",
+        "text": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T01\",\n      \"title\": \"按截止年份汇总实际工时\",\n      \"business_question\": \"不同截止年份的项目任务总实际工时是多少？\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"核心需求要求按截止年份汇总实际工时，若删除此任务将无法回答业务目标。\",\n      \"requirement_ids\": [\n       \"C01\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n       {\n\"step_id\": \"S01\",\n\"operation\": \"derive\",\n\"params\": {\n\"function\": \"extract_year\",\n\"field\": \"field_0004\",\n\"alias\": \"deadline_year\"\n}\n},\n{\n\"step_id\": \"S02\",\n\"operation\": \"group_aggregate\",\n\"params\": {\n\"metrics\": [\n{\n\"function\": \"sum\",\n\"field\": \"field_0005\",\n\"alias\": \"total_actual_hours\"\n}\n],\n\"dimensions\": [\n\"deadline_year\"\n]\n}\n}\n      ]\n    }\n  ]\n}",
+        "truncated": false,
+        "model": "qwen3.8-flash",
+        "is_mock": false,
+        "duration_seconds": 6.1994
+      }
+    ],
+    "signature": [
+      "{\"blocked\": false, \"priority\": \"P0\", \"steps\": [[\"derive\", {\"alias\": \"alias_1\", \"field\": \"field_0004\", \"function\": \"extract_year\"}], [\"group_aggregate\", {\"dimensions\": [\"alias_1\"], \"metrics\": [{\"alias\": \"alias_2\", \"field\": \"field_0005\", \"function\": \"sum\"}]}]]}"
+    ],
+    "assessment": {
+      "passed": false,
+      "checks": [
+        {
+          "kind": "p0_retained",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "task_count",
+          "passed": true,
+          "details": 1,
+          "constraint": false
+        },
+        {
+          "kind": "technical_coverage",
+          "passed": false,
+          "details": "partial",
+          "constraint": false
+        },
+        {
+          "kind": "all_tasks_validated",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "no_duplicate_tasks",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "required_metric",
+          "passed": true,
+          "details": {
+            "field": "实际工时",
+            "function": "sum"
+          },
+          "constraint": true
+        },
+        {
+          "kind": "no_unrequested_metrics",
+          "passed": true,
+          "details": null,
+          "constraint": true
+        },
+        {
+          "kind": "supported_transformation",
+          "passed": true,
+          "details": "extract_year",
+          "constraint": false
+        },
+        {
+          "kind": "validator_f1",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        }
+      ],
+      "failures": [
+        {
+          "kind": "technical_coverage",
+          "passed": false,
+          "details": "partial",
+          "constraint": false
+        }
+      ]
+    }
+  },
+  {
+    "phase": "planner-v1.2/regression",
+    "case_id": "C06",
+    "repeat": 1,
+    "dataset": "support",
+    "query": "比较各类别响应分钟，没有指定均值还是中位数。",
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": null,
+        "business_goal": "比较各类别响应分钟，没有指定均值还是中位数。",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "响应分钟",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": []
+      },
+      "uncertainties": [
+        {
+          "id": "statistic_basis",
+          "issue": "均值还是中位数未定。",
+          "reason": "比较口径待用户审批确认。",
+          "action": "defer",
+          "resolve_at": "plan_approval"
+        }
+      ],
+      "clarification_questions": []
+    },
+    "expected": {
+      "metrics": [],
+      "dimensions": [
+        "类别"
+      ],
+      "forbidden_functions": [
+        "avg",
+        "median"
+      ]
+    },
+    "output": {
+      "plan": {
+        "dataset_id": "planner_eval_support",
+        "dataset_version": "5a9594bc85c759f86026c82c21b6c55fcbb9c2173f74be406317c73cc722b9e7",
+        "plan_id": "plan_7600b2a9057a488a91722e0e0d5a9a92",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T01",
+            "title": "各类别响应分钟统计口径确认",
+            "business_question": "比较各类别的响应分钟，但用户未指定使用均值还是中位数作为统计口径。需在计划审批时确认具体指标定义后执行分组聚合。",
+            "priority": "P0",
+            "priority_reason": "核心需求要求比较响应分钟，但统计基准（均值/中位数）缺失且被标记为defer，导致无法直接生成可执行的聚合步骤。删除此任务将无法回答核心问题。",
+            "requirement_ids": [
+              "C01",
+              "C02"
+            ],
+            "depends_on": [],
+            "missing_inputs": [
+              "需在计划审批时确认比较响应分钟的统计口径（均值或中位数）"
+            ],
+            "steps": []
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "比较各类别响应分钟，没有指定均值还是中位数。"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：响应分钟"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T01",
+          "feasibility": "F0",
+          "reason_code": "MISSING_FIELD",
+          "validation_issues": [
+            {
+              "code": "MISSING_FIELD",
+              "message": "任务明确缺少必要输入：需在计划审批时确认比较响应分钟的统计口径（均值或中位数）",
+              "step_id": null,
+              "field": null
+            }
+          ],
+          "executable": false
+        }
+      ],
+      "unmet_core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "比较各类别响应分钟，没有指定均值还是中位数。",
+          "task_ids": [
+            "T01"
+          ],
+          "reason_codes": [
+            "MISSING_FIELD"
+          ]
+        },
+        {
+          "requirement_id": "C02",
+          "description": "metric_requirements：响应分钟",
+          "task_ids": [
+            "T01"
+          ],
+          "reason_codes": [
+            "MISSING_FIELD"
+          ]
+        }
+      ],
+      "coverage_status": "blocked",
+      "executable_task_ids": [],
+      "blocked_task_ids": [
+        "T01"
+      ],
+      "fully_executable": false,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "planner_eval_support",
+        "dataset_version": "5a9594bc85c759f86026c82c21b6c55fcbb9c2173f74be406317c73cc722b9e7",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "比较各类别响应分钟，没有指定均值还是中位数。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "响应分钟",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [
+          {
+            "id": "statistic_basis",
+            "issue": "均值还是中位数未定。",
+            "reason": "比较口径待用户审批确认。",
+            "action": "defer",
+            "resolve_at": "plan_approval"
+          }
+        ],
+        "clarification_questions": []
+      }
+    },
+    "error": null,
+    "attempts": [
+      {
+        "attempt": 1,
+        "status": "returned",
+        "text": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T01\",\n      \"title\": \"各类别响应分钟统计口径确认\",\n      \"business_question\": \"比较各类别的响应分钟，但用户未指定使用均值还是中位数作为统计口径。需在计划审批时确认具体指标定义后执行分组聚合。\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"核心需求要求比较响应分钟，但统计基准（均值/中位数）缺失且被标记为defer，导致无法直接生成可执行的聚合步骤。删除此任务将无法回答核心问题。\",\n      \"requirement_ids\": [\n        \"C01\",\n        \"C02\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [\n        \"需在计划审批时确认比较响应分钟的统计口径（均值或中位数）\"\n      ],\n      \"steps\": []\n    }\n  ]\n}",
+        "truncated": false,
+        "model": "qwen3.8-flash",
+        "is_mock": false,
+        "duration_seconds": 3.8142
+      }
+    ],
+    "signature": [
+      "{\"blocked\": true, \"priority\": \"P0\", \"steps\": []}"
+    ],
+    "assessment": {
+      "passed": false,
+      "checks": [
+        {
+          "kind": "p0_retained",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "task_count",
+          "passed": true,
+          "details": 1,
+          "constraint": false
+        },
+        {
+          "kind": "technical_coverage",
+          "passed": false,
+          "details": "blocked",
+          "constraint": false
+        },
+        {
+          "kind": "all_tasks_validated",
+          "passed": false,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "no_duplicate_tasks",
+          "passed": true,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "required_dimension",
+          "passed": false,
+          "details": "类别",
+          "constraint": true
+        },
+        {
+          "kind": "no_unconfirmed_statistic",
+          "passed": true,
+          "details": "avg",
+          "constraint": true
+        },
+        {
+          "kind": "no_unconfirmed_statistic",
+          "passed": true,
+          "details": "median",
+          "constraint": true
+        }
+      ],
+      "failures": [
+        {
+          "kind": "technical_coverage",
+          "passed": false,
+          "details": "blocked",
+          "constraint": false
+        },
+        {
+          "kind": "all_tasks_validated",
+          "passed": false,
+          "details": null,
+          "constraint": false
+        },
+        {
+          "kind": "required_dimension",
+          "passed": false,
+          "details": "类别",
+          "constraint": true
+        }
+      ]
+    }
+  }
+]

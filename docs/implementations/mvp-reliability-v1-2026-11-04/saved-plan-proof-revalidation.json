@@ -1,0 +1,1133 @@
+[
+  {
+    "case_id": "S01",
+    "audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "3334b43310d4461ebe30858590022925",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_id": "plan_bc61f3f5d2774357a74b53dd10549ea4",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "cdae975b4067c4fcefc452d73d546eed6eddda639037142c052e05557ff7a777",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "分析2026年华东地区已完成订单的销售额，按城市汇总并降序排名取前三名",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S04",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0003"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.time_range",
+          "raw_text": "2026年",
+          "status": "verified",
+          "category": "time_range",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0001"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S02",
+              "operation": "derive",
+              "params": {
+                "function": "extract_year",
+                "field": "field_0001",
+                "alias": "order_year"
+              }
+            },
+            {
+              "task_id": "T01",
+              "step_id": "S03",
+              "operation": "filter",
+              "condition": {
+                "field": "order_year",
+                "operator": "eq",
+                "value": 2026
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "华东地区",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0002"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0002",
+                "operator": "eq",
+                "value": "华东"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[1]",
+          "raw_text": "已完成订单",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0004",
+                "operator": "eq",
+                "value": "已完成"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "销售额",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0005"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S04",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "sum",
+                "field": "field_0005",
+                "alias": "sales_total"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "按照城市汇总并降序排名，取前三名",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S04",
+              "operation": "group_aggregate",
+              "dimension": "field_0003"
+            },
+            {
+              "task_id": "T01",
+              "step_id": "S06",
+              "operation": "top_n",
+              "metric": {
+                "function": "sum",
+                "field": "field_0005",
+                "alias": "sales_total"
+              },
+              "params": {
+                "field": "sales_total",
+                "direction": "desc",
+                "n": 3
+              }
+            },
+            {
+              "task_id": "T01",
+              "step_id": "S06",
+              "operation": "top_n",
+              "metric": {
+                "function": "sum",
+                "field": "field_0005",
+                "alias": "sales_total"
+              },
+              "params": {
+                "field": "sales_total",
+                "direction": "desc",
+                "n": 3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "type": "deterministic_saved_plan_revalidation_not_new_model_run"
+  },
+  {
+    "case_id": "S02",
+    "audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "5936c79e9bd54bb3bffa3fe8ff2f2718",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_id": "plan_e6a868accdb048fcac296bc946390eb2",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "7fe73413f5b8d4e9de3b0aa85b2c8f966bc1a14d6a0f0fa1d18b107bd1c95966",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "统计各城市的订单数量",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0003"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "订单数量",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "order_count"
+              },
+              "count_basis": "uploaded_rows_not_distinct_entities"
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "不分析销售额",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0005"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "check": "field_absent"
+            }
+          ]
+        }
+      ]
+    },
+    "type": "deterministic_saved_plan_revalidation_not_new_model_run"
+  },
+  {
+    "case_id": "R01",
+    "audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "fb8ecdc2e5bd429786d11c2f9e7a830e",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_id": "plan_600112bc68654925a97468be3d9c802c",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "a1f6c5470aaec7cab630fca8656f17f0a6044daf622e97b543b919335ef10fa6",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "统计各城市的岗位数量，并按数量降序排名",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0001"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0001"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "岗位数量",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "job_count"
+              },
+              "count_basis": "uploaded_rows_not_distinct_entities"
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "按数量降序排名",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S02",
+              "operation": "sort",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "job_count"
+              },
+              "params": {
+                "field": "job_count",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "type": "deterministic_saved_plan_revalidation_not_new_model_run"
+  },
+  {
+    "case_id": "R03",
+    "audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "0fe4e36a3e144fc08a129ec1f07b0dc7",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_id": "plan_70f86742799a4489a0f16be23c0b4f1b",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "f7546af590956bb3ffb064fff4082d8df643221cdd3f49bb6133cf3948e9ae60",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "统计各城市的岗位数量",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0001"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0001"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "岗位数量",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "job_count"
+              },
+              "count_basis": "uploaded_rows_not_distinct_entities"
+            }
+          ]
+        }
+      ]
+    },
+    "type": "deterministic_saved_plan_revalidation_not_new_model_run"
+  },
+  {
+    "case_id": "R04",
+    "audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "02d9979247b646dd8c0fc699d54fa803",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_id": "plan_f5dfe9c4aef8406da403f261ccfc802a",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "6d8b69ba91786c34d276d65ee9de42e3f6b4698bade7f7cfa1026b3e6f7ca997",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "统计各城市的岗位数量",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0001"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01_1",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0001"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "岗位数量",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01_1",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "job_count"
+              },
+              "count_basis": "uploaded_rows_not_distinct_entities"
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "不排除北京",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0001"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "check": "no_field_filter",
+              "field": "field_0001",
+              "values": [
+                "北京"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[1]",
+          "raw_text": "按数量降序排列",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01_2",
+              "operation": "sort",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "job_count"
+              },
+              "params": {
+                "field": "job_count",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "type": "deterministic_saved_plan_revalidation_not_new_model_run"
+  },
+  {
+    "case_id": "T01",
+    "audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "58e1854827514519aed2c7737a8135ec",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_id": "plan_67ab976c59804001bd1298fe75ba9b3a",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "af0a4406bbda66f57779af1a03a17bd710b5107407718c18d417b4249a2699fc",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "按团队比较平均响应分钟",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0002"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0002"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "平均响应分钟",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0005"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "avg",
+                "field": "field_0005",
+                "alias": "avg_response_minutes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "type": "deterministic_saved_plan_revalidation_not_new_model_run"
+  },
+  {
+    "case_id": "T02",
+    "audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "235ce884406c4172ae84d32a4aa2e74d",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_id": "plan_2f79771fbd8c44e6a00fca6b0843fb75",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "6e1779e97c9ca7840d113b92321f34be2c984ad8db94469c0be3202d57ec298a",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "统计已解决工单中各优先级的工单数量，并按数量降序取前两名",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0004"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "只看已解决工单",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0003",
+                "operator": "eq",
+                "value": "已解决"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "工单数量",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "ticket_count"
+              },
+              "count_basis": "uploaded_rows_not_distinct_entities"
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "按优先级统计",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "dimension": "field_0004"
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[1]",
+          "raw_text": "降序取前两名",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S3",
+              "operation": "top_n",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "ticket_count"
+              },
+              "params": {
+                "field": "ticket_count",
+                "direction": "desc",
+                "n": 2
+              }
+            },
+            {
+              "task_id": "T1",
+              "step_id": "S3",
+              "operation": "top_n",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "ticket_count"
+              },
+              "params": {
+                "field": "ticket_count",
+                "direction": "desc",
+                "n": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "type": "deterministic_saved_plan_revalidation_not_new_model_run"
+  },
+  {
+    "case_id": "T03",
+    "audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "344172e2279d44e4ba2c1fc211812300",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_id": "plan_dc3c8c6f8d9b43169d1c7dbc271dd2d7",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "17eb1be1dd64bde524f6d21c9dc5b8bb00a451112e8143cd10f61aaf07618024",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "只看一组和二组",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0002"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0002",
+                "operator": "in",
+                "value": [
+                  "一组",
+                  "二组"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "平均响应分钟",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0005"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "avg",
+                "field": "field_0005",
+                "alias": "avg_response_minutes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "type": "deterministic_saved_plan_revalidation_not_new_model_run"
+  },
+  {
+    "case_id": "T04",
+    "audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "59b2061907004f1ba509c762c3f68797",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_id": "plan_a5d57839055b4e559bc8fda2396dc137",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "4a67237c316a8377bcc886988b762895aea6496d09b46d12ffc409ccc25a4fda",
+      "all_verified": false,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "比较各团队的已解决工单数量",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0002"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0002"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "已解决工单",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0003",
+                "operator": "eq",
+                "value": "已解决"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "工单数量",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "resolved_ticket_count"
+              },
+              "count_basis": "uploaded_rows_not_distinct_entities"
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "不要分析利润",
+          "status": "unmapped",
+          "category": "analysis_limits",
+          "message": "尚不能可靠对应到唯一字段和完整统计条件；请在新需求中明确字段、取值或口径。",
+          "field_ids": [],
+          "matches": []
+        },
+        {
+          "source": "intent.constraints.analysis_limits[1]",
+          "raw_text": "也不要推断团队差异的原因",
+          "status": "unmapped",
+          "category": "analysis_limits",
+          "message": "尚不能可靠对应到唯一字段和完整统计条件；请在新需求中明确字段、取值或口径。",
+          "field_ids": [],
+          "matches": []
+        }
+      ]
+    },
+    "type": "deterministic_saved_plan_revalidation_not_new_model_run"
+  },
+  {
+    "case_id": "P01",
+    "audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "7bf456bbc2c24aa98eefc664f33677e2",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_id": "plan_539281851bee465abebc5dd2555931f7",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "3e0f11afca175ed51483351eb810ec3dacb13ee84631baa2395f956063f24c73",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.constraints.time_range",
+          "raw_text": "2026年",
+          "status": "verified",
+          "category": "time_range",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0001"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "derive",
+              "params": {
+                "function": "extract_year",
+                "field": "field_0001",
+                "alias": "year_created"
+              }
+            },
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "filter",
+              "condition": {
+                "field": "year_created",
+                "operator": "eq",
+                "value": 2026
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "任务数量",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S4",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "task_count"
+              },
+              "count_basis": "uploaded_rows_not_distinct_entities"
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "按月份升序",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0001"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S3",
+              "operation": "derive",
+              "params": {
+                "function": "extract_month",
+                "field": "field_0001",
+                "alias": "month_created"
+              }
+            },
+            {
+              "task_id": "T1",
+              "step_id": "S4",
+              "operation": "group_aggregate",
+              "dimension": "month_created"
+            },
+            {
+              "task_id": "T1",
+              "step_id": "S5",
+              "operation": "sort",
+              "params": {
+                "field": "month_created",
+                "direction": "asc"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "type": "deterministic_saved_plan_revalidation_not_new_model_run"
+  },
+  {
+    "case_id": "P02",
+    "audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "2e6b6cd47630422eb066fe8b377b91d9",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_id": "plan_f58d0ddf583146a996197aa71b88167b",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "db707943e75938984d8fb953e192eb87ce82c3e32baf3268d9f179d2d3ae4e8f",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "统计已完成任务的工时总和，并按项目汇总，排除丙项目",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0002"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0002"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "只统计已完成任务",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0003",
+                "operator": "eq",
+                "value": "已完成"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[1]",
+          "raw_text": "不包含丙项目",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0002"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0002",
+                "operator": "ne",
+                "value": "丙"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "工时总和",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "sum",
+                "field": "field_0004",
+                "alias": "hours_sum"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "type": "deterministic_saved_plan_revalidation_not_new_model_run"
+  },
+  {
+    "case_id": "P04",
+    "audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "4b24bd049a7742c48132c65093f5d7cd",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_id": "plan_5770f301311d4d0e92103b0611212759",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "cd463266f932d3bd29001b3579da0367af0b47ea0c230e000b8caa6b8c76934e",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "平均工时",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "aggregate",
+              "metric": {
+                "function": "avg",
+                "field": "field_0004",
+                "alias": "avg_work_hours"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "type": "deterministic_saved_plan_revalidation_not_new_model_run"
+  }
+]

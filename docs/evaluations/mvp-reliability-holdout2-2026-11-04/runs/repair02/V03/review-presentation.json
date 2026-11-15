@@ -1,0 +1,319 @@
+{
+  "session_id": "20e3ffdde5724610923b01d4397f2700",
+  "revision": 8,
+  "plan_id": "plan_86ebc9f0d14f45178237fb53405c0616",
+  "plan_version": 1,
+  "goal": "统计甲和丙项目的任务数量",
+  "coverage": "已安排核心问题的分析",
+  "conditions": [
+    {
+      "label": "筛选范围",
+      "text": "只看甲和丙",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.filters[0]"
+    },
+    {
+      "label": "统计指标",
+      "text": "任务数量",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.metric_requirements[0]"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按项目分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S2"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：记录数",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S2"
+    }
+  ],
+  "directions": [
+    {
+      "task_id": "T1",
+      "title": "统计甲和丙项目的任务数量",
+      "question": "在只看甲和丙项目的约束下，这两个项目各自的任务数量是多少？",
+      "importance": "核心分析",
+      "reason": "直接回答核心业务目标“统计甲和丙项目的任务数量”，是支持决策的基础数据。删除此任务将无法回答核心问题。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "项目 属于 甲、丙",
+        "按项目分组",
+        "拟用统计口径：记录数"
+      ],
+      "gaps": [],
+      "can_remove": true
+    }
+  ],
+  "issues": [],
+  "warnings": [],
+  "can_approve": true,
+  "can_execute": false,
+  "audit": {
+    "audit_version": "2.1",
+    "binding": {
+      "dataset_id": "9f3a8a24ebdb44a38f2774e22658f10c",
+      "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+      "plan_id": "plan_86ebc9f0d14f45178237fb53405c0616",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "registry_version": "1.0"
+    },
+    "digest": "7bceffbc8841b6cf22162d32ffb575202f12e64caec21c84915b57353b7fa39f",
+    "all_verified": true,
+    "items": [
+      {
+        "source": "intent.constraints.filters[0]",
+        "raw_text": "只看甲和丙",
+        "status": "verified",
+        "category": "filters",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0002"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S1",
+            "operation": "filter",
+            "condition": {
+              "field": "field_0002",
+              "operator": "in",
+              "value": [
+                "甲",
+                "丙"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.metric_requirements[0]",
+        "raw_text": "任务数量",
+        "status": "verified",
+        "category": "metric_requirements",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S2",
+            "operation": "group_aggregate",
+            "metric": {
+              "function": "count",
+              "field": null,
+              "alias": "task_count"
+            },
+            "count_basis": "uploaded_rows_not_distinct_entities"
+          }
+        ]
+      }
+    ]
+  },
+  "technical_details": {
+    "record": {
+      "session_id": "20e3ffdde5724610923b01d4397f2700",
+      "plan_id": "plan_86ebc9f0d14f45178237fb53405c0616",
+      "plan_version": 1,
+      "dataset_id": "9f3a8a24ebdb44a38f2774e22658f10c",
+      "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+      "validation_version": "1.0",
+      "created_at": "2026-11-04T10:49:21.426180+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "9f3a8a24ebdb44a38f2774e22658f10c",
+          "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+          "plan_id": "plan_86ebc9f0d14f45178237fb53405c0616",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T1",
+              "title": "统计甲和丙项目的任务数量",
+              "business_question": "在只看甲和丙项目的约束下，这两个项目各自的任务数量是多少？",
+              "priority": "P0",
+              "priority_reason": "直接回答核心业务目标“统计甲和丙项目的任务数量”，是支持决策的基础数据。删除此任务将无法回答核心问题。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S1",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "field_0002",
+                        "operator": "in",
+                        "value": [
+                          "甲",
+                          "丙"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S2",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "task_count"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0002"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "统计甲和丙项目的任务数量"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "filters：只看甲和丙"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "metric_requirements：任务数量"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T1",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T1"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "9f3a8a24ebdb44a38f2774e22658f10c",
+          "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "甲和丙项目的任务数量",
+            "business_goal": "统计甲和丙项目的任务数量",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [
+              {
+                "raw_text": "只看甲和丙",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "任务数量",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "constraint_audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "9f3a8a24ebdb44a38f2774e22658f10c",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_id": "plan_86ebc9f0d14f45178237fb53405c0616",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "7bceffbc8841b6cf22162d32ffb575202f12e64caec21c84915b57353b7fa39f",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "只看甲和丙",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0002"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0002",
+                "operator": "in",
+                "value": [
+                  "甲",
+                  "丙"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "任务数量",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "task_count"
+              },
+              "count_basis": "uploaded_rows_not_distinct_entities"
+            }
+          ]
+        }
+      ]
+    },
+    "session_status": "AWAITING_APPROVAL",
+    "revision": 8
+  }
+}

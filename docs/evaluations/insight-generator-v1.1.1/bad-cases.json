@@ -1,0 +1,3572 @@
+{
+  "note": "All intermediate and final failed/partial cases, plus quality-hard-failed complete U02. Unavailable expected cases are separately preserved in case-results.",
+  "records": [
+    {
+      "run_file": "frozen-live-01.json",
+      "case_id": "S01",
+      "query": "分析2026年华东地区已完成订单销售额，按城市降序取前三名",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "FREE_TEXT_GUARD",
+          "role": "recommendation",
+          "text": "比较济南和南京的订单记录数、产品类别分布及平均订单金额，以评估销售额接近是否源于规模相当或单价策略不同；补充分析尚未执行。",
+          "matches": {
+            "CAUSAL": "源于"
+          },
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0009",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "recommendation",
+                "triggered_rules": [
+                  "CAUSAL"
+                ]
+              }
+            },
+            {
+              "candidate_index": 1,
+              "primary_evidence_id": "E0010",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "NUMERIC",
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            },
+            {
+              "candidate_index": 2,
+              "primary_evidence_id": "E0011",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "UNDEFINED_THRESHOLD"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0009",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "recommendation",
+            "triggered_rules": [
+              "CAUSAL"
+            ]
+          }
+        },
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0010",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "NUMERIC",
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        },
+        {
+          "candidate_index": 2,
+          "primary_evidence_id": "E0011",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNDEFINED_THRESHOLD"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0009",
+            "evidence_refs": [
+              "E0002",
+              "E0003",
+              "E0007",
+              "E0009"
+            ],
+            "finding_type": "difference",
+            "implication": "济南与南京的销售额相对差距较小，值得结合订单数量及平均单价核查两地在交易结构上的具体差异。",
+            "recommendation": "比较济南和南京的订单记录数、产品类别分布及平均订单金额，以评估销售额接近是否源于规模相当或单价策略不同；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0010",
+            "evidence_refs": [
+              "E0004",
+              "E0006",
+              "E0010"
+            ],
+            "finding_type": "difference",
+            "implication": "上海在返回分组中销售额占比明显低于前两名，需确认该差距是由业务体量还是数据覆盖范围造成。",
+            "recommendation": "核查上海的参与订单总数与时间分布完整性，并对比其与济南、南京的记录密度，以判断低值是否反映实际经营规模或统计偏差；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0011",
+            "evidence_refs": [
+              "E0008",
+              "E0011"
+            ],
+            "finding_type": "concentration",
+            "implication": "前两个城市占据了本次返回结果的绝大部分销售额，提示资源可能集中在少数地区，但需排除未入选城市的影响。",
+            "recommendation": "检查未进入前三名的华东城市销售额数据，评估头部集中现象在全量筛选范围内的普遍性；补充分析尚未执行。",
+            "limitations": [
+              "分母仅为本次完整返回的分组合计，不代表全部筛选范围或整体市场占比。",
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-01.json",
+      "case_id": "S02",
+      "query": "比较各渠道销售额和订单数量，不判断利润",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 2,
+          "primary_evidence_id": "E0025",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "UNBOUND_POPULATION_SCOPE",
+            "role": "limitation"
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0023",
+            "evidence_refs": [
+              "E0007",
+              "E0023"
+            ],
+            "finding_type": "difference",
+            "implication": "线上与线下渠道的销售额差额值得结合订单规模评估，当前结果不足以判断经营表现或利润影响。",
+            "recommendation": "比较相关渠道的订单数量与平均订单金额，核查销售差额与记录结构的关联；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0018",
+            "evidence_refs": [
+              "E0013",
+              "E0014",
+              "E0018"
+            ],
+            "finding_type": "difference",
+            "implication": "线上与线下渠道的订单数量差值提示业务结构差异，需结合具体交易记录进一步验证。",
+            "recommendation": "补充查看对应渠道的交易明细分布，评估订单数量差异对整体销售结构的影响；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0025",
+            "evidence_refs": [
+              "E0025"
+            ],
+            "finding_type": "concentration",
+            "implication": "主要渠道在销售额中的占比情况值得关注，但分母仅为本次返回分组，不代表全部筛选范围或整体市场。",
+            "recommendation": "核对未返回分组的完整性及口径一致性，评估集中度指标的实际业务覆盖范围；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "集中度计算基于返回分组，非总体占比。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-01.json",
+      "case_id": "R02",
+      "query": "比较不同发布日期的岗位数量变化，不能外推市场趋势",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0008",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "recommendation",
+            "triggered_rules": [
+              "NUMERIC"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0008",
+            "evidence_refs": [
+              "E0008",
+              "E0007",
+              "E0002",
+              "E0004"
+            ],
+            "finding_type": "trend",
+            "implication": "已返回首末时间点的岗位数量变化提示了当前数据范围内的波动，不能推断中间月份的连续趋势或未来走向。",
+            "recommendation": "补充查看相邻时间点（如二月）的岗位记录明细与发布渠道分布，核查该变化是否由特定批次集中发布引起；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "时间变化仅为已返回首末时间点对比，不推断中间连续增长或未来趋势。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0009",
+            "evidence_refs": [
+              "E0009",
+              "E0010",
+              "E0011",
+              "E0012"
+            ],
+            "finding_type": "concentration",
+            "implication": "各发布日期在返回分组中的占比结构反映了当前样本的分布情况，需结合分母局限性评估其代表性。",
+            "recommendation": "核查当前返回分组是否覆盖了主要发布周期，并对比未返回日期的潜在记录规模，以评估该占比结构对整体招聘计划的解释力；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "占比计算基于本次返回分组合计，若存在未返回分组则不代表总体分布。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-01.json",
+      "case_id": "C01",
+      "query": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0009",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0007",
+            "evidence_refs": [
+              "E0002",
+              "E0003",
+              "E0007"
+            ],
+            "finding_type": "difference",
+            "implication": "投诉与退款类别在平均响应时间上存在数值差额，需结合记录分布评估实际业务影响，当前数据不足以判定坐席效率或根本原因。",
+            "recommendation": "比较这两类工单的样本数量及响应时长分布，核查均值差异是否受极端值或记录规模影响；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0009",
+            "evidence_refs": [
+              "E0004",
+              "E0006",
+              "E0009"
+            ],
+            "finding_type": "difference",
+            "implication": "咨询类别的平均响应时间与最高值类别存在相对比例关系，提示不同类别的处理耗时结构可能不同，但不能据此认定服务优先级或人员表现。",
+            "recommendation": "检查咨询类工单的具体处理流程记录与分类标准，确认该比例是否反映常规处理模式；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-01.json",
+      "case_id": "O01",
+      "query": "比较各日期的已完成任务数量变化，不判断项目健康程度",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_INVALID_EVIDENCE_REFERENCE",
+        "message": "洞察引用不存在、重复或缺少主要证据。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0008",
+              "error_code": "REPORT_INVALID_EVIDENCE_REFERENCE",
+              "details": {}
+            },
+            {
+              "candidate_index": 1,
+              "primary_evidence_id": "E0009",
+              "error_code": "REPORT_INVALID_EVIDENCE_REFERENCE",
+              "details": {}
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0008",
+          "error_code": "REPORT_INVALID_EVIDENCE_REFERENCE",
+          "details": {}
+        },
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0009",
+          "error_code": "REPORT_INVALID_EVIDENCE_REFERENCE",
+          "details": {}
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0008",
+            "evidence_refs": [
+              "E0002",
+              "E0003",
+              "E0004",
+              "E0007"
+            ],
+            "finding_type": "trend",
+            "implication": "首末时间点已完成任务数量无变化，但中间分组存在数值波动。当前结果仅反映已返回时间点的对比，无法推断期间连续趋势或整体稳定性。",
+            "recommendation": "核查相邻时间点的数据完整性与记录构成，评估该波动在业务周期中的实际影响；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "样本量较小且未去重，可能影响统计代表性。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0009",
+            "evidence_refs": [
+              "E0010",
+              "E0011",
+              "E0012"
+            ],
+            "finding_type": "concentration",
+            "implication": "单个日期分组的占比差异反映了返回数据内的结构分布。需结合原始记录数与状态定义验证该比例是否代表真实业务负载分配。",
+            "recommendation": "比较各日期的原始记录总数与筛选条件一致性，确认占比计算的分母口径；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "Top N 分母局限：合计仅代表所选分组，非总体全貌。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-01.json",
+      "case_id": "O02",
+      "query": "比较项目完成任务数及利润，缺少利润数据时必须披露",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0010",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "recommendation",
+            "triggered_rules": [
+              "CAUSAL"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0010",
+            "evidence_refs": [
+              "E0010",
+              "E0006",
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "difference",
+            "implication": "项目完成任务数的相对差额值得结合各项目的任务构成与记录规模评估，当前数据不足以判断经营表现或资源分配原因。",
+            "recommendation": "比较相关项目的任务明细类型、单条任务耗时及参与人员结构，核查数量差异是否源于任务复杂度或执行标准不同；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "缺少利润数据，无法评估完成任务数对财务结果的贡献。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0007",
+            "evidence_refs": [
+              "E0007",
+              "E0008",
+              "E0009"
+            ],
+            "finding_type": "concentration",
+            "implication": "任务完成量的分布结构值得结合具体项目的工作负载均衡性进行审视，需确认高占比项目是否存在依赖少数关键路径的情况。",
+            "recommendation": "核查高占比项目的任务分解粒度及交付里程碑，对比低占比项目的积压状态，以评估团队产能分配的合理性；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "缺少利润数据，无法验证该分布结构是否与收益效率挂钩。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-01.json",
+      "case_id": "R03",
+      "query": "比较城市岗位数量，存在并列时不编造唯一名次",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "FREE_TEXT_GUARD",
+          "role": "implication",
+          "text": "当前返回的城市分组在岗位记录数量上呈现完全一致的状态，且最大值与最小值相同，表明在已选取的样本范围内不存在基于数量的层级差异。这种并列情况符合不编造唯一名次的业务目标，但也意味着仅凭此指标无法区分这些城市的相对优势。",
+          "matches": {
+            "NUMERIC": "一名"
+          },
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0007",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "NUMERIC"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0007",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "NUMERIC"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0007",
+            "evidence_refs": [
+              "E0002",
+              "E0003",
+              "E0004",
+              "E0005",
+              "E0006",
+              "E0007"
+            ],
+            "finding_type": "difference",
+            "implication": "当前返回的城市分组在岗位记录数量上呈现完全一致的状态，且最大值与最小值相同，表明在已选取的样本范围内不存在基于数量的层级差异。这种并列情况符合不编造唯一名次的业务目标，但也意味着仅凭此指标无法区分这些城市的相对优势。",
+            "recommendation": "建议核查原始数据中是否包含更多城市或更细粒度的岗位分类，以确认该并列现象是局部样本特征还是整体分布常态；同时可补充分析各城市的岗位类型构成或发布时间跨度，探索除数量外的其他区分维度。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "Top N 选择可能遗漏未进入前几名的其他城市分组，无法确认全量数据的分布情况。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-01.json",
+      "case_id": "O03",
+      "query": "比较各项目投入工时与任务数量，不据此断定效率",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0016",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "recommendation",
+            "triggered_rules": [
+              "CAUSAL"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0022",
+            "evidence_refs": [
+              "E0002",
+              "E0003",
+              "E0022"
+            ],
+            "finding_type": "difference",
+            "implication": "项目间工时投入存在相对差异，值得结合任务记录分布评估结构关联。当前证据不足以判断投入产出效率或原因。",
+            "recommendation": "比较相关项目的任务数量与单条任务平均工时，核查工时差额是否与任务规模或类型构成有关；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0016",
+            "evidence_refs": [
+              "E0011",
+              "E0012",
+              "E0016"
+            ],
+            "finding_type": "difference",
+            "implication": "任务记录数量的差异提示项目参与规模不同，需结合工时数据综合看待。不能据此断定工作量饱和度或人员效率。",
+            "recommendation": "核对对应项目的任务明细分类与状态分布，确认记录数差异是否源于任务定义或统计口径；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0024",
+            "evidence_refs": [
+              "E0008",
+              "E0009",
+              "E0024"
+            ],
+            "finding_type": "concentration",
+            "implication": "部分项目在已返回分组中占据主要工时份额，反映当前样本的结构特征。该比例仅基于本次返回数据，不代表全部筛选范围。",
+            "recommendation": "检查未返回或低占比项目的数据完整性，并对比其任务数量占比，评估资源分配在完整范围内的实际分布；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-01.json",
+      "case_id": "H01",
+      "query": "比较岗位类型数量的结构，不判断招聘成功率",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0012",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "CAUSAL"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0014",
+            "evidence_refs": [
+              "E0014",
+              "E0008",
+              "E0009"
+            ],
+            "finding_type": "concentration",
+            "implication": "算法与产品岗位在返回结果中占据主要份额，值得结合整体招聘需求评估结构分布。当前证据仅反映已返回分组情况，不代表全部筛选范围或整体市场占比。",
+            "recommendation": "核查未返回的岗位类型数据完整性，并对比各类型的实际录用记录数，以验证该集中度是否代表真实的业务资源分配；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "分母仅为本次完整返回的分组合计，非全量数据。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0012",
+            "evidence_refs": [
+              "E0012",
+              "E0007",
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "difference",
+            "implication": "算法岗位数量高于产品岗位，这一差额值得结合两类岗位的具体职责描述和发布渠道进行比对。目前不足以判断这种差异是否源于业务战略侧重或特定项目需求。",
+            "recommendation": "比较算法与产品岗位的发布时间、渠道来源及具体职位描述文本，核查记录数量差异是否与岗位定义或投放策略相关；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-01.json",
+      "case_id": "H02",
+      "query": "比较服务组工单数量前三名，不能当作整体客户占比",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0011",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "UNBOUND_POPULATION_SCOPE",
+            "role": "limitation"
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0009",
+            "evidence_refs": [
+              "E0002",
+              "E0003",
+              "E0007",
+              "E0009"
+            ],
+            "finding_type": "difference",
+            "implication": "红组与蓝组之间的工单数量差额值得结合两组记录构成评估，当前结果不足以判断业务原因。",
+            "recommendation": "比较红组和蓝组的工单类型、处理时长或客户分布，核查数量差异是否与特定服务场景相关；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0011",
+            "evidence_refs": [
+              "E0008",
+              "E0011"
+            ],
+            "finding_type": "concentration",
+            "implication": "前两名服务组合计占比提示其在本次返回样本中的相对权重，但分母仅为已选分组，不代表全部筛选范围。",
+            "recommendation": "确认未进入前三名的服务组数据是否缺失或被过滤，评估该比例在完整数据集下的实际意义；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "Top N 选择导致分母局限，不能直接视为总体占比。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-02.json",
+      "case_id": "S01",
+      "query": "分析2026年华东地区已完成订单销售额，按城市降序取前三名",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "FREE_TEXT_GUARD",
+          "role": "implication",
+          "text": "当前返回结果展示了按销售额降序排列的前三个城市分组。该排名仅反映已筛选并聚合后的数据分布，未包含未进入Top N的其他城市，因此不能推断华东地区所有城市的完整竞争格局或整体市场份额。",
+          "matches": {
+            "NUMERIC": "三个",
+            "UNSUPPORTED_ASSERTION": "排名"
+          },
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0002",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "NUMERIC",
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            },
+            {
+              "candidate_index": 1,
+              "primary_evidence_id": "E0011",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            },
+            {
+              "candidate_index": 2,
+              "primary_evidence_id": "E0009",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "NUMERIC",
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0002",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "NUMERIC",
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        },
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0011",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        },
+        {
+          "candidate_index": 2,
+          "primary_evidence_id": "E0009",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "NUMERIC",
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0002",
+            "evidence_refs": [
+              "E0002",
+              "E0003",
+              "E0004"
+            ],
+            "finding_type": "highlight",
+            "implication": "当前返回结果展示了按销售额降序排列的前三个城市分组。该排名仅反映已筛选并聚合后的数据分布，未包含未进入Top N的其他城市，因此不能推断华东地区所有城市的完整竞争格局或整体市场份额。",
+            "recommendation": "建议核查对应分组（济南、南京、上海）的原始订单记录数及金额分布，确认是否存在异常大额订单影响排名；同时检查统计口径中“已完成”状态的定义是否覆盖所有业务场景。补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "2026年华东地区已完成订单城市销售额Top3：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0011",
+            "evidence_refs": [
+              "E0011",
+              "E0008"
+            ],
+            "finding_type": "concentration",
+            "implication": "前两个城市分组在返回结果的总销售额中占据了特定比例。这一结构特征仅描述当前Top 3分组内部的构成关系，分母为返回分组合计而非全部筛选范围，因此无法据此判断华东地区整体的销售集中度或长尾效应。",
+            "recommendation": "建议核对未被选入Top N的其他城市销售额合计，以评估前两名占全量数据的真实比重；同时验证分组记录的完整性，确保无因数据缺失导致的偏差。补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "2026年华东地区已完成订单城市销售额Top3：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0009",
+            "evidence_refs": [
+              "E0009",
+              "E0007"
+            ],
+            "finding_type": "difference",
+            "implication": "排名第一与排名第二的城市之间存在具体的销售额差额。该差异值得结合参与记录的构成进行评估，目前证据不足以判断造成此差距的业务原因（如渠道、产品或客户群体差异）。",
+            "recommendation": "建议比较这两个对应分组的订单数量、平均单价及销售渠道分布，核查统计口径是否一致，以排除结构性因素对总额的影响。补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "2026年华东地区已完成订单城市销售额Top3：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-02.json",
+      "case_id": "S02",
+      "query": "比较各渠道销售额和订单数量，不判断利润",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "FREE_TEXT_GUARD",
+          "role": "implication",
+          "text": "该差异反映了当前返回结果中线上与线下渠道在销售额维度上的相对位置，仅基于本次上传样本的聚合数据。由于缺乏更广泛的总体分布或时间序列对比，此差额不能直接推断为市场趋势或结构性优势，需结合具体业务场景理解其局限性。",
+          "matches": {
+            "CAUSAL": "由于"
+          },
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0023",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "CAUSAL"
+                ]
+              }
+            },
+            {
+              "candidate_index": 1,
+              "primary_evidence_id": "E0018",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "NUMERIC"
+                ]
+              }
+            },
+            {
+              "candidate_index": 2,
+              "primary_evidence_id": "E0025",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "NUMERIC"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0023",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "CAUSAL"
+            ]
+          }
+        },
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0018",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "NUMERIC"
+            ]
+          }
+        },
+        {
+          "candidate_index": 2,
+          "primary_evidence_id": "E0025",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "NUMERIC"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0023",
+            "evidence_refs": [
+              "E0023",
+              "E0007"
+            ],
+            "finding_type": "difference",
+            "implication": "该差异反映了当前返回结果中线上与线下渠道在销售额维度上的相对位置，仅基于本次上传样本的聚合数据。由于缺乏更广泛的总体分布或时间序列对比，此差额不能直接推断为市场趋势或结构性优势，需结合具体业务场景理解其局限性。",
+            "recommendation": "建议核查对应分组（线上、线下）的记录数量及单笔金额分布，确认是否存在异常值影响合计结果；同时验证统计口径是否包含所有相关交易记录。补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0018",
+            "evidence_refs": [
+              "E0018",
+              "E0016",
+              "E0017"
+            ],
+            "finding_type": "difference",
+            "implication": "订单数量的差值展示了两个主要渠道在交易频次上的不同表现，但这仅是当前返回分组间的静态比较。极值的存在表明数据内部存在离散度，但未提供关于客户行为变化或运营效率的直接证据。",
+            "recommendation": "建议检查产生最大和最小订单数对应的具体记录明细，核实是否有重复录入或数据缺失情况；并评估这些分组在总记录中的覆盖完整性。补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0025",
+            "evidence_refs": [
+              "E0025",
+              "E0011"
+            ],
+            "finding_type": "concentration",
+            "implication": "该比例描述了线上和线下两个特定分组在当前返回的三个分组总和中的结构占比。这仅代表已筛选出的子集内部构成，并不反映整个销售渠道市场的份额分布，也不能据此判断其他未返回分组的潜在贡献。",
+            "recommendation": "建议核对“合作”等其他返回分组的销售额明细，确认其未被纳入该集中度计算的原因；并评估当前返回分组集合是否足以支撑对整体销售结构的判断。补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-02.json",
+      "case_id": "R01",
+      "query": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "FREE_TEXT_GUARD",
+          "role": "implication",
+          "text": "当前返回结果展示了记录数量排名靠前的分组。该排名仅反映样本内的相对位置，不能据此推断薪资水平或录用机会。",
+          "matches": {
+            "UNSUPPORTED_ASSERTION": "排名"
+          },
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0002",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            },
+            {
+              "candidate_index": 1,
+              "primary_evidence_id": "E0011",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0002",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        },
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0011",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0002",
+            "evidence_refs": [
+              "E0002",
+              "E0003",
+              "E0004"
+            ],
+            "finding_type": "highlight",
+            "implication": "当前返回结果展示了记录数量排名靠前的分组。该排名仅反映样本内的相对位置，不能据此推断薪资水平或录用机会。",
+            "recommendation": "建议核查各排名对应分组的原始记录构成与统计口径，确认数据完整性；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "城市岗位数量前三名：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0011",
+            "evidence_refs": [
+              "E0011",
+              "E0008"
+            ],
+            "finding_type": "concentration",
+            "implication": "高排名分组的记录占比反映了当前返回结果的内部结构。此比例仅基于已返回的分组计算，不代表全部筛选范围或整体市场的分布情况。",
+            "recommendation": "建议核对未进入排名的分组数据是否存在缺失，评估当前返回集合对业务判断的代表性；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "Top N 内部比例仅是返回分组结构，不能推断整体筛选范围、客户总体或市场份额。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-02.json",
+      "case_id": "R02",
+      "query": "比较不同发布日期的岗位数量变化，不能外推市场趋势",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0012",
+          "error_code": "REPORT_INVALID_EVIDENCE_TYPE",
+          "details": {}
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0008",
+            "evidence_refs": [
+              "E0008",
+              "E0007"
+            ],
+            "finding_type": "trend",
+            "implication": "已返回的首末时间点间记录数量存在差异，但这仅反映当前样本在特定日期分组下的数值变化，不能推断期间内的连续趋势或整体市场动向。",
+            "recommendation": "建议核查首末两个日期分组对应的原始记录明细及筛选条件，确认是否存在数据录入时间偏差或统计口径不一致；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0012",
+            "evidence_refs": [
+              "E0012",
+              "E0009",
+              "E0010",
+              "E0011"
+            ],
+            "finding_type": "concentration",
+            "implication": "当前返回的分组结构显示了各发布日期在总记录数中的占比分布，该比例仅基于已聚合的少量分组计算，不代表全量数据的分布特征。",
+            "recommendation": "建议核对参与聚合的记录总数与缺失值处理逻辑，验证分母计算的完整性；评估当前样本量是否足以支撑结构性判断；补充分析尚未执行。",
+            "limitations": [
+              "Top N 内部比例仅是返回分组结构，不能推断整体筛选范围、客户总体或市场份额。",
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-02.json",
+      "case_id": "C01",
+      "query": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0009",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "recommendation",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0007",
+            "evidence_refs": [
+              "E0007",
+              "E0008",
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "difference",
+            "implication": "当前返回结果中，投诉与退款类别的平均响应分钟存在数值差异。该差异仅反映已聚合数据的统计特征，不足以推断坐席效率、处理难度或业务原因。需关注不同类别在记录构成上的潜在区别。",
+            "recommendation": "建议核查投诉与退款对应分组的原始记录数量及分布情况，确认是否存在数据缺失或极端值影响均值计算；同时验证“响应分钟”字段在各分组中的统计口径一致性。补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0009",
+            "evidence_refs": [
+              "E0009",
+              "E0004",
+              "E0006"
+            ],
+            "finding_type": "difference",
+            "implication": "咨询类别的平均响应分钟相对于投诉类别呈现较低的比例关系。此比例仅基于当前返回的同口径分组计算，不表示咨询处理更简单或更高效，也不能用于评估资源分配合理性。",
+            "recommendation": "建议对比咨询与投诉分组的具体记录条数，检查是否有特定时间段或子类别集中导致均值偏移；核实两类别在工单定义和响应计时起点上是否完全一致。补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-02.json",
+      "case_id": "C02",
+      "query": "比较渠道的平均处理分钟，并说明缺失值限制",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "FREE_TEXT_GUARD",
+          "role": "implication",
+          "text": "当前数据中不同渠道的平均处理时长存在差异，电话与在线渠道的均值差值反映了各自在样本中的表现。由于仅基于上传样本且未剔除缺失值进行单独统计，该差异仅代表当前返回分组间的相对关系，不能直接推断整体业务效率或因果原因。",
+          "matches": {
+            "CAUSAL": "由于",
+            "UNSUPPORTED_ASSERTION": "因果"
+          },
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0006",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "CAUSAL",
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0006",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "CAUSAL",
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0006",
+            "evidence_refs": [
+              "E0006",
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "difference",
+            "implication": "当前数据中不同渠道的平均处理时长存在差异，电话与在线渠道的均值差值反映了各自在样本中的表现。由于仅基于上传样本且未剔除缺失值进行单独统计，该差异仅代表当前返回分组间的相对关系，不能直接推断整体业务效率或因果原因。",
+            "recommendation": "建议核查对应分组的记录数量分布及处理分钟字段的缺失情况，确认统计口径是否对两个渠道一致；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "上传范围内，处理分钟有 2 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-02.json",
+      "case_id": "O01",
+      "query": "比较各日期的已完成任务数量变化，不判断项目健康程度",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0002",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0008",
+            "evidence_refs": [
+              "E0008"
+            ],
+            "finding_type": "trend",
+            "implication": "当前证据仅支持已返回首末时间点间的变化比较，无法推断期间连续趋势或波动情况。",
+            "recommendation": "建议补充查看相邻时间点的记录构成及缺失日期，核查统计口径的连续性；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。",
+              "按解析后单元格值及类型检测到重复行；计数不含首次出现，未去重。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0002",
+            "evidence_refs": [
+              "E0002",
+              "E0005"
+            ],
+            "finding_type": "highlight",
+            "implication": "该发现基于当前返回分组内的极值与排名，反映的是局部数据结构特征，不代表整体分布形态。",
+            "recommendation": "建议核对对应分组的记录完整性及筛选条件，确认是否包含其他未返回日期；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。",
+              "按解析后单元格值及类型检测到重复行；计数不含首次出现，未去重。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-02.json",
+      "case_id": "O02",
+      "query": "比较项目完成任务数及利润，缺少利润数据时必须披露",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "FREE_TEXT_GUARD",
+          "role": "implication",
+          "text": "当前返回结果中不同项目的完成任务记录数量存在差额，且相对比例差异较大。由于样本仅包含两个分组，该比较仅代表当前可见数据的分布状态，不足以推断整体业务表现或运营效率。",
+          "matches": {
+            "CAUSAL": "由于"
+          },
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0006",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "CAUSAL"
+                ]
+              }
+            },
+            {
+              "candidate_index": 1,
+              "primary_evidence_id": "E0009",
+              "error_code": "REPORT_INVALID_EVIDENCE_TYPE",
+              "details": {}
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0006",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "CAUSAL"
+            ]
+          }
+        },
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0009",
+          "error_code": "REPORT_INVALID_EVIDENCE_TYPE",
+          "details": {}
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0006",
+            "evidence_refs": [
+              "E0006",
+              "E0010",
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "difference",
+            "implication": "当前返回结果中不同项目的完成任务记录数量存在差额，且相对比例差异较大。由于样本仅包含两个分组，该比较仅代表当前可见数据的分布状态，不足以推断整体业务表现或运营效率。",
+            "recommendation": "建议核查对应分组的原始任务记录构成及时间跨度，确认是否存在数据录入缺失或统计口径不一致的情况；同时补充更多项目分组以评估差额的普遍性。尚未执行上述深入分析。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。",
+              "未完成任务：项目利润；任务执行失败或不支持。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0009",
+            "evidence_refs": [
+              "E0009",
+              "E0007",
+              "E0008"
+            ],
+            "finding_type": "concentration",
+            "implication": "当前返回的两个项目分组构成了有限的总体基数，各分组在合计中的占比反映了局部结构。由于总体规模较小，单一记录的增减会对比例产生显著影响，因此该结构特征可能不具备稳定性，需谨慎解读其代表性。",
+            "recommendation": "建议核对当前上传数据中是否还有其他未进入聚合的项目记录，确认“本次返回分组”是否为全量数据；若为抽样，需评估抽样偏差对结构判断的影响。尚未执行上述完整性核查。",
+            "limitations": [
+              "Top N 内部比例仅是返回分组结构，不能推断整体筛选范围、客户总体或市场份额。",
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "未完成任务：项目利润；任务执行失败或不支持。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-02.json",
+      "case_id": "R03",
+      "query": "比较城市岗位数量，存在并列时不编造唯一名次",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "FREE_TEXT_GUARD",
+          "role": "implication",
+          "text": "当前返回的分组中，所有城市的岗位记录数量数值完全一致（最大值与最小值相等），且均处于同一排名层级。这表明在已选取的Top N样本范围内，城市间不存在基于该指标的数量差异或层级区分。由于数据呈现完全并列状态，无法通过此维度识别出相对优势或劣势的城市。",
+          "matches": {
+            "CAUSAL": "由于",
+            "UNSUPPORTED_ASSERTION": "所有"
+          },
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0005",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "CAUSAL",
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            },
+            {
+              "candidate_index": 1,
+              "primary_evidence_id": "E0007",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "NUMERIC"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0005",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "CAUSAL",
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        },
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0007",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "NUMERIC"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0005",
+            "evidence_refs": [
+              "E0005",
+              "E0006",
+              "E0002",
+              "E0003",
+              "E0004"
+            ],
+            "finding_type": "highlight",
+            "implication": "当前返回的分组中，所有城市的岗位记录数量数值完全一致（最大值与最小值相等），且均处于同一排名层级。这表明在已选取的Top N样本范围内，城市间不存在基于该指标的数量差异或层级区分。由于数据呈现完全并列状态，无法通过此维度识别出相对优势或劣势的城市。",
+            "recommendation": "建议核查原始数据中是否存在未被纳入Top N的其他城市分组，以确认这种“无差异”是局部现象还是整体特征；同时检查“岗位”字段的统计口径是否因文本匹配或去重逻辑导致计数失真。需补充查看各分组的具体记录明细，验证数据聚合的准确性。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。",
+              "城市岗位数量与并列：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0007",
+            "evidence_refs": [
+              "E0007"
+            ],
+            "finding_type": "difference",
+            "implication": "针对具体城市对（甲与乙）的比较显示，其记录数量差值为零。这进一步印证了前述的整体并列情况，即在两两对比层面同样缺乏数量上的区分度。此发现强调了在当前数据切片下，不同城市间的量化比较结果是平坦的。",
+            "recommendation": "建议扩展比较对象，随机抽取其他城市对进行差值计算，以验证并列状态的普遍性；同时复核时间范围筛选条件，确认是否因过滤条件过于严格导致有效数据量极少从而产生虚假的均匀分布。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。",
+              "城市岗位数量与并列：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-02.json",
+      "case_id": "C03",
+      "query": "比较渠道净变化值，负值不生成无意义占比",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "FREE_TEXT_GUARD",
+          "role": "implication",
+          "text": "该差额反映了当前返回分组中两个特定渠道在净变化指标上的数值差距。由于仅涉及部分渠道且未包含所有分组的详细分布，目前不足以判断造成这种差异的业务动因或整体渠道效能对比。",
+          "matches": {
+            "NUMERIC": "两个",
+            "CAUSAL": "由于",
+            "UNSUPPORTED_ASSERTION": "所有"
+          },
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0007",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "NUMERIC",
+                  "CAUSAL",
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            },
+            {
+              "candidate_index": 1,
+              "primary_evidence_id": "E0006",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0007",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "NUMERIC",
+              "CAUSAL",
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        },
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0006",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0007",
+            "evidence_refs": [
+              "E0007",
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "difference",
+            "implication": "该差额反映了当前返回分组中两个特定渠道在净变化指标上的数值差距。由于仅涉及部分渠道且未包含所有分组的详细分布，目前不足以判断造成这种差异的业务动因或整体渠道效能对比。",
+            "recommendation": "建议核查在线与电话渠道对应的原始记录数量及数据完整性，确认统计口径是否一致；同时补充查看其他渠道的净变化值以评估全貌。上述验证工作尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0006",
+            "evidence_refs": [
+              "E0006",
+              "E0004"
+            ],
+            "finding_type": "highlight",
+            "implication": "邮件渠道在当前返回结果中呈现负值的净变化，是已观测到的最低点。这提示该渠道可能存在业务量的减少或流失，但具体原因需结合更细粒度的数据进行分析，单凭极值无法确定是否为普遍现象。",
+            "recommendation": "建议检查邮件渠道相关记录的缺失情况及时间分布，核实是否存在异常数据录入或统计偏差；进一步分析该渠道与其他渠道的交互影响。上述核查尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-02.json",
+      "case_id": "O03",
+      "query": "比较各项目投入工时与任务数量，不据此断定效率",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_INVALID_EVIDENCE_REFERENCE",
+        "message": "当前单条洞察只支持同指标同范围组合；跨指标事实请分别展示，派生计算需独立验证证据。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "SAME_METRIC_COMPOSITION",
+          "bindings": [
+            {
+              "task_id": "A01",
+              "result_id": "R001",
+              "metric": "hours",
+              "source_scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。"
+            },
+            {
+              "task_id": "A01",
+              "result_id": "R001",
+              "metric": "tasks",
+              "source_scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。"
+            }
+          ],
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0022",
+              "error_code": "REPORT_INVALID_EVIDENCE_REFERENCE",
+              "details": {
+                "rule": "SAME_METRIC_COMPOSITION",
+                "bindings": [
+                  {
+                    "task_id": "A01",
+                    "result_id": "R001",
+                    "metric": "hours",
+                    "source_scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。"
+                  },
+                  {
+                    "task_id": "A01",
+                    "result_id": "R001",
+                    "metric": "tasks",
+                    "source_scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。"
+                  }
+                ]
+              }
+            },
+            {
+              "candidate_index": 1,
+              "primary_evidence_id": "E0024",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "UNDEFINED_THRESHOLD",
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0022",
+          "error_code": "REPORT_INVALID_EVIDENCE_REFERENCE",
+          "details": {
+            "rule": "SAME_METRIC_COMPOSITION",
+            "bindings": [
+              {
+                "task_id": "A01",
+                "result_id": "R001",
+                "metric": "hours",
+                "source_scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。"
+              },
+              {
+                "task_id": "A01",
+                "result_id": "R001",
+                "metric": "tasks",
+                "source_scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。"
+              }
+            ]
+          }
+        },
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0024",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNDEFINED_THRESHOLD",
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0022",
+            "evidence_refs": [
+              "E0022",
+              "E0016"
+            ],
+            "finding_type": "difference",
+            "implication": "当前返回结果中，不同项目的工时合计与记录数量呈现出不同的相对差距。这一对比揭示了资源投入量（工时）与任务负载量（记录数）在特定项目间的分布差异，但仅凭此数据无法直接推断效率高低或业务原因，需结合具体任务构成进行评估。",
+            "recommendation": "建议核查对应分组的具体记录明细，确认工时统计是否包含非生产性时间，以及记录数是否准确反映有效任务量；同时比对各项目的起止时间与人员配置情况，以明确统计口径的一致性。补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0024",
+            "evidence_refs": [
+              "E0024",
+              "E0023"
+            ],
+            "finding_type": "concentration",
+            "implication": "当前返回的少数几个分组占据了绝大部分的工时总量，而其余分组的工时占比显著较低。这种结构表明在本次采样范围内，资源投入高度集中于特定项目，但这仅是返回数据的内部构成，不代表整体市场的份额分布或长期趋势。",
+            "recommendation": "建议核对未被高比例覆盖的分组的完整性，检查是否存在因筛选条件导致的数据截断；同时评估这些低工时分组是否属于正常的小规模任务或新启动项目。补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-02.json",
+      "case_id": "H01",
+      "query": "比较岗位类型数量的结构，不判断招聘成功率",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "FREE_TEXT_GUARD",
+          "role": "implication",
+          "text": "当前返回结果中，算法与产品两类岗位类型的记录数量合计占比显著高于其他类型，且算法相对产品的领先幅度较大，而设计类记录数量相对较少。这一结构反映了在当前数据范围内，招聘需求主要集中于这两类技术或核心业务岗位。由于分母仅为本次完整返回的分组合计，该比例不代表整体市场或全部筛选范围的分布情况。",
+          "matches": {
+            "CAUSAL": "由于",
+            "UNDEFINED_THRESHOLD": "显著",
+            "UNSUPPORTED_ASSERTION": "显著"
+          },
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0014",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "CAUSAL",
+                  "UNDEFINED_THRESHOLD",
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            },
+            {
+              "candidate_index": 1,
+              "primary_evidence_id": "E0007",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "COMPLETED_CLAIM"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0014",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "CAUSAL",
+              "UNDEFINED_THRESHOLD",
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        },
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0007",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "COMPLETED_CLAIM"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0014",
+            "evidence_refs": [
+              "E0014",
+              "E0012",
+              "E0013"
+            ],
+            "finding_type": "concentration",
+            "implication": "当前返回结果中，算法与产品两类岗位类型的记录数量合计占比显著高于其他类型，且算法相对产品的领先幅度较大，而设计类记录数量相对较少。这一结构反映了在当前数据范围内，招聘需求主要集中于这两类技术或核心业务岗位。由于分母仅为本次完整返回的分组合计，该比例不代表整体市场或全部筛选范围的分布情况。",
+            "recommendation": "建议核查“算法”、“产品”和“设计”各分组下的具体岗位名称列表及对应记录数，确认是否存在同一岗位名称被错误归类或重复统计的情况；同时检查上传数据中是否包含未进入聚合的空值或其他缺失记录，以验证当前三分组结构的完整性。补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "Top N 内部比例仅是返回分组结构，不能推断整体筛选范围、客户总体或市场份额。",
+              "不判断招聘成功率，仅关注岗位类型数量的结构差异。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0007",
+            "evidence_refs": [
+              "E0007",
+              "E0005",
+              "E0006"
+            ],
+            "finding_type": "difference",
+            "implication": "算法与产品在记录数量上存在明确的差值，且分别对应当前返回结果中的最大值和最小值（相对于两者比较基准），显示出不同岗位类型在数量规模上的离散程度。这种差额体现了当前数据集中不同职能方向的资源投入或需求记录的绝对量级差异，但不足以说明业务优先级或战略倾斜原因。",
+            "recommendation": "建议对比“算法”与“产品”分组内每条记录的创建时间、状态字段分布以及关联的职位详情，排查是否存在批量导入导致的数量偏差；核实“设计”作为最小值分组，其记录是否因关键字段缺失而被过滤。补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-02.json",
+      "case_id": "H02",
+      "query": "比较服务组工单数量前三名，不能当作整体客户占比",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "比例解释的总体范围未经证据绑定。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "UNBOUND_POPULATION_SCOPE",
+          "role": "implication",
+          "text": "该比例仅反映当前返回分组内部的构成结构，不能推断整体筛选范围或客户总体占比。证据显示前两名分组在已返回数据中占据较高份额，但受限于 Top N 采样，无法确认未返回分组的分布情况。",
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0011",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "UNBOUND_POPULATION_SCOPE",
+                "role": "implication"
+              }
+            },
+            {
+              "candidate_index": 1,
+              "primary_evidence_id": "E0007",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0011",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "UNBOUND_POPULATION_SCOPE",
+            "role": "implication"
+          }
+        },
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0007",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0011",
+            "evidence_refs": [
+              "E0011"
+            ],
+            "finding_type": "concentration",
+            "implication": "该比例仅反映当前返回分组内部的构成结构，不能推断整体筛选范围或客户总体占比。证据显示前两名分组在已返回数据中占据较高份额，但受限于 Top N 采样，无法确认未返回分组的分布情况。",
+            "recommendation": "建议核查全量服务组记录数及分布，确认当前返回分组是否覆盖主要业务场景；检查是否存在其他高频服务组未被纳入本次统计；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。",
+              "服务组工单数量前三名：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0007",
+            "evidence_refs": [
+              "E0007",
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "difference",
+            "implication": "红组与蓝组在记录数量上存在差异，且分别对应排名前列的分组。该差值仅基于当前返回的同口径分组比较，不足以判断导致数量差异的业务原因或资源分配逻辑。",
+            "recommendation": "建议对比红组与蓝组的工单类型分布、处理时长及状态流转记录，评估两组在服务内容或复杂度上的结构性差异；核查统计口径是否一致；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-02.json",
+      "case_id": "H03",
+      "query": "比较批次耗时的小额差异，不据此确定瓶颈原因",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0013",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNDEFINED_THRESHOLD",
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0012",
+            "evidence_refs": [
+              "E0012",
+              "E0007"
+            ],
+            "finding_type": "difference",
+            "implication": "早批与午批的耗时合计存在微小差异，且相对比例较低。该差异仅反映当前返回分组间的数值对比，不足以直接推断业务瓶颈或效率高低，需结合具体记录构成评估。",
+            "recommendation": "建议核查早批和午批对应的原始记录数量、单笔耗时分布及统计口径一致性，确认差异是否由样本量不均或个别异常值导致；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0013",
+            "evidence_refs": [
+              "E0013"
+            ],
+            "finding_type": "difference",
+            "implication": "晚批的耗时合计相对于早批呈现较大比例差距。此比较基于当前返回的同口径分组，反映的是批次间数值结构的显著不同，而非绝对性能优劣的判断依据。",
+            "recommendation": "建议对比晚批与早批的记录构成、任务复杂度分布及是否存在缺失记录，核实两批次在数据采集和处理流程上的一致性；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+              "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-02.json",
+      "case_id": "H04",
+      "query": "只比较北区已完成销售额，不分析利润，不能把返回两名当作全区",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "FREE_TEXT_GUARD",
+          "role": "implication",
+          "text": "该差异仅反映当前返回分组间的数值距离，未涉及利润指标。由于样本量较小且限定为前两名，此差额不足以推断北区整体分布特征或业务成因。",
+          "matches": {
+            "NUMERIC": "两名",
+            "CAUSAL": "由于"
+          },
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0006",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "NUMERIC",
+                  "CAUSAL"
+                ]
+              }
+            },
+            {
+              "candidate_index": 1,
+              "primary_evidence_id": "E0002",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "CAUSAL",
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0006",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "NUMERIC",
+              "CAUSAL"
+            ]
+          }
+        },
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0002",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "CAUSAL",
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0006",
+            "evidence_refs": [
+              "E0006",
+              "E0008"
+            ],
+            "finding_type": "difference",
+            "implication": "该差异仅反映当前返回分组间的数值距离，未涉及利润指标。由于样本量较小且限定为前两名，此差额不足以推断北区整体分布特征或业务成因。",
+            "recommendation": "建议核查青岛与天津对应记录的时间跨度、单笔金额分布及是否存在异常值；确认“已完成”状态的定义是否一致。补充分析尚未执行。",
+            "limitations": [
+              "B01",
+              "B04"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0002",
+            "evidence_refs": [
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "highlight",
+            "implication": "排名基于销售额合计，仅代表当前筛选条件下的相对位置。不能据此判断市场主导地位或效率优劣，因为未包含成本或规模归一化数据。",
+            "recommendation": "建议核对参与聚合的记录数（valid_sample_count）以评估统计稳定性；检查是否有其他城市因阈值被截断而未进入 Top 2。补充分析尚未执行。",
+            "limitations": [
+              "B01",
+              "B04"
+            ]
+          }
+        ]
+      },
+      "category": "not_fully_manually_classified",
+      "manual_attribution": "保留中间试验原始输出和实际拒绝原因，不将全部失败自动归因为Prompt。"
+    },
+    {
+      "run_file": "frozen-live-final.json",
+      "case_id": "S01",
+      "query": "分析2026年华东地区已完成订单销售额，按城市降序取前三名",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "FREE_TEXT_GUARD",
+          "role": "implication",
+          "text": "济南与南京作为前两名，其销售额绝对差值较小且相对比例接近，这种紧密的排名关系值得结合订单规模结构进一步评估。",
+          "matches": {
+            "NUMERIC": "两名",
+            "UNSUPPORTED_ASSERTION": "排名"
+          },
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0009",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "NUMERIC",
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            },
+            {
+              "candidate_index": 1,
+              "primary_evidence_id": "E0010",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "NUMERIC"
+                ]
+              }
+            },
+            {
+              "candidate_index": 2,
+              "primary_evidence_id": "E0011",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "UNDEFINED_THRESHOLD"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0009",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "NUMERIC",
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        },
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0010",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "NUMERIC"
+            ]
+          }
+        },
+        {
+          "candidate_index": 2,
+          "primary_evidence_id": "E0011",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNDEFINED_THRESHOLD"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0009",
+            "evidence_refs": [
+              "E0002",
+              "E0003",
+              "E0007",
+              "E0009"
+            ],
+            "finding_type": "difference",
+            "implication": "济南与南京作为前两名，其销售额绝对差值较小且相对比例接近，这种紧密的排名关系值得结合订单规模结构进一步评估。",
+            "recommendation": "比较济南和南京的订单数量及平均订单金额，核查销售差额是否与记录构成或单笔交易特征相关；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "Top N选择导致分母局限，未包含所有潜在城市分组。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0010",
+            "evidence_refs": [
+              "E0004",
+              "E0010"
+            ],
+            "finding_type": "difference",
+            "implication": "上海与第一名济南之间存在较大的销售额相对差距，这一结构性差异提示需关注不同城市间的业务体量分布情况。",
+            "recommendation": "补充查看上海与济南在销售渠道、产品类别上的分布差异，以理解造成销售额比例悬殊的可观察因素；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0011",
+            "evidence_refs": [
+              "E0008",
+              "E0011"
+            ],
+            "finding_type": "concentration",
+            "implication": "头部两个城市占据了本次返回结果中绝大部分的销售额份额，显示出明显的内部结构集中特征。",
+            "recommendation": "核查未进入前三名的其他华东城市数据完整性，评估该集中度是否受限于Top N筛选条件；补充分析尚未执行。",
+            "limitations": [
+              "分母仅为返回分组合计，不代表全部筛选范围或整体市场占比。",
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          }
+        ]
+      },
+      "category": "A+B",
+      "manual_attribution": "排名与数量引用存在误拦；无阈值接近/绝大部分仍需拒绝。"
+    },
+    {
+      "run_file": "frozen-live-final.json",
+      "case_id": "S02",
+      "query": "比较各渠道销售额和订单数量，不判断利润",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0025",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "recommendation",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0023",
+            "evidence_refs": [
+              "E0023",
+              "E0007"
+            ],
+            "finding_type": "difference",
+            "implication": "线上与线下渠道的销售额差额值得结合订单数量分布评估，当前结果不足以判断销售结构差异的具体成因。",
+            "recommendation": "比较两个渠道的订单数量与平均单笔金额，核查销售额差额是否与交易规模或客单价相关；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0025",
+            "evidence_refs": [
+              "E0025",
+              "E0011"
+            ],
+            "finding_type": "concentration",
+            "implication": "主要渠道在已返回分组中的销售额占比情况，需结合未返回分组的潜在影响及数据完整性进行评估。",
+            "recommendation": "核查本次返回分组是否覆盖全部业务场景，并对比其他可能存在的渠道记录数，评估集中度对业务决策的实际边界；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "分母仅为本次完整返回的分组合计，不代表全部筛选范围或整体市场占比。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0018",
+            "evidence_refs": [
+              "E0018",
+              "E0019"
+            ],
+            "finding_type": "difference",
+            "implication": "线上与线下渠道的订单数量差值值得结合各渠道的记录构成评估，不能据此直接推断经营效率或市场份额。",
+            "recommendation": "检查不同渠道的记录来源与统计口径一致性，并补充查看对应时间段的订单明细分布，以验证数量差异的业务含义；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          }
+        ]
+      },
+      "category": "B",
+      "manual_attribution": "未来完整性核查被“全部”误判。"
+    },
+    {
+      "run_file": "frozen-live-final.json",
+      "case_id": "R01",
+      "query": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0011",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0009",
+            "evidence_refs": [
+              "E0002",
+              "E0003",
+              "E0007",
+              "E0009"
+            ],
+            "finding_type": "difference",
+            "implication": "上海与北京在岗位记录数量上的差额值得结合各城市的职位发布结构和招聘周期评估，当前数据不足以判断资源投入差异。",
+            "recommendation": "核查两城市对应岗位的职级分布、发布时间跨度及是否包含重复职位，以确认数量差值是否反映真实的招聘规模差异；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0011",
+            "evidence_refs": [
+              "E0008",
+              "E0011"
+            ],
+            "finding_type": "concentration",
+            "implication": "返回分组内的结构占比提示前两名城市占据了主要份额，但这仅代表已筛选出的Top N样本内部关系，未覆盖全部潜在城市。",
+            "recommendation": "对比完整城市列表的记录总数与当前返回分组的合计，评估Top N选择对结构代表性的影响；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。"
+            ]
+          }
+        ]
+      },
+      "category": "A+B",
+      "manual_attribution": "未返回总体范围尚未确认，不应把未知缺失当事实；也有范围词误拦。"
+    },
+    {
+      "run_file": "frozen-live-final.json",
+      "case_id": "R02",
+      "query": "比较不同发布日期的岗位数量变化，不能外推市场趋势",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0009",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "recommendation",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0008",
+            "evidence_refs": [
+              "E0008",
+              "E0007",
+              "E0002"
+            ],
+            "finding_type": "trend",
+            "implication": "首末时间点记录数变化提示发布节奏在已返回范围内存在波动，需结合具体日期分布评估是否为周期性或偶发性调整。",
+            "recommendation": "补充查看相邻时间点的岗位发布明细与对应记录构成，核查该变化是否伴随特定职位类型或部门集中释放；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "时间变化仅为已返回首末时间点对比，不推断中间连续增长或未来趋势。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0009",
+            "evidence_refs": [
+              "E0009",
+              "E0010",
+              "E0011",
+              "E0012"
+            ],
+            "finding_type": "concentration",
+            "implication": "不同发布日期对应的岗位数量占比呈现分层结构，值得进一步确认各分组样本量是否足以支撑此类比例解读。",
+            "recommendation": "比较各分组的原始记录条数与去重后岗位标识数量，检验是否存在同一岗位多次发布导致计数膨胀的情况；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回结果，不能外推整体市场。",
+              "分母为本次返回分组总和，不代表全量招聘数据总体。"
+            ]
+          }
+        ]
+      },
+      "category": "B",
+      "manual_attribution": "待验证去重问题被“导致”保守拒绝。"
+    },
+    {
+      "run_file": "frozen-live-final.json",
+      "case_id": "C01",
+      "query": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0009",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0007",
+            "evidence_refs": [
+              "E0002",
+              "E0003",
+              "E0007"
+            ],
+            "finding_type": "difference",
+            "implication": "投诉与退款类别在平均响应时间上存在差额，值得结合两类工单的处理流程复杂度或记录构成进行评估。",
+            "recommendation": "比较这两类工单的记录数量、具体处理环节耗时分布及是否存在特殊标记，核查差额是否与业务操作难度相关；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0009",
+            "evidence_refs": [
+              "E0004",
+              "E0002",
+              "E0009"
+            ],
+            "finding_type": "difference",
+            "implication": "咨询类别的平均响应时间与最高值类别相比呈现较低比例，需关注不同类别间的响应节奏差异。",
+            "recommendation": "对比咨询与高响应时间类别的工单类型定义、自动化介入程度或人工审核步骤，评估响应时长比例的合理性；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          }
+        ]
+      },
+      "category": "B",
+      "manual_attribution": "最高值类别有引用，但文本词规则拒绝。"
+    },
+    {
+      "run_file": "frozen-live-final.json",
+      "case_id": "O01",
+      "query": "比较各日期的已完成任务数量变化，不判断项目健康程度",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0007",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "NUMERIC",
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0008",
+            "evidence_refs": [
+              "E0002",
+              "E0003",
+              "E0004",
+              "E0008"
+            ],
+            "finding_type": "trend",
+            "implication": "首末时间点的已完成任务数量对比显示数值未发生变化，但这仅反映已返回的特定日期点，不能推断期间内的连续波动或稳定状态。",
+            "recommendation": "建议补充查看中间日期的具体记录分布，以评估该时间段内是否存在未被当前首末对比捕捉到的短期波动；补充分析尚未执行。",
+            "limitations": [
+              "time_range为null且仅有少量日期样本，无法验证整体趋势连续性。",
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0007",
+            "evidence_refs": [
+              "E0005",
+              "E0006",
+              "E0007"
+            ],
+            "finding_type": "difference",
+            "implication": "两个特定日期之间的差值为零，表明在已选定的比较对象间数量持平，但需结合极值证据理解这种平衡是否代表了所有日期的常态。",
+            "recommendation": "核查参与记录的构成及筛选条件，确认这两个日期是否具有可比性，以及是否存在其他日期具有非零差额；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          }
+        ]
+      },
+      "category": "B",
+      "manual_attribution": "第二候选数量指代/所有日期核查误拦；保留合法首末及边界。"
+    },
+    {
+      "run_file": "frozen-live-final.json",
+      "case_id": "O02",
+      "query": "比较项目完成任务数及利润，缺少利润数据时必须披露",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0010",
+            "evidence_refs": [
+              "E0010",
+              "E0006",
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "difference",
+            "implication": "甲与乙在项目完成任务数上的相对差距值得结合各自的任务构成和记录来源进行核查，当前数据不足以判断造成差异的具体业务原因。",
+            "recommendation": "建议比较甲、乙两个项目的任务类型分布及单项目平均完成周期，以评估该数量差额是否反映了资源投入或执行效率的结构差异；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "未完成任务：项目利润；任务执行失败或不支持。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0007",
+            "evidence_refs": [
+              "E0007",
+              "E0008",
+              "E0009"
+            ],
+            "finding_type": "concentration",
+            "implication": "已返回分组间的任务数量占比结构提示了样本内的分布情况，但不能据此认定总体市场份额或经营集中度。",
+            "recommendation": "建议核对上传数据的完整性以及是否存在未纳入统计的项目分组，以确认当前占比是否代表了全量业务的真实结构；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "未完成任务：项目利润；任务执行失败或不支持。"
+            ]
+          }
+        ]
+      },
+      "category": "E",
+      "manual_attribution": "利润上游缺失，预期部分覆盖，不是本次生成错误。"
+    },
+    {
+      "run_file": "frozen-live-final.json",
+      "case_id": "R03",
+      "query": "比较城市岗位数量，存在并列时不编造唯一名次",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "FREE_TEXT_GUARD",
+          "role": "recommendation",
+          "text": "核查这些并列城市是否因数据采样截断导致信息量不足，建议扩大时间范围或筛选条件以观察更多非并列城市的分布情况，从而评估当前的均匀性是否具有普遍代表性；补充分析尚未执行。",
+          "matches": {
+            "UNSUPPORTED_ASSERTION": "导致"
+          },
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0007",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "recommendation",
+                "triggered_rules": [
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0007",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "recommendation",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0007",
+            "evidence_refs": [
+              "E0002",
+              "E0003",
+              "E0004",
+              "E0007"
+            ],
+            "finding_type": "difference",
+            "implication": "当前返回的城市分组在岗位数量上呈现完全一致的数值，且相互间差值为零。这种并列结构表明在已选取的样本范围内，各城市的记录分布均匀，不存在基于数量的层级差异或主导城市。",
+            "recommendation": "核查这些并列城市是否因数据采样截断导致信息量不足，建议扩大时间范围或筛选条件以观察更多非并列城市的分布情况，从而评估当前的均匀性是否具有普遍代表性；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回结果，不能外推整体市场。",
+              "任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。"
+            ]
+          }
+        ]
+      },
+      "category": "B",
+      "manual_attribution": "待核查的采样问题被视为肯定因果，未生成报告。"
+    },
+    {
+      "run_file": "frozen-live-final.json",
+      "case_id": "C03",
+      "query": "比较渠道净变化值，负值不生成无意义占比",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0007",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0007",
+            "evidence_refs": [
+              "E0007",
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "difference",
+            "implication": "在线与电话渠道的净变化存在差额，这反映了不同支持渠道在特定时间窗口内的变动差异。当前数据仅展示结果数值，不足以判断造成该差异的具体业务原因或运营效率。",
+            "recommendation": "建议核查对应时间段内各渠道的工单总量、解决时长分布及人员排班记录，评估差额是否与处理规模或响应速度相关；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0004",
+            "evidence_refs": [
+              "E0004",
+              "E0006"
+            ],
+            "finding_type": "highlight",
+            "implication": "邮件渠道呈现负的净变化值，表明在该统计口径下其指标表现为下降或负向累积。需结合原始数据定义确认负值代表的业务含义（如积压增加或满意度降低），而非直接视为负面绩效。",
+            "recommendation": "建议复核邮件渠道的数据采集逻辑及负值计算规则，并对比相邻周期的同类指标，验证该变化的持续性或异常性；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          }
+        ]
+      },
+      "category": "A+B",
+      "manual_attribution": "原始首候选添加未知时间窗口；否定原因语句也存在误拦。保存单点负值，解释不充分。"
+    },
+    {
+      "run_file": "frozen-live-final.json",
+      "case_id": "H01",
+      "query": "比较岗位类型数量的结构，不判断招聘成功率",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "FREE_TEXT_GUARD",
+          "role": "implication",
+          "text": "算法和产品在返回结果中的记录数量合计占比较高，提示当前数据结构可能偏向这两类岗位。由于分母仅为本次返回分组，该比例不代表整体市场或全部筛选范围的分布。",
+          "matches": {
+            "CAUSAL": "由于",
+            "UNSUPPORTED_ASSERTION": "全部"
+          },
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0014",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "CAUSAL",
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            },
+            {
+              "candidate_index": 1,
+              "primary_evidence_id": "E0012",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "UNDEFINED_THRESHOLD"
+                ]
+              }
+            },
+            {
+              "candidate_index": 2,
+              "primary_evidence_id": "E0013",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "CAUSAL"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0014",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "CAUSAL",
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        },
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0012",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNDEFINED_THRESHOLD"
+            ]
+          }
+        },
+        {
+          "candidate_index": 2,
+          "primary_evidence_id": "E0013",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "CAUSAL"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0014",
+            "evidence_refs": [
+              "E0014",
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "concentration",
+            "implication": "算法和产品在返回结果中的记录数量合计占比较高，提示当前数据结构可能偏向这两类岗位。由于分母仅为本次返回分组，该比例不代表整体市场或全部筛选范围的分布。",
+            "recommendation": "核查未返回的岗位类型是否因数据缺失或过滤条件而被排除，并比较各类型的原始记录明细以确认结构代表性；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "分母为返回组内合计，非全量总体。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0012",
+            "evidence_refs": [
+              "E0012",
+              "E0007",
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "difference",
+            "implication": "算法与产品两类岗位在记录数量上存在差额，且相对差异较大。这反映了当前样本中两类岗位的规模对比情况，但不能据此推断招聘需求强度或资源分配合理性。",
+            "recommendation": "检查两类岗位对应的具体职位列表和发布渠道，核实是否存在重复录入或特定部门集中提交的情况；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0013",
+            "evidence_refs": [
+              "E0013",
+              "E0004",
+              "E0006"
+            ],
+            "finding_type": "difference",
+            "implication": "设计岗位相对于算法岗位的数量占比处于低位，显示其在当前返回结果中的存在感较弱。这可能源于业务侧重不同或数据采集偏差，需结合完整上下文评估。",
+            "recommendation": "对比设计与其他岗位类型的申请来源或部门归属，排查是否有特定类别未被纳入统计口径；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          }
+        ]
+      },
+      "category": "A+B",
+      "manual_attribution": "否定范围变体误拦；其他候选有无阈值强度/可能源于原因猜测。"
+    },
+    {
+      "run_file": "frozen-live-final.json",
+      "case_id": "H02",
+      "query": "比较服务组工单数量前三名，不能当作整体客户占比",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0011",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "UNBOUND_POPULATION_SCOPE",
+            "role": "implication"
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0007",
+            "evidence_refs": [
+              "E0002",
+              "E0003",
+              "E0007"
+            ],
+            "finding_type": "difference",
+            "implication": "首位与次位服务组之间的工单数量差额值得结合各组的记录构成进一步评估，当前结果不足以判断业务表现差异的原因。",
+            "recommendation": "比较相关服务组的工单明细分布、平均处理时长或问题类型结构，核查数量差额是否与特定业务场景关联；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0011",
+            "evidence_refs": [
+              "E0008",
+              "E0011"
+            ],
+            "finding_type": "concentration",
+            "implication": "返回分组内的集中度提示前两名服务组在已选样本中占据主要份额，但分母仅为本次返回合计，不代表全部筛选范围或整体客户占比。",
+            "recommendation": "核查数据完整性及未返回分组的存在情况，评估该集中度对整体支持负载的代表性；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          }
+        ]
+      },
+      "category": "B",
+      "manual_attribution": "否定整体客户占比的变体误拦。"
+    },
+    {
+      "run_file": "frozen-live-final.json",
+      "case_id": "H03",
+      "query": "比较批次耗时的小额差异，不据此确定瓶颈原因",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0014",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNDEFINED_THRESHOLD"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0012",
+            "evidence_refs": [
+              "E0012",
+              "E0007",
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "difference",
+            "implication": "早批与午批的耗时合计存在微小差额，该差异值得结合各批次参与记录的数量及单条记录耗时分布进行核查，当前结果不足以判断瓶颈原因。",
+            "recommendation": "比较早批和午批的记录数、平均处理时长及异常值分布，评估小额差异对整体运营效率的实际影响；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0014",
+            "evidence_refs": [
+              "E0014",
+              "E0008",
+              "E0009",
+              "E0010"
+            ],
+            "finding_type": "concentration",
+            "implication": "在已返回分组中，早批和午批占据了绝大部分耗时份额，晚批占比相对较小。这种结构分布提示需关注主要批次的内部构成，而非直接推断整体负载情况。",
+            "recommendation": "深入分析早批和午批内部的作业类型或资源分配结构，同时核查晚批数据是否因样本量过小导致代表性不足；补充分析尚未执行。",
+            "limitations": [
+              "分母仅为本次完整返回的分组合计，不代表全部筛选范围或整体市场占比。"
+            ]
+          }
+        ]
+      },
+      "category": "A",
+      "manual_attribution": "绝大部分未有阈值支持，保留其他合法比较。"
+    },
+    {
+      "run_file": "new-unseen-live.json",
+      "case_id": "U01",
+      "query": "比较门店成交金额前三名，不能据此判断利润；仅说明返回范围的差异。",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "FREE_TEXT_GUARD",
+          "role": "implication",
+          "text": "头部门店在返回结果中占据主要份额，提示成交金额分布不均。该比例仅反映当前返回分组内部结构，不代表整体市场或全部筛选范围。",
+          "matches": {
+            "UNSUPPORTED_ASSERTION": "全部"
+          },
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0011",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            },
+            {
+              "candidate_index": 1,
+              "primary_evidence_id": "E0010",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0011",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        },
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0010",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0011",
+            "evidence_refs": [
+              "E0011",
+              "E0008"
+            ],
+            "finding_type": "concentration",
+            "implication": "头部门店在返回结果中占据主要份额，提示成交金额分布不均。该比例仅反映当前返回分组内部结构，不代表整体市场或全部筛选范围。",
+            "recommendation": "核查未返回门店的成交数据完整性，并比较各门店订单数量与平均客单价，以评估集中度是否由规模差异或单笔交易特征驱动；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "分母仅为本次完整返回的分组合计，不代表全部筛选范围。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0010",
+            "evidence_refs": [
+              "E0010",
+              "E0002",
+              "E0004"
+            ],
+            "finding_type": "difference",
+            "implication": "排名靠后门店与首位门店存在较大相对差距，值得结合业务记录构成进一步评估。当前证据不足以判断经营效率或利润差异。",
+            "recommendation": "对比相关门店的参与记录数、订单类型分布及时间跨度，检验低值是否与样本量不足或业务模式差异有关；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "不能据此判断利润或经营效率。"
+            ]
+          }
+        ]
+      },
+      "category": "A+B",
+      "manual_attribution": "反向否定范围及排名靠后误拦；强度措辞仍待验证。"
+    },
+    {
+      "run_file": "new-unseen-live.json",
+      "case_id": "U02",
+      "query": "比较各渠道的订单总金额和订单数，两个指标分别解读，不计算客单价或转化率。",
+      "state": "complete",
+      "error": null,
+      "rejected_candidates": [],
+      "semantic_hard_failure": true,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0022",
+            "evidence_refs": [
+              "E0022",
+              "E0007",
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "difference",
+            "implication": "直播与商城在订单金额上的差额值得结合各渠道的订单记录构成继续评估，当前结果不足以判断经营表现差异的原因。",
+            "recommendation": "比较直播和商城的订单数量、平均订单金额及产品构成，核查销售差额与记录结构的关联；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0016",
+            "evidence_refs": [
+              "E0016",
+              "E0011",
+              "E0012",
+              "E0013"
+            ],
+            "finding_type": "difference",
+            "implication": "直播与商城在订单数量上的差额值得结合参与记录的分布评估，不能据此评价人员绩效或渠道效率。",
+            "recommendation": "补充查看相关渠道的记录明细及时间分布，并核查缺失记录对计数统计的影响；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。"
+            ]
+          }
+        ]
+      },
+      "category": "A+E",
+      "manual_attribution": "建议触及客单价禁止边界，未显示重新确认；旧guard也未发现。没有执行禁算指标。"
+    },
+    {
+      "run_file": "new-unseen-live.json",
+      "case_id": "U03",
+      "query": "比较岗位类别数量，平手只说明并列，不推断录用机会。",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0008",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0007",
+            "evidence_refs": [
+              "E0007",
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "difference",
+            "implication": "研发与运营岗位在记录数量上呈现并列状态，这种平手仅反映当前统计口径下的计数一致，不能据此推断录用机会均等或招聘难度相同。",
+            "recommendation": "建议核查这两个类别的具体岗位要求、薪资范围及发布渠道分布，以评估数量并列背后的实际业务差异；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "未包含未返回的岗位类别数据。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0008",
+            "evidence_refs": [
+              "E0008",
+              "E0009",
+              "E0010",
+              "E0011"
+            ],
+            "finding_type": "concentration",
+            "implication": "已返回分组中研发和运营占据主要份额，设计占比相对较低，该结构仅描述样本内部分布，不代表所有岗位类别的市场占比。",
+            "recommendation": "建议结合更完整的岗位分类体系，检查是否存在未被本次筛选覆盖的低频类别，并评估各分类对总体结构的代表性；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "分母仅为本次返回分组合计，非全局总数。"
+            ]
+          }
+        ]
+      },
+      "category": "B",
+      "manual_attribution": "否定市场总体被词规则拒绝。"
+    },
+    {
+      "run_file": "new-unseen-live.json",
+      "case_id": "U04",
+      "query": "比较不同发布日期的岗位数量变化；不推断未观察日期或未来招聘趋势。",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0008",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "limitation",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0008",
+            "evidence_refs": [
+              "E0008",
+              "E0007",
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "trend",
+            "implication": "已返回的首末时间点显示发布记录数量存在变化，但这仅反映特定日期对比，不代表连续趋势或未来招聘走向。",
+            "recommendation": "核查中间日期的数据完整性及记录分布，确认该变化是否由孤立峰值导致；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "首末时间点对比不保证期间连续性，不可推断未观察日期的表现。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0009",
+            "evidence_refs": [
+              "E0009",
+              "E0012",
+              "E0002"
+            ],
+            "finding_type": "concentration",
+            "implication": "单一发布日期在已返回分组中占据主要份额，提示当前样本的发布行为集中在特定日期。",
+            "recommendation": "比较其他日期的记录构成与岗位类型，评估集中现象是否受特定批次操作影响；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "占比基于已返回分组之和，若存在未返回分组则总体结构可能不同。"
+            ]
+          }
+        ]
+      },
+      "category": "B+E",
+      "manual_attribution": "不保证期间连续性变体误拦；指标覆盖不能证明趋势意图被洞察充分回答。"
+    },
+    {
+      "run_file": "new-unseen-live.json",
+      "case_id": "U07",
+      "query": "比较交付组总投入小时与任务数，分别展示，不推算效率或任务复杂度。",
+      "state": "partial",
+      "error": null,
+      "rejected_candidates": [
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0016",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0022",
+            "evidence_refs": [
+              "E0007",
+              "E0022",
+              "E0002",
+              "E0003"
+            ],
+            "finding_type": "difference",
+            "implication": "投入小时在分组间存在差额，值得结合记录构成评估规模差异对总工时的影响。",
+            "recommendation": "比较相关分组的任务数量分布与单条记录工时均值，核查总工时差额是否由任务规模或结构导致；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回结果，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0016",
+            "evidence_refs": [
+              "E0011",
+              "E0016",
+              "E0014",
+              "E0015"
+            ],
+            "finding_type": "difference",
+            "implication": "任务计数在分组间存在差额，需区分是任务量差异还是其他因素导致。",
+            "recommendation": "核查各分组任务计数的明细来源及缺失情况，确认差额的统计口径一致性；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回结果，不能外推整体市场。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0024",
+            "evidence_refs": [
+              "E0024",
+              "E0008",
+              "E0009",
+              "E0004"
+            ],
+            "finding_type": "concentration",
+            "implication": "部分分组在投入小时中占比高，反映资源在当前返回样本中的分布状态。",
+            "recommendation": "对比高占比分组与低占比分组的业务属性或项目类型，评估这种分布是否符合预期运营策略；补充分析尚未执行。",
+            "limitations": [
+              "分母仅为本次完整返回的分组合计，不代表全部筛选范围或整体市场占比。"
+            ]
+          }
+        ]
+      },
+      "category": "B",
+      "manual_attribution": "任务数候选被因果词拦；missing_core_metrics正确披露tasks未覆盖。"
+    },
+    {
+      "run_file": "new-unseen-live.json",
+      "case_id": "U08",
+      "query": "比较各观察日期的处理任务数量；首末相同不能证明整个期间稳定。",
+      "state": "failed",
+      "error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {
+          "rule": "FREE_TEXT_GUARD",
+          "role": "implication",
+          "text": "该观察日期的处理任务数量在已返回分组中处于最高水平，且占当前返回结果合计的比例较高。这一结构特征值得结合具体业务场景评估其运营意义，但不足以直接判断整体负荷分布或原因。",
+          "matches": {
+            "UNSUPPORTED_ASSERTION": "最高"
+          },
+          "rejected_candidates": [
+            {
+              "candidate_index": 0,
+              "primary_evidence_id": "E0002",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "FREE_TEXT_GUARD",
+                "role": "implication",
+                "triggered_rules": [
+                  "UNSUPPORTED_ASSERTION"
+                ]
+              }
+            },
+            {
+              "candidate_index": 1,
+              "primary_evidence_id": "E0008",
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "details": {
+                "rule": "ENDPOINT_NOT_INTERVAL_STABILITY",
+                "role": "implication"
+              }
+            }
+          ]
+        }
+      },
+      "rejected_candidates": [
+        {
+          "candidate_index": 0,
+          "primary_evidence_id": "E0002",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "FREE_TEXT_GUARD",
+            "role": "implication",
+            "triggered_rules": [
+              "UNSUPPORTED_ASSERTION"
+            ]
+          }
+        },
+        {
+          "candidate_index": 1,
+          "primary_evidence_id": "E0008",
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "details": {
+            "rule": "ENDPOINT_NOT_INTERVAL_STABILITY",
+            "role": "implication"
+          }
+        }
+      ],
+      "semantic_hard_failure": false,
+      "raw_candidates": {
+        "insights": [
+          {
+            "primary_evidence_id": "E0002",
+            "evidence_refs": [
+              "E0002",
+              "E0009",
+              "E0005"
+            ],
+            "finding_type": "highlight",
+            "implication": "该观察日期的处理任务数量在已返回分组中处于最高水平，且占当前返回结果合计的比例较高。这一结构特征值得结合具体业务场景评估其运营意义，但不足以直接判断整体负荷分布或原因。",
+            "recommendation": "建议核查该日期对应的任务类型明细、处理时长分布及人员投入记录，以验证高计数是否伴随高复杂度或长耗时；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "占比分母仅为本次返回的分组之和，不代表全部历史数据。"
+            ]
+          },
+          {
+            "primary_evidence_id": "E0008",
+            "evidence_refs": [
+              "E0008",
+              "E0007",
+              "E0003",
+              "E0004"
+            ],
+            "finding_type": "trend",
+            "implication": "首末观察日期的处理任务数量呈现零变化，表明这两个时间点的记录规模一致。但这仅反映端点对比，无法证明期间内每日数据的稳定性或连续性，中间可能存在波动。",
+            "recommendation": "建议补充查看首末日期之间的所有连续时间点数据，绘制趋势图以识别是否存在间歇性高峰或低谷；同时核查数据采集完整性，排除缺失导致的假象；补充分析尚未执行。",
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "时间变化仅是已返回首末时间点对比，不推断中间连续增长或未来趋势。"
+            ]
+          }
+        ]
+      },
+      "category": "B",
+      "manual_attribution": "有来源的最高值、否定无法证明稳定性均被保守拒绝。"
+    }
+  ]
+}

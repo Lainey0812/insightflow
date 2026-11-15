@@ -1,0 +1,643 @@
+{
+  "session_id": "08b2300d1fde440bacf5b0e5cb255f4b",
+  "revision": 8,
+  "plan_id": "plan_9f74a8a3a3394c77947cc93c8e5867e5",
+  "plan_version": 1,
+  "goal": "探索这份项目任务数据的主要分布与差异",
+  "coverage": "已安排核心问题的分析",
+  "conditions": [
+    {
+      "label": "用户指定条件",
+      "text": "没有单独指定时间、筛选或统计限制；请查看各方向拟用口径。",
+      "verification": "以当前方案为准",
+      "source": "intent.constraints"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：记录数",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S01"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：项目 · 去重数量",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S01"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：状态 · 去重数量",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S01"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：工时 · 非空数量",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S01"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按项目分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T02.steps.S01"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：工时 · 均值",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T02.steps.S01"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：工时 · 最大值",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T02.steps.S01"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：工时 · 最小值",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T02.steps.S01"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按状态分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T03.steps.S01"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按创建日期的年份分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T04.steps.S02"
+    }
+  ],
+  "directions": [
+    {
+      "task_id": "T01",
+      "title": "项目任务整体概况",
+      "question": "这份项目任务数据中，总共有多少条记录？涉及多少个不同的项目和状态？工时字段的缺失情况如何？",
+      "importance": "核心分析",
+      "reason": "探索性分析的基础，提供数据集的整体规模和关键维度的多样性概览，是理解后续分布差异的前提。删除此任务将无法回答“主要分布”中的基础构成问题。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "拟用统计口径：记录数",
+        "按上传记录逐行计数，不代表去重后的业务实体数量。",
+        "拟用统计口径：项目 · 去重数量",
+        "拟用统计口径：状态 · 去重数量",
+        "拟用统计口径：工时 · 非空数量"
+      ],
+      "gaps": [],
+      "can_remove": true
+    },
+    {
+      "task_id": "T02",
+      "title": "按项目分布的任务数量与工时统计",
+      "question": "不同项目下的任务数量分别是多少？各项目的平均工时、最高工时和最低工时有何差异？",
+      "importance": "核心分析",
+      "reason": "直接响应“主要分布与差异”的核心需求，通过分组聚合揭示项目维度上的资源（任务数）和投入（工时）分布特征。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "按项目分组",
+        "拟用统计口径：记录数",
+        "按上传记录逐行计数，不代表去重后的业务实体数量。",
+        "拟用统计口径：工时 · 均值",
+        "拟用统计口径：工时 · 最大值",
+        "拟用统计口径：工时 · 最小值"
+      ],
+      "gaps": [],
+      "can_remove": true
+    },
+    {
+      "task_id": "T03",
+      "title": "按状态分布的任务数量与工时统计",
+      "question": "不同任务状态下的任务数量分别是多少？各状态的平均工时是多少？是否存在特定状态下工时显著偏高或偏低的情况？",
+      "importance": "核心分析",
+      "reason": "从状态维度探索数据的分布差异，帮助识别工作流瓶颈或异常负载，补充项目维度之外的另一主要分类视角。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "按状态分组",
+        "拟用统计口径：记录数",
+        "按上传记录逐行计数，不代表去重后的业务实体数量。",
+        "拟用统计口径：工时 · 均值"
+      ],
+      "gaps": [],
+      "can_remove": true
+    },
+    {
+      "task_id": "T04",
+      "title": "按创建日期年份的任务分布趋势",
+      "question": "任务主要集中在哪些年份创建？不同年份的任务数量和平均工时是否有明显变化？",
+      "importance": "辅助分析",
+      "reason": "时间维度是探索数据规律的重要补充。虽然只有8行数据且日期唯一，但提取年份有助于快速判断数据的时间跨度及是否集中在特定时段，为后续可能的季节性分析提供初步依据。",
+      "readiness": "完成已支持的数据转换后可分析",
+      "executable": true,
+      "details": [
+        "从创建日期提取年份，再分析",
+        "按创建日期的年份分组",
+        "拟用统计口径：记录数",
+        "按上传记录逐行计数，不代表去重后的业务实体数量。",
+        "拟用统计口径：工时 · 均值"
+      ],
+      "gaps": [],
+      "can_remove": true
+    }
+  ],
+  "issues": [],
+  "warnings": [],
+  "can_approve": true,
+  "can_execute": false,
+  "audit": {
+    "audit_version": "2.2",
+    "binding": {
+      "dataset_id": "f1b65b9236ce483aae2b45af606255e6",
+      "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+      "plan_id": "plan_9f74a8a3a3394c77947cc93c8e5867e5",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "registry_version": "1.0"
+    },
+    "digest": "da69e71322dd34caa60582ce63fa1090209a5e06bcd9efa454c5bcd43473a4fc",
+    "all_verified": true,
+    "items": []
+  },
+  "technical_details": {
+    "record": {
+      "session_id": "08b2300d1fde440bacf5b0e5cb255f4b",
+      "plan_id": "plan_9f74a8a3a3394c77947cc93c8e5867e5",
+      "plan_version": 1,
+      "dataset_id": "f1b65b9236ce483aae2b45af606255e6",
+      "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+      "validation_version": "1.0",
+      "created_at": "2026-11-09T08:05:21.726105+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "f1b65b9236ce483aae2b45af606255e6",
+          "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+          "plan_id": "plan_9f74a8a3a3394c77947cc93c8e5867e5",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T01",
+              "title": "项目任务整体概况",
+              "business_question": "这份项目任务数据中，总共有多少条记录？涉及多少个不同的项目和状态？工时字段的缺失情况如何？",
+              "priority": "P0",
+              "priority_reason": "探索性分析的基础，提供数据集的整体规模和关键维度的多样性概览，是理解后续分布差异的前提。删除此任务将无法回答“主要分布”中的基础构成问题。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "total_tasks"
+                      },
+                      {
+                        "function": "distinct_count",
+                        "field": "field_0002",
+                        "alias": "unique_projects"
+                      },
+                      {
+                        "function": "distinct_count",
+                        "field": "field_0003",
+                        "alias": "unique_statuses"
+                      },
+                      {
+                        "function": "count",
+                        "field": "field_0004",
+                        "alias": "non_missing_hours"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "task_id": "T02",
+              "title": "按项目分布的任务数量与工时统计",
+              "business_question": "不同项目下的任务数量分别是多少？各项目的平均工时、最高工时和最低工时有何差异？",
+              "priority": "P0",
+              "priority_reason": "直接响应“主要分布与差异”的核心需求，通过分组聚合揭示项目维度上的资源（任务数）和投入（工时）分布特征。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "task_count"
+                      },
+                      {
+                        "function": "avg",
+                        "field": "field_0004",
+                        "alias": "avg_hours"
+                      },
+                      {
+                        "function": "max",
+                        "field": "field_0004",
+                        "alias": "max_hours"
+                      },
+                      {
+                        "function": "min",
+                        "field": "field_0004",
+                        "alias": "min_hours"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0002"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "task_id": "T03",
+              "title": "按状态分布的任务数量与工时统计",
+              "business_question": "不同任务状态下的任务数量分别是多少？各状态的平均工时是多少？是否存在特定状态下工时显著偏高或偏低的情况？",
+              "priority": "P0",
+              "priority_reason": "从状态维度探索数据的分布差异，帮助识别工作流瓶颈或异常负载，补充项目维度之外的另一主要分类视角。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "task_count"
+                      },
+                      {
+                        "function": "avg",
+                        "field": "field_0004",
+                        "alias": "avg_hours"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0003"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "task_id": "T04",
+              "title": "按创建日期年份的任务分布趋势",
+              "business_question": "任务主要集中在哪些年份创建？不同年份的任务数量和平均工时是否有明显变化？",
+              "priority": "P1",
+              "priority_reason": "时间维度是探索数据规律的重要补充。虽然只有8行数据且日期唯一，但提取年份有助于快速判断数据的时间跨度及是否集中在特定时段，为后续可能的季节性分析提供初步依据。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "derive",
+                  "params": {
+                    "function": "extract_year",
+                    "field": "field_0001",
+                    "alias": "creation_year"
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "task_count"
+                      },
+                      {
+                        "function": "avg",
+                        "field": "field_0004",
+                        "alias": "avg_hours"
+                      }
+                    ],
+                    "dimensions": [
+                      "creation_year"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "探索这份项目任务数据的主要分布与差异"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          },
+          {
+            "task_id": "T02",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          },
+          {
+            "task_id": "T03",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          },
+          {
+            "task_id": "T04",
+            "feasibility": "F1",
+            "reason_code": "REQUIRES_TRANSFORMATION",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T01",
+          "T02",
+          "T03",
+          "T04"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "f1b65b9236ce483aae2b45af606255e6",
+          "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "exploratory",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "项目任务数据",
+            "business_goal": "探索这份项目任务数据的主要分布与差异",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "constraint_audit": {
+      "audit_version": "2.2",
+      "binding": {
+        "dataset_id": "f1b65b9236ce483aae2b45af606255e6",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_id": "plan_9f74a8a3a3394c77947cc93c8e5867e5",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "da69e71322dd34caa60582ce63fa1090209a5e06bcd9efa454c5bcd43473a4fc",
+      "all_verified": true,
+      "items": []
+    },
+    "session_status": "AWAITING_APPROVAL",
+    "revision": 8
+  },
+  "report_capacity": {
+    "policy_version": "report-capacity-v1",
+    "supported": true,
+    "metric_count": 12,
+    "core_metric_count": 10,
+    "estimated_batches": 2,
+    "max_groups_per_call": 8,
+    "max_groups": 64,
+    "max_batches": 8,
+    "estimated_metadata_bytes": 1577,
+    "context_estimate_only": true,
+    "message": "本方案包含 10 个核心指标、共 12 个指标，预计分 2 批生成并汇总为一份报告。 实际证据大小和模型生成结果将在执行后核验。"
+  },
+  "analysis_basis": {
+    "version": "analysis-basis-v1",
+    "session_id": "08b2300d1fde440bacf5b0e5cb255f4b",
+    "plan_id": "plan_9f74a8a3a3394c77947cc93c8e5867e5",
+    "plan_version": 1,
+    "dataset_id": "f1b65b9236ce483aae2b45af606255e6",
+    "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+    "plan_hash": "1d9b86af1b1b5625381e7902bc6b3ccc8e5cd9bab04510fce066fb4cc5897bd6",
+    "row_grain": "unknown",
+    "entity_field_id": null,
+    "metrics": [
+      {
+        "task_id": "T01",
+        "step_id": "S01",
+        "alias": "total_tasks",
+        "field_id": null,
+        "label": "记录",
+        "function": "count",
+        "basis": "逐行计数，不是业务实体去重数量",
+        "unit_status": "record_count"
+      },
+      {
+        "task_id": "T01",
+        "step_id": "S01",
+        "alias": "unique_projects",
+        "field_id": "field_0002",
+        "label": "项目",
+        "function": "distinct_count",
+        "basis": "先排除缺失，再按字段不同值计数",
+        "unit_status": "record_count"
+      },
+      {
+        "task_id": "T01",
+        "step_id": "S01",
+        "alias": "unique_statuses",
+        "field_id": "field_0003",
+        "label": "状态",
+        "function": "distinct_count",
+        "basis": "先排除缺失，再按字段不同值计数",
+        "unit_status": "record_count"
+      },
+      {
+        "task_id": "T01",
+        "step_id": "S01",
+        "alias": "non_missing_hours",
+        "field_id": "field_0004",
+        "label": "工时",
+        "function": "count",
+        "basis": "统计该字段非空记录数",
+        "unit_status": "record_count"
+      },
+      {
+        "task_id": "T02",
+        "step_id": "S01",
+        "alias": "task_count",
+        "field_id": null,
+        "label": "记录",
+        "function": "count",
+        "basis": "逐行计数，不是业务实体去重数量",
+        "unit_status": "record_count"
+      },
+      {
+        "task_id": "T02",
+        "step_id": "S01",
+        "alias": "avg_hours",
+        "field_id": "field_0004",
+        "label": "工时",
+        "function": "avg",
+        "basis": "按该字段非空值执行指定聚合",
+        "unit_status": "not_declared"
+      },
+      {
+        "task_id": "T02",
+        "step_id": "S01",
+        "alias": "max_hours",
+        "field_id": "field_0004",
+        "label": "工时",
+        "function": "max",
+        "basis": "按该字段非空值执行指定聚合",
+        "unit_status": "not_declared"
+      },
+      {
+        "task_id": "T02",
+        "step_id": "S01",
+        "alias": "min_hours",
+        "field_id": "field_0004",
+        "label": "工时",
+        "function": "min",
+        "basis": "按该字段非空值执行指定聚合",
+        "unit_status": "not_declared"
+      },
+      {
+        "task_id": "T03",
+        "step_id": "S01",
+        "alias": "task_count",
+        "field_id": null,
+        "label": "记录",
+        "function": "count",
+        "basis": "逐行计数，不是业务实体去重数量",
+        "unit_status": "record_count"
+      },
+      {
+        "task_id": "T03",
+        "step_id": "S01",
+        "alias": "avg_hours",
+        "field_id": "field_0004",
+        "label": "工时",
+        "function": "avg",
+        "basis": "按该字段非空值执行指定聚合",
+        "unit_status": "not_declared"
+      },
+      {
+        "task_id": "T04",
+        "step_id": "S02",
+        "alias": "task_count",
+        "field_id": null,
+        "label": "记录",
+        "function": "count",
+        "basis": "逐行计数，不是业务实体去重数量",
+        "unit_status": "record_count"
+      },
+      {
+        "task_id": "T04",
+        "step_id": "S02",
+        "alias": "avg_hours",
+        "field_id": "field_0004",
+        "label": "工时",
+        "function": "avg",
+        "basis": "按该字段非空值执行指定聚合",
+        "unit_status": "not_declared"
+      }
+    ],
+    "entity_field_options": [
+      {
+        "field_id": "field_0001",
+        "label": "创建日期",
+        "unique_non_null": true
+      },
+      {
+        "field_id": "field_0002",
+        "label": "项目",
+        "unique_non_null": false
+      },
+      {
+        "field_id": "field_0003",
+        "label": "状态",
+        "unique_non_null": false
+      },
+      {
+        "field_id": "field_0004",
+        "label": "工时",
+        "unique_non_null": false
+      },
+      {
+        "field_id": "field_0005",
+        "label": "任务编号",
+        "unique_non_null": true
+      }
+    ],
+    "declaration_source": "unconfirmed",
+    "created_at": "2026-11-09T08:05:21.726731+00:00",
+    "digest": "e636c409d4e81b438a0066aa96af7b6a2a06052a4afdc6a2a1bfe83cbd608d24"
+  },
+  "data_overview": {
+    "dataset_id": "f1b65b9236ce483aae2b45af606255e6",
+    "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+    "file_name": "projects.csv",
+    "sheet_name": null,
+    "row_count": 8,
+    "column_count": 5,
+    "missing_cell_count": 1,
+    "duplicate_row_count": 0,
+    "fields_with_missing": [
+      {
+        "name": "工时",
+        "missing_count": 1
+      }
+    ],
+    "quality_notes": [],
+    "cleaning_status": "not_performed",
+    "cleaning_notice": "已检查上传数据；尚未自动删除、填补或去重。疑似重复不等于错误记录。",
+    "sample_notice": "筛选后及指标有效样本量需执行后按分析方向统计，当前不将缺失单元格换算为无效行。"
+  }
+}

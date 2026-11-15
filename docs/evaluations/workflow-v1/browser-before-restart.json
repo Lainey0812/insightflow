@@ -1,0 +1,765 @@
+{
+  "id": "a8f4816ff2cd483e8e7d52f2958c4be2",
+  "title": "探索这份数据的主要特征和差异。",
+  "status": "AWAITING_APPROVAL",
+  "revision": 9,
+  "created_at": "2026-10-27T08:32:07.945627+00:00",
+  "updated_at": "2026-10-27T08:33:45.370879+00:00",
+  "data_source": "uploaded",
+  "workflow_kind": "real_v1",
+  "profile_options": {
+    "header_row": 1,
+    "sheet_name": null,
+    "encoding": "utf-8-sig",
+    "delimiter": ","
+  },
+  "planner_result": {
+    "plan": {
+      "dataset_id": "52fa000421184f7cbe3dff80cbc72082",
+      "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424",
+      "plan_id": "plan_8fe231bf8f5540518639431cfda8674f",
+      "plan_version": 1,
+      "tasks": [
+        {
+          "task_id": "T1",
+          "title": "整体销售额概况",
+          "business_question": "数据的总体销售规模是多少？（总销售额、平均单笔销售额及极值）",
+          "priority": "P0",
+          "priority_reason": "探索数据主要特征的基础，提供全局视角。删除后无法回答核心问题中关于‘主要特征’的部分。",
+          "requirement_ids": [
+            "C01"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0003",
+                    "alias": "total_sales"
+                  },
+                  {
+                    "function": "avg",
+                    "field": "field_0003",
+                    "alias": "avg_sales"
+                  },
+                  {
+                    "function": "max",
+                    "field": "field_0003",
+                    "alias": "max_sales"
+                  },
+                  {
+                    "function": "min",
+                    "field": "field_0003",
+                    "alias": "min_sales"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "task_id": "T2",
+          "title": "按地区分析销售分布与差异",
+          "business_question": "不同地区的销售表现有何差异？哪个地区贡献最大？",
+          "priority": "P0",
+          "priority_reason": "探索‘差异’的核心维度之一。通过分组聚合揭示地域间的业务不平衡性，是理解数据结构的关键。",
+          "requirement_ids": [
+            "C01"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0003",
+                    "alias": "region_total_sales"
+                  },
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "region_record_count"
+                  }
+                ],
+                "dimensions": [
+                  "field_0001"
+                ]
+              }
+            },
+            {
+              "step_id": "S2",
+              "operation": "sort",
+              "params": {
+                "field": "region_total_sales",
+                "direction": "desc"
+              }
+            }
+          ]
+        },
+        {
+          "task_id": "T3",
+          "title": "按产品分析销售分布与差异",
+          "business_question": "不同产品的销售表现有何差异？哪种产品更受欢迎或价值更高？",
+          "priority": "P0",
+          "priority_reason": "探索‘差异’的另一核心维度。识别产品层面的偏好或性能差异，对于理解业务构成至关重要。",
+          "requirement_ids": [
+            "C01"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "sum",
+                    "field": "field_0003",
+                    "alias": "product_total_sales"
+                  },
+                  {
+                    "function": "avg",
+                    "field": "field_0003",
+                    "alias": "product_avg_sales"
+                  }
+                ],
+                "dimensions": [
+                  "field_0002"
+                ]
+              }
+            },
+            {
+              "step_id": "S2",
+              "operation": "sort",
+              "params": {
+                "field": "product_total_sales",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ],
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "探索这份数据的主要特征和差异"
+        }
+      ]
+    },
+    "validation_results": [
+      {
+        "task_id": "T1",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      },
+      {
+        "task_id": "T2",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      },
+      {
+        "task_id": "T3",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      }
+    ],
+    "unmet_core_requirements": [],
+    "coverage_status": "complete",
+    "executable_task_ids": [
+      "T1",
+      "T2",
+      "T3"
+    ],
+    "blocked_task_ids": [],
+    "fully_executable": true,
+    "validation_version": "1.0",
+    "registry_version": "1.0",
+    "approval_required": true,
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "52fa000421184f7cbe3dff80cbc72082",
+      "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424",
+      "plan_version": 1,
+      "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+    },
+    "intent_snapshot": {
+      "analysis_mode": "exploratory",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "workflow-sales.csv数据",
+        "business_goal": "探索这份数据的主要特征和差异",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    }
+  },
+  "workflow_events": [
+    {
+      "status": "CREATED",
+      "recorded_at": "2026-10-27T08:32:07.945643+00:00"
+    },
+    {
+      "status": "PROFILING",
+      "recorded_at": "2026-10-27T08:32:07.949297+00:00"
+    },
+    {
+      "status": "PARSING_INTENT",
+      "recorded_at": "2026-10-27T08:32:07.954161+00:00"
+    },
+    {
+      "status": "PLANNING",
+      "recorded_at": "2026-10-27T08:32:10.246631+00:00"
+    },
+    {
+      "status": "VALIDATING",
+      "recorded_at": "2026-10-27T08:32:22.446353+00:00"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "recorded_at": "2026-10-27T08:32:22.449736+00:00"
+    }
+  ],
+  "file": {
+    "id": "52fa000421184f7cbe3dff80cbc72082",
+    "name": "workflow-sales.csv",
+    "size": 176,
+    "extension": ".csv",
+    "content_sha256": "388522fd4942b01bec122cbf6539b0d16459058c23c1d4b34f5adaa884ef81f1"
+  },
+  "user_goal": "探索这份数据的主要特征和差异。",
+  "analysis_mode": "exploratory",
+  "intent": {
+    "analysis_mode": "exploratory",
+    "next_action": "proceed",
+    "analysis_goal": {
+      "analysis_object": "workflow-sales.csv数据",
+      "business_goal": "探索这份数据的主要特征和差异",
+      "decision_goal": null
+    },
+    "constraints": {
+      "time_range": null,
+      "filters": [],
+      "metric_requirements": [],
+      "analysis_limits": []
+    },
+    "uncertainties": [],
+    "clarification_questions": [],
+    "user_query": "探索这份数据的主要特征和差异。",
+    "clarification_answers": [],
+    "dataset_ref": {
+      "dataset_id": "52fa000421184f7cbe3dff80cbc72082",
+      "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424"
+    },
+    "parse_origin": "llm",
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "52fa000421184f7cbe3dff80cbc72082",
+      "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424",
+      "plan_version": null,
+      "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+    },
+    "parser_version": "1.1",
+    "prompt_version": "intent-v1.3.3",
+    "llm_attempts": 1,
+    "parse_id": "a5756008ac1d4814a340d3979791b3a9"
+  },
+  "intent_history": [
+    {
+      "analysis_mode": "exploratory",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "workflow-sales.csv数据",
+        "business_goal": "探索这份数据的主要特征和差异",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "探索这份数据的主要特征和差异。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "52fa000421184f7cbe3dff80cbc72082",
+        "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "52fa000421184f7cbe3dff80cbc72082",
+        "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "a5756008ac1d4814a340d3979791b3a9"
+    }
+  ],
+  "clarification_answers": [],
+  "profile": {
+    "dataset_id": "52fa000421184f7cbe3dff80cbc72082",
+    "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424",
+    "schema_version": "1.0",
+    "profiler_version": "1.1.0",
+    "content_sha256": "388522fd4942b01bec122cbf6539b0d16459058c23c1d4b34f5adaa884ef81f1",
+    "file_name": "workflow-sales.csv",
+    "file_format": "csv",
+    "sheet_name": null,
+    "available_sheets": [],
+    "options": {
+      "header_row": 1,
+      "sheet_name": null,
+      "encoding": "utf-8-sig",
+      "delimiter": ","
+    },
+    "row_count": 8,
+    "column_count": 3,
+    "total_cell_count": 24,
+    "missing_cell_count": 0,
+    "missing_cell_rate": 0.0,
+    "duplicate_row_count": 0,
+    "duplicate_row_rate": 0.0,
+    "fields": [
+      {
+        "field_id": "field_0001",
+        "position": 1,
+        "original_name": "地区",
+        "display_name": "地区",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "华东",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "华南",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "华北",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0002",
+        "position": 2,
+        "original_name": "产品",
+        "display_name": "产品",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 2,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "产品A",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "产品B",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0003",
+        "position": 3,
+        "original_name": "销售额",
+        "display_name": "销售额",
+        "physical_type": "string",
+        "logical_type": "integer",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 8,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "integer": 8
+        },
+        "samples": [
+          {
+            "value": "101",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "203",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "307",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "409",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "503",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      }
+    ],
+    "quality_issues": [],
+    "provenance": {
+      "source": "uploaded",
+      "dataset": "52fa000421184f7cbe3dff80cbc72082",
+      "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424",
+      "plan_version": null,
+      "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+    }
+  },
+  "dataset_ref": {
+    "dataset_id": "52fa000421184f7cbe3dff80cbc72082",
+    "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424"
+  },
+  "plans": [],
+  "current_plan_version": 2,
+  "approved_plan_version": null,
+  "node_runs": [
+    {
+      "run_id": "65e8dc6a731c40d3b304c5f1c6db6ea0",
+      "node_name": "data_profiler",
+      "status": "success",
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "52fa000421184f7cbe3dff80cbc72082",
+        "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424",
+        "plan_version": null,
+        "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+      },
+      "error": null,
+      "finished_at": "2026-10-27T08:32:07.952870+00:00"
+    },
+    {
+      "run_id": "2efcbe18508e4c99af41a6599d4612b2",
+      "node_name": "intent_parser",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "52fa000421184f7cbe3dff80cbc72082",
+        "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "error": null,
+      "finished_at": "2026-10-27T08:32:10.244779+00:00"
+    },
+    {
+      "run_id": "695ec81de4bb4b7d8ea28085d07a514a",
+      "node_name": "analysis_planner_v1",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "52fa000421184f7cbe3dff80cbc72082",
+        "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "error": null,
+      "finished_at": "2026-10-27T08:32:22.444052+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "id": "9a62118c677147769b29c78e76fa68ad",
+      "role": "user",
+      "kind": "text",
+      "content": "探索这份数据的主要特征和差异。",
+      "plan_version": null,
+      "created_at": "2026-10-27T08:32:07.945609+00:00"
+    },
+    {
+      "id": "c52de5e28a9f4f39b925c0817d2475b8",
+      "role": "assistant",
+      "kind": "status",
+      "content": "正在解析上传文件并计算真实数据画像。",
+      "plan_version": null,
+      "created_at": "2026-10-27T08:32:07.949273+00:00"
+    },
+    {
+      "id": "3b4757a2d63a4d2d8a39f99b543db5c4",
+      "role": "assistant",
+      "kind": "status",
+      "content": "真实画像完成：8行、3列；正在理解分析需求。",
+      "plan_version": null,
+      "created_at": "2026-10-27T08:32:07.954154+00:00"
+    },
+    {
+      "id": "54fb23e8864b425d843546642dd03e80",
+      "role": "assistant",
+      "kind": "status",
+      "content": "需求已理解，正在生成受控分析计划。",
+      "plan_version": null,
+      "created_at": "2026-10-27T08:32:10.246621+00:00"
+    },
+    {
+      "id": "083cad6134774a9786bbd6d91a98c2bd",
+      "role": "assistant",
+      "kind": "plan",
+      "content": "真实计划已保存，目标覆盖：complete。请审核任务、未满足需求和约束；批准前不会计算。",
+      "plan_version": 1,
+      "created_at": "2026-10-27T08:32:22.449720+00:00"
+    },
+    {
+      "id": "c05e41440a364ab2bb77fd2eadee7da8",
+      "role": "user",
+      "kind": "text",
+      "content": "删除任务：T3",
+      "plan_version": null,
+      "created_at": "2026-10-27T08:33:45.370753+00:00"
+    },
+    {
+      "id": "6c6c2d81c41440b5947fb1c62ac26cf5",
+      "role": "assistant",
+      "kind": "status",
+      "content": "计划 v2 已重新校验，目标覆盖：complete。",
+      "plan_version": null,
+      "created_at": "2026-10-27T08:33:45.370765+00:00"
+    }
+  ],
+  "review_plan": {
+    "session_id": "a8f4816ff2cd483e8e7d52f2958c4be2",
+    "plan_id": "plan_8fe231bf8f5540518639431cfda8674f",
+    "plan_version": 2,
+    "dataset_id": "52fa000421184f7cbe3dff80cbc72082",
+    "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424",
+    "validation_version": "1.0",
+    "created_at": "2026-10-27T08:33:45.370657+00:00",
+    "change_type": "tasks_deleted",
+    "change_summary": "删除任务：T3",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "52fa000421184f7cbe3dff80cbc72082",
+        "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424",
+        "plan_id": "plan_8fe231bf8f5540518639431cfda8674f",
+        "plan_version": 2,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "整体销售额概况",
+            "business_question": "数据的总体销售规模是多少？（总销售额、平均单笔销售额及极值）",
+            "priority": "P0",
+            "priority_reason": "探索数据主要特征的基础，提供全局视角。删除后无法回答核心问题中关于‘主要特征’的部分。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "sum",
+                      "field": "field_0003",
+                      "alias": "total_sales"
+                    },
+                    {
+                      "function": "avg",
+                      "field": "field_0003",
+                      "alias": "avg_sales"
+                    },
+                    {
+                      "function": "max",
+                      "field": "field_0003",
+                      "alias": "max_sales"
+                    },
+                    {
+                      "function": "min",
+                      "field": "field_0003",
+                      "alias": "min_sales"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "task_id": "T2",
+            "title": "按地区分析销售分布与差异",
+            "business_question": "不同地区的销售表现有何差异？哪个地区贡献最大？",
+            "priority": "P0",
+            "priority_reason": "探索‘差异’的核心维度之一。通过分组聚合揭示地域间的业务不平衡性，是理解数据结构的关键。",
+            "requirement_ids": [
+              "C01"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "sum",
+                      "field": "field_0003",
+                      "alias": "region_total_sales"
+                    },
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "region_record_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0001"
+                  ]
+                }
+              },
+              {
+                "step_id": "S2",
+                "operation": "sort",
+                "params": {
+                  "field": "region_total_sales",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "探索这份数据的主要特征和差异"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        },
+        {
+          "task_id": "T2",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T1",
+        "T2"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "52fa000421184f7cbe3dff80cbc72082",
+        "dataset_version": "d7d0b6d95fd3fed877a39ce50db65495b9039362396cb05e5bd7d81d6d560424",
+        "plan_version": 2,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "exploratory",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "workflow-sales.csv数据",
+          "business_goal": "探索这份数据的主要特征和差异",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    }
+  },
+  "review_status": "awaiting_approval",
+  "engine_approval": null,
+  "engine_execution_ids": [],
+  "execution_result": null,
+  "report": null,
+  "error": null
+}

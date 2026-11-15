@@ -1,0 +1,6 @@
+{
+  "text": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T1\",\n      \"title\": \"各团队响应分钟平均值统计与排序\",\n      \"business_question\": \"按团队统计响应分钟的平均值，并按平均值降序排列。注意：不要推断人员绩效。\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"直接回答核心问题“各团队响应分钟平均值”，并满足“按平均值降序排列”及“不要推断人员绩效”的约束。删除此任务将无法完成分析目标。\",\n      \"requirement_ids\": [\n        \"C01\",\n        \"C02\",\n        \"C03\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S1\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"avg\",\n                \"field\": \"field_0002\",\n                \"alias\": \"avg_response_minutes\"\n              }\n            ],\n            \"dimensions\": [\n              \"field_0001\"\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S2\",\n          \"operation\": \"sort\",\n          \"params\": {\n            \"field\": \"avg_response_minutes\",\n            \"direction\": \"desc\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+  "provider": "compatible",
+  "is_mock": false,
+  "model": "qwen3.8-flash"
+}

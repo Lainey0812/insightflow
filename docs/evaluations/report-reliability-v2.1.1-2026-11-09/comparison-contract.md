@@ -1,0 +1,3 @@
+# Frozen V2.1 comparison
+
+Use the identical ten inputs and pre-run business rubric from REQ-0103. Expected numeric results and safety boundaries are unchanged. One new candidate run, no outer retry. Record 4 categories: actual report complete/partial/failed/unavailable, plus expected safety stop. Separate service report status from per-direction explanation coverage and actual business quality. Legal fully validated redundancy remains visible in metadata, but is no longer a factual-generation failure; report missing core evidence, directions or invalid candidates remains partial/failed. This explicit status-semantic difference prevents claiming a pure model-quality improvement from dedup status alone. Raw baseline records are never relabelled or overwritten.

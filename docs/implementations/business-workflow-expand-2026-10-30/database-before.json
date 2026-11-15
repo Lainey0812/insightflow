@@ -1,0 +1,338 @@
+{
+  "business": {
+    "tables": {
+      "sessions": {
+        "rows": 6,
+        "sha256": "d4f255e3bdb9c4ee622b1670f7ee05589fc37666e3fa389e37e9bf5fa430c733"
+      },
+      "datasets": {
+        "rows": 5,
+        "sha256": "93332100d47823786e9cb3daaf01764e5232578c28020b21c8e6a0c9a6b8f664"
+      },
+      "dataset_profiles": {
+        "rows": 5,
+        "sha256": "b8c5aa9edf58ca8b4d663341f371735d6895472705453b8a5c62ec9ec9bbdb4b"
+      },
+      "analysis_reports": {
+        "rows": 1,
+        "sha256": "15de2644fd787fb4d70fe044d96ebb1b15e9da5f1af0acb211e1ad40305d5940"
+      },
+      "executions": {
+        "rows": 1,
+        "sha256": "3f63ee7eaf70149fe6e4a3296dbc2a56a25ebd4c06a27f169b02a02e7fd15e72"
+      },
+      "execution_results": {
+        "rows": 1,
+        "sha256": "70be2a7430d26d20523228bd0a8d0d8d6cc0ff00fb96b7cbb58d76a865195b52"
+      },
+      "session_access": {
+        "rows": 5,
+        "sha256": "bbcb0870c3362e9a040133605f2d6850118e459b6d0222193ed0cead98b3ded9"
+      },
+      "plan_versions": {
+        "rows": 2,
+        "sha256": "8ce1c5d2734f59266e99926ae1bcff3fb1e39fdbe026ef0b1f02061a58502197"
+      },
+      "plan_approvals": {
+        "rows": 1,
+        "sha256": "008a619e66c7019cc41723b68cb3caaf8783526060998fe6cf6414757f86d2f9"
+      },
+      "plan_constraint_audits": {
+        "rows": 1,
+        "sha256": "19e7eb244988aa3d3cac901b0178d40c6106450df5b522999cd1625095c7364a"
+      },
+      "report_generations": {
+        "rows": 1,
+        "sha256": "e30dad1c65e86f9adec8499bbe0eafd4e995166289b95d22c6f565201f9fa9f3"
+      }
+    },
+    "schema": [
+      [
+        "table",
+        "analysis_reports",
+        "analysis_reports",
+        "CREATE TABLE analysis_reports (id TEXT PRIMARY KEY, report TEXT NOT NULL, audit TEXT NOT NULL)"
+      ],
+      [
+        "table",
+        "dataset_profiles",
+        "dataset_profiles",
+        "CREATE TABLE dataset_profiles (\n                dataset_id TEXT NOT NULL, dataset_version TEXT NOT NULL, profile TEXT NOT NULL,\n                PRIMARY KEY (dataset_id, dataset_version),\n                FOREIGN KEY (dataset_id) REFERENCES datasets(id)\n            )"
+      ],
+      [
+        "table",
+        "datasets",
+        "datasets",
+        "CREATE TABLE datasets (id TEXT PRIMARY KEY, file_info TEXT NOT NULL)"
+      ],
+      [
+        "table",
+        "execution_results",
+        "execution_results",
+        "CREATE TABLE execution_results (\n                id TEXT PRIMARY KEY, execution_id TEXT NOT NULL REFERENCES executions(id),\n                row_count INTEGER NOT NULL, columns_json TEXT NOT NULL, rows_json TEXT NOT NULL\n            )"
+      ],
+      [
+        "table",
+        "executions",
+        "executions",
+        "CREATE TABLE executions (\n                id TEXT PRIMARY KEY, request_id TEXT UNIQUE NOT NULL, request TEXT NOT NULL,\n                session_id TEXT NOT NULL REFERENCES sessions(id), status TEXT NOT NULL,\n                started_at TEXT NOT NULL, approval TEXT NOT NULL, progress TEXT NOT NULL, result TEXT\n            )"
+      ],
+      [
+        "table",
+        "plan_approvals",
+        "plan_approvals",
+        "CREATE TABLE plan_approvals (\n                approval_id TEXT PRIMARY KEY, session_id TEXT NOT NULL REFERENCES sessions(id),\n                request_id TEXT NOT NULL, request TEXT NOT NULL, record TEXT NOT NULL,\n                UNIQUE(session_id, request_id))"
+      ],
+      [
+        "table",
+        "plan_constraint_audits",
+        "plan_constraint_audits",
+        "CREATE TABLE plan_constraint_audits (\n                approval_id TEXT PRIMARY KEY REFERENCES plan_approvals(approval_id),\n                session_id TEXT NOT NULL REFERENCES sessions(id), record TEXT NOT NULL)"
+      ],
+      [
+        "table",
+        "plan_versions",
+        "plan_versions",
+        "CREATE TABLE plan_versions (\n                session_id TEXT NOT NULL REFERENCES sessions(id), plan_id TEXT NOT NULL,\n                plan_version INTEGER NOT NULL, record TEXT NOT NULL,\n                PRIMARY KEY(session_id, plan_version))"
+      ],
+      [
+        "table",
+        "report_generations",
+        "report_generations",
+        "CREATE TABLE report_generations (execution_id TEXT PRIMARY KEY, session_id TEXT NOT NULL, status TEXT NOT NULL, record TEXT NOT NULL)"
+      ],
+      [
+        "table",
+        "session_access",
+        "session_access",
+        "CREATE TABLE session_access (\n                session_id TEXT PRIMARY KEY REFERENCES sessions(id), token_hash TEXT NOT NULL)"
+      ],
+      [
+        "table",
+        "sessions",
+        "sessions",
+        "CREATE TABLE sessions (\n                id TEXT PRIMARY KEY, updated_at TEXT NOT NULL, state TEXT NOT NULL\n            )"
+      ],
+      [
+        "trigger",
+        "plan_approvals_no_delete",
+        "plan_approvals",
+        "CREATE TRIGGER plan_approvals_no_delete\n                        BEFORE DELETE ON plan_approvals BEGIN\n                        SELECT RAISE(ABORT, 'immutable HITL audit record'); END"
+      ],
+      [
+        "trigger",
+        "plan_approvals_no_update",
+        "plan_approvals",
+        "CREATE TRIGGER plan_approvals_no_update\n                        BEFORE UPDATE ON plan_approvals BEGIN\n                        SELECT RAISE(ABORT, 'immutable HITL audit record'); END"
+      ],
+      [
+        "trigger",
+        "plan_constraint_audits_no_delete",
+        "plan_constraint_audits",
+        "CREATE TRIGGER plan_constraint_audits_no_delete\n                        BEFORE DELETE ON plan_constraint_audits BEGIN\n                        SELECT RAISE(ABORT, 'immutable HITL audit record'); END"
+      ],
+      [
+        "trigger",
+        "plan_constraint_audits_no_update",
+        "plan_constraint_audits",
+        "CREATE TRIGGER plan_constraint_audits_no_update\n                        BEFORE UPDATE ON plan_constraint_audits BEGIN\n                        SELECT RAISE(ABORT, 'immutable HITL audit record'); END"
+      ],
+      [
+        "trigger",
+        "plan_versions_no_delete",
+        "plan_versions",
+        "CREATE TRIGGER plan_versions_no_delete\n                        BEFORE DELETE ON plan_versions BEGIN\n                        SELECT RAISE(ABORT, 'immutable HITL audit record'); END"
+      ],
+      [
+        "trigger",
+        "plan_versions_no_update",
+        "plan_versions",
+        "CREATE TRIGGER plan_versions_no_update\n                        BEFORE UPDATE ON plan_versions BEGIN\n                        SELECT RAISE(ABORT, 'immutable HITL audit record'); END"
+      ]
+    ]
+  },
+  "trace": {
+    "tables": {
+      "trace_spans": {
+        "rows": 18,
+        "sha256": "bdb3f1fb043d3941cc8a2cf2ad97601287952f3ced8324e6df0639659f2a06ca"
+      },
+      "trace_events": {
+        "rows": 55,
+        "sha256": "9a73efd220236e66e87064686e9837dcc5766a0f0576d5a63d23f830162951c5"
+      },
+      "trace_snapshots": {
+        "rows": 3,
+        "sha256": "c6eacd91bed3bc909274a97a779ca194c0295e2f6a6131a9561e07e5c61433e9"
+      },
+      "trace_runs": {
+        "rows": 4,
+        "sha256": "9b1766dcd6a6bcc134af100c007b7222201205753c52e3f1eae0f2de9d1696fe"
+      },
+      "trace_migrations": {
+        "rows": 1,
+        "sha256": "0e111f30f28f4a06024321e61e1a73ced9506a6f9a873906ae7840c95efcaa45"
+      }
+    },
+    "schema": [
+      [
+        "index",
+        "events_span",
+        "trace_events",
+        "CREATE INDEX events_span ON trace_events(span_id, sequence)"
+      ],
+      [
+        "index",
+        "spans_run",
+        "trace_spans",
+        "CREATE INDEX spans_run ON trace_spans(run_id)"
+      ],
+      [
+        "index",
+        "workflow_session_unique",
+        "trace_runs",
+        "CREATE UNIQUE INDEX workflow_session_unique\n            ON trace_runs(json_extract(record,'$.session_id'))\n            WHERE json_extract(record,'$.kind')='workflow' "
+      ],
+      [
+        "table",
+        "trace_events",
+        "trace_events",
+        "CREATE TABLE trace_events (\n                    id TEXT PRIMARY KEY, run_id TEXT NOT NULL REFERENCES trace_runs(id),\n                    span_id TEXT REFERENCES trace_spans(id), sequence INTEGER NOT NULL, record TEXT NOT NULL,\n                    UNIQUE(run_id, sequence))"
+      ],
+      [
+        "table",
+        "trace_migrations",
+        "trace_migrations",
+        "CREATE TABLE trace_migrations (version TEXT PRIMARY KEY)"
+      ],
+      [
+        "table",
+        "trace_runs",
+        "trace_runs",
+        "CREATE TABLE \"trace_runs\" (\n                id TEXT PRIMARY KEY, execution_id TEXT, attempt INTEGER NOT NULL,\n                queued_at TEXT NOT NULL, status TEXT NOT NULL, record TEXT NOT NULL,\n                UNIQUE(execution_id, attempt))"
+      ],
+      [
+        "table",
+        "trace_snapshots",
+        "trace_snapshots",
+        "CREATE TABLE trace_snapshots (\n                    id TEXT PRIMARY KEY, run_id TEXT NOT NULL REFERENCES trace_runs(id),\n                    span_id TEXT REFERENCES trace_spans(id), kind TEXT NOT NULL, record TEXT NOT NULL,\n                    UNIQUE(run_id,kind))"
+      ],
+      [
+        "table",
+        "trace_spans",
+        "trace_spans",
+        "CREATE TABLE trace_spans (\n                    id TEXT PRIMARY KEY, run_id TEXT NOT NULL REFERENCES trace_runs(id), record TEXT NOT NULL)"
+      ]
+    ]
+  },
+  "registry": {
+    "tables": {
+      "registry_migrations": {
+        "rows": 1,
+        "sha256": "043f347c2cdc0d8ce70c38775d24e556c0290acf6d0c87a3a52aa85471cb8d02"
+      },
+      "prompt_templates": {
+        "rows": 6,
+        "sha256": "76706a7271ab44efadc095602daa17351cb5e233c86e91aaa9e148f7e175064b"
+      },
+      "llm_request_snapshots": {
+        "rows": 21,
+        "sha256": "e90e0537b14f9bb237e2530a74abda3961ab66e1d9937db82e78f91024a9d409"
+      },
+      "llm_request_payloads": {
+        "rows": 21,
+        "sha256": "9407efdf42381bd11478c4e21cd9e6c6db88b06cc698d121b0e811da79d50c89"
+      },
+      "llm_calls": {
+        "rows": 21,
+        "sha256": "c303bee709f5f333e03d4a332169679894b53aa1aba2ea8a3aaa8b8ec1e87267"
+      }
+    },
+    "schema": [
+      [
+        "index",
+        "llm_calls_run",
+        "llm_calls",
+        "CREATE INDEX llm_calls_run ON llm_calls(run_id)"
+      ],
+      [
+        "index",
+        "llm_calls_span",
+        "llm_calls",
+        "CREATE INDEX llm_calls_span ON llm_calls(span_id)"
+      ],
+      [
+        "table",
+        "llm_calls",
+        "llm_calls",
+        "CREATE TABLE llm_calls (\n id TEXT PRIMARY KEY, operation_id TEXT NOT NULL, sequence INTEGER NOT NULL,\n run_id TEXT, span_id TEXT, status TEXT NOT NULL, record TEXT NOT NULL,\n request_id TEXT NOT NULL UNIQUE REFERENCES llm_request_snapshots(id), UNIQUE(operation_id,sequence))"
+      ],
+      [
+        "table",
+        "llm_request_payloads",
+        "llm_request_payloads",
+        "CREATE TABLE llm_request_payloads (\n snapshot_id TEXT PRIMARY KEY REFERENCES llm_request_snapshots(id), payload TEXT NOT NULL, expires_at TEXT)"
+      ],
+      [
+        "table",
+        "llm_request_snapshots",
+        "llm_request_snapshots",
+        "CREATE TABLE llm_request_snapshots (\n id TEXT PRIMARY KEY, template_id TEXT NOT NULL REFERENCES prompt_templates(id), record TEXT NOT NULL)"
+      ],
+      [
+        "table",
+        "prompt_templates",
+        "prompt_templates",
+        "CREATE TABLE prompt_templates (\n id TEXT PRIMARY KEY, node_id TEXT NOT NULL, version TEXT NOT NULL,\n content_hash TEXT NOT NULL, record TEXT NOT NULL, UNIQUE(node_id,version))"
+      ],
+      [
+        "table",
+        "registry_migrations",
+        "registry_migrations",
+        "CREATE TABLE registry_migrations (version INTEGER PRIMARY KEY)"
+      ],
+      [
+        "trigger",
+        "calls_no_delete",
+        "llm_calls",
+        "CREATE TRIGGER calls_no_delete BEFORE DELETE ON llm_calls BEGIN SELECT RAISE(ABORT,'Preserve calls'); END"
+      ],
+      [
+        "trigger",
+        "calls_terminal",
+        "llm_calls",
+        "CREATE TRIGGER calls_terminal BEFORE UPDATE ON llm_calls WHEN OLD.status != 'running' BEGIN SELECT RAISE(ABORT,'Terminal call'); END"
+      ],
+      [
+        "trigger",
+        "payload_no_update",
+        "llm_request_payloads",
+        "CREATE TRIGGER payload_no_update BEFORE UPDATE ON llm_request_payloads BEGIN SELECT RAISE(ABORT,'Immutable payload'); END"
+      ],
+      [
+        "trigger",
+        "requests_no_delete",
+        "llm_request_snapshots",
+        "CREATE TRIGGER requests_no_delete BEFORE DELETE ON llm_request_snapshots BEGIN SELECT RAISE(ABORT,'Immutable request'); END"
+      ],
+      [
+        "trigger",
+        "requests_no_update",
+        "llm_request_snapshots",
+        "CREATE TRIGGER requests_no_update BEFORE UPDATE ON llm_request_snapshots BEGIN SELECT RAISE(ABORT,'Immutable request'); END"
+      ],
+      [
+        "trigger",
+        "templates_no_delete",
+        "prompt_templates",
+        "CREATE TRIGGER templates_no_delete BEFORE DELETE ON prompt_templates BEGIN SELECT RAISE(ABORT,'Immutable template'); END"
+      ],
+      [
+        "trigger",
+        "templates_no_update",
+        "prompt_templates",
+        "CREATE TRIGGER templates_no_update BEFORE UPDATE ON prompt_templates BEGIN SELECT RAISE(ABORT,'Immutable template'); END"
+      ]
+    ]
+  }
+}

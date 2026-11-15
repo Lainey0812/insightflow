@@ -1,0 +1,323 @@
+........................................................................ [  4%]
+........................................................................ [  9%]
+........................................................................ [ 13%]
+........................................................................ [ 18%]
+........................................................................ [ 22%]
+........................................................................ [ 27%]
+........................................................................ [ 31%]
+........................................................................ [ 36%]
+........................................................................ [ 40%]
+........................................................................ [ 45%]
+........................................................................ [ 49%]
+........................................................................ [ 54%]
+........................................................................ [ 58%]
+........................................................................ [ 63%]
+........................................................................ [ 67%]
+........................................................................ [ 72%]
+........................................................................ [ 76%]
+........................................................................ [ 81%]
+........................................................................ [ 85%]
+........................................................................ [ 90%]
+........................................................................ [ 94%]
+.................................................................FFFF... [ 99%]
+..............                                                           [100%]
+=================================== FAILURES ===================================
+_ test_schema_protocol_and_node_errors_are_real_failures_without_secret_text[schema] _
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-247/test_schema_protocol_and_node_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x14e9804b0>
+failure = 'schema'
+
+    @pytest.mark.parametrize('failure',['schema','protocol','node'])
+    def test_schema_protocol_and_node_errors_are_real_failures_without_secret_text(tmp_path,monkeypatch,failure):
+        value=intent();value['analysis_mode']='illegal-mode'
+        llm,_=http_provider(ControlledWorkflowProvider([value] if failure=='schema' else [httpx.ReadTimeout('PRIVATE-INTENT')]))
+>       app=create_app(config(tmp_path),llm)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_trace_v031.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/app/main.py:57: in create_app
+    parser = IntentParserService(llm, settings.llm_timeout_seconds, max_attempts=settings.intent_max_attempts,
+backend/app/services/intent_parser.py:54: in __init__
+    self.prompt_source = pin_template(provider,'intent_parser',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.llm.templates' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/llm/templates.py'>
+actual_objects = [<function uuid4 at 0x1059d85c0>, <class 'app.domain.dataset_profile.DatasetProfile'>, <class 'app.domain.dataset_prof...app.domain.errors.AppError'>, <class 'app.domain.intent.IntentArtifact'>, <class 'app.domain.intent.LLMMetadata'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+                raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+            loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+        # Detect a changed literal (including version labels and mapping text) without executing source.
+        literals = {}
+        for statement in ast.parse(text).body:
+            if isinstance(statement, ast.Assign):
+                for target in statement.targets:
+                    if isinstance(target,ast.Name) and target.id.isupper():
+                        try: literal=ast.literal_eval(statement.value)
+                        except (ValueError,TypeError): continue
+                        actual = getattr(module,target.id,object())
+                        if not isinstance(literal,(dict,list,set)) and actual != literal:
+>                           raise AppError('PROMPT_SOURCE_MISMATCH','已加载固定指令与源码不同，请完整重启服务。',503)
+E                           app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载固定指令与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:99: AppError
+_ test_schema_protocol_and_node_errors_are_real_failures_without_secret_text[protocol] _
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-247/test_schema_protocol_and_node_1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x14dd84600>
+failure = 'protocol'
+
+    @pytest.mark.parametrize('failure',['schema','protocol','node'])
+    def test_schema_protocol_and_node_errors_are_real_failures_without_secret_text(tmp_path,monkeypatch,failure):
+        value=intent();value['analysis_mode']='illegal-mode'
+        llm,_=http_provider(ControlledWorkflowProvider([value] if failure=='schema' else [httpx.ReadTimeout('PRIVATE-INTENT')]))
+>       app=create_app(config(tmp_path),llm)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_trace_v031.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/app/main.py:57: in create_app
+    parser = IntentParserService(llm, settings.llm_timeout_seconds, max_attempts=settings.intent_max_attempts,
+backend/app/services/intent_parser.py:54: in __init__
+    self.prompt_source = pin_template(provider,'intent_parser',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.llm.templates' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/llm/templates.py'>
+actual_objects = [<function uuid4 at 0x1059d85c0>, <class 'app.domain.dataset_profile.DatasetProfile'>, <class 'app.domain.dataset_prof...app.domain.errors.AppError'>, <class 'app.domain.intent.IntentArtifact'>, <class 'app.domain.intent.LLMMetadata'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+                raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+            loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+        # Detect a changed literal (including version labels and mapping text) without executing source.
+        literals = {}
+        for statement in ast.parse(text).body:
+            if isinstance(statement, ast.Assign):
+                for target in statement.targets:
+                    if isinstance(target,ast.Name) and target.id.isupper():
+                        try: literal=ast.literal_eval(statement.value)
+                        except (ValueError,TypeError): continue
+                        actual = getattr(module,target.id,object())
+                        if not isinstance(literal,(dict,list,set)) and actual != literal:
+>                           raise AppError('PROMPT_SOURCE_MISMATCH','已加载固定指令与源码不同，请完整重启服务。',503)
+E                           app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载固定指令与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:99: AppError
+_ test_schema_protocol_and_node_errors_are_real_failures_without_secret_text[node] _
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-247/test_schema_protocol_and_node_2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x13a700d70>
+failure = 'node'
+
+    @pytest.mark.parametrize('failure',['schema','protocol','node'])
+    def test_schema_protocol_and_node_errors_are_real_failures_without_secret_text(tmp_path,monkeypatch,failure):
+        value=intent();value['analysis_mode']='illegal-mode'
+        llm,_=http_provider(ControlledWorkflowProvider([value] if failure=='schema' else [httpx.ReadTimeout('PRIVATE-INTENT')]))
+>       app=create_app(config(tmp_path),llm)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_trace_v031.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/app/main.py:57: in create_app
+    parser = IntentParserService(llm, settings.llm_timeout_seconds, max_attempts=settings.intent_max_attempts,
+backend/app/services/intent_parser.py:54: in __init__
+    self.prompt_source = pin_template(provider,'intent_parser',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.llm.templates' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/llm/templates.py'>
+actual_objects = [<function uuid4 at 0x1059d85c0>, <class 'app.domain.dataset_profile.DatasetProfile'>, <class 'app.domain.dataset_prof...app.domain.errors.AppError'>, <class 'app.domain.intent.IntentArtifact'>, <class 'app.domain.intent.LLMMetadata'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+                raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+            loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+        # Detect a changed literal (including version labels and mapping text) without executing source.
+        literals = {}
+        for statement in ast.parse(text).body:
+            if isinstance(statement, ast.Assign):
+                for target in statement.targets:
+                    if isinstance(target,ast.Name) and target.id.isupper():
+                        try: literal=ast.literal_eval(statement.value)
+                        except (ValueError,TypeError): continue
+                        actual = getattr(module,target.id,object())
+                        if not isinstance(literal,(dict,list,set)) and actual != literal:
+>                           raise AppError('PROMPT_SOURCE_MISMATCH','已加载固定指令与源码不同，请完整重启服务。',503)
+E                           app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载固定指令与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:99: AppError
+_________ test_task_local_contexts_do_not_mix_two_concurrent_llm_calls _________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-247/test_task_local_contexts_do_no0')
+
+    def test_task_local_contexts_do_not_mix_two_concurrent_llm_calls(tmp_path):
+>       llm,_=http_provider();app=create_app(config(tmp_path),llm);repo=app.state.traces.repository
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_trace_v031.py:214: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/app/main.py:57: in create_app
+    parser = IntentParserService(llm, settings.llm_timeout_seconds, max_attempts=settings.intent_max_attempts,
+backend/app/services/intent_parser.py:54: in __init__
+    self.prompt_source = pin_template(provider,'intent_parser',self,PROMPT_VERSION,SYSTEM_PROMPT)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:158: in pin_template
+    return TemplateSource(node_id,service,version,system_prompt) if getattr(provider,'capture',None) is not None else None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:112: in __init__
+    self.snapshot = self.build()
+                    ^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in build
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/llm/templates.py:130: in <genexpr>
+    sources = dict(_source(importlib.import_module(name),actual) for name in dict.fromkeys(names))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+module = <module 'app.llm.templates' from '/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/llm/templates.py'>
+actual_objects = [<function uuid4 at 0x1059d85c0>, <class 'app.domain.dataset_profile.DatasetProfile'>, <class 'app.domain.dataset_prof...app.domain.errors.AppError'>, <class 'app.domain.intent.IntentArtifact'>, <class 'app.domain.intent.LLMMetadata'>, ...]
+
+    def _source(module, actual_objects=()):
+        path = Path(module.__file__).resolve()
+        text = path.read_text()
+        compiled = _code_index(compile(text, str(path), 'exec', dont_inherit=True))
+        functions = []
+        for value in vars(module).values():
+            if getattr(value,'__module__',None) == module.__name__:
+                functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        for value in actual_objects:
+            functions.extend(f for f in _functions(value) if f.__module__ == module.__name__)
+        loaded = {}
+        for function in functions:
+            code = inspect.unwrap(function).__code__
+            fresh = compiled.get(code.co_qualname)
+            parent = vars(module).get(function.__qualname__.split('.')[0])
+            if fresh is None and inspect.isclass(parent) and is_dataclass(parent) and inspect.unwrap(function).__code__.co_filename.startswith('<'):
+                # dataclasses synthesizes these methods; retain their actual code fingerprints.
+                loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+                continue
+            if fresh is None or _shape(code) != _shape(fresh):
+                raise AppError('PROMPT_SOURCE_MISMATCH','已加载组合逻辑与源码不同，请完整重启服务。',503)
+            loaded[function.__qualname__] = digest({'source':_shape(code),'wrapper':_shape(function.__code__)})
+        # Detect a changed literal (including version labels and mapping text) without executing source.
+        literals = {}
+        for statement in ast.parse(text).body:
+            if isinstance(statement, ast.Assign):
+                for target in statement.targets:
+                    if isinstance(target,ast.Name) and target.id.isupper():
+                        try: literal=ast.literal_eval(statement.value)
+                        except (ValueError,TypeError): continue
+                        actual = getattr(module,target.id,object())
+                        if not isinstance(literal,(dict,list,set)) and actual != literal:
+>                           raise AppError('PROMPT_SOURCE_MISMATCH','已加载固定指令与源码不同，请完整重启服务。',503)
+E                           app.domain.errors.AppError: ('PROMPT_SOURCE_MISMATCH', '已加载固定指令与源码不同，请完整重启服务。', 503)
+
+backend/app/llm/templates.py:99: AppError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_workflow_trace_v031.py::test_schema_protocol_and_node_errors_are_real_failures_without_secret_text[schema]
+FAILED backend/tests/test_workflow_trace_v031.py::test_schema_protocol_and_node_errors_are_real_failures_without_secret_text[protocol]
+FAILED backend/tests/test_workflow_trace_v031.py::test_schema_protocol_and_node_errors_are_real_failures_without_secret_text[node]
+FAILED backend/tests/test_workflow_trace_v031.py::test_task_local_contexts_do_not_mix_two_concurrent_llm_calls
+4 failed, 1594 passed, 1 warning in 82.93s (0:01:22)

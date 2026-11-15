@@ -1,0 +1,1465 @@
+{
+  "session": {
+    "id": "3adbd78f875d4aae98630d147d60f00a",
+    "title": "只看2026年发布且岗位状态为在招的数据，按城市汇总招聘",
+    "status": "AWAITING_APPROVAL",
+    "revision": 8,
+    "created_at": "2026-10-27T10:50:52.971932+00:00",
+    "updated_at": "2026-10-27T10:51:04.680154+00:00",
+    "data_source": "uploaded",
+    "workflow_kind": "real_v1",
+    "profile_options": {
+      "header_row": 1,
+      "sheet_name": null,
+      "encoding": "utf-8-sig",
+      "delimiter": ","
+    },
+    "planner_result": {
+      "plan": {
+        "dataset_id": "2dd4617e774e4aaf8ed886a2c5685e45",
+        "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+        "plan_id": "plan_bf99344ddb594910850ae3607f30565b",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T01",
+            "title": "2026年在招岗位按城市招聘人数总和Top3",
+            "business_question": "统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三。",
+            "priority": "P0",
+            "priority_reason": "删除后无法回答核心决策问题（2026年在招岗位各城市招聘规模排名），直接支持业务目标。",
+            "requirement_ids": [
+              "C01",
+              "C02",
+              "C03",
+              "C04",
+              "C05"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "derive",
+                "params": {
+                  "function": "extract_year",
+                  "field": "field_0001",
+                  "alias": "year_2026"
+                }
+              },
+              {
+                "step_id": "S02",
+                "operation": "filter",
+                "params": {
+                  "conditions": [
+                    {
+                      "field": "year_2026",
+                      "operator": "eq",
+                      "value": 2026
+                    },
+                    {
+                      "field": "field_0003",
+                      "operator": "eq",
+                      "value": "在招"
+                    }
+                  ]
+                }
+              },
+              {
+                "step_id": "S03",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "sum",
+                      "field": "field_0004",
+                      "alias": "total_hired_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S04",
+                "operation": "sort",
+                "params": {
+                  "field": "total_hired_count",
+                  "direction": "desc"
+                }
+              },
+              {
+                "step_id": "S05",
+                "operation": "top_n",
+                "params": {
+                  "field": "total_hired_count",
+                  "direction": "desc",
+                  "n": 3
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "time_range：只看2026年发布"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "filters：岗位状态为在招"
+          },
+          {
+            "requirement_id": "C04",
+            "description": "metric_requirements：招聘人数总和"
+          },
+          {
+            "requirement_id": "C05",
+            "description": "analysis_limits：按城市汇总；按招聘人数降序排名；取前三名"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T01",
+          "feasibility": "F1",
+          "reason_code": "REQUIRES_TRANSFORMATION",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T01"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "2dd4617e774e4aaf8ed886a2c5685e45",
+        "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "2026年在招岗位按城市汇总的招聘人数总和",
+          "business_goal": "统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "只看2026年发布",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "岗位状态为在招",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "招聘人数总和",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按城市汇总",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "按招聘人数降序排名",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "取前三名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "workflow_events": [
+      {
+        "status": "CREATED",
+        "recorded_at": "2026-10-27T10:50:52.971945+00:00"
+      },
+      {
+        "status": "PROFILING",
+        "recorded_at": "2026-10-27T10:50:52.975368+00:00"
+      },
+      {
+        "status": "PARSING_INTENT",
+        "recorded_at": "2026-10-27T10:50:52.979412+00:00"
+      },
+      {
+        "status": "PLANNING",
+        "recorded_at": "2026-10-27T10:50:58.050388+00:00"
+      },
+      {
+        "status": "VALIDATING",
+        "recorded_at": "2026-10-27T10:51:04.675945+00:00"
+      },
+      {
+        "status": "AWAITING_APPROVAL",
+        "recorded_at": "2026-10-27T10:51:04.679977+00:00"
+      }
+    ],
+    "file": {
+      "id": "2dd4617e774e4aaf8ed886a2c5685e45",
+      "name": "jobs.csv",
+      "size": 184,
+      "extension": ".csv",
+      "content_sha256": "68fac419687595d644fadf57846091967e4786ee85f819866557d05491dbadc6"
+    },
+    "user_goal": "只看2026年发布且岗位状态为在招的数据，按城市汇总招聘人数总和，按招聘人数降序排名，取前三名。",
+    "analysis_mode": "goal_driven",
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "2026年在招岗位按城市汇总的招聘人数总和",
+        "business_goal": "统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": {
+          "raw_text": "只看2026年发布",
+          "validation_status": "unverified"
+        },
+        "filters": [
+          {
+            "raw_text": "岗位状态为在招",
+            "validation_status": "unverified"
+          }
+        ],
+        "metric_requirements": [
+          {
+            "raw_text": "招聘人数总和",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "按城市汇总",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "按招聘人数降序排名",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "取前三名",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "只看2026年发布且岗位状态为在招的数据，按城市汇总招聘人数总和，按招聘人数降序排名，取前三名。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "2dd4617e774e4aaf8ed886a2c5685e45",
+        "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "2dd4617e774e4aaf8ed886a2c5685e45",
+        "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "7bfb8ab575c14e24921acf10f88fc1fe"
+    },
+    "intent_history": [
+      {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "2026年在招岗位按城市汇总的招聘人数总和",
+          "business_goal": "统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "只看2026年发布",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "岗位状态为在招",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "招聘人数总和",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按城市汇总",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "按招聘人数降序排名",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "取前三名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": [],
+        "user_query": "只看2026年发布且岗位状态为在招的数据，按城市汇总招聘人数总和，按招聘人数降序排名，取前三名。",
+        "clarification_answers": [],
+        "dataset_ref": {
+          "dataset_id": "2dd4617e774e4aaf8ed886a2c5685e45",
+          "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d"
+        },
+        "parse_origin": "llm",
+        "llm": {
+          "provider": "compatible",
+          "model": "qwen3.8-flash",
+          "is_mock": false
+        },
+        "provenance": {
+          "source": "llm",
+          "dataset": "2dd4617e774e4aaf8ed886a2c5685e45",
+          "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+          "plan_version": null,
+          "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+        },
+        "parser_version": "1.1",
+        "prompt_version": "intent-v1.3.3",
+        "llm_attempts": 1,
+        "parse_id": "7bfb8ab575c14e24921acf10f88fc1fe"
+      }
+    ],
+    "clarification_answers": [],
+    "profile": {
+      "dataset_id": "2dd4617e774e4aaf8ed886a2c5685e45",
+      "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+      "schema_version": "1.0",
+      "profiler_version": "1.1.0",
+      "content_sha256": "68fac419687595d644fadf57846091967e4786ee85f819866557d05491dbadc6",
+      "file_name": "jobs.csv",
+      "file_format": "csv",
+      "sheet_name": null,
+      "available_sheets": [],
+      "options": {
+        "header_row": 1,
+        "sheet_name": null,
+        "encoding": "utf-8-sig",
+        "delimiter": ","
+      },
+      "row_count": 5,
+      "column_count": 4,
+      "total_cell_count": 20,
+      "missing_cell_count": 0,
+      "missing_cell_rate": 0.0,
+      "duplicate_row_count": 0,
+      "duplicate_row_rate": 0.0,
+      "fields": [
+        {
+          "field_id": "field_0001",
+          "position": 1,
+          "original_name": "发布日期",
+          "display_name": "发布日期",
+          "physical_type": "string",
+          "logical_type": "date",
+          "missing_count": 0,
+          "missing_rate": 0.0,
+          "non_missing_count": 5,
+          "unique_count": 5,
+          "physical_type_counts": {
+            "string": 5
+          },
+          "logical_type_counts": {
+            "date": 5
+          },
+          "samples": [
+            {
+              "value": "2026-01-02",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "2026-02-01",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "2026-03-01",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "2025-02-01",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "2026-04-01",
+              "physical_type": "string",
+              "truncated": false
+            }
+          ]
+        },
+        {
+          "field_id": "field_0002",
+          "position": 2,
+          "original_name": "城市",
+          "display_name": "城市",
+          "physical_type": "string",
+          "logical_type": "text",
+          "missing_count": 0,
+          "missing_rate": 0.0,
+          "non_missing_count": 5,
+          "unique_count": 4,
+          "physical_type_counts": {
+            "string": 5
+          },
+          "logical_type_counts": {
+            "text": 5
+          },
+          "samples": [
+            {
+              "value": "上海",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "北京",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "杭州",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "广州",
+              "physical_type": "string",
+              "truncated": false
+            }
+          ]
+        },
+        {
+          "field_id": "field_0003",
+          "position": 3,
+          "original_name": "岗位状态",
+          "display_name": "岗位状态",
+          "physical_type": "string",
+          "logical_type": "text",
+          "missing_count": 0,
+          "missing_rate": 0.0,
+          "non_missing_count": 5,
+          "unique_count": 2,
+          "physical_type_counts": {
+            "string": 5
+          },
+          "logical_type_counts": {
+            "text": 5
+          },
+          "samples": [
+            {
+              "value": "在招",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "已关闭",
+              "physical_type": "string",
+              "truncated": false
+            }
+          ]
+        },
+        {
+          "field_id": "field_0004",
+          "position": 4,
+          "original_name": "招聘人数",
+          "display_name": "招聘人数",
+          "physical_type": "string",
+          "logical_type": "integer",
+          "missing_count": 0,
+          "missing_rate": 0.0,
+          "non_missing_count": 5,
+          "unique_count": 5,
+          "physical_type_counts": {
+            "string": 5
+          },
+          "logical_type_counts": {
+            "integer": 5
+          },
+          "samples": [
+            {
+              "value": "3",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "5",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "2",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "9",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "8",
+              "physical_type": "string",
+              "truncated": false
+            }
+          ]
+        }
+      ],
+      "quality_issues": [],
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "2dd4617e774e4aaf8ed886a2c5685e45",
+        "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+        "plan_version": null,
+        "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+      }
+    },
+    "dataset_ref": {
+      "dataset_id": "2dd4617e774e4aaf8ed886a2c5685e45",
+      "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d"
+    },
+    "plans": [],
+    "current_plan_version": 1,
+    "approved_plan_version": null,
+    "node_runs": [
+      {
+        "run_id": "00d0dbb56ff54125ac17b446da47a2a8",
+        "node_name": "data_profiler",
+        "status": "success",
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "2dd4617e774e4aaf8ed886a2c5685e45",
+          "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+          "plan_version": null,
+          "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+        },
+        "error": null,
+        "finished_at": "2026-10-27T10:50:52.978312+00:00"
+      },
+      {
+        "run_id": "f223c617a4a744a89b35944638ca7612",
+        "node_name": "intent_parser",
+        "status": "success",
+        "provenance": {
+          "source": "llm",
+          "dataset": "2dd4617e774e4aaf8ed886a2c5685e45",
+          "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+          "plan_version": null,
+          "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+        },
+        "error": null,
+        "finished_at": "2026-10-27T10:50:58.048851+00:00"
+      },
+      {
+        "run_id": "00215d4ff0164cb581e730c35b814550",
+        "node_name": "analysis_planner_v1",
+        "status": "success",
+        "provenance": {
+          "source": "llm",
+          "dataset": "2dd4617e774e4aaf8ed886a2c5685e45",
+          "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+          "plan_version": 1,
+          "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+        },
+        "error": null,
+        "finished_at": "2026-10-27T10:51:04.673549+00:00"
+      }
+    ],
+    "messages": [
+      {
+        "id": "b8cda59a58644d37b8be24d154d4b876",
+        "role": "user",
+        "kind": "text",
+        "content": "只看2026年发布且岗位状态为在招的数据，按城市汇总招聘人数总和，按招聘人数降序排名，取前三名。",
+        "plan_version": null,
+        "created_at": "2026-10-27T10:50:52.971916+00:00"
+      },
+      {
+        "id": "04260d82a91c4b77a4e2eacf204cdb07",
+        "role": "assistant",
+        "kind": "status",
+        "content": "正在解析上传文件并计算真实数据画像。",
+        "plan_version": null,
+        "created_at": "2026-10-27T10:50:52.975357+00:00"
+      },
+      {
+        "id": "4260e80166af43a4bdd12dfafc542100",
+        "role": "assistant",
+        "kind": "status",
+        "content": "真实画像完成：5行、4列；正在理解分析需求。",
+        "plan_version": null,
+        "created_at": "2026-10-27T10:50:52.979405+00:00"
+      },
+      {
+        "id": "146524f7b80445a2a3f49ed0c0944108",
+        "role": "assistant",
+        "kind": "status",
+        "content": "需求已理解，正在生成受控分析计划。",
+        "plan_version": null,
+        "created_at": "2026-10-27T10:50:58.050377+00:00"
+      },
+      {
+        "id": "a406fe3daa044ebb9f5ff812f435fe15",
+        "role": "assistant",
+        "kind": "plan",
+        "content": "真实计划已保存，目标覆盖：complete。请审核任务、未满足需求和约束；批准前不会计算。",
+        "plan_version": 1,
+        "created_at": "2026-10-27T10:51:04.679965+00:00"
+      }
+    ],
+    "review_plan": {
+      "session_id": "3adbd78f875d4aae98630d147d60f00a",
+      "plan_id": "plan_bf99344ddb594910850ae3607f30565b",
+      "plan_version": 1,
+      "dataset_id": "2dd4617e774e4aaf8ed886a2c5685e45",
+      "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+      "validation_version": "1.0",
+      "created_at": "2026-10-27T10:51:04.679739+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "2dd4617e774e4aaf8ed886a2c5685e45",
+          "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+          "plan_id": "plan_bf99344ddb594910850ae3607f30565b",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T01",
+              "title": "2026年在招岗位按城市招聘人数总和Top3",
+              "business_question": "统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三。",
+              "priority": "P0",
+              "priority_reason": "删除后无法回答核心决策问题（2026年在招岗位各城市招聘规模排名），直接支持业务目标。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03",
+                "C04",
+                "C05"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "derive",
+                  "params": {
+                    "function": "extract_year",
+                    "field": "field_0001",
+                    "alias": "year_2026"
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "year_2026",
+                        "operator": "eq",
+                        "value": 2026
+                      },
+                      {
+                        "field": "field_0003",
+                        "operator": "eq",
+                        "value": "在招"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S03",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0004",
+                        "alias": "total_hired_count"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0002"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S04",
+                  "operation": "sort",
+                  "params": {
+                    "field": "total_hired_count",
+                    "direction": "desc"
+                  }
+                },
+                {
+                  "step_id": "S05",
+                  "operation": "top_n",
+                  "params": {
+                    "field": "total_hired_count",
+                    "direction": "desc",
+                    "n": 3
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "time_range：只看2026年发布"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "filters：岗位状态为在招"
+            },
+            {
+              "requirement_id": "C04",
+              "description": "metric_requirements：招聘人数总和"
+            },
+            {
+              "requirement_id": "C05",
+              "description": "analysis_limits：按城市汇总；按招聘人数降序排名；取前三名"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T01",
+            "feasibility": "F1",
+            "reason_code": "REQUIRES_TRANSFORMATION",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "2dd4617e774e4aaf8ed886a2c5685e45",
+          "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "2026年在招岗位按城市汇总的招聘人数总和",
+            "business_goal": "统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": {
+              "raw_text": "只看2026年发布",
+              "validation_status": "unverified"
+            },
+            "filters": [
+              {
+                "raw_text": "岗位状态为在招",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "招聘人数总和",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按城市汇总",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "按招聘人数降序排名",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "取前三名",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "review_status": "awaiting_review",
+    "engine_approval": null,
+    "engine_execution_ids": [],
+    "execution_result": null,
+    "report": null,
+    "error": null
+  },
+  "view": {
+    "session_id": "3adbd78f875d4aae98630d147d60f00a",
+    "revision": 8,
+    "plan_id": "plan_bf99344ddb594910850ae3607f30565b",
+    "plan_version": 1,
+    "goal": "统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三",
+    "coverage": "已安排核心问题的分析",
+    "conditions": [
+      {
+        "label": "时间范围",
+        "text": "只看2026年发布",
+        "verification": "需要解决后才能开始",
+        "source": "intent.constraints.time_range"
+      },
+      {
+        "label": "筛选范围",
+        "text": "岗位状态为在招",
+        "verification": "已核对分析步骤",
+        "source": "intent.constraints.filters[0]"
+      },
+      {
+        "label": "统计指标",
+        "text": "招聘人数总和",
+        "verification": "已核对分析步骤",
+        "source": "intent.constraints.metric_requirements[0]"
+      },
+      {
+        "label": "分析要求",
+        "text": "按城市汇总",
+        "verification": "已核对分析步骤",
+        "source": "intent.constraints.analysis_limits[0]"
+      },
+      {
+        "label": "分析要求",
+        "text": "按招聘人数降序排名",
+        "verification": "已核对分析步骤",
+        "source": "intent.constraints.analysis_limits[1]"
+      },
+      {
+        "label": "分析要求",
+        "text": "取前三名",
+        "verification": "已核对分析步骤",
+        "source": "intent.constraints.analysis_limits[2]"
+      },
+      {
+        "label": "拟用分组维度",
+        "text": "按城市分组",
+        "verification": "来自当前方案，请结合待确认事项核对",
+        "source": "plan.tasks.T01.steps.S03"
+      },
+      {
+        "label": "拟用统计口径",
+        "text": "拟用统计口径：招聘人数 · 合计",
+        "verification": "来自当前方案，请结合待确认事项核对",
+        "source": "plan.tasks.T01.steps.S03"
+      },
+      {
+        "label": "拟用排序与展示",
+        "text": "按招聘人数 · 合计从高到低排列",
+        "verification": "来自当前方案，请结合待确认事项核对",
+        "source": "plan.tasks.T01.steps.S04"
+      },
+      {
+        "label": "拟用排序与展示",
+        "text": "按招聘人数 · 合计从高到低排列，取前 3 名",
+        "verification": "来自当前方案，请结合待确认事项核对",
+        "source": "plan.tasks.T01.steps.S05"
+      }
+    ],
+    "directions": [
+      {
+        "task_id": "T01",
+        "title": "2026年在招岗位按城市招聘人数总和Top3",
+        "question": "统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三。",
+        "importance": "核心分析",
+        "reason": "删除后无法回答核心决策问题（2026年在招岗位各城市招聘规模排名），直接支持业务目标。",
+        "readiness": "完成已支持的数据转换后可分析",
+        "executable": true,
+        "details": [
+          "从发布日期提取年份，再分析",
+          "发布日期的年份 为 2026",
+          "岗位状态 为 在招",
+          "按城市分组",
+          "拟用统计口径：招聘人数 · 合计",
+          "按招聘人数 · 合计从高到低排列",
+          "按招聘人数 · 合计从高到低排列，取前 3 名"
+        ],
+        "gaps": [],
+        "can_remove": true
+      }
+    ],
+    "issues": [
+      {
+        "code": "UNVERIFIED_CONSTRAINTS",
+        "message": "只看2026年发布：尚不能可靠对应到唯一字段和完整统计条件；请在新需求中明确字段、取值或口径。",
+        "next_step": "请明确字段、范围或口径后重新提出需求；勾选不能解除此问题。"
+      },
+      {
+        "code": "UNVERIFIED_CONSTRAINTS",
+        "message": "2026年在招岗位按城市招聘人数总和Top3：计划中有尚未与需求完整核对的筛选、截取、分组或多次汇总，当前不能证明范围一致。",
+        "next_step": "请明确字段、范围或口径后重新提出需求；勾选不能解除此问题。"
+      }
+    ],
+    "warnings": [],
+    "can_approve": false,
+    "can_execute": false,
+    "audit": {
+      "audit_version": "2.0",
+      "binding": {
+        "dataset_id": "2dd4617e774e4aaf8ed886a2c5685e45",
+        "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+        "plan_id": "plan_bf99344ddb594910850ae3607f30565b",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "c346c99870be26886a7c21e06fd1b0f82a61cc8b2a9d7361699d94826bbff782",
+      "all_verified": false,
+      "items": [
+        {
+          "source": "intent.constraints.time_range",
+          "raw_text": "只看2026年发布",
+          "status": "unmapped",
+          "category": "time_range",
+          "message": "尚不能可靠对应到唯一字段和完整统计条件；请在新需求中明确字段、取值或口径。",
+          "field_ids": [],
+          "matches": []
+        },
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "岗位状态为在招",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S02",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0003",
+                "operator": "eq",
+                "value": "在招"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "招聘人数总和",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S03",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "sum",
+                "field": "field_0004",
+                "alias": "total_hired_count"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "按城市汇总",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0002"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S03",
+              "operation": "group_aggregate",
+              "dimension": "field_0002"
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[1]",
+          "raw_text": "按招聘人数降序排名",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S05",
+              "operation": "top_n",
+              "metric": {
+                "function": "sum",
+                "field": "field_0004",
+                "alias": "total_hired_count"
+              },
+              "params": {
+                "field": "total_hired_count",
+                "direction": "desc",
+                "n": 3
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[2]",
+          "raw_text": "取前三名",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S05",
+              "operation": "top_n",
+              "metric": {
+                "function": "sum",
+                "field": "field_0004",
+                "alias": "total_hired_count"
+              },
+              "params": {
+                "field": "total_hired_count",
+                "direction": "desc",
+                "n": 3
+              }
+            }
+          ]
+        },
+        {
+          "source": "plan.tasks.T01",
+          "raw_text": "2026年在招岗位按城市招聘人数总和Top3",
+          "status": "mismatch",
+          "category": "scope",
+          "message": "计划中有尚未与需求完整核对的筛选、截取、分组或多次汇总，当前不能证明范围一致。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S02"
+            }
+          ]
+        }
+      ]
+    },
+    "technical_details": {
+      "record": {
+        "session_id": "3adbd78f875d4aae98630d147d60f00a",
+        "plan_id": "plan_bf99344ddb594910850ae3607f30565b",
+        "plan_version": 1,
+        "dataset_id": "2dd4617e774e4aaf8ed886a2c5685e45",
+        "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+        "validation_version": "1.0",
+        "created_at": "2026-10-27T10:51:04.679739+00:00",
+        "change_type": "created",
+        "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+        "validated_plan": {
+          "plan": {
+            "dataset_id": "2dd4617e774e4aaf8ed886a2c5685e45",
+            "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+            "plan_id": "plan_bf99344ddb594910850ae3607f30565b",
+            "plan_version": 1,
+            "tasks": [
+              {
+                "task_id": "T01",
+                "title": "2026年在招岗位按城市招聘人数总和Top3",
+                "business_question": "统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三。",
+                "priority": "P0",
+                "priority_reason": "删除后无法回答核心决策问题（2026年在招岗位各城市招聘规模排名），直接支持业务目标。",
+                "requirement_ids": [
+                  "C01",
+                  "C02",
+                  "C03",
+                  "C04",
+                  "C05"
+                ],
+                "depends_on": [],
+                "missing_inputs": [],
+                "steps": [
+                  {
+                    "step_id": "S01",
+                    "operation": "derive",
+                    "params": {
+                      "function": "extract_year",
+                      "field": "field_0001",
+                      "alias": "year_2026"
+                    }
+                  },
+                  {
+                    "step_id": "S02",
+                    "operation": "filter",
+                    "params": {
+                      "conditions": [
+                        {
+                          "field": "year_2026",
+                          "operator": "eq",
+                          "value": 2026
+                        },
+                        {
+                          "field": "field_0003",
+                          "operator": "eq",
+                          "value": "在招"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "step_id": "S03",
+                    "operation": "group_aggregate",
+                    "params": {
+                      "metrics": [
+                        {
+                          "function": "sum",
+                          "field": "field_0004",
+                          "alias": "total_hired_count"
+                        }
+                      ],
+                      "dimensions": [
+                        "field_0002"
+                      ]
+                    }
+                  },
+                  {
+                    "step_id": "S04",
+                    "operation": "sort",
+                    "params": {
+                      "field": "total_hired_count",
+                      "direction": "desc"
+                    }
+                  },
+                  {
+                    "step_id": "S05",
+                    "operation": "top_n",
+                    "params": {
+                      "field": "total_hired_count",
+                      "direction": "desc",
+                      "n": 3
+                    }
+                  }
+                ]
+              }
+            ],
+            "core_requirements": [
+              {
+                "requirement_id": "C01",
+                "description": "统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三"
+              },
+              {
+                "requirement_id": "C02",
+                "description": "time_range：只看2026年发布"
+              },
+              {
+                "requirement_id": "C03",
+                "description": "filters：岗位状态为在招"
+              },
+              {
+                "requirement_id": "C04",
+                "description": "metric_requirements：招聘人数总和"
+              },
+              {
+                "requirement_id": "C05",
+                "description": "analysis_limits：按城市汇总；按招聘人数降序排名；取前三名"
+              }
+            ]
+          },
+          "validation_results": [
+            {
+              "task_id": "T01",
+              "feasibility": "F1",
+              "reason_code": "REQUIRES_TRANSFORMATION",
+              "validation_issues": [],
+              "executable": true
+            }
+          ],
+          "unmet_core_requirements": [],
+          "coverage_status": "complete",
+          "executable_task_ids": [
+            "T01"
+          ],
+          "blocked_task_ids": [],
+          "fully_executable": true,
+          "validation_version": "1.0",
+          "registry_version": "1.0",
+          "approval_required": true,
+          "llm": null,
+          "provenance": {
+            "source": "uploaded",
+            "dataset": "2dd4617e774e4aaf8ed886a2c5685e45",
+            "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+            "plan_version": 1,
+            "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+          },
+          "intent_snapshot": {
+            "analysis_mode": "goal_driven",
+            "next_action": "proceed",
+            "analysis_goal": {
+              "analysis_object": "2026年在招岗位按城市汇总的招聘人数总和",
+              "business_goal": "统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三",
+              "decision_goal": null
+            },
+            "constraints": {
+              "time_range": {
+                "raw_text": "只看2026年发布",
+                "validation_status": "unverified"
+              },
+              "filters": [
+                {
+                  "raw_text": "岗位状态为在招",
+                  "validation_status": "unverified"
+                }
+              ],
+              "metric_requirements": [
+                {
+                  "raw_text": "招聘人数总和",
+                  "validation_status": "unverified"
+                }
+              ],
+              "analysis_limits": [
+                {
+                  "raw_text": "按城市汇总",
+                  "validation_status": "unverified"
+                },
+                {
+                  "raw_text": "按招聘人数降序排名",
+                  "validation_status": "unverified"
+                },
+                {
+                  "raw_text": "取前三名",
+                  "validation_status": "unverified"
+                }
+              ]
+            },
+            "uncertainties": [],
+            "clarification_questions": []
+          }
+        }
+      },
+      "constraint_audit": {
+        "audit_version": "2.0",
+        "binding": {
+          "dataset_id": "2dd4617e774e4aaf8ed886a2c5685e45",
+          "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+          "plan_id": "plan_bf99344ddb594910850ae3607f30565b",
+          "plan_version": 1,
+          "validation_version": "1.0",
+          "registry_version": "1.0"
+        },
+        "digest": "c346c99870be26886a7c21e06fd1b0f82a61cc8b2a9d7361699d94826bbff782",
+        "all_verified": false,
+        "items": [
+          {
+            "source": "intent.constraints.time_range",
+            "raw_text": "只看2026年发布",
+            "status": "unmapped",
+            "category": "time_range",
+            "message": "尚不能可靠对应到唯一字段和完整统计条件；请在新需求中明确字段、取值或口径。",
+            "field_ids": [],
+            "matches": []
+          },
+          {
+            "source": "intent.constraints.filters[0]",
+            "raw_text": "岗位状态为在招",
+            "status": "verified",
+            "category": "filters",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0003"
+            ],
+            "matches": [
+              {
+                "task_id": "T01",
+                "step_id": "S02",
+                "operation": "filter",
+                "condition": {
+                  "field": "field_0003",
+                  "operator": "eq",
+                  "value": "在招"
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.metric_requirements[0]",
+            "raw_text": "招聘人数总和",
+            "status": "verified",
+            "category": "metric_requirements",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0004"
+            ],
+            "matches": [
+              {
+                "task_id": "T01",
+                "step_id": "S03",
+                "operation": "group_aggregate",
+                "metric": {
+                  "function": "sum",
+                  "field": "field_0004",
+                  "alias": "total_hired_count"
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.analysis_limits[0]",
+            "raw_text": "按城市汇总",
+            "status": "verified",
+            "category": "analysis_limits",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0002"
+            ],
+            "matches": [
+              {
+                "task_id": "T01",
+                "step_id": "S03",
+                "operation": "group_aggregate",
+                "dimension": "field_0002"
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.analysis_limits[1]",
+            "raw_text": "按招聘人数降序排名",
+            "status": "verified",
+            "category": "analysis_limits",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0004"
+            ],
+            "matches": [
+              {
+                "task_id": "T01",
+                "step_id": "S05",
+                "operation": "top_n",
+                "metric": {
+                  "function": "sum",
+                  "field": "field_0004",
+                  "alias": "total_hired_count"
+                },
+                "params": {
+                  "field": "total_hired_count",
+                  "direction": "desc",
+                  "n": 3
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.analysis_limits[2]",
+            "raw_text": "取前三名",
+            "status": "verified",
+            "category": "analysis_limits",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [],
+            "matches": [
+              {
+                "task_id": "T01",
+                "step_id": "S05",
+                "operation": "top_n",
+                "metric": {
+                  "function": "sum",
+                  "field": "field_0004",
+                  "alias": "total_hired_count"
+                },
+                "params": {
+                  "field": "total_hired_count",
+                  "direction": "desc",
+                  "n": 3
+                }
+              }
+            ]
+          },
+          {
+            "source": "plan.tasks.T01",
+            "raw_text": "2026年在招岗位按城市招聘人数总和Top3",
+            "status": "mismatch",
+            "category": "scope",
+            "message": "计划中有尚未与需求完整核对的筛选、截取、分组或多次汇总，当前不能证明范围一致。",
+            "field_ids": [],
+            "matches": [
+              {
+                "task_id": "T01",
+                "step_id": "S02"
+              }
+            ]
+          }
+        ]
+      },
+      "session_status": "AWAITING_APPROVAL",
+      "revision": 8
+    }
+  },
+  "approvals": [],
+  "constraint_audits": [],
+  "executions": []
+}

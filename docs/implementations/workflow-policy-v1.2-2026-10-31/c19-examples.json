@@ -1,0 +1,71 @@
+{
+  "synthetic_business_facts": true,
+  "precommit_authorization": {
+    "decision": "allow",
+    "reason_code": "POLICY_ALLOWED",
+    "action": "execute",
+    "policy_scope": "native_v1.2",
+    "command_id": "C19-A",
+    "expected_transition": {
+      "owner": "generation",
+      "source": "generating",
+      "target": "completed"
+    },
+    "required_evidence": [
+      "未来业务事务原子提交Report、ReportGeneration、归属链接及提交元数据；此处仅授权尝试事务"
+    ],
+    "replay_ref": null,
+    "detail_fields": []
+  },
+  "ack_lost_durable_commit": {
+    "status": "accepted",
+    "accepted": true,
+    "reason_code": "COMMIT_PERSISTED",
+    "report_id": "report-1",
+    "committed_revision": 8
+  },
+  "postcommit_observation": {
+    "decision": "allow",
+    "reason_code": "POLICY_OBSERVATION_ALLOWED",
+    "action": "observe",
+    "policy_scope": "native_v1.2",
+    "command_id": "C19-B",
+    "expected_transition": {
+      "owner": "span",
+      "source": "running",
+      "target": "complete"
+    },
+    "required_evidence": [
+      "只允许对应report_persistence Span完成；不得改业务事实、Root或其他Span；终态相同完成只读幂等"
+    ],
+    "replay_ref": null,
+    "detail_fields": []
+  },
+  "no_read_no_assumption": {
+    "status": "unknown",
+    "accepted": null,
+    "reason_code": "COMMIT_READ_UNCONFIRMED",
+    "report_id": null,
+    "committed_revision": null
+  },
+  "interrupted_trace_still_business_success": {
+    "commit": {
+      "status": "accepted",
+      "accepted": true,
+      "reason_code": "COMMIT_PERSISTED",
+      "report_id": "report-1",
+      "committed_revision": 8
+    },
+    "observation": {
+      "decision": "deny",
+      "reason_code": "POLICY_OBSERVATION_TERMINAL",
+      "action": "none",
+      "policy_scope": "native_v1.2",
+      "command_id": "C19-B",
+      "expected_transition": null,
+      "required_evidence": [],
+      "replay_ref": null,
+      "detail_fields": []
+    }
+  }
+}

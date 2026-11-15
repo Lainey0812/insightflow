@@ -1,0 +1,691 @@
+{
+  "workflow_id": "wf_9d01f5847cd443f282f0bb7f94df065b",
+  "root_run_id": "run_7f45197d9a344f66ba178321aca3a6dc",
+  "id": "5bfcdaa341af4030b7f8ab2004886933",
+  "title": "只看本科岗位，按城市比较薪资元的中位数。",
+  "status": "AWAITING_APPROVAL",
+  "revision": 8,
+  "created_at": "2026-11-05T04:16:25.674361+00:00",
+  "updated_at": "2026-11-05T04:16:34.944286+00:00",
+  "data_source": "uploaded",
+  "workflow_kind": "real_v1",
+  "profile_options": {
+    "header_row": 1,
+    "sheet_name": null,
+    "encoding": "utf-8-sig",
+    "delimiter": ","
+  },
+  "planner_result": {
+    "plan": {
+      "dataset_id": "0ef3be7b31984c3cbea799db410b1467",
+      "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+      "plan_id": "plan_fdf41bce9e6642f8b6ae783540842f2c",
+      "plan_version": 1,
+      "tasks": [
+        {
+          "task_id": "T1",
+          "title": "本科岗位各城市薪资中位数比较",
+          "business_question": "只看本科岗位，按城市比较薪资元的中位数是多少？",
+          "priority": "P0",
+          "priority_reason": "直接回答核心业务目标：在限定学历为本科的前提下，对比不同城市的薪资中位数水平。删除此任务将无法完成核心分析。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "field_0002",
+                    "operator": "eq",
+                    "value": "本科"
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "median",
+                    "field": "field_0003",
+                    "alias": "salary_median"
+                  }
+                ],
+                "dimensions": [
+                  "field_0001"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "只看本科岗位，按城市比较薪资元的中位数"
+        },
+        {
+          "requirement_id": "C02",
+          "description": "filters：只看本科岗位"
+        },
+        {
+          "requirement_id": "C03",
+          "description": "metric_requirements：薪资元的中位数"
+        }
+      ]
+    },
+    "validation_results": [
+      {
+        "task_id": "T1",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      }
+    ],
+    "unmet_core_requirements": [],
+    "coverage_status": "complete",
+    "executable_task_ids": [
+      "T1"
+    ],
+    "blocked_task_ids": [],
+    "fully_executable": true,
+    "validation_version": "1.0",
+    "registry_version": "1.0",
+    "approval_required": true,
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "0ef3be7b31984c3cbea799db410b1467",
+      "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+      "plan_version": 1,
+      "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+    },
+    "intent_snapshot": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "本科岗位薪资元的中位数",
+        "business_goal": "只看本科岗位，按城市比较薪资元的中位数",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [
+          {
+            "raw_text": "只看本科岗位",
+            "validation_status": "unverified"
+          }
+        ],
+        "metric_requirements": [
+          {
+            "raw_text": "薪资元的中位数",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    }
+  },
+  "workflow_events": [
+    {
+      "status": "CREATED",
+      "recorded_at": "2026-11-05T04:16:25.675285+00:00"
+    },
+    {
+      "status": "PROFILING",
+      "recorded_at": "2026-11-05T04:16:25.721310+00:00"
+    },
+    {
+      "status": "PARSING_INTENT",
+      "recorded_at": "2026-11-05T04:16:25.730158+00:00"
+    },
+    {
+      "status": "PLANNING",
+      "recorded_at": "2026-11-05T04:16:29.162350+00:00"
+    },
+    {
+      "status": "VALIDATING",
+      "recorded_at": "2026-11-05T04:16:34.934552+00:00"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "recorded_at": "2026-11-05T04:16:34.944140+00:00"
+    }
+  ],
+  "file": {
+    "id": "0ef3be7b31984c3cbea799db410b1467",
+    "name": "recruitment.csv",
+    "size": 194,
+    "extension": ".csv",
+    "content_sha256": "095cc2df2cdfa05fdc9384e7526c2138166cd500f0069e3e50d8ba9cc82e43c3"
+  },
+  "user_goal": "只看本科岗位，按城市比较薪资元的中位数。",
+  "analysis_mode": "goal_driven",
+  "intent": {
+    "analysis_mode": "goal_driven",
+    "next_action": "proceed",
+    "analysis_goal": {
+      "analysis_object": "本科岗位薪资元的中位数",
+      "business_goal": "只看本科岗位，按城市比较薪资元的中位数",
+      "decision_goal": null
+    },
+    "constraints": {
+      "time_range": null,
+      "filters": [
+        {
+          "raw_text": "只看本科岗位",
+          "validation_status": "unverified"
+        }
+      ],
+      "metric_requirements": [
+        {
+          "raw_text": "薪资元的中位数",
+          "validation_status": "unverified"
+        }
+      ],
+      "analysis_limits": []
+    },
+    "uncertainties": [],
+    "clarification_questions": [],
+    "user_query": "只看本科岗位，按城市比较薪资元的中位数。",
+    "clarification_answers": [],
+    "dataset_ref": {
+      "dataset_id": "0ef3be7b31984c3cbea799db410b1467",
+      "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b"
+    },
+    "parse_origin": "llm",
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "0ef3be7b31984c3cbea799db410b1467",
+      "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+      "plan_version": null,
+      "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+    },
+    "parser_version": "1.1",
+    "prompt_version": "intent-v1.3.3",
+    "llm_attempts": 1,
+    "parse_id": "0fed3dc88d3f4acb94f9d912abd7e94f"
+  },
+  "intent_history": [
+    {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "本科岗位薪资元的中位数",
+        "business_goal": "只看本科岗位，按城市比较薪资元的中位数",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [
+          {
+            "raw_text": "只看本科岗位",
+            "validation_status": "unverified"
+          }
+        ],
+        "metric_requirements": [
+          {
+            "raw_text": "薪资元的中位数",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "只看本科岗位，按城市比较薪资元的中位数。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "0ef3be7b31984c3cbea799db410b1467",
+        "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "0ef3be7b31984c3cbea799db410b1467",
+        "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "0fed3dc88d3f4acb94f9d912abd7e94f"
+    }
+  ],
+  "clarification_answers": [],
+  "profile": {
+    "dataset_id": "0ef3be7b31984c3cbea799db410b1467",
+    "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+    "schema_version": "1.0",
+    "profiler_version": "1.1.0",
+    "content_sha256": "095cc2df2cdfa05fdc9384e7526c2138166cd500f0069e3e50d8ba9cc82e43c3",
+    "file_name": "recruitment.csv",
+    "file_format": "csv",
+    "sheet_name": null,
+    "available_sheets": [],
+    "options": {
+      "header_row": 1,
+      "sheet_name": null,
+      "encoding": "utf-8-sig",
+      "delimiter": ","
+    },
+    "row_count": 5,
+    "column_count": 4,
+    "total_cell_count": 20,
+    "missing_cell_count": 1,
+    "missing_cell_rate": 0.05,
+    "duplicate_row_count": 0,
+    "duplicate_row_rate": 0.0,
+    "fields": [
+      {
+        "field_id": "field_0001",
+        "position": 1,
+        "original_name": "城市",
+        "display_name": "城市",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 5,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 5
+        },
+        "logical_type_counts": {
+          "text": 5
+        },
+        "samples": [
+          {
+            "value": "苏州",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "无锡",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "常州",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0002",
+        "position": 2,
+        "original_name": "学历",
+        "display_name": "学历",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 5,
+        "unique_count": 2,
+        "physical_type_counts": {
+          "string": 5
+        },
+        "logical_type_counts": {
+          "text": 5
+        },
+        "samples": [
+          {
+            "value": "本科",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "硕士",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0003",
+        "position": 3,
+        "original_name": "薪资元",
+        "display_name": "薪资元",
+        "physical_type": "string",
+        "logical_type": "integer",
+        "missing_count": 1,
+        "missing_rate": 0.2,
+        "non_missing_count": 4,
+        "unique_count": 4,
+        "physical_type_counts": {
+          "string": 4
+        },
+        "logical_type_counts": {
+          "integer": 4
+        },
+        "samples": [
+          {
+            "value": "20000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "24000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "18000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "36000",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0004",
+        "position": 4,
+        "original_name": "岗位名称",
+        "display_name": "岗位名称",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 5,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 5
+        },
+        "logical_type_counts": {
+          "text": 5
+        },
+        "samples": [
+          {
+            "value": "产品经理",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "运营经理",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "研究员",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      }
+    ],
+    "quality_issues": [],
+    "provenance": {
+      "source": "uploaded",
+      "dataset": "0ef3be7b31984c3cbea799db410b1467",
+      "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+      "plan_version": null,
+      "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+    }
+  },
+  "dataset_ref": {
+    "dataset_id": "0ef3be7b31984c3cbea799db410b1467",
+    "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b"
+  },
+  "plans": [],
+  "current_plan_version": 1,
+  "approved_plan_version": null,
+  "node_runs": [
+    {
+      "run_id": "02a1ef1449d840d3aa26507dd57225f5",
+      "node_name": "data_profiler",
+      "status": "success",
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "0ef3be7b31984c3cbea799db410b1467",
+        "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+        "plan_version": null,
+        "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+      },
+      "error": null,
+      "finished_at": "2026-11-05T04:16:25.727271+00:00"
+    },
+    {
+      "run_id": "d315b55ece7041aaa357cbf14055a6f0",
+      "node_name": "intent_parser",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "0ef3be7b31984c3cbea799db410b1467",
+        "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "error": null,
+      "finished_at": "2026-11-05T04:16:29.159375+00:00"
+    },
+    {
+      "run_id": "481c6dab73844b3cb00d57e1386279dd",
+      "node_name": "analysis_planner_v1",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "0ef3be7b31984c3cbea799db410b1467",
+        "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "error": null,
+      "finished_at": "2026-11-05T04:16:34.928569+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "id": "1cc78cc3534a45e2a8ed8192a597d4a5",
+      "role": "user",
+      "kind": "text",
+      "content": "只看本科岗位，按城市比较薪资元的中位数。",
+      "plan_version": null,
+      "created_at": "2026-11-05T04:16:25.674344+00:00"
+    },
+    {
+      "id": "c912d6b905a94f8d83867cd0da05281e",
+      "role": "assistant",
+      "kind": "status",
+      "content": "正在解析上传文件并计算真实数据画像。",
+      "plan_version": null,
+      "created_at": "2026-11-05T04:16:25.721302+00:00"
+    },
+    {
+      "id": "df2ee2b8543249a290d8f3f32cdd4805",
+      "role": "assistant",
+      "kind": "status",
+      "content": "真实画像完成：5行、4列；正在理解分析需求。",
+      "plan_version": null,
+      "created_at": "2026-11-05T04:16:25.730154+00:00"
+    },
+    {
+      "id": "07207d97a3064d53a5e12c20b213ad42",
+      "role": "assistant",
+      "kind": "status",
+      "content": "需求已理解，正在生成受控分析计划。",
+      "plan_version": null,
+      "created_at": "2026-11-05T04:16:29.162346+00:00"
+    },
+    {
+      "id": "d4fcb7ab995f4980a086db0ac5f63745",
+      "role": "assistant",
+      "kind": "plan",
+      "content": "真实计划已保存，目标覆盖：complete。请审核任务、未满足需求和约束；批准前不会计算。",
+      "plan_version": 1,
+      "created_at": "2026-11-05T04:16:34.944132+00:00"
+    }
+  ],
+  "review_plan": {
+    "session_id": "5bfcdaa341af4030b7f8ab2004886933",
+    "plan_id": "plan_fdf41bce9e6642f8b6ae783540842f2c",
+    "plan_version": 1,
+    "dataset_id": "0ef3be7b31984c3cbea799db410b1467",
+    "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+    "validation_version": "1.0",
+    "created_at": "2026-11-05T04:16:34.943994+00:00",
+    "change_type": "created",
+    "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "0ef3be7b31984c3cbea799db410b1467",
+        "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+        "plan_id": "plan_fdf41bce9e6642f8b6ae783540842f2c",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "本科岗位各城市薪资中位数比较",
+            "business_question": "只看本科岗位，按城市比较薪资元的中位数是多少？",
+            "priority": "P0",
+            "priority_reason": "直接回答核心业务目标：在限定学历为本科的前提下，对比不同城市的薪资中位数水平。删除此任务将无法完成核心分析。",
+            "requirement_ids": [
+              "C01",
+              "C02",
+              "C03"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "filter",
+                "params": {
+                  "conditions": [
+                    {
+                      "field": "field_0002",
+                      "operator": "eq",
+                      "value": "本科"
+                    }
+                  ]
+                }
+              },
+              {
+                "step_id": "S2",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "median",
+                      "field": "field_0003",
+                      "alias": "salary_median"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0001"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "只看本科岗位，按城市比较薪资元的中位数"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "filters：只看本科岗位"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "metric_requirements：薪资元的中位数"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T1"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "0ef3be7b31984c3cbea799db410b1467",
+        "dataset_version": "400dabe3afbc3d92efe38b95863e60c7adcc878dc0b80fed6820d3d8af39cf4b",
+        "plan_version": 1,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "本科岗位薪资元的中位数",
+          "business_goal": "只看本科岗位，按城市比较薪资元的中位数",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [
+            {
+              "raw_text": "只看本科岗位",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "薪资元的中位数",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    }
+  },
+  "review_status": "awaiting_review",
+  "engine_approval": null,
+  "engine_execution_ids": [],
+  "report_generations": [],
+  "execution_result": null,
+  "report": null,
+  "error": null
+}

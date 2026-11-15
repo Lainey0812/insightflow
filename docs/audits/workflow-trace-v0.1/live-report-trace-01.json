@@ -1,0 +1,486 @@
+{
+  "scope": "real ReportWorkflow + real report LLM; upstream Intent/Planner are labelled test fixtures",
+  "input": "synthetic six-row CSV from test_report_workflow.SALES",
+  "model_calls": [
+    {
+      "purpose": "report_insights_v1",
+      "model": "qwen3.8-flash",
+      "status": "returned",
+      "is_mock": false,
+      "provider": "compatible",
+      "duration_ms": 8418.627750012092
+    }
+  ],
+  "engine_values": {
+    "济南": 21250,
+    "南京": 20250,
+    "上海": 5760
+  },
+  "engine_status": "success",
+  "report_generation": {
+    "execution_id": "exec_8c9d931ff04048c3ada7140b1e4fd553",
+    "session_id": "ee6d1aa0dffc43c0a478f35a14c93018",
+    "status": "failed",
+    "attempt": 1,
+    "report_id": null,
+    "error": {
+      "code": "REPORT_UNVERIFIED_FACT",
+      "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+      "node_name": null,
+      "retryable": true,
+      "details": {
+        "rule": "FREE_TEXT_GUARD",
+        "role": "implication",
+        "text": "前两名城市之间的销售额差额值得结合订单规模和结构评估，目前不足以判断经营表现差异的具体成因。",
+        "matches": {
+          "NUMERIC": "两名"
+        },
+        "rejected_candidates": [
+          {
+            "candidate_index": 0,
+            "primary_evidence_id": "E0007",
+            "error_code": "REPORT_UNVERIFIED_FACT",
+            "details": {
+              "rule": "FREE_TEXT_GUARD",
+              "role": "implication",
+              "triggered_rules": [
+                "NUMERIC"
+              ]
+            }
+          },
+          {
+            "candidate_index": 1,
+            "primary_evidence_id": "E0010",
+            "error_code": "REPORT_UNVERIFIED_FACT",
+            "details": {
+              "rule": "FREE_TEXT_GUARD",
+              "role": "implication",
+              "triggered_rules": [
+                "NUMERIC"
+              ]
+            }
+          },
+          {
+            "candidate_index": 2,
+            "primary_evidence_id": "E0011",
+            "error_code": "REPORT_UNVERIFIED_FACT",
+            "details": {
+              "rule": "FREE_TEXT_GUARD",
+              "role": "implication",
+              "triggered_rules": [
+                "UNSUPPORTED_ASSERTION"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "queued_at": "2026-10-28T06:36:11.084874+00:00",
+    "started_at": "2026-10-28T06:36:11.088934+00:00",
+    "finished_at": "2026-10-28T06:36:19.537334+00:00"
+  },
+  "api_examples": {
+    "list": {
+      "items": [
+        {
+          "run_id": "run_9e03ec1674bb4308aa3b95de8918086d",
+          "kind": "report_generation",
+          "session_id": "ee6d1aa0dffc43c0a478f35a14c93018",
+          "execution_id": "exec_8c9d931ff04048c3ada7140b1e4fd553",
+          "attempt": 1,
+          "retry_of_run_id": null,
+          "owner_instance": "3661284c154e493bb3de354e076b56c0",
+          "status": "failed",
+          "queued_at": "2026-10-28T06:36:11.084874+00:00",
+          "started_at": "2026-10-28T06:36:11.090040+00:00",
+          "finished_at": "2026-10-28T06:36:19.540004+00:00",
+          "recovered_at": null,
+          "duration_ms": 8449.928624992026,
+          "report_id": null,
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "integrity": "observed",
+          "manifest": {
+            "schema_version": "workflow-trace-v0.1",
+            "bindings": {
+              "session_id": "ee6d1aa0dffc43c0a478f35a14c93018",
+              "execution_id": "exec_8c9d931ff04048c3ada7140b1e4fd553",
+              "approval_id": "approval_967d631f5402485e805e3c4f4bfef67d",
+              "dataset_id": "78368a1a251840669c774ac36110acab",
+              "dataset_version": "6ec820124aef0a8f2632c1e73de692762035fe1f8186cdd795f9387273b21283",
+              "plan_id": "plan_3761da2dbdfa4aff8292b8668f32fb84",
+              "plan_version": 1
+            },
+            "versions": {
+              "prompt_version": "report-insights-v1.1.9",
+              "generation_version": "evidence-composition-v1.1.1",
+              "schema_version": "analysis-report-v1",
+              "validation_version": "1.0",
+              "registry_version": "1.0"
+            },
+            "model_config_snapshot": {
+              "provider": "LiveReportProvider",
+              "model": "qwen3.8-flash",
+              "timeout_seconds": 30.0,
+              "enable_thinking": false,
+              "temperature": null,
+              "top_p": null,
+              "usage": null
+            },
+            "source_sha256": {
+              "services/analysis_report.py": "b4e705305b1d9f272a8678cf68b407fc88180f4e4fda0d6dc7b4bcc90c2945f2",
+              "workflow/reporting.py": "1c5708ffc8fc532ddaaa5fe645a139544f8cc20105c8b53f547f87017aad20c1",
+              "reporting/evidence.py": "c9552c289b29431aeb4a9d84f47587e1481cbce8df76a6a2558dc34625ad81e5",
+              "reporting/fact_validation.py": "36e3c11ea8f1b55baa6428353093a2776aa8b64c859338f7477590ec5590d557",
+              "reporting/claims.py": "1280609b0cb12d055a9239fa7237f4b43a9ef5cfccb3224fbb169235c6b4efdf",
+              "reporting/prompt.py": "f441fb6e51270f1f8b70079ff70b94b434add8728b29a668e7f7f054f06e5871",
+              "reporting/selection.py": "c619f620a1ffa2668eadd34f9bd16eb1200db77f91228334e6380f4c1e839eac",
+              "reporting/contracts.py": "6ddf2cda4ffee79a5cebbc3098d018c3d6aa6f9117fc63266c2b23e678000dc6",
+              "reporting/visualization.py": "4fa55e20d5c26615d898492a32905b8a471bebb55266f2bb6f408a5df36ff052",
+              "domain/analysis_report.py": "fcc866fb335223e4414a95447b3f7fd7f21cfe8d3d6b787205a8b00583dd507d",
+              "domain/tracing.py": "2b4931a83fcc2a8711c6b621da67ee5aca49510ef50985a1c4fa8d98bd3a7e0c",
+              "observability/recorder.py": "46d9973042f5eed5a5067ee2fde01926960596aff16f8369b3fe15b277611685"
+            },
+            "raw_content_retained": false
+          }
+        }
+      ],
+      "total": 1,
+      "limit": 50,
+      "offset": 0,
+      "coverage_notice": "Trace is best-effort; missing observations do not imply no business runs or failures.",
+      "collector_degraded": false,
+      "retention": {
+        "metadata": "keep_until_explicit_policy_change",
+        "raw_content": "not_collected",
+        "max_events_per_run": 256,
+        "max_event_payload_bytes": 8192
+      }
+    },
+    "detail": {
+      "run": {
+        "run_id": "run_9e03ec1674bb4308aa3b95de8918086d",
+        "kind": "report_generation",
+        "session_id": "ee6d1aa0dffc43c0a478f35a14c93018",
+        "execution_id": "exec_8c9d931ff04048c3ada7140b1e4fd553",
+        "attempt": 1,
+        "retry_of_run_id": null,
+        "owner_instance": "3661284c154e493bb3de354e076b56c0",
+        "status": "failed",
+        "queued_at": "2026-10-28T06:36:11.084874+00:00",
+        "started_at": "2026-10-28T06:36:11.090040+00:00",
+        "finished_at": "2026-10-28T06:36:19.540004+00:00",
+        "recovered_at": null,
+        "duration_ms": 8449.928624992026,
+        "report_id": null,
+        "error_code": "REPORT_UNVERIFIED_FACT",
+        "integrity": "observed",
+        "manifest": {
+          "schema_version": "workflow-trace-v0.1",
+          "bindings": {
+            "session_id": "ee6d1aa0dffc43c0a478f35a14c93018",
+            "execution_id": "exec_8c9d931ff04048c3ada7140b1e4fd553",
+            "approval_id": "approval_967d631f5402485e805e3c4f4bfef67d",
+            "dataset_id": "78368a1a251840669c774ac36110acab",
+            "dataset_version": "6ec820124aef0a8f2632c1e73de692762035fe1f8186cdd795f9387273b21283",
+            "plan_id": "plan_3761da2dbdfa4aff8292b8668f32fb84",
+            "plan_version": 1
+          },
+          "versions": {
+            "prompt_version": "report-insights-v1.1.9",
+            "generation_version": "evidence-composition-v1.1.1",
+            "schema_version": "analysis-report-v1",
+            "validation_version": "1.0",
+            "registry_version": "1.0"
+          },
+          "model_config_snapshot": {
+            "provider": "LiveReportProvider",
+            "model": "qwen3.8-flash",
+            "timeout_seconds": 30.0,
+            "enable_thinking": false,
+            "temperature": null,
+            "top_p": null,
+            "usage": null
+          },
+          "source_sha256": {
+            "services/analysis_report.py": "b4e705305b1d9f272a8678cf68b407fc88180f4e4fda0d6dc7b4bcc90c2945f2",
+            "workflow/reporting.py": "1c5708ffc8fc532ddaaa5fe645a139544f8cc20105c8b53f547f87017aad20c1",
+            "reporting/evidence.py": "c9552c289b29431aeb4a9d84f47587e1481cbce8df76a6a2558dc34625ad81e5",
+            "reporting/fact_validation.py": "36e3c11ea8f1b55baa6428353093a2776aa8b64c859338f7477590ec5590d557",
+            "reporting/claims.py": "1280609b0cb12d055a9239fa7237f4b43a9ef5cfccb3224fbb169235c6b4efdf",
+            "reporting/prompt.py": "f441fb6e51270f1f8b70079ff70b94b434add8728b29a668e7f7f054f06e5871",
+            "reporting/selection.py": "c619f620a1ffa2668eadd34f9bd16eb1200db77f91228334e6380f4c1e839eac",
+            "reporting/contracts.py": "6ddf2cda4ffee79a5cebbc3098d018c3d6aa6f9117fc63266c2b23e678000dc6",
+            "reporting/visualization.py": "4fa55e20d5c26615d898492a32905b8a471bebb55266f2bb6f408a5df36ff052",
+            "domain/analysis_report.py": "fcc866fb335223e4414a95447b3f7fd7f21cfe8d3d6b787205a8b00583dd507d",
+            "domain/tracing.py": "2b4931a83fcc2a8711c6b621da67ee5aca49510ef50985a1c4fa8d98bd3a7e0c",
+            "observability/recorder.py": "46d9973042f5eed5a5067ee2fde01926960596aff16f8369b3fe15b277611685"
+          },
+          "raw_content_retained": false
+        }
+      },
+      "business_source": {
+        "available": true,
+        "latest_attempt": 1,
+        "status": "failed",
+        "same_attempt": true,
+        "report_status": null,
+        "goal_coverage": null
+      },
+      "coverage_notice": "Trace is best-effort; missing observations do not imply no business runs or failures."
+    },
+    "spans": {
+      "items": [
+        {
+          "span_id": "span_c12a2146892a447ea5da0ec86ff004ae",
+          "run_id": "run_9e03ec1674bb4308aa3b95de8918086d",
+          "parent_span_id": null,
+          "name": "evidence_builder",
+          "status": "complete",
+          "started_at": "2026-10-28T06:36:11.094745+00:00",
+          "finished_at": "2026-10-28T06:36:11.096255+00:00",
+          "recovered_at": null,
+          "duration_ms": 1.5080419834703207,
+          "error_code": null,
+          "attributes": {
+            "evidence_count": 11
+          }
+        },
+        {
+          "span_id": "span_67dc4e58f8af4ed389ebf83eeb0e3440",
+          "run_id": "run_9e03ec1674bb4308aa3b95de8918086d",
+          "parent_span_id": null,
+          "name": "insight_generator",
+          "status": "complete",
+          "started_at": "2026-10-28T06:36:11.097937+00:00",
+          "finished_at": "2026-10-28T06:36:19.521609+00:00",
+          "recovered_at": null,
+          "duration_ms": 8423.639915999956,
+          "error_code": null,
+          "attributes": {
+            "purpose": "report_insights_v1",
+            "input_bytes": 11124,
+            "selected_evidence_count": 10,
+            "candidate_count": 3,
+            "timeout_seconds": 30.0,
+            "enable_thinking": false,
+            "provider": "compatible",
+            "model": "qwen3.8-flash",
+            "is_mock": false
+          }
+        },
+        {
+          "span_id": "span_bada4f17abf4426cadcb1f326033529e",
+          "run_id": "run_9e03ec1674bb4308aa3b95de8918086d",
+          "parent_span_id": null,
+          "name": "fact_validator",
+          "status": "failed",
+          "started_at": "2026-10-28T06:36:19.524585+00:00",
+          "finished_at": "2026-10-28T06:36:19.534762+00:00",
+          "recovered_at": null,
+          "duration_ms": 10.16416700440459,
+          "error_code": "REPORT_UNVERIFIED_FACT",
+          "attributes": {
+            "candidate_count": 3,
+            "accepted_count": 0,
+            "rejected_count": 3
+          }
+        }
+      ]
+    },
+    "events": {
+      "span_c12a2146892a447ea5da0ec86ff004ae": {
+        "items": [
+          {
+            "event_id": "evt_1b6ea0012d5c41d8bc48d093352a19fb",
+            "run_id": "run_9e03ec1674bb4308aa3b95de8918086d",
+            "span_id": "span_c12a2146892a447ea5da0ec86ff004ae",
+            "sequence": 2,
+            "event_type": "span.started",
+            "recorded_at": "2026-10-28T06:36:11.095396+00:00",
+            "payload": {}
+          },
+          {
+            "event_id": "evt_20649d9b6ad64674b10d9499efbdc562",
+            "run_id": "run_9e03ec1674bb4308aa3b95de8918086d",
+            "span_id": "span_c12a2146892a447ea5da0ec86ff004ae",
+            "sequence": 3,
+            "event_type": "span.finished",
+            "recorded_at": "2026-10-28T06:36:11.096274+00:00",
+            "payload": {
+              "evidence_count": 11,
+              "error_code": null
+            }
+          }
+        ],
+        "limit": 100,
+        "offset": 0
+      },
+      "span_67dc4e58f8af4ed389ebf83eeb0e3440": {
+        "items": [
+          {
+            "event_id": "evt_7060a8dd61634f24b5acf3529bf71f27",
+            "run_id": "run_9e03ec1674bb4308aa3b95de8918086d",
+            "span_id": "span_67dc4e58f8af4ed389ebf83eeb0e3440",
+            "sequence": 4,
+            "event_type": "span.started",
+            "recorded_at": "2026-10-28T06:36:11.098487+00:00",
+            "payload": {
+              "purpose": "report_insights_v1",
+              "input_bytes": 11124,
+              "selected_evidence_count": 10,
+              "candidate_count": null,
+              "timeout_seconds": 30.0,
+              "enable_thinking": false
+            }
+          },
+          {
+            "event_id": "evt_28c2eb17e7f34c39bb020a0a727ff099",
+            "run_id": "run_9e03ec1674bb4308aa3b95de8918086d",
+            "span_id": "span_67dc4e58f8af4ed389ebf83eeb0e3440",
+            "sequence": 5,
+            "event_type": "llm.returned",
+            "recorded_at": "2026-10-28T06:36:19.517862+00:00",
+            "payload": {
+              "provider": "compatible",
+              "model": "qwen3.8-flash",
+              "is_mock": false,
+              "output_bytes": 1853
+            }
+          },
+          {
+            "event_id": "evt_5606b2a64973444faad5d93d3fa06c4c",
+            "run_id": "run_9e03ec1674bb4308aa3b95de8918086d",
+            "span_id": "span_67dc4e58f8af4ed389ebf83eeb0e3440",
+            "sequence": 6,
+            "event_type": "span.finished",
+            "recorded_at": "2026-10-28T06:36:19.521697+00:00",
+            "payload": {
+              "purpose": "report_insights_v1",
+              "input_bytes": 11124,
+              "selected_evidence_count": 10,
+              "candidate_count": 3,
+              "timeout_seconds": 30.0,
+              "enable_thinking": false,
+              "provider": "compatible",
+              "model": "qwen3.8-flash",
+              "is_mock": false,
+              "error_code": null
+            }
+          }
+        ],
+        "limit": 100,
+        "offset": 0
+      },
+      "span_bada4f17abf4426cadcb1f326033529e": {
+        "items": [
+          {
+            "event_id": "evt_12994becb6bb470a8961973a20e2a2a2",
+            "run_id": "run_9e03ec1674bb4308aa3b95de8918086d",
+            "span_id": "span_bada4f17abf4426cadcb1f326033529e",
+            "sequence": 7,
+            "event_type": "span.started",
+            "recorded_at": "2026-10-28T06:36:19.525899+00:00",
+            "payload": {}
+          },
+          {
+            "event_id": "evt_9447c912a6e54311806bd72cf4003904",
+            "run_id": "run_9e03ec1674bb4308aa3b95de8918086d",
+            "span_id": "span_bada4f17abf4426cadcb1f326033529e",
+            "sequence": 8,
+            "event_type": "candidate.validated",
+            "recorded_at": "2026-10-28T06:36:19.529106+00:00",
+            "payload": {
+              "candidate_index": 0,
+              "candidate_status": "rejected",
+              "primary_evidence_id": "E0007",
+              "evidence_refs": [
+                "E0002",
+                "E0003",
+                "E0007"
+              ],
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "rule_ids": [
+                "FREE_TEXT_GUARD",
+                "NUMERIC"
+              ]
+            }
+          },
+          {
+            "event_id": "evt_b6a7e5c7d19d40ea8054f705bfb00f62",
+            "run_id": "run_9e03ec1674bb4308aa3b95de8918086d",
+            "span_id": "span_bada4f17abf4426cadcb1f326033529e",
+            "sequence": 9,
+            "event_type": "candidate.validated",
+            "recorded_at": "2026-10-28T06:36:19.530735+00:00",
+            "payload": {
+              "candidate_index": 1,
+              "candidate_status": "rejected",
+              "primary_evidence_id": "E0010",
+              "evidence_refs": [
+                "E0004",
+                "E0010"
+              ],
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "rule_ids": [
+                "FREE_TEXT_GUARD",
+                "NUMERIC"
+              ]
+            }
+          },
+          {
+            "event_id": "evt_b69b7e4bb03d4eff8f21ec66481698f7",
+            "run_id": "run_9e03ec1674bb4308aa3b95de8918086d",
+            "span_id": "span_bada4f17abf4426cadcb1f326033529e",
+            "sequence": 10,
+            "event_type": "candidate.validated",
+            "recorded_at": "2026-10-28T06:36:19.532383+00:00",
+            "payload": {
+              "candidate_index": 2,
+              "candidate_status": "rejected",
+              "primary_evidence_id": "E0011",
+              "evidence_refs": [
+                "E0008",
+                "E0011"
+              ],
+              "error_code": "REPORT_UNVERIFIED_FACT",
+              "rule_ids": [
+                "FREE_TEXT_GUARD",
+                "UNSUPPORTED_ASSERTION"
+              ]
+            }
+          },
+          {
+            "event_id": "evt_000941d5f54f4d3ebc95993ad9df3e59",
+            "run_id": "run_9e03ec1674bb4308aa3b95de8918086d",
+            "span_id": "span_bada4f17abf4426cadcb1f326033529e",
+            "sequence": 11,
+            "event_type": "candidate.validated",
+            "recorded_at": "2026-10-28T06:36:19.533635+00:00",
+            "payload": {
+              "candidate_count": 3,
+              "accepted_count": 0,
+              "rejected_count": 3
+            }
+          },
+          {
+            "event_id": "evt_338f5b4a4ec64d3c8a3fee7ebf546826",
+            "run_id": "run_9e03ec1674bb4308aa3b95de8918086d",
+            "span_id": "span_bada4f17abf4426cadcb1f326033529e",
+            "sequence": 12,
+            "event_type": "span.finished",
+            "recorded_at": "2026-10-28T06:36:19.534784+00:00",
+            "payload": {
+              "candidate_count": 3,
+              "accepted_count": 0,
+              "rejected_count": 3,
+              "error_code": "REPORT_UNVERIFIED_FACT"
+            }
+          }
+        ],
+        "limit": 100,
+        "offset": 0
+      }
+    }
+  },
+  "restart_query_verified": true
+}

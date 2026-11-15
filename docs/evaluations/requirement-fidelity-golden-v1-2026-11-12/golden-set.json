@@ -1,0 +1,90 @@
+{
+  "set_id": "requirement-fidelity-golden-v1",
+  "case_count": 5,
+  "columns": ["编号", "城市", "岗位名称", "岗位类型"],
+  "rows": [
+    {"编号": "J01", "城市": "上海", "岗位名称": "产品经理", "岗位类型": "正式"},
+    {"编号": "J02", "城市": "上海", "岗位名称": "产品经理", "岗位类型": "正式"},
+    {"编号": "J03", "城市": "上海", "岗位名称": "分析师", "岗位类型": "正式"},
+    {"编号": "J04", "城市": "上海", "岗位名称": "产品经理", "岗位类型": "实习"},
+    {"编号": "J05", "城市": "深圳", "岗位名称": "产品经理", "岗位类型": "正式"},
+    {"编号": "J06", "城市": "深圳", "岗位名称": "分析师", "岗位类型": "实习"},
+    {"编号": "J07", "城市": "深圳", "岗位名称": "分析师", "岗位类型": "实习"},
+    {"编号": "J08", "城市": "北京", "岗位名称": "产品经理", "岗位类型": "正式"},
+    {"编号": "J09", "城市": "杭州", "岗位名称": "运营", "岗位类型": "实习"}
+  ],
+  "cases": [
+    {
+      "case_id": "RF-01",
+      "user_input": "对比上海和深圳的岗位数量，排除实习岗位。",
+      "oracle": {"上海": 3, "深圳": 1},
+      "error_controls": [
+        {"code": "F-EXCLUDE-DROPPED", "label": "未排除实习", "result": {"上海": 4, "深圳": 3}},
+        {"code": "F-POLARITY-REVERSED", "label": "只保留实习", "result": {"上海": 1, "深圳": 2}},
+        {"code": "F-INCLUDE-DROPPED", "label": "多计入北京", "result": {"上海": 3, "深圳": 1, "北京": 1}},
+        {"code": "F-METRIC-SUBSTITUTED", "label": "按岗位名称去重", "result": {"上海": 2, "深圳": 1}},
+        {"code": "F-GOAL-SUBSTITUTED", "label": "只有总数", "result": {"岗位数量": 4}}
+      ],
+      "must_execute": ["聚合前排除岗位类型为实习的行。", "只保留上海和深圳。", "按城市分组。", "一行计一个岗位，不去重岗位名称。", "上海和深圳都要出现。"],
+      "must_forbid": ["不得把排除实习做成只保留实习。", "不得计入北京或杭州。", "不得按岗位名称去重。", "不得只输出一个总数。"],
+      "pass_rule": "结果正好是上海 3、深圳 1，并且不等于未排除实习的上海 4、深圳 3。",
+      "fail_classes": ["F-EXCLUDE-DROPPED", "F-POLARITY-REVERSED", "F-INCLUDE-DROPPED", "F-METRIC-SUBSTITUTED", "F-GOAL-SUBSTITUTED", "F-ORACLE-MISS"]
+    },
+    {
+      "case_id": "RF-02",
+      "user_input": "对比上海和深圳的岗位数量，不排除实习岗位。",
+      "oracle": {"上海": 4, "深圳": 3},
+      "error_controls": [
+        {"code": "F-EXTRA-CONSTRAINT", "label": "仍排除了实习", "result": {"上海": 3, "深圳": 1}},
+        {"code": "F-POLARITY-REVERSED", "label": "理解成只看实习", "result": {"上海": 1, "深圳": 2}}
+      ],
+      "must_execute": ["上海和深圳的全部行都计入，包括实习。", "按城市做行计数。", "上海和深圳都要出现。"],
+      "must_forbid": ["不得排除实习。", "不得把「不排除」写成只看实习。", "不得漏掉任一城市。"],
+      "pass_rule": "结果正好是上海 4、深圳 3。",
+      "fail_classes": ["F-EXTRA-CONSTRAINT", "F-POLARITY-REVERSED", "F-ORACLE-MISS"]
+    },
+    {
+      "case_id": "RF-03",
+      "user_input": "只统计实习岗位，对比上海和深圳的岗位数量。",
+      "oracle": {"上海": 1, "深圳": 2},
+      "error_controls": [
+        {"code": "F-POLARITY-REVERSED", "label": "排除了实习", "result": {"上海": 3, "深圳": 1}},
+        {"code": "F-EXCLUDE-DROPPED", "label": "正式和实习都计入", "result": {"上海": 4, "深圳": 3}}
+      ],
+      "must_execute": ["只保留岗位类型为实习的行。", "只保留上海和深圳。", "按城市做行计数。"],
+      "must_forbid": ["不得排除实习。", "不得把正式岗位算进结果。"],
+      "pass_rule": "结果正好是上海 1、深圳 2。",
+      "fail_classes": ["F-POLARITY-REVERSED", "F-EXCLUDE-DROPPED", "F-ORACLE-MISS"]
+    },
+    {
+      "case_id": "RF-04",
+      "user_input": "对比上海和深圳的岗位数量，排除实习岗位，不要分析薪资。",
+      "oracle": {"上海": 3, "深圳": 1},
+      "error_controls": [
+        {"code": "F-EXCLUDE-DROPPED", "label": "未排除实习", "result": {"上海": 4, "深圳": 3}},
+        {"code": "F-POLARITY-REVERSED", "label": "只保留实习", "result": {"上海": 1, "深圳": 2}},
+        {"code": "F-METRIC-SUBSTITUTED", "label": "按岗位名称去重", "result": {"上海": 2, "深圳": 1}},
+        {"code": "F-GOAL-SUBSTITUTED", "label": "没有岗位数量", "result": {"岗位数量": 4}}
+      ],
+      "must_execute": ["与 RF-01 相同：排除实习后，上海 3、深圳 1，一行一岗。", "岗位计数必须执行，不能因为后半句停住。"],
+      "must_forbid": ["不得读取、解析、聚合、筛选或分组薪资、薪资区间。", "不得发明薪资字段。", "不得输出薪资数值或薪资区间。", "不得用薪资任务代替岗位数量。即使同时给出上海 3、深圳 1，只要执行了薪资计算，也失败。", "计划正文里保留「不要分析薪资」这句话，不算执行了薪资分析。"],
+      "pass_rule": "结果正好是上海 3、深圳 1，且执行步骤和结果列都没有薪资字段。",
+      "fail_classes": ["F-METRIC-SUBSTITUTED", "F-EXCLUDE-DROPPED", "F-POLARITY-REVERSED", "F-GOAL-SUBSTITUTED", "F-ORACLE-MISS"]
+    },
+    {
+      "case_id": "RF-05",
+      "user_input": "按城市统计岗位数量，排除上海。",
+      "oracle": {"深圳": 3, "北京": 1, "杭州": 1},
+      "non_shanghai_policy": "必须正好输出数据中的全部非上海城市。9 行里非上海城市只有深圳、北京、杭州。这不是可选项，少一城不通过，保留上海也不通过。",
+      "error_controls": [
+        {"code": "F-EXCLUDE-DROPPED", "label": "仍包含上海", "result": {"上海": 4, "深圳": 3, "北京": 1, "杭州": 1}},
+        {"code": "F-ORACLE-MISS", "label": "漏掉杭州", "result": {"深圳": 3, "北京": 1}},
+        {"code": "F-EXTRA-CONSTRAINT", "label": "又排除了实习", "result": {"深圳": 1, "北京": 1}}
+      ],
+      "must_execute": ["排除城市为上海的行。", "深圳、北京、杭州每一城都要输出。", "按行计数。深圳含两名实习，杭州这一名实习也要保留。"],
+      "must_forbid": ["不得保留上海。", "不得漏掉深圳、北京、杭州中的任何一个。", "不得只输出深圳。", "不得再排除实习。"],
+      "pass_rule": "结果正好是深圳 3、北京 1、杭州 1。",
+      "fail_classes": ["F-EXCLUDE-DROPPED", "F-ORACLE-MISS", "F-EXTRA-CONSTRAINT"]
+    }
+  ]
+}

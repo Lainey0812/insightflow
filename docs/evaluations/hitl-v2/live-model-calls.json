@@ -1,0 +1,2796 @@
+[
+  {
+    "purpose": "intent_v1",
+    "model": "qwen3.8-flash",
+    "enable_thinking": false,
+    "prompt_sha256": "9504f36790ff8a3b90610b1f8175226d90e6b2572cdcfad3c5c8e2a954ac81e2",
+    "schema_sha256": "a83e21c4f20a3e1512e67b10c3620a922520865d6b2d7f3ae4e4f2231c36723a",
+    "input": {
+      "user_query": "分析2026年华东地区已完成订单的销售额，按照城市汇总并降序排名，取前三名。",
+      "clarification_answers": [],
+      "dataset_context": {
+        "dataset_name": "sales.csv",
+        "row_count": 6,
+        "columns": [
+          {
+            "field_id": "field_0001",
+            "name": "订单日期",
+            "physical_type": "string",
+            "logical_type": "date"
+          },
+          {
+            "field_id": "field_0002",
+            "name": "地区",
+            "physical_type": "string",
+            "logical_type": "text"
+          },
+          {
+            "field_id": "field_0003",
+            "name": "城市",
+            "physical_type": "string",
+            "logical_type": "text"
+          },
+          {
+            "field_id": "field_0004",
+            "name": "订单状态",
+            "physical_type": "string",
+            "logical_type": "text"
+          },
+          {
+            "field_id": "field_0005",
+            "name": "销售额",
+            "physical_type": "string",
+            "logical_type": "integer"
+          }
+        ],
+        "sample_rows": []
+      }
+    },
+    "status": "returned",
+    "actual_output": "{\n  \"analysis_mode\": \"goal_driven\",\n  \"next_action\": \"proceed\",\n  \"analysis_goal\": {\n    \"analysis_object\": \"2026年华东地区已完成订单的销售额\",\n    \"business_goal\": \"分析2026年华东地区已完成订单的销售额，按城市汇总并降序排名，取前三名\",\n    \"decision_goal\": null\n  },\n  \"constraints\": {\n    \"time_range\": {\n      \"raw_text\": \"2026年\",\n      \"validation_status\": \"unverified\"\n    },\n    \"filters\": [\n      {\n       \"raw_text\": \"华东地区\",\n       \"validation_status\": \"unverified\"\n      },\n      {\n       \"raw_text\": \"已完成订单\",\n       \"validation_status\": \"unverified\"\n      }\n    ],\n    \"metric_requirements\": [\n      {\n       \"raw_text\": \"销售额\",\n       \"validation_status\": \"unverified\"\n      }\n    ],\n    \"analysis_limits\": [\n      {\n       \"raw_text\": \"按照城市汇总并降序排名，取前三名\",\n       \"validation_status\": \"unverified\"\n      }\n    ]\n  },\n  \"uncertainties\": [],\n  \"clarification_questions\": []\n}",
+    "is_mock": false,
+    "actual_model": "qwen3.8-flash",
+    "duration_seconds": 4.2251
+  },
+  {
+    "purpose": "analysis_planner_v1",
+    "model": "qwen3.8-flash",
+    "enable_thinking": false,
+    "prompt_sha256": "42594e5314dc7c34d8dfe84f82a3017fa94e039b8e444d89bcab4ca1603beddc",
+    "schema_sha256": "9ae52c186698df5539452e3e0fa5c9fb269ca9d1c6fd8cc94fd333102e10ce90",
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "2026年华东地区已完成订单的销售额",
+          "business_goal": "分析2026年华东地区已完成订单的销售额，按城市汇总并降序排名，取前三名",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "2026年",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "华东地区",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "已完成订单",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "销售额",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按照城市汇总并降序排名，取前三名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "分析2026年华东地区已完成订单的销售额，按城市汇总并降序排名，取前三名"
+        },
+        {
+          "requirement_id": "C02",
+          "description": "time_range：2026年"
+        },
+        {
+          "requirement_id": "C03",
+          "description": "filters：华东地区；已完成订单"
+        },
+        {
+          "requirement_id": "C04",
+          "description": "metric_requirements：销售额"
+        },
+        {
+          "requirement_id": "C05",
+          "description": "analysis_limits：按照城市汇总并降序排名，取前三名"
+        }
+      ],
+      "profile": {
+        "dataset_id": "37fb59e88d2b48a78d044422d8bc5b7a",
+        "dataset_version": "d7fb8df37eb917134d69a0b0b340bfe84f45f5e910efaf6883c6552f78fd225e",
+        "file_name": "sales.csv",
+        "row_count": 6,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "name": "订单日期",
+            "logical_type": "date",
+            "physical_type": "string",
+            "non_missing_count": 6,
+            "missing_rate": 0.0,
+            "unique_count": 6
+          },
+          {
+            "field_id": "field_0002",
+            "name": "地区",
+            "logical_type": "text",
+            "physical_type": "string",
+            "non_missing_count": 6,
+            "missing_rate": 0.0,
+            "unique_count": 2
+          },
+          {
+            "field_id": "field_0003",
+            "name": "城市",
+            "logical_type": "text",
+            "physical_type": "string",
+            "non_missing_count": 6,
+            "missing_rate": 0.0,
+            "unique_count": 4
+          },
+          {
+            "field_id": "field_0004",
+            "name": "订单状态",
+            "logical_type": "text",
+            "physical_type": "string",
+            "non_missing_count": 6,
+            "missing_rate": 0.0,
+            "unique_count": 2
+          },
+          {
+            "field_id": "field_0005",
+            "name": "销售额",
+            "logical_type": "integer",
+            "physical_type": "string",
+            "non_missing_count": 6,
+            "missing_rate": 0.0,
+            "unique_count": 6
+          }
+        ],
+        "quality_issues": []
+      },
+      "capabilities": {
+        "version": "1.0",
+        "operations": {
+          "filter": {
+            "supported": true,
+            "params_schema": {
+              "$defs": {
+                "Condition": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "field": {
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "Field",
+                      "type": "string"
+                    },
+                    "operator": {
+                      "enum": [
+                        "eq",
+                        "ne",
+                        "gt",
+                        "gte",
+                        "lt",
+                        "lte",
+                        "in",
+                        "not_in",
+                        "is_null",
+                        "not_null"
+                      ],
+                      "title": "Operator",
+                      "type": "string"
+                    },
+                    "value": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "type": "array"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "title": "Value"
+                    }
+                  },
+                  "required": [
+                    "field",
+                    "operator",
+                    "value"
+                  ],
+                  "title": "Condition",
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false,
+              "properties": {
+                "conditions": {
+                  "items": {
+                    "$ref": "#/$defs/Condition"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Conditions",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "conditions"
+              ],
+              "title": "FilterParams",
+              "type": "object"
+            },
+            "input_rules": "AND conditions; typed comparisons; null only via is_null/not_null; no semantic matching",
+            "output_rules": "Preserves all current fields; no new fields"
+          },
+          "group_aggregate": {
+            "supported": true,
+            "params_schema": {
+              "$defs": {
+                "Metric": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "function": {
+                      "enum": [
+                        "count",
+                        "sum",
+                        "avg",
+                        "median",
+                        "min",
+                        "max",
+                        "distinct_count"
+                      ],
+                      "title": "Function",
+                      "type": "string"
+                    },
+                    "field": {
+                      "anyOf": [
+                        {
+                          "maxLength": 120,
+                          "minLength": 1,
+                          "pattern": "\\S",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "title": "Field"
+                    },
+                    "alias": {
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "Alias",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "function",
+                    "alias"
+                  ],
+                  "title": "Metric",
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false,
+              "properties": {
+                "metrics": {
+                  "items": {
+                    "$ref": "#/$defs/Metric"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Metrics",
+                  "type": "array"
+                },
+                "dimensions": {
+                  "items": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "pattern": "\\S",
+                    "type": "string"
+                  },
+                  "maxItems": 10,
+                  "minItems": 1,
+                  "title": "Dimensions",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "metrics",
+                "dimensions"
+              ],
+              "title": "GroupParams",
+              "type": "object"
+            },
+            "input_rules": "Unique comparable dimensions; numeric sum/avg/median/min/max; count optional field; distinct_count comparable field",
+            "output_rules": "Replaces input with dimensions and unique fresh metric aliases; missing groups retained"
+          },
+          "aggregate": {
+            "supported": true,
+            "params_schema": {
+              "$defs": {
+                "Metric": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "function": {
+                      "enum": [
+                        "count",
+                        "sum",
+                        "avg",
+                        "median",
+                        "min",
+                        "max",
+                        "distinct_count"
+                      ],
+                      "title": "Function",
+                      "type": "string"
+                    },
+                    "field": {
+                      "anyOf": [
+                        {
+                          "maxLength": 120,
+                          "minLength": 1,
+                          "pattern": "\\S",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "title": "Field"
+                    },
+                    "alias": {
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "Alias",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "function",
+                    "alias"
+                  ],
+                  "title": "Metric",
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false,
+              "properties": {
+                "metrics": {
+                  "items": {
+                    "$ref": "#/$defs/Metric"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Metrics",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "metrics"
+              ],
+              "title": "AggregateParams",
+              "type": "object"
+            },
+            "input_rules": "Numeric sum/avg/median/min/max; count optional field; distinct_count comparable field",
+            "output_rules": "Replaces input with metric aliases only"
+          },
+          "sort": {
+            "supported": true,
+            "params_schema": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "direction": {
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "title": "Direction",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "field",
+                "direction"
+              ],
+              "title": "SortParams",
+              "type": "object"
+            },
+            "input_rules": "Existing comparable field; stable asc/desc; null last",
+            "output_rules": "Preserves fields"
+          },
+          "top_n": {
+            "supported": true,
+            "params_schema": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "direction": {
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "title": "Direction",
+                  "type": "string"
+                },
+                "n": {
+                  "maximum": 1000,
+                  "minimum": 1,
+                  "title": "N",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "field",
+                "direction",
+                "n"
+              ],
+              "title": "TopNParams",
+              "type": "object"
+            },
+            "input_rules": "Existing comparable field; n integer 1..1000; sort then head; stable ties",
+            "output_rules": "Preserves fields"
+          },
+          "derive": {
+            "supported": true,
+            "params_schema": {
+              "additionalProperties": false,
+              "properties": {
+                "function": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Function",
+                  "type": "string"
+                },
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "alias": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Alias",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "function",
+                "field",
+                "alias"
+              ],
+              "title": "DeriveParams",
+              "type": "object"
+            },
+            "input_rules": "Only extract_year/extract_month; homogeneous DATE/DATETIME including valid ISO strings",
+            "output_rules": "Preserves fields and adds a fresh INTEGER alias; no text-to-date guess, salary parsing or skill extraction"
+          }
+        },
+        "aggregate_functions": [
+          "count",
+          "sum",
+          "avg",
+          "median",
+          "min",
+          "max",
+          "distinct_count"
+        ],
+        "derive_functions": [
+          "extract_year",
+          "extract_month"
+        ],
+        "execution_scope": "tested kernels with versioned dataset execution service; server-owned approval required; cross-task dependencies unsupported",
+        "null_policy": "count()=rows; count(field)=nonmissing; distinct_count excludes null; numeric all-null result=null; missing groups retained",
+        "logical_input_policy": "CSV homogeneous logical numbers/ISO dates are interpreted deterministically; no mixed/text semantic conversion"
+      }
+    },
+    "status": "returned",
+    "actual_output": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T01\",\n      \"title\": \"2026年华东地区已完成订单销售额城市排名Top3\",\n      \"business_question\": \"2026年华东地区已完成订单的销售额按城市汇总并降序排名，取前三名是多少？\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"删除后无法回答核心业务目标（2026年华东地区已完成订单销售额的城市排名），属于核心决策支持。\",\n      \"requirement_ids\": [\n        \"C01\",\n        \"C02\",\n        \"C03\",\n        \"C04\",\n        \"C05\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S01\",\n          \"operation\": \"derive\",\n          \"params\": {\n            \"function\": \"extract_year\",\n            \"field\": \"field_0001\",\n            \"alias\": \"order_year\"\n          }\n        },\n        {\n          \"step_id\": \"S02\",\n          \"operation\": \"filter\",\n          \"params\": {\n            \"conditions\": [\n              {\n                \"field\": \"order_year\",\n                \"operator\": \"eq\",\n                \"value\": 2026\n              },\n              {\n                \"field\": \"field_0002\",\n                \"operator\": \"eq\",\n                \"value\": \"华东\"\n              },\n              {\n                \"field\": \"field_0004\",\n                \"operator\": \"eq\",\n                \"value\": \"已完成\"\n              }\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S03\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"sum\",\n                \"field\": \"field_0005\",\n                \"alias\": \"sales_total\"\n              }\n            ],\n            \"dimensions\": [\n              \"field_0003\"\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S04\",\n          \"operation\": \"top_n\",\n          \"params\": {\n            \"field\": \"sales_total\",\n            \"direction\": \"desc\",\n            \"n\": 3\n          }\n        }\n      ]\n    }\n  ]\n}",
+    "is_mock": false,
+    "actual_model": "qwen3.8-flash",
+    "duration_seconds": 7.1485
+  },
+  {
+    "purpose": "intent_v1",
+    "model": "qwen3.8-flash",
+    "enable_thinking": false,
+    "prompt_sha256": "9504f36790ff8a3b90610b1f8175226d90e6b2572cdcfad3c5c8e2a954ac81e2",
+    "schema_sha256": "a83e21c4f20a3e1512e67b10c3620a922520865d6b2d7f3ae4e4f2231c36723a",
+    "input": {
+      "user_query": "只看2026年发布且岗位状态为在招的数据，按城市汇总招聘人数总和，按招聘人数降序排名，取前三名。",
+      "clarification_answers": [],
+      "dataset_context": {
+        "dataset_name": "jobs.csv",
+        "row_count": 5,
+        "columns": [
+          {
+            "field_id": "field_0001",
+            "name": "发布日期",
+            "physical_type": "string",
+            "logical_type": "date"
+          },
+          {
+            "field_id": "field_0002",
+            "name": "城市",
+            "physical_type": "string",
+            "logical_type": "text"
+          },
+          {
+            "field_id": "field_0003",
+            "name": "岗位状态",
+            "physical_type": "string",
+            "logical_type": "text"
+          },
+          {
+            "field_id": "field_0004",
+            "name": "招聘人数",
+            "physical_type": "string",
+            "logical_type": "integer"
+          }
+        ],
+        "sample_rows": []
+      }
+    },
+    "status": "returned",
+    "actual_output": "{\n  \"analysis_mode\": \"goal_driven\",\n  \"next_action\": \"proceed\",\n  \"analysis_goal\": {\n    \"analysis_object\": \"2026年在招岗位按城市汇总的招聘人数总和\",\n    \"business_goal\": \"统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三\",\n    \"decision_goal\": null\n  },\n  \"constraints\": {\n    \"time_range\": {\n      \"raw_text\": \"只看2026年发布\",\n      \"validation_status\": \"unverified\"\n    },\n    \"filters\": [\n      {\n        \"raw_text\": \"岗位状态为在招\",\n        \"validation_status\": \"unverified\"\n      }\n    ],\n    \"metric_requirements\": [\n      {\n        \"raw_text\": \"招聘人数总和\",\n        \"validation_status\": \"unverified\"\n      }\n    ],\n    \"analysis_limits\": [\n      {\n        \"raw_text\": \"按城市汇总\",\n        \"validation_status\": \"unverified\"\n      },\n      {\n        \"raw_text\": \"按招聘人数降序排名\",\n        \"validation_status\": \"unverified\"\n      },\n      {\n        \"raw_text\": \"取前三名\",\n        \"validation_status\": \"unverified\"\n      }\n    ]\n  },\n  \"uncertainties\": [],\n  \"clarification_questions\": []\n}",
+    "is_mock": false,
+    "actual_model": "qwen3.8-flash",
+    "duration_seconds": 5.0654
+  },
+  {
+    "purpose": "analysis_planner_v1",
+    "model": "qwen3.8-flash",
+    "enable_thinking": false,
+    "prompt_sha256": "42594e5314dc7c34d8dfe84f82a3017fa94e039b8e444d89bcab4ca1603beddc",
+    "schema_sha256": "9ae52c186698df5539452e3e0fa5c9fb269ca9d1c6fd8cc94fd333102e10ce90",
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "2026年在招岗位按城市汇总的招聘人数总和",
+          "business_goal": "统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "只看2026年发布",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "岗位状态为在招",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "招聘人数总和",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按城市汇总",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "按招聘人数降序排名",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "取前三名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三"
+        },
+        {
+          "requirement_id": "C02",
+          "description": "time_range：只看2026年发布"
+        },
+        {
+          "requirement_id": "C03",
+          "description": "filters：岗位状态为在招"
+        },
+        {
+          "requirement_id": "C04",
+          "description": "metric_requirements：招聘人数总和"
+        },
+        {
+          "requirement_id": "C05",
+          "description": "analysis_limits：按城市汇总；按招聘人数降序排名；取前三名"
+        }
+      ],
+      "profile": {
+        "dataset_id": "2dd4617e774e4aaf8ed886a2c5685e45",
+        "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+        "file_name": "jobs.csv",
+        "row_count": 5,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "name": "发布日期",
+            "logical_type": "date",
+            "physical_type": "string",
+            "non_missing_count": 5,
+            "missing_rate": 0.0,
+            "unique_count": 5
+          },
+          {
+            "field_id": "field_0002",
+            "name": "城市",
+            "logical_type": "text",
+            "physical_type": "string",
+            "non_missing_count": 5,
+            "missing_rate": 0.0,
+            "unique_count": 4
+          },
+          {
+            "field_id": "field_0003",
+            "name": "岗位状态",
+            "logical_type": "text",
+            "physical_type": "string",
+            "non_missing_count": 5,
+            "missing_rate": 0.0,
+            "unique_count": 2
+          },
+          {
+            "field_id": "field_0004",
+            "name": "招聘人数",
+            "logical_type": "integer",
+            "physical_type": "string",
+            "non_missing_count": 5,
+            "missing_rate": 0.0,
+            "unique_count": 5
+          }
+        ],
+        "quality_issues": []
+      },
+      "capabilities": {
+        "version": "1.0",
+        "operations": {
+          "filter": {
+            "supported": true,
+            "params_schema": {
+              "$defs": {
+                "Condition": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "field": {
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "Field",
+                      "type": "string"
+                    },
+                    "operator": {
+                      "enum": [
+                        "eq",
+                        "ne",
+                        "gt",
+                        "gte",
+                        "lt",
+                        "lte",
+                        "in",
+                        "not_in",
+                        "is_null",
+                        "not_null"
+                      ],
+                      "title": "Operator",
+                      "type": "string"
+                    },
+                    "value": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "type": "array"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "title": "Value"
+                    }
+                  },
+                  "required": [
+                    "field",
+                    "operator",
+                    "value"
+                  ],
+                  "title": "Condition",
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false,
+              "properties": {
+                "conditions": {
+                  "items": {
+                    "$ref": "#/$defs/Condition"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Conditions",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "conditions"
+              ],
+              "title": "FilterParams",
+              "type": "object"
+            },
+            "input_rules": "AND conditions; typed comparisons; null only via is_null/not_null; no semantic matching",
+            "output_rules": "Preserves all current fields; no new fields"
+          },
+          "group_aggregate": {
+            "supported": true,
+            "params_schema": {
+              "$defs": {
+                "Metric": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "function": {
+                      "enum": [
+                        "count",
+                        "sum",
+                        "avg",
+                        "median",
+                        "min",
+                        "max",
+                        "distinct_count"
+                      ],
+                      "title": "Function",
+                      "type": "string"
+                    },
+                    "field": {
+                      "anyOf": [
+                        {
+                          "maxLength": 120,
+                          "minLength": 1,
+                          "pattern": "\\S",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "title": "Field"
+                    },
+                    "alias": {
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "Alias",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "function",
+                    "alias"
+                  ],
+                  "title": "Metric",
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false,
+              "properties": {
+                "metrics": {
+                  "items": {
+                    "$ref": "#/$defs/Metric"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Metrics",
+                  "type": "array"
+                },
+                "dimensions": {
+                  "items": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "pattern": "\\S",
+                    "type": "string"
+                  },
+                  "maxItems": 10,
+                  "minItems": 1,
+                  "title": "Dimensions",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "metrics",
+                "dimensions"
+              ],
+              "title": "GroupParams",
+              "type": "object"
+            },
+            "input_rules": "Unique comparable dimensions; numeric sum/avg/median/min/max; count optional field; distinct_count comparable field",
+            "output_rules": "Replaces input with dimensions and unique fresh metric aliases; missing groups retained"
+          },
+          "aggregate": {
+            "supported": true,
+            "params_schema": {
+              "$defs": {
+                "Metric": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "function": {
+                      "enum": [
+                        "count",
+                        "sum",
+                        "avg",
+                        "median",
+                        "min",
+                        "max",
+                        "distinct_count"
+                      ],
+                      "title": "Function",
+                      "type": "string"
+                    },
+                    "field": {
+                      "anyOf": [
+                        {
+                          "maxLength": 120,
+                          "minLength": 1,
+                          "pattern": "\\S",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "title": "Field"
+                    },
+                    "alias": {
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "Alias",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "function",
+                    "alias"
+                  ],
+                  "title": "Metric",
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false,
+              "properties": {
+                "metrics": {
+                  "items": {
+                    "$ref": "#/$defs/Metric"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Metrics",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "metrics"
+              ],
+              "title": "AggregateParams",
+              "type": "object"
+            },
+            "input_rules": "Numeric sum/avg/median/min/max; count optional field; distinct_count comparable field",
+            "output_rules": "Replaces input with metric aliases only"
+          },
+          "sort": {
+            "supported": true,
+            "params_schema": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "direction": {
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "title": "Direction",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "field",
+                "direction"
+              ],
+              "title": "SortParams",
+              "type": "object"
+            },
+            "input_rules": "Existing comparable field; stable asc/desc; null last",
+            "output_rules": "Preserves fields"
+          },
+          "top_n": {
+            "supported": true,
+            "params_schema": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "direction": {
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "title": "Direction",
+                  "type": "string"
+                },
+                "n": {
+                  "maximum": 1000,
+                  "minimum": 1,
+                  "title": "N",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "field",
+                "direction",
+                "n"
+              ],
+              "title": "TopNParams",
+              "type": "object"
+            },
+            "input_rules": "Existing comparable field; n integer 1..1000; sort then head; stable ties",
+            "output_rules": "Preserves fields"
+          },
+          "derive": {
+            "supported": true,
+            "params_schema": {
+              "additionalProperties": false,
+              "properties": {
+                "function": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Function",
+                  "type": "string"
+                },
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "alias": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Alias",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "function",
+                "field",
+                "alias"
+              ],
+              "title": "DeriveParams",
+              "type": "object"
+            },
+            "input_rules": "Only extract_year/extract_month; homogeneous DATE/DATETIME including valid ISO strings",
+            "output_rules": "Preserves fields and adds a fresh INTEGER alias; no text-to-date guess, salary parsing or skill extraction"
+          }
+        },
+        "aggregate_functions": [
+          "count",
+          "sum",
+          "avg",
+          "median",
+          "min",
+          "max",
+          "distinct_count"
+        ],
+        "derive_functions": [
+          "extract_year",
+          "extract_month"
+        ],
+        "execution_scope": "tested kernels with versioned dataset execution service; server-owned approval required; cross-task dependencies unsupported",
+        "null_policy": "count()=rows; count(field)=nonmissing; distinct_count excludes null; numeric all-null result=null; missing groups retained",
+        "logical_input_policy": "CSV homogeneous logical numbers/ISO dates are interpreted deterministically; no mixed/text semantic conversion"
+      }
+    },
+    "status": "returned",
+    "actual_output": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T01\",\n      \"title\": \"2026年在招岗位按城市招聘人数总和Top3\",\n      \"business_question\": \"统计2026年发布且状态为在招的岗位，按城市汇总招聘人数总和并降序排名取前三。\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"删除后无法回答核心决策问题（2026年在招岗位各城市招聘规模排名），直接支持业务目标。\",\n      \"requirement_ids\": [\n        \"C01\",\n        \"C02\",\n        \"C03\",\n        \"C04\",\n        \"C05\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S01\",\n          \"operation\": \"derive\",\n          \"params\": {\n            \"function\": \"extract_year\",\n            \"field\": \"field_0001\",\n            \"alias\": \"year_2026\"\n          }\n        },\n        {\n          \"step_id\": \"S02\",\n          \"operation\": \"filter\",\n          \"params\": {\n            \"conditions\": [\n              {\n                \"field\": \"year_2026\",\n                \"operator\": \"eq\",\n                \"value\": 2026\n              },\n              {\n                \"field\": \"field_0003\",\n                \"operator\": \"eq\",\n                \"value\": \"在招\"\n              }\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S03\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"sum\",\n                \"field\": \"field_0004\",\n                \"alias\": \"total_hired_count\"\n              }\n            ],\n            \"dimensions\": [\n              \"field_0002\"\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S04\",\n          \"operation\": \"sort\",\n          \"params\": {\n            \"field\": \"total_hired_count\",\n            \"direction\": \"desc\"\n          }\n        },\n        {\n          \"step_id\": \"S05\",\n          \"operation\": \"top_n\",\n          \"params\": {\n            \"field\": \"total_hired_count\",\n            \"direction\": \"desc\",\n            \"n\": 3\n          }\n        }\n      ]\n    }\n  ]\n}",
+    "is_mock": false,
+    "actual_model": "qwen3.8-flash",
+    "duration_seconds": 6.6128
+  },
+  {
+    "purpose": "intent_v1",
+    "model": "qwen3.8-flash",
+    "enable_thinking": false,
+    "prompt_sha256": "9504f36790ff8a3b90610b1f8175226d90e6b2572cdcfad3c5c8e2a954ac81e2",
+    "schema_sha256": "a83e21c4f20a3e1512e67b10c3620a922520865d6b2d7f3ae4e4f2231c36723a",
+    "input": {
+      "user_query": "发布日期为2026年，岗位状态为在招，按城市汇总招聘人数总和，按招聘人数降序排名，取前三名。",
+      "clarification_answers": [],
+      "dataset_context": {
+        "dataset_name": "jobs.csv",
+        "row_count": 5,
+        "columns": [
+          {
+            "field_id": "field_0001",
+            "name": "发布日期",
+            "physical_type": "string",
+            "logical_type": "date"
+          },
+          {
+            "field_id": "field_0002",
+            "name": "城市",
+            "physical_type": "string",
+            "logical_type": "text"
+          },
+          {
+            "field_id": "field_0003",
+            "name": "岗位状态",
+            "physical_type": "string",
+            "logical_type": "text"
+          },
+          {
+            "field_id": "field_0004",
+            "name": "招聘人数",
+            "physical_type": "string",
+            "logical_type": "integer"
+          }
+        ],
+        "sample_rows": []
+      }
+    },
+    "status": "returned",
+    "actual_output": "{\n  \"analysis_mode\": \"goal_driven\",\n  \"next_action\": \"proceed\",\n  \"analysis_goal\": {\n    \"analysis_object\": \"2026年在招岗位按城市汇总的招聘人数总和\",\n    \"business_goal\": \"统计发布日期为2026年且岗位状态为在招的各城市招聘人数总和，并按人数降序取前三名\",\n    \"decision_goal\": null\n  },\n  \"constraints\": {\n    \"time_range\": {\n      \"raw_text\": \"发布日期为2026年\",\n      \"validation_status\": \"unverified\"\n    },\n    \"filters\": [\n      {\n        \"raw_text\": \"岗位状态为在招\",\n        \"validation_status\": \"unverified\"\n      }\n    ],\n    \"metric_requirements\": [\n      {\n        \"raw_text\": \"招聘人数总和\",\n        \"validation_status\": \"unverified\"\n      }\n    ],\n    \"analysis_limits\": [\n      {\n        \"raw_text\": \"按城市汇总\",\n        \"validation_status\": \"unverified\"\n      },\n      {\n        \"raw_text\": \"按招聘人数降序排名，取前三名\",\n        \"validation_status\": \"unverified\"\n      }\n    ]\n  },\n  \"uncertainties\": [],\n  \"clarification_questions\": []\n}",
+    "is_mock": false,
+    "actual_model": "qwen3.8-flash",
+    "duration_seconds": 4.3001
+  },
+  {
+    "purpose": "analysis_planner_v1",
+    "model": "qwen3.8-flash",
+    "enable_thinking": false,
+    "prompt_sha256": "42594e5314dc7c34d8dfe84f82a3017fa94e039b8e444d89bcab4ca1603beddc",
+    "schema_sha256": "9ae52c186698df5539452e3e0fa5c9fb269ca9d1c6fd8cc94fd333102e10ce90",
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "2026年在招岗位按城市汇总的招聘人数总和",
+          "business_goal": "统计发布日期为2026年且岗位状态为在招的各城市招聘人数总和，并按人数降序取前三名",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "发布日期为2026年",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "岗位状态为在招",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "招聘人数总和",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按城市汇总",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "按招聘人数降序排名，取前三名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "统计发布日期为2026年且岗位状态为在招的各城市招聘人数总和，并按人数降序取前三名"
+        },
+        {
+          "requirement_id": "C02",
+          "description": "time_range：发布日期为2026年"
+        },
+        {
+          "requirement_id": "C03",
+          "description": "filters：岗位状态为在招"
+        },
+        {
+          "requirement_id": "C04",
+          "description": "metric_requirements：招聘人数总和"
+        },
+        {
+          "requirement_id": "C05",
+          "description": "analysis_limits：按城市汇总；按招聘人数降序排名，取前三名"
+        }
+      ],
+      "profile": {
+        "dataset_id": "954b37afb40b40e5a1ff18aae3506115",
+        "dataset_version": "3a2c50d79e6a6101d039bd0df6a37956175dec5a5410d09f2461c6e7cb412d3d",
+        "file_name": "jobs.csv",
+        "row_count": 5,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "name": "发布日期",
+            "logical_type": "date",
+            "physical_type": "string",
+            "non_missing_count": 5,
+            "missing_rate": 0.0,
+            "unique_count": 5
+          },
+          {
+            "field_id": "field_0002",
+            "name": "城市",
+            "logical_type": "text",
+            "physical_type": "string",
+            "non_missing_count": 5,
+            "missing_rate": 0.0,
+            "unique_count": 4
+          },
+          {
+            "field_id": "field_0003",
+            "name": "岗位状态",
+            "logical_type": "text",
+            "physical_type": "string",
+            "non_missing_count": 5,
+            "missing_rate": 0.0,
+            "unique_count": 2
+          },
+          {
+            "field_id": "field_0004",
+            "name": "招聘人数",
+            "logical_type": "integer",
+            "physical_type": "string",
+            "non_missing_count": 5,
+            "missing_rate": 0.0,
+            "unique_count": 5
+          }
+        ],
+        "quality_issues": []
+      },
+      "capabilities": {
+        "version": "1.0",
+        "operations": {
+          "filter": {
+            "supported": true,
+            "params_schema": {
+              "$defs": {
+                "Condition": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "field": {
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "Field",
+                      "type": "string"
+                    },
+                    "operator": {
+                      "enum": [
+                        "eq",
+                        "ne",
+                        "gt",
+                        "gte",
+                        "lt",
+                        "lte",
+                        "in",
+                        "not_in",
+                        "is_null",
+                        "not_null"
+                      ],
+                      "title": "Operator",
+                      "type": "string"
+                    },
+                    "value": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "type": "array"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "title": "Value"
+                    }
+                  },
+                  "required": [
+                    "field",
+                    "operator",
+                    "value"
+                  ],
+                  "title": "Condition",
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false,
+              "properties": {
+                "conditions": {
+                  "items": {
+                    "$ref": "#/$defs/Condition"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Conditions",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "conditions"
+              ],
+              "title": "FilterParams",
+              "type": "object"
+            },
+            "input_rules": "AND conditions; typed comparisons; null only via is_null/not_null; no semantic matching",
+            "output_rules": "Preserves all current fields; no new fields"
+          },
+          "group_aggregate": {
+            "supported": true,
+            "params_schema": {
+              "$defs": {
+                "Metric": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "function": {
+                      "enum": [
+                        "count",
+                        "sum",
+                        "avg",
+                        "median",
+                        "min",
+                        "max",
+                        "distinct_count"
+                      ],
+                      "title": "Function",
+                      "type": "string"
+                    },
+                    "field": {
+                      "anyOf": [
+                        {
+                          "maxLength": 120,
+                          "minLength": 1,
+                          "pattern": "\\S",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "title": "Field"
+                    },
+                    "alias": {
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "Alias",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "function",
+                    "alias"
+                  ],
+                  "title": "Metric",
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false,
+              "properties": {
+                "metrics": {
+                  "items": {
+                    "$ref": "#/$defs/Metric"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Metrics",
+                  "type": "array"
+                },
+                "dimensions": {
+                  "items": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "pattern": "\\S",
+                    "type": "string"
+                  },
+                  "maxItems": 10,
+                  "minItems": 1,
+                  "title": "Dimensions",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "metrics",
+                "dimensions"
+              ],
+              "title": "GroupParams",
+              "type": "object"
+            },
+            "input_rules": "Unique comparable dimensions; numeric sum/avg/median/min/max; count optional field; distinct_count comparable field",
+            "output_rules": "Replaces input with dimensions and unique fresh metric aliases; missing groups retained"
+          },
+          "aggregate": {
+            "supported": true,
+            "params_schema": {
+              "$defs": {
+                "Metric": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "function": {
+                      "enum": [
+                        "count",
+                        "sum",
+                        "avg",
+                        "median",
+                        "min",
+                        "max",
+                        "distinct_count"
+                      ],
+                      "title": "Function",
+                      "type": "string"
+                    },
+                    "field": {
+                      "anyOf": [
+                        {
+                          "maxLength": 120,
+                          "minLength": 1,
+                          "pattern": "\\S",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "title": "Field"
+                    },
+                    "alias": {
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "Alias",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "function",
+                    "alias"
+                  ],
+                  "title": "Metric",
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false,
+              "properties": {
+                "metrics": {
+                  "items": {
+                    "$ref": "#/$defs/Metric"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Metrics",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "metrics"
+              ],
+              "title": "AggregateParams",
+              "type": "object"
+            },
+            "input_rules": "Numeric sum/avg/median/min/max; count optional field; distinct_count comparable field",
+            "output_rules": "Replaces input with metric aliases only"
+          },
+          "sort": {
+            "supported": true,
+            "params_schema": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "direction": {
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "title": "Direction",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "field",
+                "direction"
+              ],
+              "title": "SortParams",
+              "type": "object"
+            },
+            "input_rules": "Existing comparable field; stable asc/desc; null last",
+            "output_rules": "Preserves fields"
+          },
+          "top_n": {
+            "supported": true,
+            "params_schema": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "direction": {
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "title": "Direction",
+                  "type": "string"
+                },
+                "n": {
+                  "maximum": 1000,
+                  "minimum": 1,
+                  "title": "N",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "field",
+                "direction",
+                "n"
+              ],
+              "title": "TopNParams",
+              "type": "object"
+            },
+            "input_rules": "Existing comparable field; n integer 1..1000; sort then head; stable ties",
+            "output_rules": "Preserves fields"
+          },
+          "derive": {
+            "supported": true,
+            "params_schema": {
+              "additionalProperties": false,
+              "properties": {
+                "function": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Function",
+                  "type": "string"
+                },
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "alias": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Alias",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "function",
+                "field",
+                "alias"
+              ],
+              "title": "DeriveParams",
+              "type": "object"
+            },
+            "input_rules": "Only extract_year/extract_month; homogeneous DATE/DATETIME including valid ISO strings",
+            "output_rules": "Preserves fields and adds a fresh INTEGER alias; no text-to-date guess, salary parsing or skill extraction"
+          }
+        },
+        "aggregate_functions": [
+          "count",
+          "sum",
+          "avg",
+          "median",
+          "min",
+          "max",
+          "distinct_count"
+        ],
+        "derive_functions": [
+          "extract_year",
+          "extract_month"
+        ],
+        "execution_scope": "tested kernels with versioned dataset execution service; server-owned approval required; cross-task dependencies unsupported",
+        "null_policy": "count()=rows; count(field)=nonmissing; distinct_count excludes null; numeric all-null result=null; missing groups retained",
+        "logical_input_policy": "CSV homogeneous logical numbers/ISO dates are interpreted deterministically; no mixed/text semantic conversion"
+      }
+    },
+    "status": "returned",
+    "actual_output": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T01\",\n      \"title\": \"2026年在招岗位各城市招聘人数Top3\",\n      \"business_question\": \"统计发布日期为2026年且岗位状态为在招的各城市招聘人数总和，并按人数降序取前三名\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"直接回答核心分析目标，若删除则无法完成用户指定的决策支持任务。\",\n      \"requirement_ids\": [\n       \"C01\",\n       \"C02\",\n       \"C03\",\n       \"C04\",\n       \"C05\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n       {\n       \"step_id\": \"S01\",\n       \"operation\": \"derive\",\n       \"params\": {\n       \"function\": \"extract_year\",\n       \"field\": \"field_0001\",\n       \"alias\": \"publish_year\"\n       }\n       },\n       {\n       \"step_id\": \"S02\",\n       \"operation\": \"filter\",\n       \"params\": {\n       \"conditions\": [\n       {\n       \"field\": \"publish_year\",\n       \"operator\": \"eq\",\n       \"value\": 2026\n       },\n       {\n       \"field\": \"field_0003\",\n       \"operator\": \"eq\",\n       \"value\": \"在招\"\n       }\n       ]\n       }\n       },\n       {\n       \"step_id\": \"S03\",\n       \"operation\": \"group_aggregate\",\n       \"params\": {\n       \"metrics\": [\n       {\n       \"function\": \"sum\",\n       \"field\": \"field_0004\",\n       \"alias\": \"total_hiring_count\"\n       }\n       ],\n       \"dimensions\": [\n       \"field_0002\"\n       ]\n       }\n       },\n       {\n       \"step_id\": \"S04\",\n       \"operation\": \"top_n\",\n       \"params\": {\n       \"field\": \"total_hiring_count\",\n       \"direction\": \"desc\",\n       \"n\": 3\n       }\n       }\n      ]\n    }\n  ]\n}",
+    "is_mock": false,
+    "actual_model": "qwen3.8-flash",
+    "duration_seconds": 8.811
+  },
+  {
+    "purpose": "intent_v1",
+    "model": "qwen3.8-flash",
+    "enable_thinking": false,
+    "prompt_sha256": "9504f36790ff8a3b90610b1f8175226d90e6b2572cdcfad3c5c8e2a954ac81e2",
+    "schema_sha256": "a83e21c4f20a3e1512e67b10c3620a922520865d6b2d7f3ae4e4f2231c36723a",
+    "input": {
+      "user_query": "创建日期为2026年，工单状态为已解决，按城市计算响应分钟均值，按平均响应分钟升序排名，取前三名。",
+      "clarification_answers": [],
+      "dataset_context": {
+        "dataset_name": "tickets.csv",
+        "row_count": 5,
+        "columns": [
+          {
+            "field_id": "field_0001",
+            "name": "创建日期",
+            "physical_type": "string",
+            "logical_type": "date"
+          },
+          {
+            "field_id": "field_0002",
+            "name": "城市",
+            "physical_type": "string",
+            "logical_type": "text"
+          },
+          {
+            "field_id": "field_0003",
+            "name": "工单状态",
+            "physical_type": "string",
+            "logical_type": "text"
+          },
+          {
+            "field_id": "field_0004",
+            "name": "响应分钟",
+            "physical_type": "string",
+            "logical_type": "integer"
+          }
+        ],
+        "sample_rows": []
+      }
+    },
+    "status": "returned",
+    "actual_output": "{\n  \"analysis_mode\": \"goal_driven\",\n  \"next_action\": \"proceed\",\n  \"analysis_goal\": {\n    \"analysis_object\": \"2026年已解决工单的城市响应分钟均值排名\",\n    \"business_goal\": \"按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名\",\n    \"decision_goal\": null\n  },\n  \"constraints\": {\n    \"time_range\": {\n      \"raw_text\": \"创建日期为2026年\",\n      \"validation_status\": \"unverified\"\n    },\n    \"filters\": [\n      {\n        \"raw_text\": \"工单状态为已解决\",\n        \"validation_status\": \"unverified\"\n      }\n    ],\n    \"metric_requirements\": [\n      {\n        \"raw_text\": \"响应分钟均值\",\n        \"validation_status\": \"unverified\"\n      }\n    ],\n    \"analysis_limits\": [\n      {\n        \"raw_text\": \"按平均响应分钟升序排名\",\n        \"validation_status\": \"unverified\"\n      },\n      {\n        \"raw_text\": \"取前三名\",\n        \"validation_status\": \"unverified\"\n      }\n    ]\n  },\n  \"uncertainties\": [],\n  \"clarification_questions\": []\n}",
+    "is_mock": false,
+    "actual_model": "qwen3.8-flash",
+    "duration_seconds": 4.1633
+  },
+  {
+    "purpose": "analysis_planner_v1",
+    "model": "qwen3.8-flash",
+    "enable_thinking": false,
+    "prompt_sha256": "42594e5314dc7c34d8dfe84f82a3017fa94e039b8e444d89bcab4ca1603beddc",
+    "schema_sha256": "9ae52c186698df5539452e3e0fa5c9fb269ca9d1c6fd8cc94fd333102e10ce90",
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "2026年已解决工单的城市响应分钟均值排名",
+          "business_goal": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "创建日期为2026年",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "工单状态为已解决",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "响应分钟均值",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按平均响应分钟升序排名",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "取前三名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名"
+        },
+        {
+          "requirement_id": "C02",
+          "description": "time_range：创建日期为2026年"
+        },
+        {
+          "requirement_id": "C03",
+          "description": "filters：工单状态为已解决"
+        },
+        {
+          "requirement_id": "C04",
+          "description": "metric_requirements：响应分钟均值"
+        },
+        {
+          "requirement_id": "C05",
+          "description": "analysis_limits：按平均响应分钟升序排名；取前三名"
+        }
+      ],
+      "profile": {
+        "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+        "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+        "file_name": "tickets.csv",
+        "row_count": 5,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "name": "创建日期",
+            "logical_type": "date",
+            "physical_type": "string",
+            "non_missing_count": 5,
+            "missing_rate": 0.0,
+            "unique_count": 5
+          },
+          {
+            "field_id": "field_0002",
+            "name": "城市",
+            "logical_type": "text",
+            "physical_type": "string",
+            "non_missing_count": 5,
+            "missing_rate": 0.0,
+            "unique_count": 4
+          },
+          {
+            "field_id": "field_0003",
+            "name": "工单状态",
+            "logical_type": "text",
+            "physical_type": "string",
+            "non_missing_count": 5,
+            "missing_rate": 0.0,
+            "unique_count": 2
+          },
+          {
+            "field_id": "field_0004",
+            "name": "响应分钟",
+            "logical_type": "integer",
+            "physical_type": "string",
+            "non_missing_count": 5,
+            "missing_rate": 0.0,
+            "unique_count": 5
+          }
+        ],
+        "quality_issues": []
+      },
+      "capabilities": {
+        "version": "1.0",
+        "operations": {
+          "filter": {
+            "supported": true,
+            "params_schema": {
+              "$defs": {
+                "Condition": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "field": {
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "Field",
+                      "type": "string"
+                    },
+                    "operator": {
+                      "enum": [
+                        "eq",
+                        "ne",
+                        "gt",
+                        "gte",
+                        "lt",
+                        "lte",
+                        "in",
+                        "not_in",
+                        "is_null",
+                        "not_null"
+                      ],
+                      "title": "Operator",
+                      "type": "string"
+                    },
+                    "value": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "type": "array"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "title": "Value"
+                    }
+                  },
+                  "required": [
+                    "field",
+                    "operator",
+                    "value"
+                  ],
+                  "title": "Condition",
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false,
+              "properties": {
+                "conditions": {
+                  "items": {
+                    "$ref": "#/$defs/Condition"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Conditions",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "conditions"
+              ],
+              "title": "FilterParams",
+              "type": "object"
+            },
+            "input_rules": "AND conditions; typed comparisons; null only via is_null/not_null; no semantic matching",
+            "output_rules": "Preserves all current fields; no new fields"
+          },
+          "group_aggregate": {
+            "supported": true,
+            "params_schema": {
+              "$defs": {
+                "Metric": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "function": {
+                      "enum": [
+                        "count",
+                        "sum",
+                        "avg",
+                        "median",
+                        "min",
+                        "max",
+                        "distinct_count"
+                      ],
+                      "title": "Function",
+                      "type": "string"
+                    },
+                    "field": {
+                      "anyOf": [
+                        {
+                          "maxLength": 120,
+                          "minLength": 1,
+                          "pattern": "\\S",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "title": "Field"
+                    },
+                    "alias": {
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "Alias",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "function",
+                    "alias"
+                  ],
+                  "title": "Metric",
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false,
+              "properties": {
+                "metrics": {
+                  "items": {
+                    "$ref": "#/$defs/Metric"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Metrics",
+                  "type": "array"
+                },
+                "dimensions": {
+                  "items": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "pattern": "\\S",
+                    "type": "string"
+                  },
+                  "maxItems": 10,
+                  "minItems": 1,
+                  "title": "Dimensions",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "metrics",
+                "dimensions"
+              ],
+              "title": "GroupParams",
+              "type": "object"
+            },
+            "input_rules": "Unique comparable dimensions; numeric sum/avg/median/min/max; count optional field; distinct_count comparable field",
+            "output_rules": "Replaces input with dimensions and unique fresh metric aliases; missing groups retained"
+          },
+          "aggregate": {
+            "supported": true,
+            "params_schema": {
+              "$defs": {
+                "Metric": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "function": {
+                      "enum": [
+                        "count",
+                        "sum",
+                        "avg",
+                        "median",
+                        "min",
+                        "max",
+                        "distinct_count"
+                      ],
+                      "title": "Function",
+                      "type": "string"
+                    },
+                    "field": {
+                      "anyOf": [
+                        {
+                          "maxLength": 120,
+                          "minLength": 1,
+                          "pattern": "\\S",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "title": "Field"
+                    },
+                    "alias": {
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "Alias",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "function",
+                    "alias"
+                  ],
+                  "title": "Metric",
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false,
+              "properties": {
+                "metrics": {
+                  "items": {
+                    "$ref": "#/$defs/Metric"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Metrics",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "metrics"
+              ],
+              "title": "AggregateParams",
+              "type": "object"
+            },
+            "input_rules": "Numeric sum/avg/median/min/max; count optional field; distinct_count comparable field",
+            "output_rules": "Replaces input with metric aliases only"
+          },
+          "sort": {
+            "supported": true,
+            "params_schema": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "direction": {
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "title": "Direction",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "field",
+                "direction"
+              ],
+              "title": "SortParams",
+              "type": "object"
+            },
+            "input_rules": "Existing comparable field; stable asc/desc; null last",
+            "output_rules": "Preserves fields"
+          },
+          "top_n": {
+            "supported": true,
+            "params_schema": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "direction": {
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "title": "Direction",
+                  "type": "string"
+                },
+                "n": {
+                  "maximum": 1000,
+                  "minimum": 1,
+                  "title": "N",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "field",
+                "direction",
+                "n"
+              ],
+              "title": "TopNParams",
+              "type": "object"
+            },
+            "input_rules": "Existing comparable field; n integer 1..1000; sort then head; stable ties",
+            "output_rules": "Preserves fields"
+          },
+          "derive": {
+            "supported": true,
+            "params_schema": {
+              "additionalProperties": false,
+              "properties": {
+                "function": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Function",
+                  "type": "string"
+                },
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "alias": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Alias",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "function",
+                "field",
+                "alias"
+              ],
+              "title": "DeriveParams",
+              "type": "object"
+            },
+            "input_rules": "Only extract_year/extract_month; homogeneous DATE/DATETIME including valid ISO strings",
+            "output_rules": "Preserves fields and adds a fresh INTEGER alias; no text-to-date guess, salary parsing or skill extraction"
+          }
+        },
+        "aggregate_functions": [
+          "count",
+          "sum",
+          "avg",
+          "median",
+          "min",
+          "max",
+          "distinct_count"
+        ],
+        "derive_functions": [
+          "extract_year",
+          "extract_month"
+        ],
+        "execution_scope": "tested kernels with versioned dataset execution service; server-owned approval required; cross-task dependencies unsupported",
+        "null_policy": "count()=rows; count(field)=nonmissing; distinct_count excludes null; numeric all-null result=null; missing groups retained",
+        "logical_input_policy": "CSV homogeneous logical numbers/ISO dates are interpreted deterministically; no mixed/text semantic conversion"
+      }
+    },
+    "status": "returned",
+    "actual_output": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T01\",\n      \"title\": \"2026年已解决工单城市响应均值Top3\",\n      \"business_question\": \"按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名。\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"直接回答核心业务目标：识别2026年处理效率最高（响应最快）的前三个城市。删除此任务将无法支持基于响应速度的城市绩效对比决策。\",\n      \"requirement_ids\": [\n        \"C01\",\n        \"C02\",\n        \"C03\",\n        \"C04\",\n        \"C05\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S01\",\n          \"operation\": \"derive\",\n          \"params\": {\n            \"function\": \"extract_year\",\n            \"field\": \"field_0001\",\n            \"alias\": \"year_created\"\n          }\n        },\n        {\n          \"step_id\": \"S02\",\n          \"operation\": \"filter\",\n          \"params\": {\n            \"conditions\": [\n              {\n                \"field\": \"year_created\",\n                \"operator\": \"eq\",\n                \"value\": 2026\n              },\n              {\n                \"field\": \"field_0003\",\n                \"operator\": \"eq\",\n                \"value\": \"已解决\"\n              }\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S03\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"avg\",\n                \"field\": \"field_0004\",\n                \"alias\": \"avg_response_minutes\"\n              }\n            ],\n            \"dimensions\": [\n              \"field_0002\"\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S04\",\n          \"operation\": \"sort\",\n          \"params\": {\n            \"field\": \"avg_response_minutes\",\n            \"direction\": \"asc\"\n          }\n        },\n        {\n          \"step_id\": \"S05\",\n          \"operation\": \"top_n\",\n          \"params\": {\n            \"field\": \"avg_response_minutes\",\n            \"direction\": \"asc\",\n            \"n\": 3\n          }\n        }\n      ]\n    }\n  ]\n}",
+    "is_mock": false,
+    "actual_model": "qwen3.8-flash",
+    "duration_seconds": 6.5704
+  },
+  {
+    "purpose": "intent_v1",
+    "model": "qwen3.8-flash",
+    "enable_thinking": false,
+    "prompt_sha256": "9504f36790ff8a3b90610b1f8175226d90e6b2572cdcfad3c5c8e2a954ac81e2",
+    "schema_sha256": "a83e21c4f20a3e1512e67b10c3620a922520865d6b2d7f3ae4e4f2231c36723a",
+    "input": {
+      "user_query": "开始日期为2026年，任务状态为已完成，按城市汇总工时总和，按工时降序排名，取前三名。",
+      "clarification_answers": [],
+      "dataset_context": {
+        "dataset_name": "projects.csv",
+        "row_count": 5,
+        "columns": [
+          {
+            "field_id": "field_0001",
+            "name": "开始日期",
+            "physical_type": "string",
+            "logical_type": "date"
+          },
+          {
+            "field_id": "field_0002",
+            "name": "城市",
+            "physical_type": "string",
+            "logical_type": "text"
+          },
+          {
+            "field_id": "field_0003",
+            "name": "任务状态",
+            "physical_type": "string",
+            "logical_type": "text"
+          },
+          {
+            "field_id": "field_0004",
+            "name": "工时",
+            "physical_type": "string",
+            "logical_type": "integer"
+          }
+        ],
+        "sample_rows": []
+      }
+    },
+    "status": "returned",
+    "actual_output": "{\n  \"analysis_mode\": \"goal_driven\",\n  \"next_action\": \"proceed\",\n  \"analysis_goal\": {\n    \"analysis_object\": \"已完成任务的城市工时汇总\",\n    \"business_goal\": \"按城市汇总已完成任务的工时总和，并按工时降序取前三名\",\n    \"decision_goal\": null\n  },\n  \"constraints\": {\n    \"time_range\": {\n      \"raw_text\": \"开始日期为2026年\",\n      \"validation_status\": \"unverified\"\n    },\n    \"filters\": [\n      {\n        \"raw_text\": \"任务状态为已完成\",\n        \"validation_status\": \"unverified\"\n      }\n    ],\n    \"metric_requirements\": [\n      {\n        \"raw_text\": \"工时总和\",\n        \"validation_status\": \"unverified\"\n      }\n    ],\n    \"analysis_limits\": [\n      {\n        \"raw_text\": \"按工时降序排名\",\n        \"validation_status\": \"unverified\"\n      },\n      {\n        \"raw_text\": \"取前三名\",\n        \"validation_status\": \"unverified\"\n      }\n    ]\n  },\n  \"uncertainties\": [],\n  \"clarification_questions\": []\n}",
+    "is_mock": false,
+    "actual_model": "qwen3.8-flash",
+    "duration_seconds": 5.9667
+  },
+  {
+    "purpose": "analysis_planner_v1",
+    "model": "qwen3.8-flash",
+    "enable_thinking": false,
+    "prompt_sha256": "42594e5314dc7c34d8dfe84f82a3017fa94e039b8e444d89bcab4ca1603beddc",
+    "schema_sha256": "9ae52c186698df5539452e3e0fa5c9fb269ca9d1c6fd8cc94fd333102e10ce90",
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "已完成任务的城市工时汇总",
+          "business_goal": "按城市汇总已完成任务的工时总和，并按工时降序取前三名",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "开始日期为2026年",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "任务状态为已完成",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "工时总和",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按工时降序排名",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "取前三名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "按城市汇总已完成任务的工时总和，并按工时降序取前三名"
+        },
+        {
+          "requirement_id": "C02",
+          "description": "time_range：开始日期为2026年"
+        },
+        {
+          "requirement_id": "C03",
+          "description": "filters：任务状态为已完成"
+        },
+        {
+          "requirement_id": "C04",
+          "description": "metric_requirements：工时总和"
+        },
+        {
+          "requirement_id": "C05",
+          "description": "analysis_limits：按工时降序排名；取前三名"
+        }
+      ],
+      "profile": {
+        "dataset_id": "c86e6d69cde24f1ba73e2700ed085380",
+        "dataset_version": "6722555e8fbbea49f6229a8a5a13d10b922ba1b104ce07d109358a1330d0fb0c",
+        "file_name": "projects.csv",
+        "row_count": 5,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "name": "开始日期",
+            "logical_type": "date",
+            "physical_type": "string",
+            "non_missing_count": 5,
+            "missing_rate": 0.0,
+            "unique_count": 5
+          },
+          {
+            "field_id": "field_0002",
+            "name": "城市",
+            "logical_type": "text",
+            "physical_type": "string",
+            "non_missing_count": 5,
+            "missing_rate": 0.0,
+            "unique_count": 4
+          },
+          {
+            "field_id": "field_0003",
+            "name": "任务状态",
+            "logical_type": "text",
+            "physical_type": "string",
+            "non_missing_count": 5,
+            "missing_rate": 0.0,
+            "unique_count": 2
+          },
+          {
+            "field_id": "field_0004",
+            "name": "工时",
+            "logical_type": "integer",
+            "physical_type": "string",
+            "non_missing_count": 5,
+            "missing_rate": 0.0,
+            "unique_count": 5
+          }
+        ],
+        "quality_issues": []
+      },
+      "capabilities": {
+        "version": "1.0",
+        "operations": {
+          "filter": {
+            "supported": true,
+            "params_schema": {
+              "$defs": {
+                "Condition": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "field": {
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "Field",
+                      "type": "string"
+                    },
+                    "operator": {
+                      "enum": [
+                        "eq",
+                        "ne",
+                        "gt",
+                        "gte",
+                        "lt",
+                        "lte",
+                        "in",
+                        "not_in",
+                        "is_null",
+                        "not_null"
+                      ],
+                      "title": "Operator",
+                      "type": "string"
+                    },
+                    "value": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "type": "array"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "title": "Value"
+                    }
+                  },
+                  "required": [
+                    "field",
+                    "operator",
+                    "value"
+                  ],
+                  "title": "Condition",
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false,
+              "properties": {
+                "conditions": {
+                  "items": {
+                    "$ref": "#/$defs/Condition"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Conditions",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "conditions"
+              ],
+              "title": "FilterParams",
+              "type": "object"
+            },
+            "input_rules": "AND conditions; typed comparisons; null only via is_null/not_null; no semantic matching",
+            "output_rules": "Preserves all current fields; no new fields"
+          },
+          "group_aggregate": {
+            "supported": true,
+            "params_schema": {
+              "$defs": {
+                "Metric": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "function": {
+                      "enum": [
+                        "count",
+                        "sum",
+                        "avg",
+                        "median",
+                        "min",
+                        "max",
+                        "distinct_count"
+                      ],
+                      "title": "Function",
+                      "type": "string"
+                    },
+                    "field": {
+                      "anyOf": [
+                        {
+                          "maxLength": 120,
+                          "minLength": 1,
+                          "pattern": "\\S",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "title": "Field"
+                    },
+                    "alias": {
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "Alias",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "function",
+                    "alias"
+                  ],
+                  "title": "Metric",
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false,
+              "properties": {
+                "metrics": {
+                  "items": {
+                    "$ref": "#/$defs/Metric"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Metrics",
+                  "type": "array"
+                },
+                "dimensions": {
+                  "items": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "pattern": "\\S",
+                    "type": "string"
+                  },
+                  "maxItems": 10,
+                  "minItems": 1,
+                  "title": "Dimensions",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "metrics",
+                "dimensions"
+              ],
+              "title": "GroupParams",
+              "type": "object"
+            },
+            "input_rules": "Unique comparable dimensions; numeric sum/avg/median/min/max; count optional field; distinct_count comparable field",
+            "output_rules": "Replaces input with dimensions and unique fresh metric aliases; missing groups retained"
+          },
+          "aggregate": {
+            "supported": true,
+            "params_schema": {
+              "$defs": {
+                "Metric": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "function": {
+                      "enum": [
+                        "count",
+                        "sum",
+                        "avg",
+                        "median",
+                        "min",
+                        "max",
+                        "distinct_count"
+                      ],
+                      "title": "Function",
+                      "type": "string"
+                    },
+                    "field": {
+                      "anyOf": [
+                        {
+                          "maxLength": 120,
+                          "minLength": 1,
+                          "pattern": "\\S",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "title": "Field"
+                    },
+                    "alias": {
+                      "maxLength": 120,
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "title": "Alias",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "function",
+                    "alias"
+                  ],
+                  "title": "Metric",
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false,
+              "properties": {
+                "metrics": {
+                  "items": {
+                    "$ref": "#/$defs/Metric"
+                  },
+                  "maxItems": 20,
+                  "minItems": 1,
+                  "title": "Metrics",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "metrics"
+              ],
+              "title": "AggregateParams",
+              "type": "object"
+            },
+            "input_rules": "Numeric sum/avg/median/min/max; count optional field; distinct_count comparable field",
+            "output_rules": "Replaces input with metric aliases only"
+          },
+          "sort": {
+            "supported": true,
+            "params_schema": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "direction": {
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "title": "Direction",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "field",
+                "direction"
+              ],
+              "title": "SortParams",
+              "type": "object"
+            },
+            "input_rules": "Existing comparable field; stable asc/desc; null last",
+            "output_rules": "Preserves fields"
+          },
+          "top_n": {
+            "supported": true,
+            "params_schema": {
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "direction": {
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "title": "Direction",
+                  "type": "string"
+                },
+                "n": {
+                  "maximum": 1000,
+                  "minimum": 1,
+                  "title": "N",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "field",
+                "direction",
+                "n"
+              ],
+              "title": "TopNParams",
+              "type": "object"
+            },
+            "input_rules": "Existing comparable field; n integer 1..1000; sort then head; stable ties",
+            "output_rules": "Preserves fields"
+          },
+          "derive": {
+            "supported": true,
+            "params_schema": {
+              "additionalProperties": false,
+              "properties": {
+                "function": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Function",
+                  "type": "string"
+                },
+                "field": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Field",
+                  "type": "string"
+                },
+                "alias": {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "title": "Alias",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "function",
+                "field",
+                "alias"
+              ],
+              "title": "DeriveParams",
+              "type": "object"
+            },
+            "input_rules": "Only extract_year/extract_month; homogeneous DATE/DATETIME including valid ISO strings",
+            "output_rules": "Preserves fields and adds a fresh INTEGER alias; no text-to-date guess, salary parsing or skill extraction"
+          }
+        },
+        "aggregate_functions": [
+          "count",
+          "sum",
+          "avg",
+          "median",
+          "min",
+          "max",
+          "distinct_count"
+        ],
+        "derive_functions": [
+          "extract_year",
+          "extract_month"
+        ],
+        "execution_scope": "tested kernels with versioned dataset execution service; server-owned approval required; cross-task dependencies unsupported",
+        "null_policy": "count()=rows; count(field)=nonmissing; distinct_count excludes null; numeric all-null result=null; missing groups retained",
+        "logical_input_policy": "CSV homogeneous logical numbers/ISO dates are interpreted deterministically; no mixed/text semantic conversion"
+      }
+    },
+    "status": "returned",
+    "actual_output": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T1\",\n      \"title\": \"2026年已完成任务城市工时Top3汇总\",\n      \"business_question\": \"在开始日期为2026年的范围内，统计任务状态为“已完成”的记录，按城市汇总工时总和，并按工时降序排列取前三名。\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"直接回答核心业务目标（按城市汇总已完成任务的工时总和并取前三），若删除则无法完成决策支持。涉及时间筛选、状态过滤、分组聚合及排序限制，均为必要步骤。\",\n      \"requirement_ids\": [\n        \"C01\",\n        \"C02\",\n        \"C03\",\n        \"C04\",\n        \"C05\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S1\",\n          \"operation\": \"derive\",\n          \"params\": {\n            \"function\": \"extract_year\",\n            \"field\": \"field_0001\",\n            \"alias\": \"year_start\"\n          }\n        },\n        {\n          \"step_id\": \"S2\",\n          \"operation\": \"filter\",\n          \"params\": {\n            \"conditions\": [\n              {\n                \"field\": \"year_start\",\n                \"operator\": \"eq\",\n                \"value\": 2026\n              },\n              {\n                \"field\": \"field_0003\",\n                \"operator\": \"eq\",\n                \"value\": \"已完成\"\n              }\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S3\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"sum\",\n                \"field\": \"field_0004\",\n                \"alias\": \"total_hours\"\n              }\n            ],\n            \"dimensions\": [\n              \"field_0002\"\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S4\",\n          \"operation\": \"top_n\",\n          \"params\": {\n            \"field\": \"total_hours\",\n            \"direction\": \"desc\",\n            \"n\": 3\n          }\n        }\n      ]\n    }\n  ]\n}",
+    "is_mock": false,
+    "actual_model": "qwen3.8-flash",
+    "duration_seconds": 8.214
+  }
+]

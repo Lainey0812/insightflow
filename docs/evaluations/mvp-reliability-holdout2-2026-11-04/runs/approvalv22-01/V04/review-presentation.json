@@ -1,0 +1,450 @@
+{
+  "session_id": "7c3e042548714462a884cbe0ec3c5106",
+  "revision": 8,
+  "plan_id": "plan_30a9e5dc844041eba4cc25e8166e5075",
+  "plan_version": 1,
+  "goal": "比较上海与杭州的薪资元平均值，并按该指标降序排名",
+  "coverage": "已安排核心问题的分析",
+  "conditions": [
+    {
+      "label": "筛选范围",
+      "text": "只看上海与杭州",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.filters[0]"
+    },
+    {
+      "label": "统计指标",
+      "text": "薪资元平均值",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.metric_requirements[0]"
+    },
+    {
+      "label": "分析要求",
+      "text": "按城市比较",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.analysis_limits[0]"
+    },
+    {
+      "label": "分析要求",
+      "text": "按薪资元平均值降序排名",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.analysis_limits[1]"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按城市分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S02"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：薪资元 · 均值",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S02"
+    },
+    {
+      "label": "拟用排序与展示",
+      "text": "按薪资元 · 均值从高到低排列",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S03"
+    }
+  ],
+  "directions": [
+    {
+      "task_id": "T01",
+      "title": "上海与杭州薪资元平均值对比及排名",
+      "question": "比较上海与杭州的薪资元平均值，并按该指标降序排名。",
+      "importance": "核心分析",
+      "reason": "删除此任务将无法回答核心问题（城市薪资均值对比）或支持核心决策（基于均值的排名）。这是唯一直接满足所有核心需求C01-C04的任务。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "城市 属于 上海、杭州",
+        "按城市分组",
+        "拟用统计口径：薪资元 · 均值",
+        "按薪资元 · 均值从高到低排列"
+      ],
+      "gaps": [],
+      "can_remove": true
+    }
+  ],
+  "issues": [],
+  "warnings": [],
+  "can_approve": true,
+  "can_execute": false,
+  "audit": {
+    "audit_version": "2.2",
+    "binding": {
+      "dataset_id": "037d8c33e11a47e0974d43b843cb4c0b",
+      "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+      "plan_id": "plan_30a9e5dc844041eba4cc25e8166e5075",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "registry_version": "1.0"
+    },
+    "digest": "e44730b564052004b7762ad500b5fcd64991a79e116fc45abb8a332af0a2af57",
+    "all_verified": true,
+    "items": [
+      {
+        "source": "intent.constraints.filters[0]",
+        "raw_text": "只看上海与杭州",
+        "status": "verified",
+        "category": "filters",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0001"
+        ],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S01",
+            "operation": "filter",
+            "condition": {
+              "field": "field_0001",
+              "operator": "in",
+              "value": [
+                "上海",
+                "杭州"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.metric_requirements[0]",
+        "raw_text": "薪资元平均值",
+        "status": "verified",
+        "category": "metric_requirements",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0004"
+        ],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S02",
+            "operation": "group_aggregate",
+            "metric": {
+              "function": "avg",
+              "field": "field_0004",
+              "alias": "salary_avg"
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.analysis_limits[0]",
+        "raw_text": "按城市比较",
+        "status": "verified",
+        "category": "analysis_limits",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0001"
+        ],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S02",
+            "operation": "group_aggregate",
+            "dimension": "field_0001"
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.analysis_limits[1]",
+        "raw_text": "按薪资元平均值降序排名",
+        "status": "verified",
+        "category": "analysis_limits",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0004"
+        ],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S03",
+            "operation": "sort",
+            "metric": {
+              "function": "avg",
+              "field": "field_0004",
+              "alias": "salary_avg"
+            },
+            "params": {
+              "field": "salary_avg",
+              "direction": "desc"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "technical_details": {
+    "record": {
+      "session_id": "7c3e042548714462a884cbe0ec3c5106",
+      "plan_id": "plan_30a9e5dc844041eba4cc25e8166e5075",
+      "plan_version": 1,
+      "dataset_id": "037d8c33e11a47e0974d43b843cb4c0b",
+      "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+      "validation_version": "1.0",
+      "created_at": "2026-11-05T04:16:21.795954+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "037d8c33e11a47e0974d43b843cb4c0b",
+          "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+          "plan_id": "plan_30a9e5dc844041eba4cc25e8166e5075",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T01",
+              "title": "上海与杭州薪资元平均值对比及排名",
+              "business_question": "比较上海与杭州的薪资元平均值，并按该指标降序排名。",
+              "priority": "P0",
+              "priority_reason": "删除此任务将无法回答核心问题（城市薪资均值对比）或支持核心决策（基于均值的排名）。这是唯一直接满足所有核心需求C01-C04的任务。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03",
+                "C04"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "field_0001",
+                        "operator": "in",
+                        "value": [
+                          "上海",
+                          "杭州"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "avg",
+                        "field": "field_0004",
+                        "alias": "salary_avg"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0001"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S03",
+                  "operation": "sort",
+                  "params": {
+                    "field": "salary_avg",
+                    "direction": "desc"
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "比较上海与杭州的薪资元平均值，并按该指标降序排名"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "filters：只看上海与杭州"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "metric_requirements：薪资元平均值"
+            },
+            {
+              "requirement_id": "C04",
+              "description": "analysis_limits：按城市比较；按薪资元平均值降序排名"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "037d8c33e11a47e0974d43b843cb4c0b",
+          "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "上海与杭州的薪资元平均值",
+            "business_goal": "比较上海与杭州的薪资元平均值，并按该指标降序排名",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [
+              {
+                "raw_text": "只看上海与杭州",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "薪资元平均值",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按城市比较",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "按薪资元平均值降序排名",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "constraint_audit": {
+      "audit_version": "2.2",
+      "binding": {
+        "dataset_id": "037d8c33e11a47e0974d43b843cb4c0b",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_id": "plan_30a9e5dc844041eba4cc25e8166e5075",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "e44730b564052004b7762ad500b5fcd64991a79e116fc45abb8a332af0a2af57",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "只看上海与杭州",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0001"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0001",
+                "operator": "in",
+                "value": [
+                  "上海",
+                  "杭州"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "薪资元平均值",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "avg",
+                "field": "field_0004",
+                "alias": "salary_avg"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "按城市比较",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0001"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "dimension": "field_0001"
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[1]",
+          "raw_text": "按薪资元平均值降序排名",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S03",
+              "operation": "sort",
+              "metric": {
+                "function": "avg",
+                "field": "field_0004",
+                "alias": "salary_avg"
+              },
+              "params": {
+                "field": "salary_avg",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "session_status": "AWAITING_APPROVAL",
+    "revision": 8
+  }
+}

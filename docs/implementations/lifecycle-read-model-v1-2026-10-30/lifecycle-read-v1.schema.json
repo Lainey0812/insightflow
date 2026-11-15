@@ -1,0 +1,583 @@
+{
+  "$defs": {
+    "BusinessLifecycle": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "default": "unknown",
+          "enum": [
+            "created",
+            "running",
+            "waiting_input",
+            "waiting_approval",
+            "succeeded",
+            "partially_succeeded",
+            "failed",
+            "interrupted",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "execution_status": {
+          "anyOf": [
+            {
+              "enum": [
+                "running",
+                "success",
+                "partial_success",
+                "failed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Execution Status"
+        },
+        "report_generation_status": {
+          "anyOf": [
+            {
+              "enum": [
+                "queued",
+                "generating",
+                "completed",
+                "failed",
+                "unavailable"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Report Generation Status"
+        },
+        "report_status": {
+          "anyOf": [
+            {
+              "enum": [
+                "complete",
+                "partial",
+                "unavailable"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Report Status"
+        },
+        "goal_coverage": {
+          "anyOf": [
+            {
+              "enum": [
+                "complete",
+                "partial",
+                "blocked"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Goal Coverage"
+        },
+        "report_delivery": {
+          "default": "unknown",
+          "enum": [
+            "delivered",
+            "not_delivered",
+            "unknown"
+          ],
+          "title": "Report Delivery",
+          "type": "string"
+        }
+      },
+      "title": "BusinessLifecycle",
+      "type": "object"
+    },
+    "Collection": {
+      "additionalProperties": false,
+      "properties": {
+        "availability": {
+          "default": "unknown",
+          "enum": [
+            "available",
+            "not_collected",
+            "unavailable",
+            "unknown"
+          ],
+          "title": "Availability",
+          "type": "string"
+        },
+        "integrity": {
+          "default": "unknown",
+          "enum": [
+            "incomplete",
+            "unknown"
+          ],
+          "title": "Integrity",
+          "type": "string"
+        },
+        "capture_scope": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Capture Scope"
+        },
+        "root_status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Root Status"
+        },
+        "root_business_revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Root Business Revision"
+        },
+        "report_trace_status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Report Trace Status"
+        },
+        "observed_spans": {
+          "items": {
+            "$ref": "#/$defs/ObservedSpan"
+          },
+          "title": "Observed Spans",
+          "type": "array"
+        },
+        "event_count": {
+          "default": 0,
+          "title": "Event Count",
+          "type": "integer"
+        },
+        "report_attempt_history": {
+          "const": "not_guaranteed",
+          "default": "not_guaranteed",
+          "title": "Report Attempt History",
+          "type": "string"
+        }
+      },
+      "title": "Collection",
+      "type": "object"
+    },
+    "Consistency": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "default": "unknown",
+          "enum": [
+            "consistent",
+            "unknown",
+            "inconsistent"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "business_snapshot": {
+          "default": "unavailable",
+          "enum": [
+            "transactional",
+            "unavailable"
+          ],
+          "title": "Business Snapshot",
+          "type": "string"
+        },
+        "cross_store_snapshot": {
+          "const": "non_atomic",
+          "default": "non_atomic",
+          "title": "Cross Store Snapshot",
+          "type": "string"
+        },
+        "revision_rechecked": {
+          "default": false,
+          "title": "Revision Rechecked",
+          "type": "boolean"
+        },
+        "issues": {
+          "items": {
+            "enum": [
+              "clarification_required",
+              "approval_required",
+              "approved_not_started",
+              "core_requirements_unmet",
+              "uncertainties_unresolved",
+              "execution_partial",
+              "execution_failed",
+              "report_failed",
+              "report_not_delivered",
+              "report_unavailable",
+              "report_partial",
+              "goal_not_fully_covered",
+              "report_not_started",
+              "report_retry",
+              "process_interrupted",
+              "trace_not_collected",
+              "trace_unavailable",
+              "trace_incomplete",
+              "trace_stale",
+              "trace_binding_mismatch",
+              "trace_state_conflict",
+              "unsupported_workflow",
+              "record_missing",
+              "record_invalid",
+              "branch_mismatch",
+              "historical_branch_ignored",
+              "execution_ambiguous",
+              "session_changed",
+              "business_store_unavailable",
+              "business_state_conflict"
+            ],
+            "type": "string"
+          },
+          "title": "Issues",
+          "type": "array"
+        }
+      },
+      "title": "Consistency",
+      "type": "object"
+    },
+    "ObservedSpan": {
+      "additionalProperties": false,
+      "properties": {
+        "span_id": {
+          "title": "Span Id",
+          "type": "string"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "node": {
+          "title": "Node",
+          "type": "string"
+        },
+        "node_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Node Key"
+        },
+        "node_attempt": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Node Attempt"
+        },
+        "status": {
+          "enum": [
+            "running",
+            "complete",
+            "partial",
+            "failed",
+            "skipped",
+            "interrupted"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "span_id",
+        "run_id",
+        "node",
+        "status"
+      ],
+      "title": "ObservedSpan",
+      "type": "object"
+    },
+    "SourceRefs": {
+      "additionalProperties": false,
+      "properties": {
+        "session_id": {
+          "title": "Session Id",
+          "type": "string"
+        },
+        "session_revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Session Revision"
+        },
+        "dataset_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dataset Id"
+        },
+        "dataset_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dataset Version"
+        },
+        "plan_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plan Id"
+        },
+        "plan_version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plan Version"
+        },
+        "validation_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Validation Version"
+        },
+        "approval_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approval Id"
+        },
+        "execution_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Execution Id"
+        },
+        "report_attempt": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Report Attempt"
+        },
+        "report_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Report Id"
+        },
+        "workflow_run_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Workflow Run Id"
+        },
+        "report_run_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Report Run Id"
+        }
+      },
+      "required": [
+        "session_id"
+      ],
+      "title": "SourceRefs",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "lifecycle-read-v1",
+      "default": "lifecycle-read-v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "business_lifecycle": {
+      "$ref": "#/$defs/BusinessLifecycle"
+    },
+    "activity": {
+      "default": "unknown",
+      "enum": [
+        "not_started",
+        "preparing",
+        "profiling",
+        "parsing_intent",
+        "planning",
+        "validating",
+        "clarification",
+        "review",
+        "approved_not_started",
+        "executing",
+        "report_not_started",
+        "report_queued",
+        "reporting",
+        "finished",
+        "unknown"
+      ],
+      "title": "Activity",
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "enum": [
+          "clarification_required",
+          "approval_required",
+          "approved_not_started",
+          "core_requirements_unmet",
+          "uncertainties_unresolved",
+          "execution_partial",
+          "execution_failed",
+          "report_failed",
+          "report_not_delivered",
+          "report_unavailable",
+          "report_partial",
+          "goal_not_fully_covered",
+          "report_not_started",
+          "report_retry",
+          "process_interrupted",
+          "trace_not_collected",
+          "trace_unavailable",
+          "trace_incomplete",
+          "trace_stale",
+          "trace_binding_mismatch",
+          "trace_state_conflict",
+          "unsupported_workflow",
+          "record_missing",
+          "record_invalid",
+          "branch_mismatch",
+          "historical_branch_ignored",
+          "execution_ambiguous",
+          "session_changed",
+          "business_store_unavailable",
+          "business_state_conflict"
+        ],
+        "type": "string"
+      },
+      "title": "Reason Codes",
+      "type": "array"
+    },
+    "source_refs": {
+      "$ref": "#/$defs/SourceRefs"
+    },
+    "collection": {
+      "$ref": "#/$defs/Collection"
+    },
+    "consistency": {
+      "$ref": "#/$defs/Consistency"
+    }
+  },
+  "required": [
+    "source_refs"
+  ],
+  "title": "LifecycleReadModel",
+  "type": "object"
+}

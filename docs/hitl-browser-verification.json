@@ -1,0 +1,836 @@
+{
+  "environment": "isolated browser acceptance database; local UI on 5174 and backend on 8001",
+  "approval_origin": "UI button clicked by automated acceptance, never a claimed production human approval",
+  "source_file": "examples/sales.csv",
+  "session_id": "592872b6757f4d3793e0dcf55e555238",
+  "actions": [
+    "upload real sales.csv through file chooser",
+    "enter original analysis goal",
+    "submit structured manual plan",
+    "read three real tasks at v1",
+    "delete A03 through review card",
+    "observe Validator coverage complete at v2",
+    "click confirm and execute",
+    "read persisted real ExecutionResult in page",
+    "reload page and recover v2 plus same approval and results"
+  ],
+  "plan_versions": [
+    {
+      "session_id": "592872b6757f4d3793e0dcf55e555238",
+      "plan_id": "27c81896-00e0-4a88-be33-3b74d04fca1e",
+      "plan_version": 1,
+      "dataset_id": "c0fbc4ab3e9e45a98b4778cec0d47550",
+      "dataset_version": "ff93b910035d5c5169ab5f1030766776c5f94d691ef002b12b1dfd02b989f49b",
+      "validation_version": "1.0",
+      "created_at": "2026-10-26T15:49:01.889817+00:00",
+      "change_type": "created",
+      "change_summary": "人工提交结构化计划；经真实 Validator 校验，尚未批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "c0fbc4ab3e9e45a98b4778cec0d47550",
+          "dataset_version": "ff93b910035d5c5169ab5f1030766776c5f94d691ef002b12b1dfd02b989f49b",
+          "plan_id": "27c81896-00e0-4a88-be33-3b74d04fca1e",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "A01",
+              "title": "高额记录地区排名",
+              "business_question": "销售额不低于18000的记录中，哪个地区金额最高？",
+              "priority": "P0",
+              "priority_reason": "回答地区差异问题",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "field_0004",
+                        "operator": "gte",
+                        "value": 18000
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "dimensions": [
+                      "field_0003"
+                    ],
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "alias": "record_count"
+                      },
+                      {
+                        "function": "sum",
+                        "field": "field_0004",
+                        "alias": "sales_total"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S03",
+                  "operation": "sort",
+                  "params": {
+                    "field": "sales_total",
+                    "direction": "desc"
+                  }
+                },
+                {
+                  "step_id": "S04",
+                  "operation": "top_n",
+                  "params": {
+                    "field": "sales_total",
+                    "direction": "desc",
+                    "n": 1
+                  }
+                }
+              ]
+            },
+            {
+              "task_id": "A02",
+              "title": "整体销售额",
+              "business_question": "全部记录销售额合计是多少？",
+              "priority": "P0",
+              "priority_reason": "回答整体销售总额",
+              "requirement_ids": [
+                "C02"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0004",
+                        "alias": "sales_total"
+                      },
+                      {
+                        "function": "count",
+                        "alias": "record_count"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "task_id": "A03",
+              "title": "辅助销售汇总",
+              "business_question": "辅助核对总额",
+              "priority": "P2",
+              "priority_reason": "辅助核对，可由用户删除",
+              "requirement_ids": [],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0004",
+                        "alias": "sales_total"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "高额记录地区排名"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "整体销售总额"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "A01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          },
+          {
+            "task_id": "A02",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          },
+          {
+            "task_id": "A03",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "A01",
+          "A02",
+          "A03"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "c0fbc4ab3e9e45a98b4778cec0d47550",
+          "dataset_version": "ff93b910035d5c5169ab5f1030766776c5f94d691ef002b12b1dfd02b989f49b",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "sales.csv",
+            "business_goal": "比较高额销售记录的地区分布，并统计总销售额",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    {
+      "session_id": "592872b6757f4d3793e0dcf55e555238",
+      "plan_id": "27c81896-00e0-4a88-be33-3b74d04fca1e",
+      "plan_version": 2,
+      "dataset_id": "c0fbc4ab3e9e45a98b4778cec0d47550",
+      "dataset_version": "ff93b910035d5c5169ab5f1030766776c5f94d691ef002b12b1dfd02b989f49b",
+      "validation_version": "1.0",
+      "created_at": "2026-10-26T15:49:20.455845+00:00",
+      "change_type": "tasks_deleted",
+      "change_summary": "删除任务：A03",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "c0fbc4ab3e9e45a98b4778cec0d47550",
+          "dataset_version": "ff93b910035d5c5169ab5f1030766776c5f94d691ef002b12b1dfd02b989f49b",
+          "plan_id": "27c81896-00e0-4a88-be33-3b74d04fca1e",
+          "plan_version": 2,
+          "tasks": [
+            {
+              "task_id": "A01",
+              "title": "高额记录地区排名",
+              "business_question": "销售额不低于18000的记录中，哪个地区金额最高？",
+              "priority": "P0",
+              "priority_reason": "回答地区差异问题",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "field_0004",
+                        "operator": "gte",
+                        "value": 18000
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "dimensions": [
+                      "field_0003"
+                    ],
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "alias": "record_count"
+                      },
+                      {
+                        "function": "sum",
+                        "field": "field_0004",
+                        "alias": "sales_total"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S03",
+                  "operation": "sort",
+                  "params": {
+                    "field": "sales_total",
+                    "direction": "desc"
+                  }
+                },
+                {
+                  "step_id": "S04",
+                  "operation": "top_n",
+                  "params": {
+                    "field": "sales_total",
+                    "direction": "desc",
+                    "n": 1
+                  }
+                }
+              ]
+            },
+            {
+              "task_id": "A02",
+              "title": "整体销售额",
+              "business_question": "全部记录销售额合计是多少？",
+              "priority": "P0",
+              "priority_reason": "回答整体销售总额",
+              "requirement_ids": [
+                "C02"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0004",
+                        "alias": "sales_total"
+                      },
+                      {
+                        "function": "count",
+                        "alias": "record_count"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "高额记录地区排名"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "整体销售总额"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "A01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          },
+          {
+            "task_id": "A02",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "A01",
+          "A02"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "c0fbc4ab3e9e45a98b4778cec0d47550",
+          "dataset_version": "ff93b910035d5c5169ab5f1030766776c5f94d691ef002b12b1dfd02b989f49b",
+          "plan_version": 2,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "sales.csv",
+            "business_goal": "比较高额销售记录的地区分布，并统计总销售额",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "approval_50a6236421bf460cb4d51d9f97e527f4",
+      "approval_request_id": "414428b7-d617-421c-aed3-9cdd06df1bb6",
+      "session_id": "592872b6757f4d3793e0dcf55e555238",
+      "plan_id": "27c81896-00e0-4a88-be33-3b74d04fca1e",
+      "plan_version": 2,
+      "validation_version": "1.0",
+      "dataset_id": "c0fbc4ab3e9e45a98b4778cec0d47550",
+      "dataset_version": "ff93b910035d5c5169ab5f1030766776c5f94d691ef002b12b1dfd02b989f49b",
+      "approved_at": "2026-10-26T15:49:28.378922+00:00",
+      "approval_status": "approved",
+      "acknowledged_warnings": [],
+      "snapshot": {
+        "approval_id": "approval_50a6236421bf460cb4d51d9f97e527f4",
+        "approved_at": "2026-10-26T15:49:28.378922+00:00",
+        "status": "approved",
+        "validated_plan": {
+          "plan": {
+            "dataset_id": "c0fbc4ab3e9e45a98b4778cec0d47550",
+            "dataset_version": "ff93b910035d5c5169ab5f1030766776c5f94d691ef002b12b1dfd02b989f49b",
+            "plan_id": "27c81896-00e0-4a88-be33-3b74d04fca1e",
+            "plan_version": 2,
+            "tasks": [
+              {
+                "task_id": "A01",
+                "title": "高额记录地区排名",
+                "business_question": "销售额不低于18000的记录中，哪个地区金额最高？",
+                "priority": "P0",
+                "priority_reason": "回答地区差异问题",
+                "requirement_ids": [
+                  "C01"
+                ],
+                "depends_on": [],
+                "missing_inputs": [],
+                "steps": [
+                  {
+                    "step_id": "S01",
+                    "operation": "filter",
+                    "params": {
+                      "conditions": [
+                        {
+                          "field": "field_0004",
+                          "operator": "gte",
+                          "value": 18000
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "step_id": "S02",
+                    "operation": "group_aggregate",
+                    "params": {
+                      "dimensions": [
+                        "field_0003"
+                      ],
+                      "metrics": [
+                        {
+                          "function": "count",
+                          "alias": "record_count"
+                        },
+                        {
+                          "function": "sum",
+                          "field": "field_0004",
+                          "alias": "sales_total"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "step_id": "S03",
+                    "operation": "sort",
+                    "params": {
+                      "field": "sales_total",
+                      "direction": "desc"
+                    }
+                  },
+                  {
+                    "step_id": "S04",
+                    "operation": "top_n",
+                    "params": {
+                      "field": "sales_total",
+                      "direction": "desc",
+                      "n": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "task_id": "A02",
+                "title": "整体销售额",
+                "business_question": "全部记录销售额合计是多少？",
+                "priority": "P0",
+                "priority_reason": "回答整体销售总额",
+                "requirement_ids": [
+                  "C02"
+                ],
+                "depends_on": [],
+                "missing_inputs": [],
+                "steps": [
+                  {
+                    "step_id": "S01",
+                    "operation": "aggregate",
+                    "params": {
+                      "metrics": [
+                        {
+                          "function": "sum",
+                          "field": "field_0004",
+                          "alias": "sales_total"
+                        },
+                        {
+                          "function": "count",
+                          "alias": "record_count"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ],
+            "core_requirements": [
+              {
+                "requirement_id": "C01",
+                "description": "高额记录地区排名"
+              },
+              {
+                "requirement_id": "C02",
+                "description": "整体销售总额"
+              }
+            ]
+          },
+          "validation_results": [
+            {
+              "task_id": "A01",
+              "feasibility": "F2",
+              "reason_code": "READY",
+              "validation_issues": [],
+              "executable": true
+            },
+            {
+              "task_id": "A02",
+              "feasibility": "F2",
+              "reason_code": "READY",
+              "validation_issues": [],
+              "executable": true
+            }
+          ],
+          "unmet_core_requirements": [],
+          "coverage_status": "complete",
+          "executable_task_ids": [
+            "A01",
+            "A02"
+          ],
+          "blocked_task_ids": [],
+          "fully_executable": true,
+          "validation_version": "1.0",
+          "registry_version": "1.0",
+          "approval_required": true,
+          "llm": null,
+          "provenance": {
+            "source": "uploaded",
+            "dataset": "c0fbc4ab3e9e45a98b4778cec0d47550",
+            "dataset_version": "ff93b910035d5c5169ab5f1030766776c5f94d691ef002b12b1dfd02b989f49b",
+            "plan_version": 2,
+            "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+          },
+          "intent_snapshot": {
+            "analysis_mode": "goal_driven",
+            "next_action": "proceed",
+            "analysis_goal": {
+              "analysis_object": "sales.csv",
+              "business_goal": "比较高额销售记录的地区分布，并统计总销售额",
+              "decision_goal": null
+            },
+            "constraints": {
+              "time_range": null,
+              "filters": [],
+              "metric_requirements": [],
+              "analysis_limits": []
+            },
+            "uncertainties": [],
+            "clarification_questions": []
+          }
+        },
+        "intent": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "sales.csv",
+            "business_goal": "比较高额销售记录的地区分布，并统计总销售额",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        },
+        "resolved_uncertainty_ids": [],
+        "constraints_confirmed": false,
+        "session_id": "592872b6757f4d3793e0dcf55e555238",
+        "acknowledged_warnings": []
+      }
+    }
+  ],
+  "execution_request": {
+    "session_id": "592872b6757f4d3793e0dcf55e555238",
+    "plan_id": "27c81896-00e0-4a88-be33-3b74d04fca1e",
+    "plan_version": 2,
+    "execution_request_id": "91cad1c9-b905-4835-8c27-601bfbef665d"
+  },
+  "execution": {
+    "dataset_id": "c0fbc4ab3e9e45a98b4778cec0d47550",
+    "dataset_version": "ff93b910035d5c5169ab5f1030766776c5f94d691ef002b12b1dfd02b989f49b",
+    "execution_id": "exec_cfe2b85198424bbba30d0870f5022609",
+    "plan_id": "27c81896-00e0-4a88-be33-3b74d04fca1e",
+    "plan_version": 2,
+    "approved_plan_version": 2,
+    "execution_status": "success",
+    "source": "engine",
+    "producer": "insightflow-analysis-engine-v1",
+    "session_id": "592872b6757f4d3793e0dcf55e555238",
+    "execution_request_id": "91cad1c9-b905-4835-8c27-601bfbef665d",
+    "approval_id": "approval_50a6236421bf460cb4d51d9f97e527f4",
+    "started_at": "2026-10-26T15:49:28.400492+00:00",
+    "finished_at": "2026-10-26T15:49:28.412264+00:00",
+    "duration_ms": 11.251832998823375,
+    "result_view": "preview",
+    "provenance": {
+      "source": "uploaded",
+      "dataset": "c0fbc4ab3e9e45a98b4778cec0d47550",
+      "dataset_version": "ff93b910035d5c5169ab5f1030766776c5f94d691ef002b12b1dfd02b989f49b",
+      "plan_version": 2,
+      "notice": "从指定版本上传文件读取，复用受控统计内核计算；完整结果与预览分开保存。"
+    },
+    "errors": [],
+    "warnings": [],
+    "tasks": [
+      {
+        "task_id": "A01",
+        "status": "success",
+        "result": {
+          "result_id": "result_d9c1a5881c3c460098794f0acd8b8fb1",
+          "columns": [
+            {
+              "field": "field_0003",
+              "label": "地区",
+              "logical_type": "text",
+              "role": "dimension",
+              "unit": null
+            },
+            {
+              "field": "record_count",
+              "label": "记录 · 计数",
+              "logical_type": "integer",
+              "role": "metric",
+              "unit": "条"
+            },
+            {
+              "field": "sales_total",
+              "label": "销售额 · 合计",
+              "logical_type": "integer",
+              "role": "metric",
+              "unit": null
+            }
+          ],
+          "rows": [
+            {
+              "field_0003": "华东",
+              "record_count": 6,
+              "sales_total": 157000
+            }
+          ],
+          "truncated": false,
+          "total_result_rows": 1,
+          "row_offset": 0,
+          "total_refs": []
+        },
+        "effective_row_count": 9,
+        "valid_sample_count": 9,
+        "sample_definition": "聚合前各最终指标的非缺失参与数；指标样本数不同时不提供统一有效样本量。",
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → sort → top_n",
+        "failure_reason": null,
+        "result_id": "result_d9c1a5881c3c460098794f0acd8b8fb1",
+        "result_ref": "result_d9c1a5881c3c460098794f0acd8b8fb1",
+        "row_count": 1,
+        "execution_metadata": {
+          "input_row_count": 12,
+          "started_at": "2026-10-26T15:49:28.401006+00:00",
+          "finished_at": "2026-10-26T15:49:28.409824+00:00",
+          "duration_ms": 8.823040989227593,
+          "preview_row_count": 1,
+          "metric_valid_counts": {
+            "record_count": 9,
+            "sales_total": 9
+          },
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "filter",
+              "status": "success",
+              "input_row_count": 12,
+              "output_row_count": 9,
+              "duration_ms": 6.338874998618849,
+              "warnings": [],
+              "error": null
+            },
+            {
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "status": "success",
+              "input_row_count": 9,
+              "output_row_count": 2,
+              "duration_ms": 1.4398750063264742,
+              "warnings": [],
+              "error": null
+            },
+            {
+              "step_id": "S03",
+              "operation": "sort",
+              "status": "success",
+              "input_row_count": 2,
+              "output_row_count": 2,
+              "duration_ms": 0.497874993016012,
+              "warnings": [],
+              "error": null
+            },
+            {
+              "step_id": "S04",
+              "operation": "top_n",
+              "status": "success",
+              "input_row_count": 2,
+              "output_row_count": 1,
+              "duration_ms": 0.19841600442305207,
+              "warnings": [],
+              "error": null
+            }
+          ],
+          "warnings": []
+        },
+        "error": null
+      },
+      {
+        "task_id": "A02",
+        "status": "success",
+        "result": {
+          "result_id": "result_b60381273ca44e4a9d49624691949367",
+          "columns": [
+            {
+              "field": "sales_total",
+              "label": "销售额 · 合计",
+              "logical_type": "integer",
+              "role": "metric",
+              "unit": null
+            },
+            {
+              "field": "record_count",
+              "label": "记录 · 计数",
+              "logical_type": "integer",
+              "role": "metric",
+              "unit": "条"
+            }
+          ],
+          "rows": [
+            {
+              "sales_total": 263000,
+              "record_count": 12
+            }
+          ],
+          "truncated": false,
+          "total_result_rows": 1,
+          "row_offset": 0,
+          "total_refs": []
+        },
+        "effective_row_count": 12,
+        "valid_sample_count": 12,
+        "sample_definition": "聚合前各最终指标的非缺失参与数；指标样本数不同时不提供统一有效样本量。",
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：aggregate",
+        "failure_reason": null,
+        "result_id": "result_b60381273ca44e4a9d49624691949367",
+        "result_ref": "result_b60381273ca44e4a9d49624691949367",
+        "row_count": 1,
+        "execution_metadata": {
+          "input_row_count": 12,
+          "started_at": "2026-10-26T15:49:28.410740+00:00",
+          "finished_at": "2026-10-26T15:49:28.411461+00:00",
+          "duration_ms": 0.7177499937824905,
+          "preview_row_count": 1,
+          "metric_valid_counts": {
+            "sales_total": 12,
+            "record_count": 12
+          },
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "aggregate",
+              "status": "success",
+              "input_row_count": 12,
+              "output_row_count": 1,
+              "duration_ms": 0.5865840066689998,
+              "warnings": [],
+              "error": null
+            }
+          ],
+          "warnings": []
+        },
+        "error": null
+      }
+    ]
+  },
+  "checks": {
+    "source_rows": 12,
+    "version_history_persisted": true,
+    "deleted_task_absent": true,
+    "approval_id_linked": true,
+    "engine_source": "engine",
+    "displayed_region_sales": 157000,
+    "displayed_total_sales": 263000,
+    "page_reload_recovered": true,
+    "llm_calls": 0,
+    "mock_calls": 0
+  },
+  "screenshot": "hitl-browser-verification.jpg"
+}

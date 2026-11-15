@@ -1,0 +1,58 @@
+{
+  "$defs": {
+    "DatasetRef": {
+      "additionalProperties": false,
+      "properties": {
+        "dataset_id": {
+          "minLength": 1,
+          "title": "Dataset Id",
+          "type": "string"
+        },
+        "dataset_version": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Dataset Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "dataset_version"
+      ],
+      "title": "DatasetRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "user_query": {
+      "maxLength": 2000,
+      "title": "User Query",
+      "type": "string"
+    },
+    "dataset_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DatasetRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "clarification_answers": {
+      "items": {
+        "maxLength": 2000,
+        "type": "string"
+      },
+      "maxItems": 10,
+      "title": "Clarification Answers",
+      "type": "array"
+    }
+  },
+  "required": [
+    "user_query"
+  ],
+  "title": "IntentRequest",
+  "type": "object"
+}

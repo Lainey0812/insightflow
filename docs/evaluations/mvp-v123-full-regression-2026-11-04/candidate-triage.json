@@ -1,0 +1,3897 @@
+[
+  {
+    "case_id": "P01",
+    "candidate_index": 0,
+    "system_candidate_status": "rejected",
+    "rule_ids": [
+      "FREE_TEXT_GUARD",
+      "NUMERIC"
+    ],
+    "candidate": {
+      "primary_evidence_id": "E0008",
+      "evidence_refs": [
+        "E0008",
+        "E0002",
+        "E0003",
+        "E0004"
+      ],
+      "finding_type": "trend",
+      "implication": "已返回月份的任务数量呈现波动，其中一个月份的计数高于其他月份，但首末对比显示整体变化幅度有限。当前数据仅反映样本内的时间分布，不足以判断业务负载的持续趋势或原因。",
+      "recommendation": "核查高计数月份对应的任务类型、状态分布及工时记录，评估该月份任务量增加是否伴随特定项目集中启动或积压释放；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0008",
+        "task_id": "T1",
+        "data_ref": "result_fe14ec9823654df7b87a9e12dd64abb5",
+        "result_field": "task_count",
+        "evidence_type": "change_rate",
+        "value": {
+          "from": 1,
+          "to": 3,
+          "baseline": 2,
+          "current": 2,
+          "change_percent": 0
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：derive → filter → derive → group_aggregate → sort；(末期已计算值 - 首期已计算值) / 首期已计算值 × 100；首期分母为正；不保证时间点连续。",
+        "statement": "在已返回时间点中，记录 · 计数从 1至3变化约 0%。",
+        "source_row_indices": [
+          0,
+          2
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0002",
+        "task_id": "T1",
+        "data_ref": "result_fe14ec9823654df7b87a9e12dd64abb5",
+        "result_field": "task_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": 2,
+          "value": 3,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：derive → filter → derive → group_aggregate → sort；对已返回的 task_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，2的记录 · 计数为 3条，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T1",
+        "data_ref": "result_fe14ec9823654df7b87a9e12dd64abb5",
+        "result_field": "task_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": 1,
+          "value": 2,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：derive → filter → derive → group_aggregate → sort；对已返回的 task_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，1的记录 · 计数为 2条，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0004",
+        "task_id": "T1",
+        "data_ref": "result_fe14ec9823654df7b87a9e12dd64abb5",
+        "result_field": "task_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": 3,
+          "value": 2,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：derive → filter → derive → group_aggregate → sort；对已返回的 task_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，3的记录 · 计数为 2条，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          2
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "role_contract_conflict",
+    "case_review_reason": "“其中一个月份”触发数值守卫，已有排名证据但解释字段不允许重复事实；候选同时有未证原因和强度，不宜整体白名单。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/P01/http-03-response.json"
+  },
+  {
+    "case_id": "P01",
+    "candidate_index": 1,
+    "system_candidate_status": "rejected",
+    "rule_ids": [
+      "FREE_TEXT_GUARD",
+      "UNSUPPORTED_ASSERTION"
+    ],
+    "candidate": {
+      "primary_evidence_id": "E0009",
+      "evidence_refs": [
+        "E0009",
+        "E0010",
+        "E0011",
+        "E0012"
+      ],
+      "finding_type": "concentration",
+      "implication": "在已返回的分组中，各月份任务数量的占比结构存在差异，最高占比月份的贡献度明显高于其他并列月份。这反映了当前样本内任务创建的时间分布不均，但未提供未返回月份的数据，无法确定全年完整分布。",
+      "recommendation": "对比不同月份的任务平均工时或完成状态比例，检验高占比月份是否因单个大型任务或批量操作导致计数偏高；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0009",
+        "task_id": "T1",
+        "data_ref": "result_fe14ec9823654df7b87a9e12dd64abb5",
+        "result_field": "task_count",
+        "evidence_type": "proportion",
+        "value": {
+          "category": 2,
+          "numerator": 3,
+          "denominator": 7.0,
+          "percent": 42.857142857142854
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：derive → filter → derive → group_aggregate → sort；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+        "statement": "2的记录 · 计数占该任务同口径总体约 42.857142857142854%。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0010",
+        "task_id": "T1",
+        "data_ref": "result_fe14ec9823654df7b87a9e12dd64abb5",
+        "result_field": "task_count",
+        "evidence_type": "proportion",
+        "value": {
+          "category": 1,
+          "numerator": 2,
+          "denominator": 7.0,
+          "percent": 28.571428571428573
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：derive → filter → derive → group_aggregate → sort；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+        "statement": "1的记录 · 计数占该任务同口径总体约 28.571428571428573%。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0011",
+        "task_id": "T1",
+        "data_ref": "result_fe14ec9823654df7b87a9e12dd64abb5",
+        "result_field": "task_count",
+        "evidence_type": "proportion",
+        "value": {
+          "category": 3,
+          "numerator": 2,
+          "denominator": 7.0,
+          "percent": 28.571428571428573
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：derive → filter → derive → group_aggregate → sort；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+        "statement": "3的记录 · 计数占该任务同口径总体约 28.571428571428573%。",
+        "source_row_indices": [
+          2
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0012",
+        "task_id": "T1",
+        "data_ref": "result_fe14ec9823654df7b87a9e12dd64abb5",
+        "result_field": "task_count",
+        "evidence_type": "metric",
+        "value": {
+          "value": 7,
+          "unit": "条",
+          "label": "本次返回分组合计（记录 · 计数）"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：derive → filter → derive → group_aggregate → sort；仅将当前完整返回表中的可加指标相加；含 Top N 时只代表所选分组，不作为总体占比分母。",
+        "statement": "本次返回的 3 个分组的记录 · 计数合计为 7条。",
+        "source_row_indices": [
+          0,
+          1,
+          2
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "role_contract_conflict",
+    "case_review_reason": "“其中一个月份”触发数值守卫，已有排名证据但解释字段不允许重复事实；候选同时有未证原因和强度，不宜整体白名单。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/P01/http-03-response.json"
+  },
+  {
+    "case_id": "P03",
+    "candidate_index": 0,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0042",
+      "evidence_refs": [
+        "E0042",
+        "E0013",
+        "E0014"
+      ],
+      "finding_type": "concentration",
+      "implication": "已完成与进行中状态在返回结果中占据主要比例，待开始占比极低。这提示当前项目任务多处于活跃或收尾阶段，但需结合具体业务周期判断是否符合预期节奏。",
+      "recommendation": "核查“待开始”任务的创建时间与计划启动日期，确认是否存在积压或录入延迟；同时评估高完成率是否伴随质量风险。补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "上传范围内，工时有 1 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。",
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0042",
+        "task_id": "T2",
+        "data_ref": "result_235e8f5651934f7eaa37962dd2d56658",
+        "result_field": "status_task_count",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "status_task_count",
+          "dimension_field": "field_0003",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "已完成",
+          "right": "进行中",
+          "left_value": "5",
+          "right_value": "2",
+          "returned_group_count": 3,
+          "denominator_scope": "returned_groups_only",
+          "formula": "(left_value + right_value) / returned_group_sum * 100",
+          "comparison_kind": "returned_concentration",
+          "numerator": "7",
+          "denominator": "8",
+          "percent": "87.5"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；分母仅为本次完整返回的分组合计，不是全部筛选范围或整体市场。",
+        "calculation": "批准操作链：group_aggregate；returned_concentration：(left_value + right_value) / returned_group_sum * 100；字段 status_task_count，分子 7，分母 8；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "已完成和进行中合计占本次返回 3 个分组记录计数合计的约 87.5%；分母仅为返回分组合计，不代表全部筛选范围或整体市场占比。",
+        "source_row_indices": [
+          0,
+          1,
+          2
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0013",
+        "task_id": "T2",
+        "data_ref": "result_235e8f5651934f7eaa37962dd2d56658",
+        "result_field": "status_task_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "已完成",
+          "value": 5,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate；对已返回的 status_task_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，已完成的记录 · 计数为 5条，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0014",
+        "task_id": "T2",
+        "data_ref": "result_235e8f5651934f7eaa37962dd2d56658",
+        "result_field": "status_task_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "进行中",
+          "value": 2,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate；对已返回的 status_task_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，进行中的记录 · 计数为 2条，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unsupported_interpretation",
+    "case_review_reason": "保存解释使用“占比极低”、任务复杂度/人员配置/估算标准等未经验证解释；系统complete不等于业务通过。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/P03/http-03-response.json"
+  },
+  {
+    "case_id": "P03",
+    "candidate_index": 1,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0043",
+      "evidence_refs": [
+        "E0043",
+        "E0029",
+        "E0024"
+      ],
+      "finding_type": "difference",
+      "implication": "丙项目的平均工时高于乙项目，且两者存在明显差额。这可能反映任务复杂度、人员配置或估算标准的差异，但不能直接推断效率高低。",
+      "recommendation": "比较丙与乙项目的任务类型分布及单个任务的工时明细，排查是否存在异常高耗时任务拉高均值；核查两项目在资源投入上的可比性。补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "上传范围内，工时有 1 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。",
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0043",
+        "task_id": "T3",
+        "data_ref": "result_685e1ff1f262432a81193c2db5eec1db",
+        "result_field": "avg_hours",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "avg_hours",
+          "dimension_field": "field_0002",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "丙",
+          "right": "乙",
+          "left_value": "14.0",
+          "right_value": "12.0",
+          "difference": "2.0",
+          "formula": "(left_value - right_value) / right_value * 100",
+          "comparison_kind": "relative_lead",
+          "numerator": "2.0",
+          "denominator": "12.0",
+          "percent": "16.7"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；仅比较当前返回的同口径分组。",
+        "calculation": "批准操作链：group_aggregate；relative_lead：(left_value - right_value) / right_value * 100；字段 avg_hours，分子 2.0，分母 12.0；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "在当前返回结果中，丙的工时均值比乙高 2，相对乙领先约 16.7%。",
+        "source_row_indices": [
+          2,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0029",
+        "task_id": "T3",
+        "data_ref": "result_685e1ff1f262432a81193c2db5eec1db",
+        "result_field": "avg_hours",
+        "evidence_type": "difference",
+        "value": {
+          "left": "丙",
+          "right": "乙",
+          "left_value": 14.0,
+          "right_value": 12.0,
+          "difference": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate；已计算值相减：avg_hours[2] - avg_hours[1]；不是因果或显著性检验。",
+        "statement": "在该任务完整分组结果中，丙与乙的工时 · 均值差值为 2。",
+        "source_row_indices": [
+          2,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0024",
+        "task_id": "T3",
+        "data_ref": "result_685e1ff1f262432a81193c2db5eec1db",
+        "result_field": "avg_hours",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "丙",
+          "value": 14.0,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate；对已返回的 avg_hours 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，丙的工时 · 均值为 14，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          2
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unsupported_interpretation",
+    "case_review_reason": "保存解释使用“占比极低”、任务复杂度/人员配置/估算标准等未经验证解释；系统complete不等于业务通过。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/P03/http-03-response.json"
+  },
+  {
+    "case_id": "P03",
+    "candidate_index": 2,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0007",
+      "evidence_refs": [
+        "E0007",
+        "E0002",
+        "E0003"
+      ],
+      "finding_type": "difference",
+      "implication": "甲与乙项目的任务数量完全一致，而丙项目较少。这种并列关系值得进一步探究其背后的工作量平衡或分配策略。",
+      "recommendation": "对比甲与乙项目的总工时和平均单任务工时，检验“同数量不同负荷”的可能性；核实丙项目任务少的原因是否为范围界定不同或数据缺失。补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "上传范围内，工时有 1 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。",
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0007",
+        "task_id": "T1",
+        "data_ref": "result_e89882cfe9dc45aa95e86c328fdd83af",
+        "result_field": "task_count",
+        "evidence_type": "difference",
+        "value": {
+          "left": "甲",
+          "right": "乙",
+          "left_value": 3,
+          "right_value": 3,
+          "difference": 0
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算值相减：task_count[0] - task_count[1]；不是因果或显著性检验。",
+        "statement": "在该任务完整分组结果中，甲与乙的记录 · 计数差值为 0条。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0002",
+        "task_id": "T1",
+        "data_ref": "result_e89882cfe9dc45aa95e86c328fdd83af",
+        "result_field": "task_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "甲",
+          "value": 3,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 task_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，甲的记录 · 计数为 3条，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T1",
+        "data_ref": "result_e89882cfe9dc45aa95e86c328fdd83af",
+        "result_field": "task_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "乙",
+          "value": 3,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 task_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，乙的记录 · 计数为 3条，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unsupported_interpretation",
+    "case_review_reason": "保存解释使用“占比极低”、任务复杂度/人员配置/估算标准等未经验证解释；系统complete不等于业务通过。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/P03/http-03-response.json"
+  },
+  {
+    "case_id": "P04",
+    "candidate_index": 0,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0002",
+      "evidence_refs": [
+        "E0002"
+      ],
+      "finding_type": "highlight",
+      "implication": "该平均工时数值反映了当前有效样本的集中趋势，但受限于缺失记录和样本规模，不足以代表整体项目效率或推断具体成因。",
+      "recommendation": "核查缺失工时的记录背景及补全可能性，并对比不同状态或项目的工时分布结构，以评估均值对极端值的敏感度；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "上传范围内，工时有 1 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。",
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0002",
+        "task_id": "T01",
+        "data_ref": "result_afea0e225c8540f2b4b6c87830573191",
+        "result_field": "avg_work_hours",
+        "evidence_type": "metric",
+        "value": {
+          "value": 10.571428571428571,
+          "unit": null
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：aggregate；读取已计算指标 avg_work_hours，函数 avg。",
+        "statement": "工时 · 均值为 10.571428571428571。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "delivered",
+    "case_review_reason": "平均工时、缺失边界和后续核查建议清楚，无经营效率确定结论。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/P04/http-03-response.json"
+  },
+  {
+    "case_id": "R01",
+    "candidate_index": 0,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0008",
+      "evidence_refs": [
+        "E0002",
+        "E0003",
+        "E0004",
+        "E0005",
+        "E0006",
+        "E0007",
+        "E0008"
+      ],
+      "finding_type": "difference",
+      "implication": "城市间岗位数量存在差额，当前数据不足以判断差异的具体原因或团队效率高低。",
+      "recommendation": "比较相关城市的记录构成与指标口径，核查差额与实际业务规模或结构的关联；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0002",
+        "task_id": "T01",
+        "data_ref": "result_95a61d94e5924c8d9e72f42126c3ad45",
+        "result_field": "job_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "北京",
+          "value": 3,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 job_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，北京的记录 · 计数为 3条，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T01",
+        "data_ref": "result_95a61d94e5924c8d9e72f42126c3ad45",
+        "result_field": "job_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "上海",
+          "value": 2,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 job_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，上海的记录 · 计数为 2条，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0004",
+        "task_id": "T01",
+        "data_ref": "result_95a61d94e5924c8d9e72f42126c3ad45",
+        "result_field": "job_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "杭州",
+          "value": 2,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 job_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，杭州的记录 · 计数为 2条，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          2
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0005",
+        "task_id": "T01",
+        "data_ref": "result_95a61d94e5924c8d9e72f42126c3ad45",
+        "result_field": "job_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "南京",
+          "value": 1,
+          "rank": 4
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 job_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，南京的记录 · 计数为 1条，并列值采用同一名次，排名 4。",
+        "source_row_indices": [
+          3
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0006",
+        "task_id": "T01",
+        "data_ref": "result_95a61d94e5924c8d9e72f42126c3ad45",
+        "result_field": "job_count",
+        "evidence_type": "maximum",
+        "value": {
+          "value": 3,
+          "category": "北京",
+          "tie_count": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；读取 job_count 的最大值，保留并列来源行。",
+        "statement": "该任务完整分组结果的记录 · 计数最大值为 3条，对应 北京等 1 个分组。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0007",
+        "task_id": "T01",
+        "data_ref": "result_95a61d94e5924c8d9e72f42126c3ad45",
+        "result_field": "job_count",
+        "evidence_type": "minimum",
+        "value": {
+          "value": 1,
+          "category": "南京",
+          "tie_count": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；读取 job_count 的最小值，保留并列来源行。",
+        "statement": "该任务完整分组结果的记录 · 计数最小值为 1条，对应 南京等 1 个分组。",
+        "source_row_indices": [
+          3
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0008",
+        "task_id": "T01",
+        "data_ref": "result_95a61d94e5924c8d9e72f42126c3ad45",
+        "result_field": "job_count",
+        "evidence_type": "difference",
+        "value": {
+          "left": "北京",
+          "right": "上海",
+          "left_value": 3,
+          "right_value": 2,
+          "difference": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算值相减：job_count[0] - job_count[1]；不是因果或显著性检验。",
+        "statement": "在该任务完整分组结果中，北京与上海的记录 · 计数差值为 1条。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "delivered",
+    "case_review_reason": "城市岗位计数和结构事实有来源，报告complete，存在通用“团队效率”边界措辞。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/R01/http-03-response.json"
+  },
+  {
+    "case_id": "R01",
+    "candidate_index": 1,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0009",
+      "evidence_refs": [
+        "E0009",
+        "E0010",
+        "E0011",
+        "E0012",
+        "E0013"
+      ],
+      "finding_type": "concentration",
+      "implication": "分组占比展示了当前结果的结构分布，不能据此推断未返回分组的状况或整体市场份额。",
+      "recommendation": "核查各分组的参与记录完整性及统计口径一致性，评估结构比例对后续决策的参考意义；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0009",
+        "task_id": "T01",
+        "data_ref": "result_95a61d94e5924c8d9e72f42126c3ad45",
+        "result_field": "job_count",
+        "evidence_type": "proportion",
+        "value": {
+          "category": "北京",
+          "numerator": 3,
+          "denominator": 8.0,
+          "percent": 37.5
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+        "statement": "北京的记录 · 计数占该任务同口径总体约 37.5%。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0010",
+        "task_id": "T01",
+        "data_ref": "result_95a61d94e5924c8d9e72f42126c3ad45",
+        "result_field": "job_count",
+        "evidence_type": "proportion",
+        "value": {
+          "category": "上海",
+          "numerator": 2,
+          "denominator": 8.0,
+          "percent": 25
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+        "statement": "上海的记录 · 计数占该任务同口径总体约 25%。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0011",
+        "task_id": "T01",
+        "data_ref": "result_95a61d94e5924c8d9e72f42126c3ad45",
+        "result_field": "job_count",
+        "evidence_type": "proportion",
+        "value": {
+          "category": "杭州",
+          "numerator": 2,
+          "denominator": 8.0,
+          "percent": 25
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+        "statement": "杭州的记录 · 计数占该任务同口径总体约 25%。",
+        "source_row_indices": [
+          2
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0012",
+        "task_id": "T01",
+        "data_ref": "result_95a61d94e5924c8d9e72f42126c3ad45",
+        "result_field": "job_count",
+        "evidence_type": "proportion",
+        "value": {
+          "category": "南京",
+          "numerator": 1,
+          "denominator": 8.0,
+          "percent": 12.5
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+        "statement": "南京的记录 · 计数占该任务同口径总体约 12.5%。",
+        "source_row_indices": [
+          3
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0013",
+        "task_id": "T01",
+        "data_ref": "result_95a61d94e5924c8d9e72f42126c3ad45",
+        "result_field": "job_count",
+        "evidence_type": "metric",
+        "value": {
+          "value": 8,
+          "unit": "条",
+          "label": "本次返回分组合计（记录 · 计数）"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；仅将当前完整返回表中的可加指标相加；含 Top N 时只代表所选分组，不作为总体占比分母。",
+        "statement": "本次返回的 4 个分组的记录 · 计数合计为 8条。",
+        "source_row_indices": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "delivered",
+    "case_review_reason": "城市岗位计数和结构事实有来源，报告complete，存在通用“团队效率”边界措辞。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/R01/http-03-response.json"
+  },
+  {
+    "case_id": "R03",
+    "candidate_index": 0,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0008",
+      "evidence_refs": [
+        "E0002",
+        "E0003",
+        "E0008"
+      ],
+      "finding_type": "difference",
+      "implication": "北京与上海的岗位数量差额值得结合两地的招聘记录构成进行评估，当前结果不足以判断差异的具体原因或团队效率高低。",
+      "recommendation": "比较相关城市的订单数量、平均订单金额及产品构成，核查销售差额与记录结构的关联；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0002",
+        "task_id": "T1",
+        "data_ref": "result_348089f28a9d4bf2945964a1aeadaf4b",
+        "result_field": "job_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "北京",
+          "value": 3,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 job_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，北京的记录 · 计数为 3条，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T1",
+        "data_ref": "result_348089f28a9d4bf2945964a1aeadaf4b",
+        "result_field": "job_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "上海",
+          "value": 2,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 job_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，上海的记录 · 计数为 2条，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0008",
+        "task_id": "T1",
+        "data_ref": "result_348089f28a9d4bf2945964a1aeadaf4b",
+        "result_field": "job_count",
+        "evidence_type": "difference",
+        "value": {
+          "left": "北京",
+          "right": "上海",
+          "left_value": 3,
+          "right_value": 2,
+          "difference": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算值相减：job_count[0] - job_count[1]；不是因果或显著性检验。",
+        "statement": "在该任务完整分组结果中，北京与上海的记录 · 计数差值为 1条。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "domain_mismatch",
+    "case_review_reason": "招聘岗位计数的建议错误使用“订单数量、订单金额、产品构成、销售差额”，不能视作可用业务建议。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/R03/http-04-response.json"
+  },
+  {
+    "case_id": "R03",
+    "candidate_index": 1,
+    "system_candidate_status": "rejected",
+    "rule_ids": [
+      "UNBOUND_POPULATION_SCOPE"
+    ],
+    "candidate": {
+      "primary_evidence_id": "E0009",
+      "evidence_refs": [
+        "E0013",
+        "E0009",
+        "E0010",
+        "E0011"
+      ],
+      "finding_type": "concentration",
+      "implication": "该分组在已返回总体中的占比结构提示了资源分布的不均衡性，但缺乏业务阈值支持，无法直接认定为高度集中或竞争态势。",
+      "recommendation": "补充查看相邻时间点与对应记录类型，核查变化的可重复性；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0013",
+        "task_id": "T1",
+        "data_ref": "result_348089f28a9d4bf2945964a1aeadaf4b",
+        "result_field": "job_count",
+        "evidence_type": "metric",
+        "value": {
+          "value": 8,
+          "unit": "条",
+          "label": "本次返回分组合计（记录 · 计数）"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；仅将当前完整返回表中的可加指标相加；含 Top N 时只代表所选分组，不作为总体占比分母。",
+        "statement": "本次返回的 4 个分组的记录 · 计数合计为 8条。",
+        "source_row_indices": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0009",
+        "task_id": "T1",
+        "data_ref": "result_348089f28a9d4bf2945964a1aeadaf4b",
+        "result_field": "job_count",
+        "evidence_type": "proportion",
+        "value": {
+          "category": "北京",
+          "numerator": 3,
+          "denominator": 8.0,
+          "percent": 37.5
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+        "statement": "北京的记录 · 计数占该任务同口径总体约 37.5%。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0010",
+        "task_id": "T1",
+        "data_ref": "result_348089f28a9d4bf2945964a1aeadaf4b",
+        "result_field": "job_count",
+        "evidence_type": "proportion",
+        "value": {
+          "category": "上海",
+          "numerator": 2,
+          "denominator": 8.0,
+          "percent": 25
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+        "statement": "上海的记录 · 计数占该任务同口径总体约 25%。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0011",
+        "task_id": "T1",
+        "data_ref": "result_348089f28a9d4bf2945964a1aeadaf4b",
+        "result_field": "job_count",
+        "evidence_type": "proportion",
+        "value": {
+          "category": "杭州",
+          "numerator": 2,
+          "denominator": 8.0,
+          "percent": 25
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+        "statement": "杭州的记录 · 计数占该任务同口径总体约 25%。",
+        "source_row_indices": [
+          2
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "domain_mismatch",
+    "case_review_reason": "招聘岗位计数的建议错误使用“订单数量、订单金额、产品构成、销售差额”，不能视作可用业务建议。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/R03/http-04-response.json"
+  },
+  {
+    "case_id": "R04",
+    "candidate_index": 0,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0008",
+      "evidence_refs": [
+        "E0008",
+        "E0002",
+        "E0003"
+      ],
+      "finding_type": "difference",
+      "implication": "北京与上海的岗位数量存在差额，值得结合各城市的记录构成进一步评估。当前数据不足以判断差异的具体原因或业务表现优劣。",
+      "recommendation": "比较这两个城市的岗位类型分布、薪资结构及发布时间跨度，核查差额是否与特定类别的记录规模有关；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0008",
+        "task_id": "T01",
+        "data_ref": "result_013a173acc5543e986e5e060c9b11a73",
+        "result_field": "job_count",
+        "evidence_type": "difference",
+        "value": {
+          "left": "北京",
+          "right": "上海",
+          "left_value": 3,
+          "right_value": 2,
+          "difference": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算值相减：job_count[0] - job_count[1]；不是因果或显著性检验。",
+        "statement": "在该任务完整分组结果中，北京与上海的记录 · 计数差值为 1条。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0002",
+        "task_id": "T01",
+        "data_ref": "result_013a173acc5543e986e5e060c9b11a73",
+        "result_field": "job_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "北京",
+          "value": 3,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 job_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，北京的记录 · 计数为 3条，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T01",
+        "data_ref": "result_013a173acc5543e986e5e060c9b11a73",
+        "result_field": "job_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "上海",
+          "value": 2,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 job_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，上海的记录 · 计数为 2条，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "partial_delivery",
+    "case_review_reason": "不排除北京未反转；报告partial，建议涉及未提供发布时间字段，需明确后续数据要求。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/R04/http-03-response.json"
+  },
+  {
+    "case_id": "R04",
+    "candidate_index": 1,
+    "system_candidate_status": "rejected",
+    "rule_ids": [
+      "FREE_TEXT_GUARD",
+      "CAUSAL"
+    ],
+    "candidate": {
+      "primary_evidence_id": "E0009",
+      "evidence_refs": [
+        "E0009",
+        "E0010",
+        "E0011",
+        "E0012",
+        "E0013"
+      ],
+      "finding_type": "concentration",
+      "implication": "各城市在返回结果中的占比结构反映了当前样本内的分布情况。由于分母仅为已返回分组之和，该比例不代表整体市场份额。",
+      "recommendation": "核查未包含在返回结果中的其他潜在城市或类别，评估当前分组是否覆盖了主要的业务场景；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0009",
+        "task_id": "T01",
+        "data_ref": "result_013a173acc5543e986e5e060c9b11a73",
+        "result_field": "job_count",
+        "evidence_type": "proportion",
+        "value": {
+          "category": "北京",
+          "numerator": 3,
+          "denominator": 8.0,
+          "percent": 37.5
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+        "statement": "北京的记录 · 计数占该任务同口径总体约 37.5%。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0010",
+        "task_id": "T01",
+        "data_ref": "result_013a173acc5543e986e5e060c9b11a73",
+        "result_field": "job_count",
+        "evidence_type": "proportion",
+        "value": {
+          "category": "上海",
+          "numerator": 2,
+          "denominator": 8.0,
+          "percent": 25
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+        "statement": "上海的记录 · 计数占该任务同口径总体约 25%。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0011",
+        "task_id": "T01",
+        "data_ref": "result_013a173acc5543e986e5e060c9b11a73",
+        "result_field": "job_count",
+        "evidence_type": "proportion",
+        "value": {
+          "category": "杭州",
+          "numerator": 2,
+          "denominator": 8.0,
+          "percent": 25
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+        "statement": "杭州的记录 · 计数占该任务同口径总体约 25%。",
+        "source_row_indices": [
+          2
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0012",
+        "task_id": "T01",
+        "data_ref": "result_013a173acc5543e986e5e060c9b11a73",
+        "result_field": "job_count",
+        "evidence_type": "proportion",
+        "value": {
+          "category": "南京",
+          "numerator": 1,
+          "denominator": 8.0,
+          "percent": 12.5
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+        "statement": "南京的记录 · 计数占该任务同口径总体约 12.5%。",
+        "source_row_indices": [
+          3
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0013",
+        "task_id": "T01",
+        "data_ref": "result_013a173acc5543e986e5e060c9b11a73",
+        "result_field": "job_count",
+        "evidence_type": "metric",
+        "value": {
+          "value": 8,
+          "unit": "条",
+          "label": "本次返回分组合计（记录 · 计数）"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；仅将当前完整返回表中的可加指标相加；含 Top N 时只代表所选分组，不作为总体占比分母。",
+        "statement": "本次返回的 4 个分组的记录 · 计数合计为 8条。",
+        "source_row_indices": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "partial_delivery",
+    "case_review_reason": "不排除北京未反转；报告partial，建议涉及未提供发布时间字段，需明确后续数据要求。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/R04/http-03-response.json"
+  },
+  {
+    "case_id": "S01",
+    "candidate_index": 0,
+    "system_candidate_status": "rejected",
+    "rule_ids": [
+      "FREE_TEXT_GUARD",
+      "UNDEFINED_THRESHOLD"
+    ],
+    "candidate": {
+      "primary_evidence_id": "E0011",
+      "evidence_refs": [
+        "E0011",
+        "E0002",
+        "E0003"
+      ],
+      "finding_type": "concentration",
+      "implication": "济南和南京在返回结果中占据了绝大部分销售额份额，显示出头部城市对整体业绩的主导作用。",
+      "recommendation": "建议核查这两个城市的订单结构、产品类别分布及客户来源，以验证其高占比是否源于特定的业务驱动因素或市场策略；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于当前返回范围，不能外推整体市场。",
+        "2026年华东地区已完成订单销售额城市排名：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0011",
+        "task_id": "T01",
+        "data_ref": "result_9bdb748f902b43b4bf18eb84dde75d5a",
+        "result_field": "total_sales",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "total_sales",
+          "dimension_field": "field_0003",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "济南",
+          "right": "南京",
+          "left_value": "21250",
+          "right_value": "20250",
+          "returned_group_count": 3,
+          "denominator_scope": "returned_groups_only",
+          "formula": "(left_value + right_value) / returned_group_sum * 100",
+          "comparison_kind": "returned_concentration",
+          "numerator": "41500",
+          "denominator": "47260",
+          "percent": "87.8"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；分母仅为本次完整返回的分组合计，不是全部筛选范围或整体市场。",
+        "calculation": "批准操作链：filter → derive → filter → group_aggregate → top_n；returned_concentration：(left_value + right_value) / returned_group_sum * 100；字段 total_sales，分子 41500，分母 47260；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "济南和南京合计占本次返回 3 个分组销售额合计合计的约 87.8%；分母仅为返回分组合计，不代表全部筛选范围或整体市场占比。",
+        "source_row_indices": [
+          0,
+          1,
+          2
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0002",
+        "task_id": "T01",
+        "data_ref": "result_9bdb748f902b43b4bf18eb84dde75d5a",
+        "result_field": "total_sales",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "济南",
+          "value": 21250,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → derive → filter → group_aggregate → top_n；对已返回的 total_sales 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在当前返回结果中，济南的销售额 · 合计为 21,250，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T01",
+        "data_ref": "result_9bdb748f902b43b4bf18eb84dde75d5a",
+        "result_field": "total_sales",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "南京",
+          "value": 20250,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → derive → filter → group_aggregate → top_n；对已返回的 total_sales 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在当前返回结果中，南京的销售额 · 合计为 20,250，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "correct_safety_rejection",
+    "case_review_reason": "候选使用“绝大部分、主导作用”和未定义强度，拒绝合理，未交付。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/S01/http-03-response.json"
+  },
+  {
+    "case_id": "S01",
+    "candidate_index": 1,
+    "system_candidate_status": "rejected",
+    "rule_ids": [
+      "FREE_TEXT_GUARD",
+      "NUMERIC",
+      "UNDEFINED_THRESHOLD",
+      "UNSUPPORTED_ASSERTION"
+    ],
+    "candidate": {
+      "primary_evidence_id": "E0009",
+      "evidence_refs": [
+        "E0009",
+        "E0007",
+        "E0002",
+        "E0003"
+      ],
+      "finding_type": "difference",
+      "implication": "排名第一的济南与排名第二的南京之间存在相对较小的绝对差额，表明两者竞争态势接近，且共同拉开了与后续城市的差距。",
+      "recommendation": "建议对比济南与南京的订单数量、平均单笔金额及主要销售品类，评估该差额是由规模差异还是单价/结构差异导致；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于当前返回范围，不能外推整体市场。",
+        "2026年华东地区已完成订单销售额城市排名：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0009",
+        "task_id": "T01",
+        "data_ref": "result_9bdb748f902b43b4bf18eb84dde75d5a",
+        "result_field": "total_sales",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "total_sales",
+          "dimension_field": "field_0003",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "济南",
+          "right": "南京",
+          "left_value": "21250",
+          "right_value": "20250",
+          "difference": "1000",
+          "formula": "(left_value - right_value) / right_value * 100",
+          "comparison_kind": "relative_lead",
+          "numerator": "1000",
+          "denominator": "20250",
+          "percent": "4.9"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；仅比较当前返回的同口径分组。",
+        "calculation": "批准操作链：filter → derive → filter → group_aggregate → top_n；relative_lead：(left_value - right_value) / right_value * 100；字段 total_sales，分子 1000，分母 20250；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "在当前返回结果中，济南的销售额合计比南京高 1,000，相对南京领先约 4.9%。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0007",
+        "task_id": "T01",
+        "data_ref": "result_9bdb748f902b43b4bf18eb84dde75d5a",
+        "result_field": "total_sales",
+        "evidence_type": "difference",
+        "value": {
+          "left": "济南",
+          "right": "南京",
+          "left_value": 21250,
+          "right_value": 20250,
+          "difference": 1000
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → derive → filter → group_aggregate → top_n；已计算值相减：total_sales[0] - total_sales[1]；不是因果或显著性检验。",
+        "statement": "在当前返回结果中，济南与南京的销售额 · 合计差值为 1,000。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0002",
+        "task_id": "T01",
+        "data_ref": "result_9bdb748f902b43b4bf18eb84dde75d5a",
+        "result_field": "total_sales",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "济南",
+          "value": 21250,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → derive → filter → group_aggregate → top_n；对已返回的 total_sales 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在当前返回结果中，济南的销售额 · 合计为 21,250，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T01",
+        "data_ref": "result_9bdb748f902b43b4bf18eb84dde75d5a",
+        "result_field": "total_sales",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "南京",
+          "value": 20250,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → derive → filter → group_aggregate → top_n；对已返回的 total_sales 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在当前返回结果中，南京的销售额 · 合计为 20,250，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "correct_safety_rejection",
+    "case_review_reason": "候选使用“绝大部分、主导作用”和未定义强度，拒绝合理，未交付。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/S01/http-03-response.json"
+  },
+  {
+    "case_id": "S02",
+    "candidate_index": 0,
+    "system_candidate_status": "rejected",
+    "rule_ids": [
+      "FREE_TEXT_GUARD",
+      "UNSUPPORTED_ASSERTION"
+    ],
+    "candidate": {
+      "primary_evidence_id": "E0002",
+      "evidence_refs": [
+        "E0002",
+        "E0007",
+        "E0015"
+      ],
+      "finding_type": "highlight",
+      "implication": "该城市在已返回的分组中记录数最高，反映了当前样本内的相对规模位置。",
+      "recommendation": "建议核查该城市的订单明细与业务覆盖范围，确认高记录数是否源于渠道集中或数据录入特征；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于当前返回范围，不能外推整体市场。",
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0002",
+        "task_id": "T01",
+        "data_ref": "result_fae08aecaebf4b5592bd125403f08434",
+        "result_field": "order_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "上海",
+          "value": 3,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 order_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，上海的记录 · 计数为 3条，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0007",
+        "task_id": "T01",
+        "data_ref": "result_fae08aecaebf4b5592bd125403f08434",
+        "result_field": "order_count",
+        "evidence_type": "maximum",
+        "value": {
+          "value": 3,
+          "category": "上海",
+          "tie_count": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；读取 order_count 的最大值，保留并列来源行。",
+        "statement": "该任务完整分组结果的记录 · 计数最大值为 3条，对应 上海等 1 个分组。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0015",
+        "task_id": "T01",
+        "data_ref": "result_fae08aecaebf4b5592bd125403f08434",
+        "result_field": "order_count",
+        "evidence_type": "metric",
+        "value": {
+          "value": 10,
+          "unit": "条",
+          "label": "本次返回分组合计（记录 · 计数）"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；仅将当前完整返回表中的可加指标相加；含 Top N 时只代表所选分组，不作为总体占比分母。",
+        "statement": "本次返回的 5 个分组的记录 · 计数合计为 10条。",
+        "source_row_indices": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "role_contract_conflict",
+    "case_review_reason": "有排名/极值证据的“最高/最低”被自由解释守卫拒绝；另有待核查原因表述与强度问题，不应一并放行。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/S02/http-03-response.json"
+  },
+  {
+    "case_id": "S02",
+    "candidate_index": 1,
+    "system_candidate_status": "rejected",
+    "rule_ids": [
+      "FREE_TEXT_GUARD",
+      "UNSUPPORTED_ASSERTION"
+    ],
+    "candidate": {
+      "primary_evidence_id": "E0006",
+      "evidence_refs": [
+        "E0006",
+        "E0008",
+        "E0015"
+      ],
+      "finding_type": "highlight",
+      "implication": "该城市在已返回的分组中记录数最低，体现了当前样本内的分布边界。",
+      "recommendation": "建议对比该城市与其他分组的业务开展情况或数据完整性，评估低记录数对整体统计结构的影响；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于当前返回范围，不能外推整体市场。",
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0006",
+        "task_id": "T01",
+        "data_ref": "result_fae08aecaebf4b5592bd125403f08434",
+        "result_field": "order_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "北京",
+          "value": 1,
+          "rank": 5
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 order_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，北京的记录 · 计数为 1条，并列值采用同一名次，排名 5。",
+        "source_row_indices": [
+          4
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0008",
+        "task_id": "T01",
+        "data_ref": "result_fae08aecaebf4b5592bd125403f08434",
+        "result_field": "order_count",
+        "evidence_type": "minimum",
+        "value": {
+          "value": 1,
+          "category": "北京",
+          "tie_count": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；读取 order_count 的最小值，保留并列来源行。",
+        "statement": "该任务完整分组结果的记录 · 计数最小值为 1条，对应 北京等 1 个分组。",
+        "source_row_indices": [
+          4
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0015",
+        "task_id": "T01",
+        "data_ref": "result_fae08aecaebf4b5592bd125403f08434",
+        "result_field": "order_count",
+        "evidence_type": "metric",
+        "value": {
+          "value": 10,
+          "unit": "条",
+          "label": "本次返回分组合计（记录 · 计数）"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；仅将当前完整返回表中的可加指标相加；含 Top N 时只代表所选分组，不作为总体占比分母。",
+        "statement": "本次返回的 5 个分组的记录 · 计数合计为 10条。",
+        "source_row_indices": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "role_contract_conflict",
+    "case_review_reason": "有排名/极值证据的“最高/最低”被自由解释守卫拒绝；另有待核查原因表述与强度问题，不应一并放行。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/S02/http-03-response.json"
+  },
+  {
+    "case_id": "S02",
+    "candidate_index": 2,
+    "system_candidate_status": "rejected",
+    "rule_ids": [
+      "FREE_TEXT_GUARD",
+      "UNSUPPORTED_ASSERTION"
+    ],
+    "candidate": {
+      "primary_evidence_id": "E0009",
+      "evidence_refs": [
+        "E0009",
+        "E0002",
+        "E0003"
+      ],
+      "finding_type": "difference",
+      "implication": "首位与次位之间的计数差额较小，表明在当前样本范围内头部城市间的数量差距有限。",
+      "recommendation": "建议进一步检查这两个城市的订单时间分布或产品类别构成，以验证差额是否由特定业务周期或品类偏好造成；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于当前返回范围，不能外推整体市场。",
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0009",
+        "task_id": "T01",
+        "data_ref": "result_fae08aecaebf4b5592bd125403f08434",
+        "result_field": "order_count",
+        "evidence_type": "difference",
+        "value": {
+          "left": "上海",
+          "right": "济南",
+          "left_value": 3,
+          "right_value": 2,
+          "difference": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算值相减：order_count[0] - order_count[1]；不是因果或显著性检验。",
+        "statement": "在该任务完整分组结果中，上海与济南的记录 · 计数差值为 1条。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0002",
+        "task_id": "T01",
+        "data_ref": "result_fae08aecaebf4b5592bd125403f08434",
+        "result_field": "order_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "上海",
+          "value": 3,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 order_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，上海的记录 · 计数为 3条，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T01",
+        "data_ref": "result_fae08aecaebf4b5592bd125403f08434",
+        "result_field": "order_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "济南",
+          "value": 2,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 order_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，济南的记录 · 计数为 2条，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "role_contract_conflict",
+    "case_review_reason": "有排名/极值证据的“最高/最低”被自由解释守卫拒绝；另有待核查原因表述与强度问题，不应一并放行。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/S02/http-03-response.json"
+  },
+  {
+    "case_id": "S03",
+    "candidate_index": 0,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0002",
+      "evidence_refs": [
+        "E0002"
+      ],
+      "finding_type": "highlight",
+      "implication": "该指标提供了当前分析范围的基础规模参照，需结合后续分组结果理解整体分布。",
+      "recommendation": "核查该总体数值与各地区、各类别分项合计的一致性，确认数据聚合口径无误；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0002",
+        "task_id": "T1",
+        "data_ref": "result_feb018df1b6145978ffedde0d05db6b8",
+        "result_field": "total_order_count",
+        "evidence_type": "metric",
+        "value": {
+          "value": 10,
+          "unit": "条"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：aggregate；读取已计算指标 total_order_count，函数 count。",
+        "statement": "记录 · 计数为 10条。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unsupported_interpretation",
+    "case_review_reason": "保存解释将订单量差异联系市场覆盖、客户基数/需求频次，超出当前证据；未被已知短语补丁全面解决。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/S03/http-03-response.json"
+  },
+  {
+    "case_id": "S03",
+    "candidate_index": 1,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0056",
+      "evidence_refs": [
+        "E0056",
+        "E0013",
+        "E0014"
+      ],
+      "finding_type": "difference",
+      "implication": "地区间销售额差异值得结合订单规模和单笔金额结构评估，目前不足以判断经营表现原因。",
+      "recommendation": "比较相关地区的订单数量、平均订单金额及产品构成，核查销售差额与记录结构的关联；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0056",
+        "task_id": "T2",
+        "data_ref": "result_61cd481797b149b687ec76859fc0bbdb",
+        "result_field": "sales_sum_by_region",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "sales_sum_by_region",
+          "dimension_field": "field_0002",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "华东",
+          "right": "华北",
+          "left_value": "297260",
+          "right_value": "50000",
+          "difference": "247260",
+          "formula": "(left_value - right_value) / right_value * 100",
+          "comparison_kind": "relative_lead",
+          "numerator": "247260",
+          "denominator": "50000",
+          "percent": "494.5"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；仅比较当前返回的同口径分组。",
+        "calculation": "批准操作链：group_aggregate → sort；relative_lead：(left_value - right_value) / right_value * 100；字段 sales_sum_by_region，分子 247260，分母 50000；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "在当前返回结果中，华东的销售额合计比华北高 247,260，相对华北领先约 494.5%。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0013",
+        "task_id": "T2",
+        "data_ref": "result_61cd481797b149b687ec76859fc0bbdb",
+        "result_field": "sales_sum_by_region",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "华东",
+          "value": 297260,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 sales_sum_by_region 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，华东的销售额 · 合计为 297,260，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0014",
+        "task_id": "T2",
+        "data_ref": "result_61cd481797b149b687ec76859fc0bbdb",
+        "result_field": "sales_sum_by_region",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "华北",
+          "value": 50000,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 sales_sum_by_region 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，华北的销售额 · 合计为 50,000，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unsupported_interpretation",
+    "case_review_reason": "保存解释将订单量差异联系市场覆盖、客户基数/需求频次，超出当前证据；未被已知短语补丁全面解决。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/S03/http-03-response.json"
+  },
+  {
+    "case_id": "S03",
+    "candidate_index": 2,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0058",
+      "evidence_refs": [
+        "E0058",
+        "E0030",
+        "E0031"
+      ],
+      "finding_type": "difference",
+      "implication": "产品类别间的销售额差异反映了不同的贡献结构，但无法据此推断各品类的盈利能力或市场地位。",
+      "recommendation": "补充查看对应类别的订单明细与单价分布，评估类别间差异是否由交易频次或价格策略驱动；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0058",
+        "task_id": "T3",
+        "data_ref": "result_b07618fb2d9e4395999d9ab9600eb6f1",
+        "result_field": "sales_sum_by_category",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "sales_sum_by_category",
+          "dimension_field": "field_0007",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "软件",
+          "right": "服务",
+          "left_value": "269760",
+          "right_value": "77500",
+          "difference": "192260",
+          "formula": "(left_value - right_value) / right_value * 100",
+          "comparison_kind": "relative_lead",
+          "numerator": "192260",
+          "denominator": "77500",
+          "percent": "248.1"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；仅比较当前返回的同口径分组。",
+        "calculation": "批准操作链：group_aggregate → sort；relative_lead：(left_value - right_value) / right_value * 100；字段 sales_sum_by_category，分子 192260，分母 77500；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "在当前返回结果中，软件的销售额合计比服务高 192,260，相对服务领先约 248.1%。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0030",
+        "task_id": "T3",
+        "data_ref": "result_b07618fb2d9e4395999d9ab9600eb6f1",
+        "result_field": "sales_sum_by_category",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "软件",
+          "value": 269760,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 sales_sum_by_category 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，软件的销售额 · 合计为 269,760，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0031",
+        "task_id": "T3",
+        "data_ref": "result_b07618fb2d9e4395999d9ab9600eb6f1",
+        "result_field": "sales_sum_by_category",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "服务",
+          "value": 77500,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 sales_sum_by_category 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，服务的销售额 · 合计为 77,500，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unsupported_interpretation",
+    "case_review_reason": "保存解释将订单量差异联系市场覆盖、客户基数/需求频次，超出当前证据；未被已知短语补丁全面解决。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/S03/http-03-response.json"
+  },
+  {
+    "case_id": "S03",
+    "candidate_index": 3,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0003",
+      "evidence_refs": [
+        "E0003"
+      ],
+      "finding_type": "highlight",
+      "implication": "总销售额是衡量当前数据集商业价值的关键指标，为评估各维度贡献提供基准。",
+      "recommendation": "将总销售额分解至地区和产品类别，验证各部分加和是否完整覆盖总体，检查是否存在未归类数据；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0003",
+        "task_id": "T1",
+        "data_ref": "result_feb018df1b6145978ffedde0d05db6b8",
+        "result_field": "total_sales_amount",
+        "evidence_type": "metric",
+        "value": {
+          "value": 347260,
+          "unit": null
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：aggregate；读取已计算指标 total_sales_amount，函数 sum。",
+        "statement": "销售额 · 合计为 347,260。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unsupported_interpretation",
+    "case_review_reason": "保存解释将订单量差异联系市场覆盖、客户基数/需求频次，超出当前证据；未被已知短语补丁全面解决。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/S03/http-03-response.json"
+  },
+  {
+    "case_id": "S03",
+    "candidate_index": 4,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0004",
+      "evidence_refs": [
+        "E0004"
+      ],
+      "finding_type": "highlight",
+      "implication": "平均销售额提供了单笔交易的典型水平参考，有助于识别极端值对总量的潜在影响。",
+      "recommendation": "计算销售额的中位数及分布区间，对比均值以评估数据偏态程度，并检查高值或低值订单的具体特征；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0004",
+        "task_id": "T1",
+        "data_ref": "result_feb018df1b6145978ffedde0d05db6b8",
+        "result_field": "avg_sales_amount",
+        "evidence_type": "metric",
+        "value": {
+          "value": 34726.0,
+          "unit": null
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：aggregate；读取已计算指标 avg_sales_amount，函数 avg。",
+        "statement": "销售额 · 均值为 34,726。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unsupported_interpretation",
+    "case_review_reason": "保存解释将订单量差异联系市场覆盖、客户基数/需求频次，超出当前证据；未被已知短语补丁全面解决。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/S03/http-03-response.json"
+  },
+  {
+    "case_id": "S03",
+    "candidate_index": 5,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0048",
+      "evidence_refs": [
+        "E0048",
+        "E0047",
+        "E0040"
+      ],
+      "finding_type": "trend",
+      "implication": "首末时间点的变化提示了已返回范围内的波动，但不能认定连续增长或未来趋势。",
+      "recommendation": "补充查看相邻月份的销售数据与对应订单类型，核查变化的可重复性及是否存在异常高点；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0048",
+        "task_id": "T4",
+        "data_ref": "result_5a3afa3a2daa4d6d8b9541c01a12a3b4",
+        "result_field": "monthly_sales_total",
+        "evidence_type": "change_rate",
+        "value": {
+          "from": 1,
+          "to": 12,
+          "baseline": 35000,
+          "current": 99000,
+          "change_percent": 182.85714285714286
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：derive → group_aggregate → sort；(末期已计算值 - 首期已计算值) / 首期已计算值 × 100；首期分母为正；不保证时间点连续。",
+        "statement": "在已返回时间点中，销售额 · 合计从 1至12变化约 182.85714285714286%。",
+        "source_row_indices": [
+          0,
+          4
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0047",
+        "task_id": "T4",
+        "data_ref": "result_5a3afa3a2daa4d6d8b9541c01a12a3b4",
+        "result_field": "monthly_sales_total",
+        "evidence_type": "difference",
+        "value": {
+          "left": 12,
+          "right": 1,
+          "left_value": 99000,
+          "right_value": 35000,
+          "difference": 64000
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：derive → group_aggregate → sort；已计算值相减：monthly_sales_total[4] - monthly_sales_total[0]；不是因果或显著性检验。",
+        "statement": "在该任务完整分组结果中，12与1的销售额 · 合计差值为 64,000。",
+        "source_row_indices": [
+          4,
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0040",
+        "task_id": "T4",
+        "data_ref": "result_5a3afa3a2daa4d6d8b9541c01a12a3b4",
+        "result_field": "monthly_sales_total",
+        "evidence_type": "ranking",
+        "value": {
+          "category": 12,
+          "value": 99000,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：derive → group_aggregate → sort；对已返回的 monthly_sales_total 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，12的销售额 · 合计为 99,000，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          4
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unsupported_interpretation",
+    "case_review_reason": "保存解释将订单量差异联系市场覆盖、客户基数/需求频次，超出当前证据；未被已知短语补丁全面解决。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/S03/http-03-response.json"
+  },
+  {
+    "case_id": "S03",
+    "candidate_index": 6,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0055",
+      "evidence_refs": [
+        "E0055",
+        "E0006",
+        "E0007"
+      ],
+      "finding_type": "difference",
+      "implication": "地区间订单数量的差异可能反映市场覆盖广度或客户基数的不同，需结合具体业务场景解读。",
+      "recommendation": "比较相关地区的活跃客户数、新客获取率及复购频率，评估订单量差异与客户结构的关联；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0055",
+        "task_id": "T2",
+        "data_ref": "result_61cd481797b149b687ec76859fc0bbdb",
+        "result_field": "order_count_by_region",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "order_count_by_region",
+          "dimension_field": "field_0002",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "华东",
+          "right": "华北",
+          "left_value": "9",
+          "right_value": "1",
+          "difference": "8",
+          "formula": "(left_value - right_value) / right_value * 100",
+          "comparison_kind": "relative_lead",
+          "numerator": "8",
+          "denominator": "1",
+          "percent": "800.0"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；仅比较当前返回的同口径分组。",
+        "calculation": "批准操作链：group_aggregate → sort；relative_lead：(left_value - right_value) / right_value * 100；字段 order_count_by_region，分子 8，分母 1；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "在当前返回结果中，华东的记录计数比华北高 8，相对华北领先约 800.0%。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0006",
+        "task_id": "T2",
+        "data_ref": "result_61cd481797b149b687ec76859fc0bbdb",
+        "result_field": "order_count_by_region",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "华东",
+          "value": 9,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 order_count_by_region 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，华东的记录 · 计数为 9条，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0007",
+        "task_id": "T2",
+        "data_ref": "result_61cd481797b149b687ec76859fc0bbdb",
+        "result_field": "order_count_by_region",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "华北",
+          "value": 1,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 order_count_by_region 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，华北的记录 · 计数为 1条，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unsupported_interpretation",
+    "case_review_reason": "保存解释将订单量差异联系市场覆盖、客户基数/需求频次，超出当前证据；未被已知短语补丁全面解决。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/S03/http-03-response.json"
+  },
+  {
+    "case_id": "S03",
+    "candidate_index": 7,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0057",
+      "evidence_refs": [
+        "E0057",
+        "E0023",
+        "E0024"
+      ],
+      "finding_type": "difference",
+      "implication": "产品类别间订单量的差异体现了需求频次的不同，但不直接等同于营收贡献或利润水平。",
+      "recommendation": "结合各类别的平均售价与退货率，分析订单量差异对实际收入的影响机制；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0057",
+        "task_id": "T3",
+        "data_ref": "result_b07618fb2d9e4395999d9ab9600eb6f1",
+        "result_field": "order_count_by_category",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "order_count_by_category",
+          "dimension_field": "field_0007",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "软件",
+          "right": "服务",
+          "left_value": "6",
+          "right_value": "4",
+          "difference": "2",
+          "formula": "(left_value - right_value) / right_value * 100",
+          "comparison_kind": "relative_lead",
+          "numerator": "2",
+          "denominator": "4",
+          "percent": "50.0"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；仅比较当前返回的同口径分组。",
+        "calculation": "批准操作链：group_aggregate → sort；relative_lead：(left_value - right_value) / right_value * 100；字段 order_count_by_category，分子 2，分母 4；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "在当前返回结果中，软件的记录计数比服务高 2，相对服务领先约 50.0%。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0023",
+        "task_id": "T3",
+        "data_ref": "result_b07618fb2d9e4395999d9ab9600eb6f1",
+        "result_field": "order_count_by_category",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "软件",
+          "value": 6,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 order_count_by_category 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，软件的记录 · 计数为 6条，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0024",
+        "task_id": "T3",
+        "data_ref": "result_b07618fb2d9e4395999d9ab9600eb6f1",
+        "result_field": "order_count_by_category",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "服务",
+          "value": 4,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 order_count_by_category 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，服务的记录 · 计数为 4条，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unsupported_interpretation",
+    "case_review_reason": "保存解释将订单量差异联系市场覆盖、客户基数/需求频次，超出当前证据；未被已知短语补丁全面解决。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/S03/http-03-response.json"
+  },
+  {
+    "case_id": "T01",
+    "candidate_index": 0,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0007",
+      "evidence_refs": [
+        "E0002",
+        "E0003",
+        "E0007"
+      ],
+      "finding_type": "difference",
+      "implication": "二组与一组在平均响应分钟上的差值值得结合各组的工单记录构成和优先级分布评估，当前数据不足以判断差异的具体原因或团队效率高低。",
+      "recommendation": "比较二组与一组的工单数量、优先级占比及状态分布，核查高响应时间是否集中在特定类型工单；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "上传范围内，响应分钟有 1 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。",
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0002",
+        "task_id": "T1",
+        "data_ref": "result_28447675c3e04eeb83de657e641a5ed9",
+        "result_field": "avg_response_minutes",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "二组",
+          "value": 40.0,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 avg_response_minutes 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，二组的响应分钟 · 均值为 40，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          2
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T1",
+        "data_ref": "result_28447675c3e04eeb83de657e641a5ed9",
+        "result_field": "avg_response_minutes",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "一组",
+          "value": 18.333333333333332,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 avg_response_minutes 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，一组的响应分钟 · 均值为 18.333333333333332，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0007",
+        "task_id": "T1",
+        "data_ref": "result_28447675c3e04eeb83de657e641a5ed9",
+        "result_field": "avg_response_minutes",
+        "evidence_type": "difference",
+        "value": {
+          "left": "二组",
+          "right": "一组",
+          "left_value": 40.0,
+          "right_value": 18.333333333333332,
+          "difference": 21.666666666666668
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算值相减：avg_response_minutes[2] - avg_response_minutes[1]；不是因果或显著性检验。",
+        "statement": "在该任务完整分组结果中，二组与一组的响应分钟 · 均值差值为 21.666666666666668。",
+        "source_row_indices": [
+          2,
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unverified_hypothesis",
+    "case_review_reason": "事实计算正确，但提出样本量或流程差异解释候选，尚无相应支持；保持未充分验证。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/T01/http-03-response.json"
+  },
+  {
+    "case_id": "T01",
+    "candidate_index": 1,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0009",
+      "evidence_refs": [
+        "E0004",
+        "E0006",
+        "E0009"
+      ],
+      "finding_type": "difference",
+      "implication": "三组相对于二组的均值比例提示两者在已返回分组中的水平差异，需进一步确认该低值是由样本量少还是处理流程不同所致。",
+      "recommendation": "核查三组参与统计的工单记录数及其时间跨度，并与二组对比记录规模，评估极小值对整体均值稳定性的影响；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "上传范围内，响应分钟有 1 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。",
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0004",
+        "task_id": "T1",
+        "data_ref": "result_28447675c3e04eeb83de657e641a5ed9",
+        "result_field": "avg_response_minutes",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "三组",
+          "value": 5.0,
+          "rank": 3
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 avg_response_minutes 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，三组的响应分钟 · 均值为 5，并列值采用同一名次，排名 3。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0006",
+        "task_id": "T1",
+        "data_ref": "result_28447675c3e04eeb83de657e641a5ed9",
+        "result_field": "avg_response_minutes",
+        "evidence_type": "minimum",
+        "value": {
+          "value": 5.0,
+          "category": "三组",
+          "tie_count": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；读取 avg_response_minutes 的最小值，保留并列来源行。",
+        "statement": "该任务完整分组结果的响应分钟 · 均值最小值为 5，对应 三组等 1 个分组。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0009",
+        "task_id": "T1",
+        "data_ref": "result_28447675c3e04eeb83de657e641a5ed9",
+        "result_field": "avg_response_minutes",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "avg_response_minutes",
+          "dimension_field": "field_0002",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "三组",
+          "right": "二组",
+          "left_value": "5.0",
+          "right_value": "40.0",
+          "formula": "left_value / right_value * 100",
+          "comparison_kind": "relative_ratio",
+          "numerator": "5.0",
+          "denominator": "40.0",
+          "percent": "12.5"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；仅比较当前返回的同口径分组。",
+        "calculation": "批准操作链：group_aggregate → sort；relative_ratio：left_value / right_value * 100；字段 avg_response_minutes，分子 5.0，分母 40.0；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "在当前返回结果中，三组的响应分钟均值为 5，约为二组的 12.5%。",
+        "source_row_indices": [
+          0,
+          2
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unverified_hypothesis",
+    "case_review_reason": "事实计算正确，但提出样本量或流程差异解释候选，尚无相应支持；保持未充分验证。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/T01/http-03-response.json"
+  },
+  {
+    "case_id": "T02",
+    "candidate_index": 0,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0006",
+      "evidence_refs": [
+        "E0002",
+        "E0003",
+        "E0006"
+      ],
+      "finding_type": "difference",
+      "implication": "高优先级与低优先级在已解决工单数量上存在差额，当前数据不足以判断差异的具体原因或团队处理效率高低。",
+      "recommendation": "建议补充核查对应优先级的提交时间分布、响应时长及具体工单类型，以评估该差额是否与特定业务场景或处理流程相关；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "已解决工单优先级数量分布及Top2：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。",
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0002",
+        "task_id": "T01",
+        "data_ref": "result_83d97654f65f4c86ac666c76226eeeb2",
+        "result_field": "ticket_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "高",
+          "value": 3,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → top_n；对已返回的 ticket_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在当前返回结果中，高的记录 · 计数为 3条，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T01",
+        "data_ref": "result_83d97654f65f4c86ac666c76226eeeb2",
+        "result_field": "ticket_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "低",
+          "value": 1,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → top_n；对已返回的 ticket_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在当前返回结果中，低的记录 · 计数为 1条，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0006",
+        "task_id": "T01",
+        "data_ref": "result_83d97654f65f4c86ac666c76226eeeb2",
+        "result_field": "ticket_count",
+        "evidence_type": "difference",
+        "value": {
+          "left": "高",
+          "right": "低",
+          "left_value": 3,
+          "right_value": 1,
+          "difference": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → top_n；已计算值相减：ticket_count[0] - ticket_count[1]；不是因果或显著性检验。",
+        "statement": "在当前返回结果中，高与低的记录 · 计数差值为 2条。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "delivered",
+    "case_review_reason": "已解决工单优先级Top2正确，建议指向后续核查，无确定原因或经营结论。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/T02/http-03-response.json"
+  },
+  {
+    "case_id": "T03",
+    "candidate_index": 0,
+    "system_candidate_status": "rejected",
+    "rule_ids": [
+      "FREE_TEXT_GUARD",
+      "UNSUPPORTED_ASSERTION"
+    ],
+    "candidate": {
+      "primary_evidence_id": "E0007",
+      "evidence_refs": [
+        "E0007",
+        "E0006",
+        "E0002",
+        "E0003"
+      ],
+      "finding_type": "difference",
+      "implication": "二组与一组的平均响应时间存在明显差额，这提示两个团队在工单处理节奏上可能处于不同状态。当前数据仅反映均值对比，不足以判断造成差异的具体原因或团队效率高低。",
+      "recommendation": "建议核查两组参与计算的工单数量及优先级分布，以确认均值差异是否受特定类型工单集中度的影响；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "上传范围内，响应分钟有 1 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0007",
+        "task_id": "T01",
+        "data_ref": "result_5c0eb52f70524db0883ae0406c40d8e7",
+        "result_field": "avg_response_minutes",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "avg_response_minutes",
+          "dimension_field": "field_0002",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "二组",
+          "right": "一组",
+          "left_value": "40.0",
+          "right_value": "18.333333333333332",
+          "difference": "21.666666666666668",
+          "formula": "(left_value - right_value) / right_value * 100",
+          "comparison_kind": "relative_lead",
+          "numerator": "21.666666666666668",
+          "denominator": "18.333333333333332",
+          "percent": "118.2"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；仅比较当前返回的同口径分组。",
+        "calculation": "批准操作链：filter → group_aggregate；relative_lead：(left_value - right_value) / right_value * 100；字段 avg_response_minutes，分子 21.666666666666668，分母 18.333333333333332；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "在当前返回结果中，二组的响应分钟均值比一组高 21.666666666666668，相对一组领先约 118.2%。",
+        "source_row_indices": [
+          1,
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0006",
+        "task_id": "T01",
+        "data_ref": "result_5c0eb52f70524db0883ae0406c40d8e7",
+        "result_field": "avg_response_minutes",
+        "evidence_type": "difference",
+        "value": {
+          "left": "二组",
+          "right": "一组",
+          "left_value": 40.0,
+          "right_value": 18.333333333333332,
+          "difference": 21.666666666666668
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate；已计算值相减：avg_response_minutes[1] - avg_response_minutes[0]；不是因果或显著性检验。",
+        "statement": "在该任务完整分组结果中，二组与一组的响应分钟 · 均值差值为 21.666666666666668。",
+        "source_row_indices": [
+          1,
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0002",
+        "task_id": "T01",
+        "data_ref": "result_5c0eb52f70524db0883ae0406c40d8e7",
+        "result_field": "avg_response_minutes",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "二组",
+          "value": 40.0,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate；对已返回的 avg_response_minutes 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，二组的响应分钟 · 均值为 40，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T01",
+        "data_ref": "result_5c0eb52f70524db0883ae0406c40d8e7",
+        "result_field": "avg_response_minutes",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "一组",
+          "value": 18.333333333333332,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate；对已返回的 avg_response_minutes 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，一组的响应分钟 · 均值为 18.333333333333332，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "negative_boundary_false_positive",
+    "case_review_reason": "“当前数据仅反映均值对比，不足以判断造成差异的具体原因...”仍被造成触发，体现语义角色校验脆弱。",
+    "source_path": "docs/evaluations/mvp-product-v1-2026-11-04/runs/safetyfull01/T03/http-04-response.json"
+  },
+  {
+    "case_id": "U01",
+    "candidate_index": 0,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0009",
+      "evidence_refs": [
+        "E0002",
+        "E0003",
+        "E0009"
+      ],
+      "finding_type": "difference",
+      "implication": "上海与济南的订单数量差额值得结合两地记录构成评估，当前结果不足以判断经营表现差异的具体原因。",
+      "recommendation": "比较上海和济南的订单明细结构及时间分布，核查该差额是否由特定日期或产品类别集中贡献；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0002",
+        "task_id": "T01",
+        "data_ref": "result_a8906a2c94a44c839964b2cc829c5a37",
+        "result_field": "order_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "上海",
+          "value": 3,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 order_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，上海的记录 · 计数为 3条，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          4
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T01",
+        "data_ref": "result_a8906a2c94a44c839964b2cc829c5a37",
+        "result_field": "order_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "济南",
+          "value": 2,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 order_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，济南的记录 · 计数为 2条，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0009",
+        "task_id": "T01",
+        "data_ref": "result_a8906a2c94a44c839964b2cc829c5a37",
+        "result_field": "order_count",
+        "evidence_type": "difference",
+        "value": {
+          "left": "上海",
+          "right": "济南",
+          "left_value": 3,
+          "right_value": 2,
+          "difference": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算值相减：order_count[4] - order_count[1]；不是因果或显著性检验。",
+        "statement": "在该任务完整分组结果中，上海与济南的记录 · 计数差值为 1条。",
+        "source_row_indices": [
+          4,
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "partial_delivery",
+    "case_review_reason": "升序结果保持，报告partial；未来日期/类别贡献核查需与因果断言区分。",
+    "source_path": "docs/evaluations/mvp-reliability-holdout-2026-11-04/runs/safetyfull01/U01/http-03-response.json"
+  },
+  {
+    "case_id": "U01",
+    "candidate_index": 1,
+    "system_candidate_status": "rejected",
+    "rule_ids": [
+      "FREE_TEXT_GUARD",
+      "UNSUPPORTED_ASSERTION"
+    ],
+    "candidate": {
+      "primary_evidence_id": "E0010",
+      "evidence_refs": [
+        "E0010",
+        "E0015"
+      ],
+      "finding_type": "concentration",
+      "implication": "上海在已返回分组中的占比情况需结合完整数据覆盖度评估，不能据此认定其为绝对主导城市。",
+      "recommendation": "核查未返回城市的潜在订单量级，并确认当前统计口径是否涵盖所有目标城市，以验证占比的代表性；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0010",
+        "task_id": "T01",
+        "data_ref": "result_a8906a2c94a44c839964b2cc829c5a37",
+        "result_field": "order_count",
+        "evidence_type": "proportion",
+        "value": {
+          "category": "上海",
+          "numerator": 3,
+          "denominator": 10.0,
+          "percent": 30
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+        "statement": "上海的记录 · 计数占该任务同口径总体约 30%。",
+        "source_row_indices": [
+          4
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0015",
+        "task_id": "T01",
+        "data_ref": "result_a8906a2c94a44c839964b2cc829c5a37",
+        "result_field": "order_count",
+        "evidence_type": "metric",
+        "value": {
+          "value": 10,
+          "unit": "条",
+          "label": "本次返回分组合计（记录 · 计数）"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；仅将当前完整返回表中的可加指标相加；含 Top N 时只代表所选分组，不作为总体占比分母。",
+        "statement": "本次返回的 5 个分组的记录 · 计数合计为 10条。",
+        "source_row_indices": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "partial_delivery",
+    "case_review_reason": "升序结果保持，报告partial；未来日期/类别贡献核查需与因果断言区分。",
+    "source_path": "docs/evaluations/mvp-reliability-holdout-2026-11-04/runs/safetyfull01/U01/http-03-response.json"
+  },
+  {
+    "case_id": "U02",
+    "candidate_index": 0,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0006",
+      "evidence_refs": [
+        "E0002",
+        "E0003",
+        "E0006",
+        "E0007"
+      ],
+      "finding_type": "difference",
+      "implication": "一组与三组在响应分钟中位数上存在数值差额，当前数据不足以判断差异的具体原因或团队效率高低。",
+      "recommendation": "建议比较两组对应的工单记录数量、优先级分布及状态流转时长，核查该差额是否与任务规模或复杂度结构相关；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "上传范围内，响应分钟有 1 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。",
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0002",
+        "task_id": "T1",
+        "data_ref": "result_a5ecee025f824a609191d520cccb1f5d",
+        "result_field": "median_response_minutes",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "一组",
+          "value": 15.0,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → sort；对已返回的 median_response_minutes 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，一组的响应分钟 · 中位数为 15，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T1",
+        "data_ref": "result_a5ecee025f824a609191d520cccb1f5d",
+        "result_field": "median_response_minutes",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "三组",
+          "value": 5.0,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → sort；对已返回的 median_response_minutes 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，三组的响应分钟 · 中位数为 5，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0006",
+        "task_id": "T1",
+        "data_ref": "result_a5ecee025f824a609191d520cccb1f5d",
+        "result_field": "median_response_minutes",
+        "evidence_type": "difference",
+        "value": {
+          "left": "一组",
+          "right": "三组",
+          "left_value": 15.0,
+          "right_value": 5.0,
+          "difference": 10
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → sort；已计算值相减：median_response_minutes[1] - median_response_minutes[0]；不是因果或显著性检验。",
+        "statement": "在该任务完整分组结果中，一组与三组的响应分钟 · 中位数差值为 10。",
+        "source_row_indices": [
+          1,
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0007",
+        "task_id": "T1",
+        "data_ref": "result_a5ecee025f824a609191d520cccb1f5d",
+        "result_field": "median_response_minutes",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "median_response_minutes",
+          "dimension_field": "field_0002",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "一组",
+          "right": "三组",
+          "left_value": "15.0",
+          "right_value": "5.0",
+          "difference": "10.0",
+          "formula": "(left_value - right_value) / right_value * 100",
+          "comparison_kind": "relative_lead",
+          "numerator": "10.0",
+          "denominator": "5.0",
+          "percent": "200.0"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；仅比较当前返回的同口径分组。",
+        "calculation": "批准操作链：filter → group_aggregate → sort；relative_lead：(left_value - right_value) / right_value * 100；字段 median_response_minutes，分子 10.0，分母 5.0；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "在当前返回结果中，一组的响应分钟中位数比三组高 10，相对三组领先约 200.0%。",
+        "source_row_indices": [
+          1,
+          0
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "delivered",
+    "case_review_reason": "两团队中位数比较正确，后续建议存在需补充资料的状态流转时长，不应承诺当前可计算。",
+    "source_path": "docs/evaluations/mvp-reliability-holdout-2026-11-04/runs/safetyfull01/U02/http-03-response.json"
+  },
+  {
+    "case_id": "U03",
+    "candidate_index": 0,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0008",
+      "evidence_refs": [
+        "E0008",
+        "E0006",
+        "E0002",
+        "E0003"
+      ],
+      "finding_type": "difference",
+      "implication": "当前返回的两个项目中，工时合计存在差额。这一差异值得结合各项目下的任务记录构成进行评估，目前不足以判断具体原因或效率高低。",
+      "recommendation": "比较这两个项目下的已完成任务数量及单条任务的平均工时分布，核查总工时差额与任务规模或结构之间的关联；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于当前返回范围，不能外推整体市场。",
+        "上传范围内，工时有 1 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。",
+        "已完成任务的项目工时Top2：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0008",
+        "task_id": "T01",
+        "data_ref": "result_c808b4803a144d238219197640bad146",
+        "result_field": "total_hours",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "total_hours",
+          "dimension_field": "field_0002",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "乙",
+          "right": "甲",
+          "left_value": "36",
+          "right_value": "16",
+          "difference": "20",
+          "formula": "(left_value - right_value) / right_value * 100",
+          "comparison_kind": "relative_lead",
+          "numerator": "20",
+          "denominator": "16",
+          "percent": "125.0"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；仅比较当前返回的同口径分组。",
+        "calculation": "批准操作链：filter → group_aggregate → top_n；relative_lead：(left_value - right_value) / right_value * 100；字段 total_hours，分子 20，分母 16；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "在当前返回结果中，乙的工时合计比甲高 20，相对甲领先约 125.0%。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0006",
+        "task_id": "T01",
+        "data_ref": "result_c808b4803a144d238219197640bad146",
+        "result_field": "total_hours",
+        "evidence_type": "difference",
+        "value": {
+          "left": "乙",
+          "right": "甲",
+          "left_value": 36,
+          "right_value": 16,
+          "difference": 20
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → top_n；已计算值相减：total_hours[0] - total_hours[1]；不是因果或显著性检验。",
+        "statement": "在当前返回结果中，乙与甲的工时 · 合计差值为 20。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0002",
+        "task_id": "T01",
+        "data_ref": "result_c808b4803a144d238219197640bad146",
+        "result_field": "total_hours",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "乙",
+          "value": 36,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → top_n；对已返回的 total_hours 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在当前返回结果中，乙的工时 · 合计为 36，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T01",
+        "data_ref": "result_c808b4803a144d238219197640bad146",
+        "result_field": "total_hours",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "甲",
+          "value": 16,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → top_n；对已返回的 total_hours 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在当前返回结果中，甲的工时 · 合计为 16，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "delivered",
+    "case_review_reason": "已完成项目工时Top2正确，建议对照任务数/平均工时，未声称已执行。",
+    "source_path": "docs/evaluations/mvp-reliability-holdout-2026-11-04/runs/safetyfull01/U03/http-03-response.json"
+  },
+  {
+    "case_id": "U04",
+    "candidate_index": 0,
+    "system_candidate_status": "rejected",
+    "rule_ids": [
+      "FREE_TEXT_GUARD",
+      "UNSUPPORTED_ASSERTION"
+    ],
+    "candidate": {
+      "primary_evidence_id": "E0006",
+      "evidence_refs": [
+        "E0002",
+        "E0003",
+        "E0006"
+      ],
+      "finding_type": "difference",
+      "implication": "当前返回结果中北京与上海在岗位数量上的差额值得结合记录构成进一步评估，目前数据不足以判断导致该差异的具体原因或业务效率高低。",
+      "recommendation": "建议比较这两个城市的岗位类型分布、发布时间跨度及薪资结构，核查差额是否与特定类型的集中发布有关；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "各城市岗位数量排名（前两名）：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0002",
+        "task_id": "T1",
+        "data_ref": "result_15e910b1d0544c6aa3eb5d2f9e5ade3f",
+        "result_field": "job_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "北京",
+          "value": 3,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort → top_n；对已返回的 job_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在当前返回结果中，北京的记录 · 计数为 3条，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T1",
+        "data_ref": "result_15e910b1d0544c6aa3eb5d2f9e5ade3f",
+        "result_field": "job_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "上海",
+          "value": 2,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort → top_n；对已返回的 job_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在当前返回结果中，上海的记录 · 计数为 2条，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0006",
+        "task_id": "T1",
+        "data_ref": "result_15e910b1d0544c6aa3eb5d2f9e5ade3f",
+        "result_field": "job_count",
+        "evidence_type": "difference",
+        "value": {
+          "left": "北京",
+          "right": "上海",
+          "left_value": 3,
+          "right_value": 2,
+          "difference": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort → top_n；已计算值相减：job_count[0] - job_count[1]；不是因果或显著性检验。",
+        "statement": "在当前返回结果中，北京与上海的记录 · 计数差值为 1条。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "negative_boundary_false_positive",
+    "case_review_reason": "“目前数据不足以判断导致该差异的具体原因或业务效率高低”仍被导致拒绝。",
+    "source_path": "docs/evaluations/mvp-reliability-holdout-2026-11-04/runs/safetyfull01/U04/http-03-response.json"
+  },
+  {
+    "case_id": "V01",
+    "candidate_index": 0,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0018",
+      "evidence_refs": [
+        "E0018",
+        "E0016",
+        "E0002",
+        "E0003"
+      ],
+      "finding_type": "concentration",
+      "implication": "上海和北京在已返回分组中占据主要份额，且两城市间存在明显的销售额差额。当前数据不足以判断这种结构形成的具体原因或经营效率差异。",
+      "recommendation": "建议核查这两个城市的订单数量、平均订单金额及产品类别构成，以评估销售规模与结构的关联；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0018",
+        "task_id": "T1",
+        "data_ref": "result_43e947c134e044b381697810a6450a6c",
+        "result_field": "total_sales_amount",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "total_sales_amount",
+          "dimension_field": "field_0003",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "上海",
+          "right": "北京",
+          "left_value": "104760",
+          "right_value": "50000",
+          "returned_group_count": 5,
+          "denominator_scope": "returned_groups_only",
+          "formula": "(left_value + right_value) / returned_group_sum * 100",
+          "comparison_kind": "returned_concentration",
+          "numerator": "154760",
+          "denominator": "197260",
+          "percent": "78.5"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；分母仅为本次完整返回的分组合计，不是全部筛选范围或整体市场。",
+        "calculation": "批准操作链：filter → group_aggregate → sort；returned_concentration：(left_value + right_value) / returned_group_sum * 100；字段 total_sales_amount，分子 154760，分母 197260；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "上海和北京合计占本次返回 5 个分组销售额合计合计的约 78.5%；分母仅为返回分组合计，不代表全部筛选范围或整体市场占比。",
+        "source_row_indices": [
+          4,
+          3,
+          2,
+          1,
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0016",
+        "task_id": "T1",
+        "data_ref": "result_43e947c134e044b381697810a6450a6c",
+        "result_field": "total_sales_amount",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "total_sales_amount",
+          "dimension_field": "field_0003",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "上海",
+          "right": "北京",
+          "left_value": "104760",
+          "right_value": "50000",
+          "difference": "54760",
+          "formula": "(left_value - right_value) / right_value * 100",
+          "comparison_kind": "relative_lead",
+          "numerator": "54760",
+          "denominator": "50000",
+          "percent": "109.5"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；仅比较当前返回的同口径分组。",
+        "calculation": "批准操作链：filter → group_aggregate → sort；relative_lead：(left_value - right_value) / right_value * 100；字段 total_sales_amount，分子 54760，分母 50000；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "在当前返回结果中，上海的销售额合计比北京高 54,760，相对北京领先约 109.5%。",
+        "source_row_indices": [
+          4,
+          3
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0002",
+        "task_id": "T1",
+        "data_ref": "result_43e947c134e044b381697810a6450a6c",
+        "result_field": "total_sales_amount",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "上海",
+          "value": 104760,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → sort；对已返回的 total_sales_amount 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，上海的销售额 · 合计为 104,760，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          4
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T1",
+        "data_ref": "result_43e947c134e044b381697810a6450a6c",
+        "result_field": "total_sales_amount",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "北京",
+          "value": 50000,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → sort；对已返回的 total_sales_amount 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，北京的销售额 · 合计为 50,000，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          3
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unsupported_interpretation",
+    "case_review_reason": "排序已保留，但“极低水平”无阈值，且提出市场渗透不足等未支持解释。",
+    "source_path": "docs/evaluations/mvp-reliability-holdout2-2026-11-04/runs/safetyfull01/V01/http-03-response.json"
+  },
+  {
+    "case_id": "V01",
+    "candidate_index": 1,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0017",
+      "evidence_refs": [
+        "E0017",
+        "E0006",
+        "E0008"
+      ],
+      "finding_type": "difference",
+      "implication": "杭州的销售额合计相对于头部城市处于极低水平，且为当前返回结果中的最小值。该差距值得结合记录完整性进行评估，目前无法判定是市场渗透不足还是数据覆盖限制。",
+      "recommendation": "建议对比杭州与其他城市的已完成订单记录数及时间分布，核查是否存在数据缺失或业务开展阶段的差异；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0017",
+        "task_id": "T1",
+        "data_ref": "result_43e947c134e044b381697810a6450a6c",
+        "result_field": "total_sales_amount",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "total_sales_amount",
+          "dimension_field": "field_0003",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "杭州",
+          "right": "上海",
+          "left_value": "1000",
+          "right_value": "104760",
+          "formula": "left_value / right_value * 100",
+          "comparison_kind": "relative_ratio",
+          "numerator": "1000",
+          "denominator": "104760",
+          "percent": "1.0"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；仅比较当前返回的同口径分组。",
+        "calculation": "批准操作链：filter → group_aggregate → sort；relative_ratio：left_value / right_value * 100；字段 total_sales_amount，分子 1000，分母 104760；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "在当前返回结果中，杭州的销售额合计为 1,000，约为上海的 1.0%。",
+        "source_row_indices": [
+          0,
+          4
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0006",
+        "task_id": "T1",
+        "data_ref": "result_43e947c134e044b381697810a6450a6c",
+        "result_field": "total_sales_amount",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "杭州",
+          "value": 1000,
+          "rank": 5
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → sort；对已返回的 total_sales_amount 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，杭州的销售额 · 合计为 1,000，并列值采用同一名次，排名 5。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0008",
+        "task_id": "T1",
+        "data_ref": "result_43e947c134e044b381697810a6450a6c",
+        "result_field": "total_sales_amount",
+        "evidence_type": "minimum",
+        "value": {
+          "value": 1000,
+          "category": "杭州",
+          "tie_count": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → sort；读取 total_sales_amount 的最小值，保留并列来源行。",
+        "statement": "该任务完整分组结果的销售额 · 合计最小值为 1,000，对应 杭州等 1 个分组。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unsupported_interpretation",
+    "case_review_reason": "排序已保留，但“极低水平”无阈值，且提出市场渗透不足等未支持解释。",
+    "source_path": "docs/evaluations/mvp-reliability-holdout2-2026-11-04/runs/safetyfull01/V01/http-03-response.json"
+  },
+  {
+    "case_id": "V02",
+    "candidate_index": 0,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0007",
+      "evidence_refs": [
+        "E0002",
+        "E0003",
+        "E0007"
+      ],
+      "finding_type": "difference",
+      "implication": "二组与一组在响应分钟中位数上存在明显差额，这值得结合两组工单的具体构成和数量分布进行评估，当前数据不足以判断差异产生的具体原因或反映团队效率高低。",
+      "recommendation": "比较二组与一组的工单记录数量、优先级分布及平均处理时长，核查该差额是否与业务规模或任务复杂度结构相关；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "上传范围内，响应分钟有 1 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0002",
+        "task_id": "T01",
+        "data_ref": "result_e65c7ba3e33d4522ba7ff6fc30493f50",
+        "result_field": "response_minutes_median",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "二组",
+          "value": 40.0,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 response_minutes_median 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，二组的响应分钟 · 中位数为 40，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T01",
+        "data_ref": "result_e65c7ba3e33d4522ba7ff6fc30493f50",
+        "result_field": "response_minutes_median",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "一组",
+          "value": 15.0,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 response_minutes_median 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，一组的响应分钟 · 中位数为 15，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0007",
+        "task_id": "T01",
+        "data_ref": "result_e65c7ba3e33d4522ba7ff6fc30493f50",
+        "result_field": "response_minutes_median",
+        "evidence_type": "difference",
+        "value": {
+          "left": "二组",
+          "right": "一组",
+          "left_value": 40.0,
+          "right_value": 15.0,
+          "difference": 25
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；已计算值相减：response_minutes_median[0] - response_minutes_median[1]；不是因果或显著性检验。",
+        "statement": "在该任务完整分组结果中，二组与一组的响应分钟 · 中位数差值为 25。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unverified_hypothesis",
+    "case_review_reason": "中位数事实正确，明显差额/低水平与处理类型解释仍需审阅，不能凭系统complete断言充分安全。",
+    "source_path": "docs/evaluations/mvp-reliability-holdout2-2026-11-04/runs/safetyfull01/V02/http-03-response.json"
+  },
+  {
+    "case_id": "V02",
+    "candidate_index": 1,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0009",
+      "evidence_refs": [
+        "E0004",
+        "E0006",
+        "E0009"
+      ],
+      "finding_type": "difference",
+      "implication": "三组相对于二组的响应表现处于较低水平，这一比例关系提示需关注不同分组间的时间分布特征，目前无法据此断定流程优劣。",
+      "recommendation": "对比三组与二组的工单来源类型及状态流转记录，检验低值是否由特定类别工单集中导致；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "上传范围内，响应分钟有 1 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0004",
+        "task_id": "T01",
+        "data_ref": "result_e65c7ba3e33d4522ba7ff6fc30493f50",
+        "result_field": "response_minutes_median",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "三组",
+          "value": 5.0,
+          "rank": 3
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；对已返回的 response_minutes_median 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，三组的响应分钟 · 中位数为 5，并列值采用同一名次，排名 3。",
+        "source_row_indices": [
+          2
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0006",
+        "task_id": "T01",
+        "data_ref": "result_e65c7ba3e33d4522ba7ff6fc30493f50",
+        "result_field": "response_minutes_median",
+        "evidence_type": "minimum",
+        "value": {
+          "value": 5.0,
+          "category": "三组",
+          "tie_count": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：group_aggregate → sort；读取 response_minutes_median 的最小值，保留并列来源行。",
+        "statement": "该任务完整分组结果的响应分钟 · 中位数最小值为 5，对应 三组等 1 个分组。",
+        "source_row_indices": [
+          2
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0009",
+        "task_id": "T01",
+        "data_ref": "result_e65c7ba3e33d4522ba7ff6fc30493f50",
+        "result_field": "response_minutes_median",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "response_minutes_median",
+          "dimension_field": "field_0002",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "三组",
+          "right": "二组",
+          "left_value": "5.0",
+          "right_value": "40.0",
+          "formula": "left_value / right_value * 100",
+          "comparison_kind": "relative_ratio",
+          "numerator": "5.0",
+          "denominator": "40.0",
+          "percent": "12.5"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；仅比较当前返回的同口径分组。",
+        "calculation": "批准操作链：group_aggregate → sort；relative_ratio：left_value / right_value * 100；字段 response_minutes_median，分子 5.0，分母 40.0；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "在当前返回结果中，三组的响应分钟中位数为 5，约为二组的 12.5%。",
+        "source_row_indices": [
+          2,
+          0
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "unverified_hypothesis",
+    "case_review_reason": "中位数事实正确，明显差额/低水平与处理类型解释仍需审阅，不能凭系统complete断言充分安全。",
+    "source_path": "docs/evaluations/mvp-reliability-holdout2-2026-11-04/runs/safetyfull01/V02/http-03-response.json"
+  },
+  {
+    "case_id": "V03",
+    "candidate_index": 0,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0010",
+      "evidence_refs": [
+        "E0010",
+        "E0006",
+        "E0002",
+        "E0003"
+      ],
+      "finding_type": "difference",
+      "implication": "甲与丙在任务数量上存在差额，当前数据不足以判断差异的具体原因或团队效率高低。",
+      "recommendation": "比较两个项目的记录构成、状态分布及创建时间跨度，核查任务数量差异是否与项目阶段或录入完整性有关；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "结论仅适用于当前返回范围，不能外推整体市场。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0010",
+        "task_id": "T1",
+        "data_ref": "result_1fa5576bb48f4993949dfdbd932ed16c",
+        "result_field": "task_count",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "task_count",
+          "dimension_field": "field_0002",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "甲",
+          "right": "丙",
+          "left_value": "3",
+          "right_value": "2",
+          "difference": "1",
+          "formula": "(left_value - right_value) / right_value * 100",
+          "comparison_kind": "relative_lead",
+          "numerator": "1",
+          "denominator": "2",
+          "percent": "50.0"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；仅比较当前返回的同口径分组。",
+        "calculation": "批准操作链：filter → group_aggregate；relative_lead：(left_value - right_value) / right_value * 100；字段 task_count，分子 1，分母 2；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "在当前返回结果中，甲的记录计数比丙高 1，相对丙领先约 50.0%。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0006",
+        "task_id": "T1",
+        "data_ref": "result_1fa5576bb48f4993949dfdbd932ed16c",
+        "result_field": "task_count",
+        "evidence_type": "difference",
+        "value": {
+          "left": "甲",
+          "right": "丙",
+          "left_value": 3,
+          "right_value": 2,
+          "difference": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate；已计算值相减：task_count[0] - task_count[1]；不是因果或显著性检验。",
+        "statement": "在该任务完整分组结果中，甲与丙的记录 · 计数差值为 1条。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0002",
+        "task_id": "T1",
+        "data_ref": "result_1fa5576bb48f4993949dfdbd932ed16c",
+        "result_field": "task_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "甲",
+          "value": 3,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate；对已返回的 task_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，甲的记录 · 计数为 3条，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T1",
+        "data_ref": "result_1fa5576bb48f4993949dfdbd932ed16c",
+        "result_field": "task_count",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "丙",
+          "value": 2,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate；对已返回的 task_count 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，丙的记录 · 计数为 2条，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "delivered",
+    "case_review_reason": "甲/丙多值范围与任务计数一致，建议针对记录、状态、时间。",
+    "source_path": "docs/evaluations/mvp-reliability-holdout2-2026-11-04/runs/safetyfull01/V03/http-03-response.json"
+  },
+  {
+    "case_id": "V04",
+    "candidate_index": 0,
+    "system_candidate_status": "accepted",
+    "rule_ids": [],
+    "candidate": {
+      "primary_evidence_id": "E0007",
+      "evidence_refs": [
+        "E0007",
+        "E0006",
+        "E0002",
+        "E0003"
+      ],
+      "finding_type": "difference",
+      "implication": "杭州与上海在薪资元平均值上存在差异，当前数据不足以判断导致该差异的具体原因或反映整体市场水平。",
+      "recommendation": "建议进一步核查两地参与统计的岗位构成、样本数量及薪资分布细节，以评估差异的业务背景；补充分析尚未执行。",
+      "limitations": [
+        "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+        "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+        "上传范围内，薪资元有 1 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。"
+      ]
+    },
+    "evidence": [
+      {
+        "evidence_id": "E0007",
+        "task_id": "T1",
+        "data_ref": "result_40e9a0c2ee3a45fb8c8d31bec3842b67",
+        "result_field": "salary_avg",
+        "evidence_type": "comparison",
+        "value": {
+          "metric_field": "salary_avg",
+          "dimension_field": "field_0001",
+          "source_scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "unit": "%",
+          "rounding": "half_up_1_decimal",
+          "left": "杭州",
+          "right": "上海",
+          "left_value": "24000.0",
+          "right_value": "21250.0",
+          "difference": "2750.0",
+          "formula": "(left_value - right_value) / right_value * 100",
+          "comparison_kind": "relative_lead",
+          "numerator": "2750.0",
+          "denominator": "21250.0",
+          "percent": "12.9"
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。；仅比较当前返回的同口径分组。",
+        "calculation": "批准操作链：filter → group_aggregate → sort；relative_lead：(left_value - right_value) / right_value * 100；字段 salary_avg，分子 2750.0，分母 21250.0；分母必须为正，百分比四舍五入一位小数。",
+        "statement": "在当前返回结果中，杭州的薪资元均值比上海高 2,750，相对上海领先约 12.9%。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0006",
+        "task_id": "T1",
+        "data_ref": "result_40e9a0c2ee3a45fb8c8d31bec3842b67",
+        "result_field": "salary_avg",
+        "evidence_type": "difference",
+        "value": {
+          "left": "杭州",
+          "right": "上海",
+          "left_value": 24000.0,
+          "right_value": 21250.0,
+          "difference": 2750
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → sort；已计算值相减：salary_avg[0] - salary_avg[1]；不是因果或显著性检验。",
+        "statement": "在该任务完整分组结果中，杭州与上海的薪资元 · 均值差值为 2,750。",
+        "source_row_indices": [
+          0,
+          1
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0002",
+        "task_id": "T1",
+        "data_ref": "result_40e9a0c2ee3a45fb8c8d31bec3842b67",
+        "result_field": "salary_avg",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "杭州",
+          "value": 24000.0,
+          "rank": 1
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → sort；对已返回的 salary_avg 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，杭州的薪资元 · 均值为 24,000，并列值采用同一名次，排名 1。",
+        "source_row_indices": [
+          0
+        ],
+        "related_result_refs": []
+      },
+      {
+        "evidence_id": "E0003",
+        "task_id": "T1",
+        "data_ref": "result_40e9a0c2ee3a45fb8c8d31bec3842b67",
+        "result_field": "salary_avg",
+        "evidence_type": "ranking",
+        "value": {
+          "category": "上海",
+          "value": 21250.0,
+          "rank": 2
+        },
+        "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+        "calculation": "批准操作链：filter → group_aggregate → sort；对已返回的 salary_avg 降序比较，竞争排名；不推断未返回类别。",
+        "statement": "在该任务完整分组结果中，上海的薪资元 · 均值为 21,250，并列值采用同一名次，排名 2。",
+        "source_row_indices": [
+          1
+        ],
+        "related_result_refs": []
+      }
+    ],
+    "review_category": "delivered",
+    "case_review_reason": "上海/杭州薪资均值比较正确，明确不能推断市场水平。",
+    "source_path": "docs/evaluations/mvp-reliability-holdout2-2026-11-04/runs/safetyfull01/V04/http-03-response.json"
+  }
+]

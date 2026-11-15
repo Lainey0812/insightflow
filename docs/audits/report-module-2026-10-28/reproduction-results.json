@@ -1,0 +1,191 @@
+{
+  "semantic_guard": [
+    {
+      "case": "unsupported_profit",
+      "text": "济南利润高于南京，可以增加投入。",
+      "accepted": true,
+      "returned_implication": "可能意味着：济南利润高于南京，可以增加投入。"
+    },
+    {
+      "case": "unsupported_cause",
+      "text": "济南销售额源自当地促销补贴。",
+      "accepted": true,
+      "returned_implication": "可能意味着：济南销售额源自当地促销补贴。"
+    },
+    {
+      "case": "unsupported_percentage_words",
+      "text": "The profit share is ninety percent.",
+      "accepted": true,
+      "returned_implication": "可能意味着：The profit share is ninety percent."
+    },
+    {
+      "case": "supported_caution",
+      "text": "销售额不能证明盈利能力。",
+      "accepted": false,
+      "error_code": "REPORT_UNVERIFIED_FACT"
+    },
+    {
+      "case": "supported_pair_reference",
+      "text": "两个分组值得继续比较。",
+      "accepted": false,
+      "error_code": "REPORT_UNVERIFIED_FACT"
+    }
+  ],
+  "ascending_top_n": {
+    "actual_operation": {
+      "step_id": "S02",
+      "operation": "top_n",
+      "params": {
+        "field": "sales",
+        "direction": "asc",
+        "n": 3
+      }
+    },
+    "execution_rows": [
+      {
+        "field_0001": "上海",
+        "sales": 10
+      },
+      {
+        "field_0001": "南京",
+        "sales": 20
+      },
+      {
+        "field_0001": "济南",
+        "sales": 30
+      }
+    ],
+    "first_ranking_evidence": {
+      "evidence_id": "E0002",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "sales",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "济南",
+        "value": 30,
+        "rank": 1
+      },
+      "scope": "本次上传样本及任务筛选范围",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 sales 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在当前返回结果中，济南的岗位数量为 30，并列值采用同一名次，排名 1。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    },
+    "chart_spec": {
+      "chart_id": "C001",
+      "task_id": "A01",
+      "title": "销售额最低的三个城市",
+      "chart_type": "bar",
+      "dimension": "field_0001",
+      "metrics": [
+        "sales"
+      ],
+      "data_ref": "R001",
+      "supported_chart_types": [
+        "bar",
+        "table"
+      ],
+      "evidence_refs": [
+        "E0001",
+        "E0002",
+        "E0003",
+        "E0004",
+        "E0005",
+        "E0006",
+        "E0007",
+        "E0008"
+      ],
+      "display_limit": 10,
+      "order": "value_desc",
+      "note": "任务含 Top N 筛选；此处展示选定结果，不推断未返回分组。"
+    }
+  },
+  "llm_context": {
+    "constraint": "不要分析利润",
+    "payload_keys": [
+      "analysis_goal",
+      "goal_coverage",
+      "tasks",
+      "evidence",
+      "limitations"
+    ],
+    "constraint_present_in_request": true,
+    "constraint_retained_as_report_limitation": true
+  },
+  "trusted_llm_context": {
+    "original_query": "只比较城市销售额，不要分析利润。",
+    "confirmed_constraint": "不要分析利润",
+    "payload_keys": [
+      "analysis_goal",
+      "goal_coverage",
+      "tasks",
+      "evidence",
+      "limitations"
+    ],
+    "boundary_present_in_request": false,
+    "original_query_present": false
+  },
+  "retry_history": {
+    "before": {
+      "execution_id": "audit-execution",
+      "session_id": "aea29ec9fe7946779141f759cc8b66a6",
+      "status": "failed",
+      "attempt": 1,
+      "report_id": null,
+      "error": {
+        "code": "AUDIT_FIRST_FAILURE",
+        "message": "first failed",
+        "node_name": null,
+        "retryable": false,
+        "details": {}
+      },
+      "queued_at": "2026-10-27T16:46:52.782746+00:00",
+      "started_at": "2026-10-27T16:46:52.783433+00:00",
+      "finished_at": "2026-10-27T16:46:52.784019+00:00"
+    },
+    "after": {
+      "execution_id": "audit-execution",
+      "session_id": "aea29ec9fe7946779141f759cc8b66a6",
+      "status": "queued",
+      "attempt": 2,
+      "report_id": null,
+      "error": null,
+      "queued_at": "2026-10-27T16:46:52.785019+00:00",
+      "started_at": null,
+      "finished_at": null
+    },
+    "session_records": [
+      {
+        "execution_id": "audit-execution",
+        "session_id": "aea29ec9fe7946779141f759cc8b66a6",
+        "status": "queued",
+        "attempt": 2,
+        "report_id": null,
+        "error": null,
+        "queued_at": "2026-10-27T16:46:52.785019+00:00",
+        "started_at": null,
+        "finished_at": null
+      }
+    ]
+  },
+  "integer_precision": {
+    "execution_value": 9007199254740993,
+    "returned_group_total": 9007199254740992.0,
+    "statement": "本次返回的 1 个分组的岗位数量合计为 9,007,199,254,740,992。",
+    "equal": false
+  },
+  "source_sha256": {
+    "backend/app/reporting/evidence.py": "4de6511eb228c3640a4d5f1652cc67881887c1383d65198e6e0b246194096849",
+    "backend/app/reporting/fact_validation.py": "765bb5e69bfbb96eb97ff50c934b42f039c8fda5dfc0cac5cc55db85edd167b9",
+    "backend/app/reporting/visualization.py": "4fa55e20d5c26615d898492a32905b8a471bebb55266f2bb6f408a5df36ff052",
+    "backend/app/services/analysis_report.py": "5d8af52fe40e5f619c331bac13bf9a52c449dbb8aeba2f339d0ecaf85fa32bf7",
+    "backend/app/storage/report_repository.py": "577055ac8af2fc60f106447275b872ae4f64c5d8d9c4347bd118d26eb96b21b2",
+    "backend/app/workflow/reporting.py": "aedb19569786782d6414db994db53f469cbb13587d0110d944fb481ca45ba58e",
+    "backend/app/api/reports.py": "e3aa59818e43a29e8cbcccf13bcaeb5c633bc5b26a67857f8581f4cb4e13bd23",
+    "frontend/src/reporting/ReportPage.tsx": "b43b6251adeda8cf805ecb1d2b853c5076b3be78bf983ff8c15ca781d86d66a9",
+    "frontend/src/reporting/chartAdapter.ts": "6cfac40fc51cf2646e87b3388dff3bfff4eb6c13d0df0c995ba868b5925f952a"
+  }
+}

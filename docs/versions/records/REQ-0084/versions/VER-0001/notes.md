@@ -1,0 +1,3 @@
+Workflow Identity Bootstrap V1：复用 Phase 02 Expand 表，在同一业务事务登记新真实 Session 的 Workflow、预留 Root、来源消息/文件与幂等键；准备上下文显式传播身份，Root/Link 幂等修复，四节点直接挂 Root，Trace fail-open。保留 Session 权威、旧 Trace、Root CAS、旧回调与 Report 提交保护；不改 Engine/Reporting/HITL/Admin/Prompt，不自动回填旧数据或开放多 Workflow。
+最终后端 1434、前端 67、Admin 78 项测试通过，前端及 Admin 构建通过。11 项新增身份专项通过。真实 60 行 CSV + qwen3.8-flash 最终准备流程 9.647 秒达到待审批，5 个 Span（两次实际 Validator）及 2 条模型调用均精确关联业务登记的 Workflow/Root。保存最初网络失败、回归失败及中间验证脚本误纳入其他 Run 调用的失败记录；最终独立库按 Root 只读核验通过。
+交付包含 README、runtime.patch、前后源码快照/哈希、完整测试日志、真实记录和独立验证脚本。空目标因既有 native Schema 约束返回明确 422，不伪造目标；幂等限定同一已分配 Session，不宣称跨上传请求去重。完成后停止。

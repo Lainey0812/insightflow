@@ -1,0 +1,281 @@
+{
+  "analysis_goal": {
+    "analysis_object": "岗位发布记录",
+    "business_goal": "比较岗位类别数量，平手只说明并列，不推断录用机会。",
+    "decision_goal": null
+  },
+  "goal_coverage": "complete",
+  "original_query": "比较岗位类别数量，平手只说明并列，不推断录用机会。",
+  "constraints": {
+    "time_range": null,
+    "filters": [],
+    "metric_requirements": [],
+    "analysis_limits": []
+  },
+  "constraints_confirmed": false,
+  "scope_context": [
+    {
+      "task_id": "A01",
+      "approved_steps": [
+        "按岗位类别分组",
+        "拟用统计口径：记录数"
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "field_id": "field_0001",
+      "name": "岗位类别",
+      "logical_type": "text",
+      "upload_missing_count": 0
+    },
+    {
+      "field_id": "field_0002",
+      "name": "编号",
+      "logical_type": "text",
+      "upload_missing_count": 0
+    }
+  ],
+  "uncompleted_tasks": [],
+  "task_sample_context": [
+    {
+      "task_id": "A01",
+      "status": "success",
+      "valid_sample_count": 5,
+      "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+      "metric_valid_counts": {}
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "A01",
+      "priority": "P0",
+      "business_question": "比较岗位类别数量，平手只说明并列，不推断录用机会。"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E0007",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "postings",
+      "evidence_type": "difference",
+      "value": {
+        "left": "研发",
+        "right": "运营",
+        "left_value": 2,
+        "right_value": 2,
+        "difference": 0
+      },
+      "scope": "比较岗位类别数量，平手只说明并列，不推断录用机会。；仅限本次上传与操作链筛选范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算值相减：postings[0] - postings[1]；不是因果或显著性检验。",
+      "statement": "在该任务完整分组结果中，研发与运营的记录数量 · 计数差值为 0条。",
+      "source_row_indices": [
+        0,
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0002",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "postings",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "研发",
+        "value": 2,
+        "rank": 1
+      },
+      "scope": "比较岗位类别数量，平手只说明并列，不推断录用机会。；仅限本次上传与操作链筛选范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 postings 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，研发的记录数量 · 计数为 2条，并列值采用同一名次，排名 1。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0003",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "postings",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "运营",
+        "value": 2,
+        "rank": 1
+      },
+      "scope": "比较岗位类别数量，平手只说明并列，不推断录用机会。；仅限本次上传与操作链筛选范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 postings 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，运营的记录数量 · 计数为 2条，并列值采用同一名次，排名 1。",
+      "source_row_indices": [
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0004",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "postings",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "设计",
+        "value": 1,
+        "rank": 3
+      },
+      "scope": "比较岗位类别数量，平手只说明并列，不推断录用机会。；仅限本次上传与操作链筛选范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 postings 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，设计的记录数量 · 计数为 1条，并列值采用同一名次，排名 3。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0011",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "postings",
+      "evidence_type": "metric",
+      "value": {
+        "value": 5,
+        "unit": "条",
+        "label": "本次返回分组合计（记录数量 · 计数）"
+      },
+      "scope": "比较岗位类别数量，平手只说明并列，不推断录用机会。；仅限本次上传与操作链筛选范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；仅将当前完整返回表中的可加指标相加；含 Top N 时只代表所选分组，不作为总体占比分母。",
+      "statement": "本次返回的 3 个分组的记录数量 · 计数合计为 5条。",
+      "source_row_indices": [
+        0,
+        1,
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0008",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "postings",
+      "evidence_type": "proportion",
+      "value": {
+        "category": "研发",
+        "numerator": 2,
+        "denominator": 5.0,
+        "percent": 40
+      },
+      "scope": "比较岗位类别数量，平手只说明并列，不推断录用机会。；仅限本次上传与操作链筛选范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+      "statement": "研发的记录数量 · 计数占该任务同口径总体约 40%。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0009",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "postings",
+      "evidence_type": "proportion",
+      "value": {
+        "category": "运营",
+        "numerator": 2,
+        "denominator": 5.0,
+        "percent": 40
+      },
+      "scope": "比较岗位类别数量，平手只说明并列，不推断录用机会。；仅限本次上传与操作链筛选范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+      "statement": "运营的记录数量 · 计数占该任务同口径总体约 40%。",
+      "source_row_indices": [
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0010",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "postings",
+      "evidence_type": "proportion",
+      "value": {
+        "category": "设计",
+        "numerator": 1,
+        "denominator": 5.0,
+        "percent": 20
+      },
+      "scope": "比较岗位类别数量，平手只说明并列，不推断录用机会。；仅限本次上传与操作链筛选范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+      "statement": "设计的记录数量 · 计数占该任务同口径总体约 20%。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0005",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "postings",
+      "evidence_type": "maximum",
+      "value": {
+        "value": 2,
+        "category": "研发",
+        "tie_count": 2
+      },
+      "scope": "比较岗位类别数量，平手只说明并列，不推断录用机会。；仅限本次上传与操作链筛选范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；读取 postings 的最大值，保留并列来源行。",
+      "statement": "该任务完整分组结果的记录数量 · 计数最大值为 2条，对应 研发等 2 个分组。",
+      "source_row_indices": [
+        0,
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0006",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "postings",
+      "evidence_type": "minimum",
+      "value": {
+        "value": 1,
+        "category": "设计",
+        "tie_count": 1
+      },
+      "scope": "比较岗位类别数量，平手只说明并列，不推断录用机会。；仅限本次上传与操作链筛选范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；读取 postings 的最小值，保留并列来源行。",
+      "statement": "该任务完整分组结果的记录数量 · 计数最小值为 1条，对应 设计等 1 个分组。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    }
+  ],
+  "evidence_groups": [
+    {
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "postings",
+      "evidence_ids": [
+        "E0007",
+        "E0002",
+        "E0003",
+        "E0004",
+        "E0011",
+        "E0008",
+        "E0009",
+        "E0010",
+        "E0005",
+        "E0006"
+      ]
+    }
+  ],
+  "limitations": [
+    "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+    "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+    "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+  ]
+}

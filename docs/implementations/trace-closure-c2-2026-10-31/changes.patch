@@ -1,0 +1,1126 @@
+--- before/backend/app/api/admin.py
++++ after/backend/app/api/admin.py
+@@ -35,7 +35,7 @@
+ 
+ NOTICE='Trace is best-effort; missing observations do not imply no business runs or failures.'
+ 
+-def create_admin_router(traces, reports, token, captures=None, snapshot_token='', runtime_templates=None, *, local_test_mode=False, lifecycle=None):
++def create_admin_router(traces, reports, token, captures=None, snapshot_token='', runtime_templates=None, *, local_test_mode=False, lifecycle=None, workflow_trace=None):
+     cookie_name='insightflow_admin_read'
+     session_seconds=8*60*60
+     def signature(value):
+@@ -97,6 +97,11 @@
+         if not span:raise AppError('TRACE_SPAN_NOT_FOUND','追踪阶段不存在。',404)
+         return span
+ 
++    if workflow_trace:
++        @router.get('/workflow-traces/{workflow_id}',dependencies=protected)
++        def workflow_trace_detail(workflow_id:str):
++            return read(lambda:workflow_trace.get(workflow_id))
++
+     @router.get('/runs',response_model=RunPage,dependencies=protected)
+     def runs(limit:int=Query(50,ge=1,le=100),offset:int=Query(0,ge=0,le=1000000),
+              status:Literal['queued','running','waiting_input','waiting_approval','complete','partial','unavailable','failed','interrupted']|None=None,
+--- before/backend/app/domain/models.py
++++ after/backend/app/domain/models.py
+@@ -123,6 +123,8 @@
+ 
+ 
+ class ReportGeneration(BaseModel):
++    # Per-attempt authorization snapshot, not an independent Attempt entity.
++    workflow_binding: dict | None = None
+     execution_id: str
+     session_id: str
+     status: Literal["queued", "generating", "completed", "failed", "unavailable"]
+--- before/backend/app/main.py
++++ after/backend/app/main.py
+@@ -84,6 +84,10 @@
+     identities = WorkflowIdentityRepository(repository.database) if bootstrap_identity else None
+     from app.observability.hitl import HITLObserver
+     review.observations = HITLObserver(repository, identities, traces) if identities else None
++    from app.observability.downstream import DownstreamObserver
++    downstream = DownstreamObserver(repository,executions,traces)
++    engine.observations = downstream
++    reporting.observations = downstream
+     workflow = WorkflowOrchestrator(repository, parser, profiler, planner, review, traces, identities)
+ 
+     @asynccontextmanager
+@@ -129,8 +133,11 @@
+     runtime_templates={key:source.snapshot.template_snapshot_id for key,source in prompt_sources.items()}
+     lifecycle = LifecycleService(LifecycleReader(repository.database.path, settings.data_dir / 'observability' / 'trace.sqlite3'))
+     app.state.lifecycle = lifecycle
++    from app.services.workflow_trace import WorkflowTraceService
++    workflow_trace = WorkflowTraceService(repository,traces,captures)
++    app.state.workflow_trace = workflow_trace
+     admin_router = create_admin_router(traces, reports, settings.admin_read_token,captures,settings.admin_snapshot_token,runtime_templates,
+-                                      local_test_mode=settings.admin_local_test_mode, lifecycle=lifecycle)
++                                      local_test_mode=settings.admin_local_test_mode, lifecycle=lifecycle, workflow_trace=workflow_trace)
+     app.include_router(admin_router)
+     app.include_router(admin_router, prefix='/api/v1', include_in_schema=False)
+     install_error_handlers(app)
+--- before/backend/app/observability/downstream.py
++++ after/backend/app/observability/downstream.py
+@@ -0,0 +1,84 @@
++"""Exact business bindings, direct Root nodes and retained legacy Report artifacts."""
++from contextlib import closing
++from app.domain.errors import AppError
++from app.observability.context import bind_trace
++from app.observability.recorder import TraceContext, SpanHandle
++from app.observability.workflow import preparation_context
++from app.storage.workflow_identity import WorkflowIdentity
++
++
++class DownstreamObserver:
++    def __init__(self,sessions,executions,recorder):
++        self.sessions,self.executions,self.recorder=sessions,executions,recorder
++
++    def context(self,execution_id):
++        with closing(self.sessions.database.connect()) as conn:
++            if not conn.execute("SELECT 1 FROM sqlite_master WHERE name='workflow_execution_links'").fetchone():return None
++            link=conn.execute('SELECT * FROM workflow_execution_links WHERE execution_id=?',(execution_id,)).fetchone()
++            if link is None:return None
++            wf=conn.execute('SELECT * FROM business_workflows WHERE workflow_id=?',(link['workflow_id'],)).fetchone()
++            if not wf or wf['session_id']!=link['session_id']:raise ValueError('Workflow execution ownership mismatch')
++            identity=WorkflowIdentity(wf['session_id'],wf['workflow_id'],wf['root_run_id'])
++        trace=preparation_context(self.recorder,identity.session_id,identity,explicit_only=True)
++        trace.bindings={'execution_id':execution_id,'approval_id':link['approval_id'],
++                        'plan_version_id':link['plan_version_id'],'result_ref':execution_id}
++        return trace
++
++    def execute(self,claim,action):
++        ok,trace=self.recorder.call(lambda:self.context(claim['execution_id']))
++        if not ok or trace is None or trace.run is None:
++            if claim.get('workflow_binding'):self.recorder.workflow_gap(claim['approval'].session_id)
++            return action()
++        _,handle=self.recorder.call(lambda:SpanHandle(trace,'analysis_engine'))
++        trace.active=handle
++        with bind_trace(trace):
++            try:result=action()
++            except BaseException as error:
++                if handle:self.recorder.call(lambda:handle.finish(error))
++                raise
++            def complete():
++                stored=self.executions.get(result.execution_id)
++                if stored!=result:raise ValueError('Execution commit not verified')
++                if handle:
++                    handle.attributes(execution_status=result.execution_status,result_ref=result.execution_id,
++                        result_refs=[t.result_id for t in result.tasks if t.result_id],
++                        rule_ids=[e.code for e in result.errors])
++                    if result.errors and handle.record:
++                        handle.record.error_code=result.errors[0].code
++                    handle.terminal_status={'success':'complete','partial_success':'partial','failed':'failed'}[result.execution_status]
++                    handle.finish()
++            accepted,_=self.recorder.call(complete)
++            if not accepted:
++                self.recorder.workflow_gap(result.session_id)
++                if handle:self.recorder.call(lambda:handle.finish(AppError('TRACE_COMMIT_UNVERIFIED','执行观测核验失败。')))
++            return result
++
++    def reporting(self,execution_id,attempt,artifact,binding=None):
++        ok,trace=self.recorder.call(lambda:self.context(execution_id))
++        if not ok or trace is None:
++            if not binding:return artifact
++            # A native collection failure cannot silently create nodes under an artifact Run.
++            trace=TraceContext(self.recorder)
++            trace.workflow_identity=WorkflowIdentity(binding['session_id'],binding['workflow_id'],binding['root_run_id'])
++            trace.bindings={key:binding[key] for key in ('execution_id','approval_id','plan_version_id')}
++            self.recorder.call(lambda:self.recorder.repository.mark_collection_gap(binding['root_run_id']))
++        if trace.run is None:
++            self.recorder.workflow_gap(trace.workflow_identity.session_id)
++        return WorkflowReportTrace(trace,artifact,attempt)
++
++
++class WorkflowReportTrace(TraceContext):
++    """Report Run retains manifests/snapshots; actual Node Spans belong only to Workflow Root."""
++    def __init__(self,trace,artifact,attempt):
++        super().__init__(trace.owner,trace.run)
++        self.workflow_identity=trace.workflow_identity
++        self.bindings={**trace.bindings,'report_attempt':attempt,
++                       'report_run_id':artifact.run.run_id if artifact.run else None}
++        self.artifact=artifact
++    def verify_inputs(self,*args):return self.artifact.verify_inputs(*args)
++    def snapshot(self,*args):return self.artifact.snapshot(*args)
++    def finish(self,status,report=None,error=None):
++        self.event('report.'+status,report_status=getattr(report,'report_status',None),
++                   report_id=getattr(report,'report_id',None),**self.bindings)
++        if self.gaps:self.artifact.gaps+=self.gaps
++        self.artifact.finish(status,report=report,error=error)
+--- before/backend/app/observability/recorder.py
++++ after/backend/app/observability/recorder.py
+@@ -23,6 +23,7 @@
+ SAFE_KEYS.update({'status','previous_status','session_revision','node_name','operation_id','validation_role',
+                   'next_action','coverage_status','executable_count','blocked_count','error_message',
+                   'dataset_id','dataset_version','plan_id','plan_version','validation_version'})
++SAFE_KEYS.update({'execution_id','plan_version_id','report_attempt','report_run_id','execution_status','result_ref','result_refs','commit_sha256'})
+ SAFE_KEYS.update({'row_count','column_count','workflow_id','root_run_id','approval_id','command','outcome'})
+ 
+ def safe_error_message(code):
+@@ -56,7 +57,7 @@
+         key=(parent_key+'/' if parent_key else '')+name
+         context.node_attempts[key]=context.node_attempts.get(key,0)+1
+         self.record=TraceSpan(span_id='span_'+uuid4().hex,run_id=context.run.run_id,
+-            name=name,node_key=key,node_attempt=context.node_attempts[key],status='running',started_at=now(),attributes=safe({**(attributes or {}), **({'workflow_id': context.workflow_identity.workflow_id,
++            name=name,node_key=key,node_attempt=context.node_attempts[key],status='running',started_at=now(),attributes=safe({**getattr(context,'bindings',{}), **(attributes or {}), **({'workflow_id': context.workflow_identity.workflow_id,
+                 'root_run_id': context.workflow_identity.root_run_id} if flat else {})}),
+             parent_span_id=context.active.record.span_id if context.active and context.active.record and not flat else None) if context.run else None
+         self.timer=perf_counter()
+@@ -79,12 +80,13 @@
+                 self.record.error_code=error_code(error)
+                 self.record.error_message=safe_error_message(self.record.error_code)
+             else:
+-                self.record.status='skipped' if self.skipped else ('partial' if self.record.attributes.get('rejected_count',0) else 'complete')
++                self.record.status=getattr(self,'terminal_status',None) or ('skipped' if self.skipped else ('partial' if self.record.attributes.get('rejected_count',0) else 'complete'))
+             self.record.finished_at=now()
+             self.record.duration_ms=max(0,(perf_counter()-self.timer)*1000)
+-            self.event('span.finished', **{**self.record.attributes, 'error_code': self.record.error_code,
+-                                         'error_message':self.record.error_message})
+-            self.context.call(lambda: self.context.owner.repository.save_span(self.record))
++            saved = self.context.call(lambda: self.context.owner.repository.save_span(self.record))
++            if saved:
++                self.event('span.finished', **{**self.record.attributes, 'error_code': self.record.error_code,
++                                             'error_message':self.record.error_message})
+ 
+ class TraceContext:
+     def __init__(self, owner, run=None):
+@@ -95,7 +97,10 @@
+         self.node_attempts={}
+     def call(self, action):
+         ok,value=self.owner.call(action)
+-        if not ok: self.gaps+=1
++        if not ok:
++            self.gaps+=1
++            if self.run and self.run.kind=='workflow':
++                self.owner.call(lambda:self.owner.repository.mark_collection_gap(self.run.run_id))
+         return value
+     def event(self,event_type,span_id=None,**payload):
+         if not self.run: return
+@@ -180,6 +185,7 @@
+                 self.warning_count+=1
+             return False,None
+     def queue(self,execution,record,approval_reader,service,input_reader=None):
++        binding = getattr(record,'workflow_binding',None)
+         def create():
+             from app.reporting.prompt import PROMPT_VERSION,GENERATION_VERSION,SYSTEM_PROMPT
+             pinned = getattr(service,'prompt_source',None)
+@@ -201,7 +207,8 @@
+                 git=git_snapshot(root.parents[1]),input_sha256=fingerprints,prompt_template_snapshots=template_refs,
+                 bindings={'session_id':execution.session_id,'execution_id':execution.execution_id,
+                 'approval_id':execution.approval_id,'dataset_id':execution.dataset_id,'dataset_version':execution.dataset_version,
+-                'plan_id':execution.plan_id,'plan_version':execution.plan_version},
++                'plan_id':execution.plan_id,'plan_version':execution.plan_version,
++                **({'workflow_id':binding['workflow_id'],'root_run_id':binding['root_run_id']} if binding else {})},
+                 versions={'prompt_version':PROMPT_VERSION,'generation_version':GENERATION_VERSION,
+                     'schema_version':'analysis-report-v1','prompt_sha256':digest(SYSTEM_PROMPT),
+                     'fact_validator_sha256':digest([(root/p).read_text() for p in ('reporting/fact_validation.py','reporting/claims.py')]),
+@@ -214,10 +221,11 @@
+                     'enable_thinking':service.enable_thinking,'temperature':None,'top_p':None,'usage':None},
+                 source_sha256={p:hashlib.sha256((root/p).read_bytes()).hexdigest() for p in paths})
+             previous=self.repository.attempt(execution.execution_id,record.attempt-1)
+-            root_run=self.repository.workflow(execution.session_id)
++            root_run=None if binding else self.repository.workflow(execution.session_id)
++            root_id=binding['root_run_id'] if binding else (root_run.run_id if root_run else None)
+             return self.repository.create(TraceRun(run_id='run_'+uuid4().hex,
+                 session_id=execution.session_id,execution_id=execution.execution_id,attempt=record.attempt,
+-                workflow_run_id=root_run.run_id if root_run else None,
++                workflow_run_id=root_id,
+                 retry_of_run_id=previous.run_id if previous else None,owner_instance=self.owner_instance,
+                 status='queued',queued_at=record.queued_at,manifest=manifest))
+         self.call(create)
+--- before/backend/app/services/analysis_engine.py
++++ after/backend/app/services/analysis_engine.py
+@@ -101,6 +101,12 @@
+         loaded = self.loader.load(plan.dataset_id,plan.dataset_version)
+         claim = self.executions.claim(request,state.revision,self.check_approval)
+         if isinstance(claim, ExecutionResultV1): return claim
++        action = lambda: self._execute_claim(request,checked,loaded,claim)
++        observer = getattr(self,'observations',None)
++        return observer.execute(claim,action) if observer else action()
++
++    def _execute_claim(self,request,checked,loaded,claim):
++        plan = checked.plan
+         timer, tasks = perf_counter(), []
+         remaining_bytes, remaining_cells = 256 * 1024, 100_000
+         validation = {v.task_id:v for v in checked.validation_results}
+@@ -136,4 +142,4 @@
+             result = self.outcome(record["id"],request,approval,record["started_at"],tasks,elapsed,
+                 warnings=["服务重启中断执行；保留已保存结果，未自动重跑。"],
+                 extra_errors=[ExecutionError(code="EXECUTION_INTERRUPTED",message="执行因服务中断结束。")])
+-            self.executions.finish(result)
++            self.executions.finish(result,recovering=True)
+--- before/backend/app/services/analysis_report.py
++++ after/backend/app/services/analysis_report.py
+@@ -97,7 +97,9 @@
+                 limitations.append(f"{tasks[t.task_id].title[:200]}：仅返回部分结果，不能据此推断未返回分组的排名或总体占比。")
+             if t.result and any(step.operation == "top_n" for step in tasks[t.task_id].steps):
+                 limitations.append(f"{tasks[t.task_id].title[:200]}：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。")
+-        charts = VisualizationBuilder().build(execution, descriptions, evidence, tasks, intent)
++        with trace.span('chart_builder') as chart_stage:
++            charts = VisualizationBuilder().build(execution, descriptions, evidence, tasks, intent)
++            chart_stage.attributes(chart_count=len(charts))
+         charts.sort(key=lambda chart: (tasks[chart.task_id].priority, chart.chart_id))
+         from app.review.presentation import PlanPresentationMapper
+         mapper = PlanPresentationMapper(profile)
+@@ -170,10 +172,15 @@
+                     rejected_count=len(rejected_insights))
+             llm = LLMMetadata(provider=response.provider, model=response.model, is_mock=response.is_mock)
+         else:
+-            with trace.span('insight_generator', {'skip_reason': 'NO_EVIDENCE', 'candidate_count': 0}, skip=True):
+-                pass
+-            with trace.span('fact_validator', {'skip_reason': 'NO_EVIDENCE', 'candidate_count': 0}, skip=True):
+-                pass
++            if getattr(trace,'workflow_identity',None):
++                # Native Root: record the actual skip decision, not an unexecuted LLM/validator node.
++                trace.event('report.node_skipped',node_name='insight_generator',skip_reason='NO_EVIDENCE')
++                trace.event('report.node_skipped',node_name='fact_validator',skip_reason='NO_EVIDENCE')
++            else:
++                with trace.span('insight_generator', {'skip_reason': 'NO_EVIDENCE', 'candidate_count': 0}, skip=True):
++                    pass
++                with trace.span('fact_validator', {'skip_reason': 'NO_EVIDENCE', 'candidate_count': 0}, skip=True):
++                    pass
+         with trace.span('report_assembler') as assembly:
+             status = "unavailable" if not evidence else ("partial" if uncompleted or rejected_insights or missing_core_metrics or execution.execution_status == "partial_success" else "complete")
+             if rejected_insights:
+--- before/backend/app/services/plan_review.py
++++ after/backend/app/services/plan_review.py
+@@ -325,6 +325,8 @@
+             conn.execute('INSERT INTO plan_constraint_audits VALUES (?, ?, ?)',
+                 (approval.approval_id, session_id, json.dumps({'approval_id': approval.approval_id, 'session_id': session_id,
+                     'approved_at': snapshot.approved_at, 'audit': constraint_audit.model_dump(mode='json')}, ensure_ascii=False)))
++            from app.storage.workflow_bindings import bind_approval
++            bind_approval(conn, state, approval, request)
+             state.engine_approval = snapshot
+             state.approved_plan_version = record.plan_version
+             state.status = S.APPROVED
+--- before/backend/app/services/workflow_trace.py
++++ after/backend/app/services/workflow_trace.py
+@@ -0,0 +1,97 @@
++"""Read-only Workflow ID entrypoint. Physical observations never synthesize missing nodes."""
++from contextlib import closing
++import json
++from app.domain.errors import AppError
++from app.domain.models import SessionState
++
++
++class WorkflowTraceService:
++    def __init__(self,sessions,traces,captures):
++        self.sessions,self.traces,self.captures=sessions,traces,captures
++
++    def get(self,workflow_id):
++        with closing(self.sessions.database.connect()) as conn:
++            conn.execute('BEGIN')
++            wf=conn.execute('SELECT * FROM business_workflows WHERE workflow_id=?',(workflow_id,)).fetchone()
++            if not wf:raise AppError('BUSINESS_WORKFLOW_NOT_FOUND','未登记此 Workflow。',404)
++            state=SessionState.model_validate_json(conn.execute('SELECT state FROM sessions WHERE id=?',(wf['session_id'],)).fetchone()[0])
++            if (state.workflow_id,state.root_run_id)!=(workflow_id,wf['root_run_id']):
++                raise AppError('WORKFLOW_IDENTITY_MISMATCH','业务身份不一致，不能选择其他流程代替。',409)
++            plans=[dict(r) for r in conn.execute('SELECT plan_version_id,plan_id,plan_version,dataset_id,dataset_version,payload_hash FROM workflow_plan_versions WHERE workflow_id=?',(workflow_id,))]
++            approvals=[dict(r) for r in conn.execute('SELECT approval_id,plan_version_id,client_request_id,snapshot_hash FROM workflow_approval_links WHERE workflow_id=?',(workflow_id,))]
++            executions=[]
++            for row in conn.execute('SELECT l.*,e.status,e.result,e.progress FROM workflow_execution_links l JOIN executions e ON e.id=l.execution_id WHERE l.workflow_id=?',(workflow_id,)):
++                item=dict(row);result=json.loads(item.pop('result')) if item['result'] else None
++                item.pop('progress')
++                item['outcome']=result['execution_status'] if result else None
++                item['result_ref']=item['execution_id']
++                item['errors']=result['errors'] if result else []
++                executions.append(item)
++            reports=[]
++            for row in conn.execute('SELECT l.*,r.audit,r.report FROM workflow_report_links l JOIN analysis_reports r ON r.id=l.report_id WHERE l.workflow_id=?',(workflow_id,)):
++                item=dict(row);audit=json.loads(item.pop('audit'));saved_report=json.loads(item.pop('report'))
++                item['commit_receipt']=audit.get('commit_receipt')
++                item['report_status']=saved_report['report_status'];item['goal_coverage']=saved_report['goal_coverage']
++                reports.append(item)
++            # Reuse the existing read contract (including its canonical snapshot digest).
++            from app.storage.workflow_reader import WorkflowReader
++            reader=WorkflowReader(self.sessions.database.path)
++            for plan in plans:reader._plan(conn,workflow_id,identity=plan['plan_version_id'])
++            for approval in approvals:reader._approval(conn,workflow_id,approval['approval_id'])
++            for execution in executions:reader._execution(conn,workflow_id,execution['execution_id'])
++            for report in reports:reader.report(workflow_id,report['report_id'])
++            generations=[]
++            for execution in executions:
++                row=conn.execute('SELECT record FROM report_generations WHERE execution_id=?',(execution['execution_id'],)).fetchone()
++                if row:generations.append(json.loads(row['record']))
++        gaps=[];root=None;nodes=[];events=[];artifacts=[];calls=[]
++        if state.engine_approval and not any(a['approval_id']==state.engine_approval.approval_id for a in approvals):
++            gaps.append({'code':'APPROVAL_OWNERSHIP_NOT_REGISTERED','approval_id':state.engine_approval.approval_id})
++        registered={e['execution_id'] for e in executions}
++        for eid in state.engine_execution_ids:
++            if eid not in registered:gaps.append({'code':'EXECUTION_OWNERSHIP_NOT_REGISTERED','execution_id':eid})
++        ok,root=self.traces.call(lambda:self.traces.repository.get(wf['root_run_id']))
++        if not ok or root is None:gaps.append({'code':'ROOT_NOT_COLLECTED','root_run_id':wf['root_run_id']})
++        elif root.manifest.bindings.get('workflow_id')!=workflow_id:
++            raise AppError('WORKFLOW_TRACE_IDENTITY_MISMATCH','Root Manifest 与业务身份不一致。',409)
++        else:
++            ok,nodes=self.traces.call(lambda:self.traces.repository.spans(root.run_id))
++            if not ok:nodes=[];gaps.append({'code':'SPANS_UNAVAILABLE'})
++            ok,events=self.traces.call(lambda:self.traces.repository.run_events(root.run_id))
++            if not ok:events=[];gaps.append({'code':'EVENTS_UNAVAILABLE'})
++            if root.integrity=='incomplete':gaps.append({'code':'RECORDED_COLLECTION_GAP'})
++        for output in state.node_runs:
++            if not any(s.name=={'analysis_planner_v1':'analysis_planner'}.get(output.node_name,output.node_name) for s in nodes):
++                gaps.append({'code':'NODE_NOT_COLLECTED','node_key':output.node_name,'business_node_run_id':output.run_id})
++        for execution in executions:
++            if not any(s.name=='analysis_engine' and s.attributes.get('execution_id')==execution['execution_id'] for s in nodes):
++                gaps.append({'code':'EXECUTION_SPAN_NOT_COLLECTED','execution_id':execution['execution_id']})
++        ok,runs=self.traces.call(lambda:self.traces.repository.related_reports(wf['root_run_id']))
++        if ok:
++            actual_ids={e['execution_id'] for e in executions}
++            artifacts=[r.model_dump(mode='json') for r in runs if r.execution_id in actual_ids]
++            for item in artifacts:
++                if item['integrity']=='incomplete':gaps.append({'code':'REPORT_ARTIFACT_COLLECTION_GAP','run_id':item['run_id']})
++        else:gaps.append({'code':'REPORT_RUNS_UNAVAILABLE'})
++        for report in reports:
++            if not any(s.name=='report_persistence' and s.attributes.get('report_id')==report['report_id'] and s.status=='complete' for s in nodes):
++                gaps.append({'code':'REPORT_COMMIT_SPAN_NOT_COLLECTED','report_id':report['report_id']})
++        for approval in approvals:
++            if not any(s.name=='hitl' and s.attributes.get('approval_id')==approval['approval_id'] for s in nodes):
++                gaps.append({'code':'APPROVAL_SPAN_NOT_COLLECTED','approval_id':approval['approval_id']})
++        if self.captures.repository:
++            try:
++                calls=[c.model_dump(mode='json') for c in self.captures.repository.calls(run_id=wf['root_run_id'])]
++            except Exception:gaps.append({'code':'LLM_CALLS_UNAVAILABLE'})
++        else:gaps.append({'code':'LLM_CALLS_UNAVAILABLE'})
++        for node in nodes:
++            if node.name in {'intent_parser','analysis_planner','insight_generator'} and node.status!='skipped' and not any(c['span_id']==node.span_id for c in calls):
++                gaps.append({'code':'LLM_CALL_NOT_COLLECTED','span_id':node.span_id})
++        return {'workflow_id':workflow_id,'root_run_id':wf['root_run_id'],'session_id':wf['session_id'],
++            'session_status':state.status.value,'root_observation_scope':'preparation_checkpoint_not_business_lifecycle',
++            'root':root.model_dump(mode='json') if root else None,
++            'nodes':[s.model_dump(mode='json') for s in nodes],'events':[e.model_dump(mode='json') for e in events],
++            'plan_versions':plans,'approvals':approvals,'executions':executions,'report_generations':generations,
++            'reports':reports,'llm_calls':calls,'report_artifact_runs':artifacts,
++            'collection':{'status':'incomplete' if gaps else 'observed','gaps':gaps,
++                          'notice':'Cross-store reads are best-effort, not an atomic multi-database snapshot.'}}
+--- before/backend/app/storage/execution_repository.py
++++ after/backend/app/storage/execution_repository.py
+@@ -64,8 +64,10 @@
+             state.updated_at = started_at
+             state.engine_execution_ids.append(execution_id)
+             state.messages.append(Message(role="assistant", kind="status", content="已核对批准版本，正在执行真实上传数据。"))
++            from .workflow_bindings import bind_execution
++            binding = bind_execution(conn,state,execution_id,request)
+             conn.execute("UPDATE sessions SET state=?, updated_at=? WHERE id=?", (state.model_dump_json(), state.updated_at, state.id))
+-            return {"execution_id": execution_id, "started_at": started_at, "approval": state.engine_approval}
++            return {"execution_id": execution_id, "started_at": started_at, "approval": state.engine_approval, "workflow_binding": binding}
+ 
+     def save_task(self, execution_id: str, task: ExecutedTask, columns=None, rows=None):
+         with closing(self.database.connect()) as conn, conn:
+@@ -83,12 +85,28 @@
+             progress.append(task.model_dump(mode="json"))
+             conn.execute("UPDATE executions SET progress=? WHERE id=?", (json.dumps(progress, ensure_ascii=False, allow_nan=False), execution_id))
+ 
+-    def finish(self, result: ExecutionResultV1):
++    def finish(self, result: ExecutionResultV1, *, recovering=False):
+         with closing(self.database.connect()) as conn, conn:
+             conn.execute("BEGIN IMMEDIATE")
+-            record = conn.execute("SELECT status FROM executions WHERE id=?", (result.execution_id,)).fetchone()
++            record = conn.execute("SELECT status,session_id,approval FROM executions WHERE id=?", (result.execution_id,)).fetchone()
+             if not record or record["status"] != "running":
+                 raise AppError("EXECUTION_NOT_RUNNING", "执行记录已结束。", 409)
++            saved = ApprovedExecutionSnapshot.model_validate_json(record['approval'])
++            plan = saved.validated_plan.plan
++            if (record['session_id'],saved.approval_id,plan.plan_id,plan.plan_version,plan.dataset_id,plan.dataset_version) != (result.session_id,result.approval_id,result.plan_id,result.plan_version,result.dataset_id,result.dataset_version):
++                raise AppError('WORKFLOW_EXECUTION_STALE','执行结果与不可变批准快照不一致。',409)
++            current = conn.execute('SELECT state FROM sessions WHERE id=?',(result.session_id,)).fetchone()
++            state = SessionState.model_validate_json(current['state'])
++            from .workflow_bindings import current_execution
++            try:
++                link = current_execution(conn,state,result.execution_id,result.plan_version,result.approval_id)
++                if link and (state.status != S.RUNNING or link['dispatch_key'] != result.execution_id+'@'+str(state.revision)):
++                    raise AppError('WORKFLOW_EXECUTION_STALE','执行提交授权已过期。',409)
++            except AppError:
++                if not recovering:raise
++                # Recovery retains historical progress but cannot change a newer Session branch.
++                conn.execute("UPDATE executions SET status='finished',result=? WHERE id=?",(result.model_dump_json(),result.execution_id))
++                return False
+             conn.execute("UPDATE executions SET status='finished', result=? WHERE id=?", (result.model_dump_json(), result.execution_id))
+             row = conn.execute("SELECT state FROM sessions WHERE id=?", (result.session_id,)).fetchone()
+             state = SessionState.model_validate_json(row["state"])
+--- before/backend/app/storage/report_repository.py
++++ after/backend/app/storage/report_repository.py
+@@ -47,6 +47,7 @@
+                 raise AppError('STALE_REPORT_ATTEMPT', '报告生成记录不存在，请刷新后重试。')
+             record = ReportGeneration(execution_id=execution_id, session_id=session_id,
+                 status='queued', attempt=previous.attempt + 1 if previous else 1)
++            record.workflow_binding = self._binding(conn,record)
+             self._write_generation(conn, record)
+             return record, True
+ 
+@@ -59,6 +60,8 @@
+             if record is None or record.attempt != attempt or record.status != 'queued':
+                 return None
+             record.status, record.started_at = 'generating', now()
++            if record.workflow_binding:
++                record.workflow_binding = self._binding(conn,record)
+             self._write_generation(conn, record)
+             return record
+ 
+@@ -70,7 +73,20 @@
+             record = ReportGeneration.model_validate_json(row['record']) if row else None
+             if not record or record.attempt != attempt or record.status not in {'queued', 'generating'}:
+                 return False
++            if record.workflow_binding and not self._authorized(conn,record):
++                return False
+             if report:
++                audit = dict(audit or {})
++                if record.workflow_binding:
++                    from .workflow_bindings import sha
++                    bound = record.workflow_binding
++                    for key in ('session_id','execution_id','approval_id','dataset_id','dataset_version','plan_id','plan_version'):
++                        if audit.get(key) != bound[key]:
++                            raise AppError('REPORT_APPROVAL_MISMATCH','报告提交引用与授权快照不一致。',409)
++                    audit['commit_receipt'] = {**bound,'report_id':report.report_id,
++                        'report_sha256':sha(report.model_dump_json()),
++                        'committed_revision':bound['authorized_revision']+1,
++                        'persistence_span_id':audit.get('persistence_span_id')}
+                 conn.execute('INSERT INTO analysis_reports VALUES (?, ?, ?)',
+                     (report.report_id, report.model_dump_json(), json.dumps(audit, ensure_ascii=False, allow_nan=False)))
+                 record.report_id = report.report_id
+@@ -79,7 +95,63 @@
+                 record.status, record.error = 'failed', error
+             record.finished_at = now()
+             self._write_generation(conn, record)
++            if report and record.workflow_binding:
++                from app.domain.models import now
++                bound=record.workflow_binding
++                conn.execute('INSERT INTO workflow_report_links VALUES (?,?,?,?,?,?,?)',
++                    (report.report_id,bound['workflow_id'],record.session_id,execution_id,attempt,'native',now()))
+         return True
++
++    def _binding(self,conn,record):
++        from app.domain.models import SessionState
++        from .workflow_bindings import current_execution, branch_hash
++        state=SessionState.model_validate_json(conn.execute('SELECT state FROM sessions WHERE id=?',(record.session_id,)).fetchone()[0])
++        if not state.workflow_id and not state.root_run_id:return None
++        # Existing pre-C2 executions retain their original report contract; never infer a new ownership link.
++        if not conn.execute('SELECT 1 FROM workflow_execution_links WHERE execution_id=?',(record.execution_id,)).fetchone():return None
++        execution=conn.execute('SELECT result FROM executions WHERE id=?',(record.execution_id,)).fetchone()
++        if not execution or not execution['result']:raise AppError('REPORT_ENGINE_RESULT_REQUIRED','执行结果未提交。',409)
++        result=json.loads(execution['result'])
++        link=current_execution(conn,state,record.execution_id,result['plan_version'],result['approval_id'])
++        return {**{key:result[key] for key in ('session_id','execution_id','approval_id','dataset_id','dataset_version','plan_id','plan_version')},
++            'workflow_id':state.workflow_id,'root_run_id':state.root_run_id,'plan_version_id':link['plan_version_id'],
++            'report_attempt':record.attempt,'active_key':record.execution_id+':'+str(record.attempt),
++            'commit_request_id':record.execution_id+':'+str(record.attempt),
++            'authorized_revision':state.revision+1,'revision_authority':'session_single_flow','branch_sha256':branch_hash(state)}
++
++    def _authorized(self,conn,record):
++        from app.domain.models import SessionState
++        from .workflow_bindings import branch_hash, identity
++        state=SessionState.model_validate_json(conn.execute('SELECT state FROM sessions WHERE id=?',(record.session_id,)).fetchone()[0])
++        identity(conn,state)
++        bound=record.workflow_binding
++        return (state.workflow_id==bound['workflow_id'] and state.root_run_id==bound['root_run_id']
++                and state.revision==bound['authorized_revision'] and branch_hash(state)==bound['branch_sha256']
++                and bound['active_key']==record.execution_id+':'+str(record.attempt))
++
++    def committed(self,execution_id,attempt,report_id,span_id=None):
++        """C19-B readback. Also works when commit succeeded but its return value was lost."""
++        from .workflow_bindings import sha, branch_hash
++        from app.domain.models import SessionState
++        with closing(self.database.connect()) as conn:
++            conn.execute('BEGIN')
++            row=conn.execute('SELECT record FROM report_generations WHERE execution_id=?',(execution_id,)).fetchone()
++            if not row:return False
++            record=json.loads(row['record'])
++            if record['attempt']!=attempt or record['report_id']!=report_id or record['status'] not in {'completed','unavailable'}:return False
++            report=conn.execute('SELECT report,audit FROM analysis_reports WHERE id=?',(report_id,)).fetchone()
++            if not report:return False
++            bound=record.get('workflow_binding')
++            if not bound:return True  # Existing legacy transaction contract, not a native C19 claim.
++            audit=json.loads(report['audit']);receipt=audit.get('commit_receipt',{})
++            link=conn.execute('SELECT * FROM workflow_report_links WHERE report_id=?',(report_id,)).fetchone()
++            state=SessionState.model_validate_json(conn.execute('SELECT state FROM sessions WHERE id=?',(bound['session_id'],)).fetchone()[0])
++            return bool(state.revision>=bound['authorized_revision']+1 and branch_hash(state)==bound['branch_sha256'] and link and link['workflow_id']==bound['workflow_id'] and link['execution_id']==execution_id
++                and link['accepted_report_attempt']==attempt
++                and all(receipt.get(key)==value for key,value in bound.items())
++                and receipt.get('report_sha256')==sha(report['report'])
++                and receipt.get('persistence_span_id')==span_id
++                and receipt.get('committed_revision')==bound['authorized_revision']+1)
+ 
+     def _write_generation(self, conn, record):
+         from app.domain.models import SessionState, now
+--- before/backend/app/storage/trace_repository.py
++++ after/backend/app/storage/trace_repository.py
+@@ -144,6 +144,7 @@
+ 
+     def save_span(self, span):
+         with closing(self.connect()) as conn, conn:
++            conn.execute('BEGIN IMMEDIATE')
+             if span.parent_span_id:
+                 parent=conn.execute('SELECT run_id FROM trace_spans WHERE id=?',(span.parent_span_id,)).fetchone()
+                 if not parent or parent['run_id']!=span.run_id: raise ValueError('Cross-run parent')
+@@ -156,6 +157,7 @@
+                     raise ValueError('Span identity is immutable')
+             conn.execute('INSERT INTO trace_spans VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET record=excluded.record',
+                          (span.span_id,span.run_id,span.model_dump_json()))
++        return True
+ 
+     def event(self, event):
+         with closing(self.connect()) as conn, conn:
+@@ -209,9 +211,21 @@
+             rows=conn.execute('SELECT r.record FROM trace_runs r'+where+' ORDER BY r.queued_at DESC,r.id DESC LIMIT ? OFFSET ?',(*args,limit,offset)).fetchall()
+         return [TraceRun.model_validate_json(row['record']) for row in rows],total
+ 
++    def related_reports(self, root_run_id):
++        with closing(self.connect()) as conn:
++            rows=conn.execute("SELECT record FROM trace_runs WHERE json_extract(record,'$.kind')='report_generation' AND json_extract(record,'$.workflow_run_id')=? ORDER BY queued_at,id",(root_run_id,)).fetchall()
++        return [TraceRun.model_validate_json(r['record']) for r in rows]
++
+     def spans(self, run_id):
+         with closing(self.connect()) as conn:
+             rows=conn.execute('SELECT record FROM trace_spans WHERE run_id=? ORDER BY rowid',(run_id,)).fetchall()
++            if not rows:
++                # Compatibility projection: preserve actual Span IDs and owning Root IDs.
++                source=conn.execute('SELECT record FROM trace_runs WHERE id=?',(run_id,)).fetchone()
++                run=TraceRun.model_validate_json(source['record']) if source else None
++                if run and run.kind=='report_generation' and run.manifest.bindings.get('workflow_id'):
++                    rows=conn.execute("SELECT record FROM trace_spans WHERE run_id=? AND json_extract(record,'$.attributes.execution_id')=? AND json_extract(record,'$.attributes.report_attempt')=? ORDER BY rowid",
++                        (run.workflow_run_id,run.execution_id,run.attempt)).fetchall()
+         return [TraceSpan.model_validate_json(r['record']) for r in rows]
+ 
+     def events(self, span_id, limit=100, offset=0):
+@@ -219,6 +233,12 @@
+             rows=conn.execute('SELECT record FROM trace_events WHERE span_id=? ORDER BY sequence LIMIT ? OFFSET ?',
+                              (span_id,limit,offset)).fetchall()
+         return [TraceEvent.model_validate_json(r['record']) for r in rows]
++
++    def mark_collection_gap(self,root_run_id):
++        # Integrity is monotone. update_run already preserves incomplete under its CAS transaction.
++        # No lifecycle field or CAS token is changed by this narrow atomic metadata write.
++        with closing(self.connect()) as conn,conn:
++            conn.execute("UPDATE trace_runs SET record=json_set(record,'$.integrity','incomplete') WHERE id=? AND json_extract(record,'$.kind')='workflow'",(root_run_id,))
+ 
+     def recover(self):
+         # Same single-process deployment boundary as the business recovery code.
+@@ -239,6 +259,14 @@
+                         span.duration_ms=None
+                         conn.execute('UPDATE trace_spans SET record=? WHERE id=?',(span.model_dump_json(),span.span_id))
+ 
++            for row in conn.execute("SELECT id,record FROM trace_spans WHERE json_extract(record,'$.status')='running'").fetchall():
++                span=TraceSpan.model_validate_json(row['record'])
++                span.status,span.error_code='interrupted','TRACE_PROCESS_INTERRUPTED'
++                span.recovered_at=now()
++                span.duration_ms=None
++                conn.execute('UPDATE trace_spans SET record=? WHERE id=?',(span.model_dump_json(),span.span_id))
++                conn.execute("UPDATE trace_runs SET record=json_set(record,'$.integrity','incomplete') WHERE id=? AND json_extract(record,'$.kind')='workflow'",(span.run_id,))
++
+     def save_snapshot(self, snapshot):
+         if len(snapshot.model_dump_json().encode()) > 256*1024:
+             raise ValueError('Controlled snapshot too large')
+--- before/backend/app/storage/workflow_bindings.py
++++ after/backend/app/storage/workflow_bindings.py
+@@ -0,0 +1,90 @@
++"""Atomic ownership links for registered single-flow Sessions; no lifecycle authority switch."""
++import hashlib
++import json
++from app.domain.errors import AppError
++from app.domain.models import now
++from app.observability.provenance import digest
++
++
++def sha(value):
++    return hashlib.sha256(value.encode()).hexdigest()
++
++
++def identity(conn, state):
++    if not state.workflow_id and not state.root_run_id:
++        if conn.execute("SELECT 1 FROM sqlite_master WHERE name='business_workflows'").fetchone() and conn.execute('SELECT 1 FROM business_workflows WHERE session_id=?',(state.id,)).fetchone():
++            raise AppError('WORKFLOW_IDENTITY_MISMATCH','已登记流程缺少显式身份，不能退回旧路径。',409)
++        return None
++    rows=conn.execute('SELECT * FROM business_workflows WHERE session_id=?',(state.id,)).fetchall()
++    if len(rows)!=1 or (rows[0]['workflow_id'],rows[0]['root_run_id'],rows[0]['input_file_id']) != (state.workflow_id,state.root_run_id,state.file.id):
++        raise AppError('WORKFLOW_IDENTITY_MISMATCH','业务归属与已登记身份不一致。',409)
++    return rows[0]
++
++
++def bind_approval(conn, state, approval, request, source_kind='native'):
++    wf=identity(conn,state)
++    if wf is None:return
++    plan=state.review_plan
++    if wf['dataset_id'] is None:
++        conn.execute('UPDATE business_workflows SET dataset_id=?,dataset_version=?,revision=revision+1 WHERE workflow_id=?',
++            (plan.dataset_id,plan.dataset_version,state.workflow_id))
++    elif (wf['dataset_id'],wf['dataset_version'])!=(plan.dataset_id,plan.dataset_version):
++        raise AppError('WORKFLOW_DATASET_MISMATCH','流程固定数据版本不一致。',409)
++    pvid='wpv_'+sha(state.workflow_id+':'+str(plan.plan_version))
++    conn.execute('''INSERT OR IGNORE INTO workflow_plan_versions
++        (plan_version_id,workflow_id,session_id,plan_version,plan_id,dataset_id,dataset_version,
++         validation_version,payload_hash,source_kind,legacy_session_id,legacy_plan_version,registered_at)
++        VALUES (?,?,?,?,?,?,?,?,?,'legacy_ref',?,?,?)''',
++        (pvid,state.workflow_id,state.id,plan.plan_version,plan.plan_id,plan.dataset_id,plan.dataset_version,
++         plan.validation_version,sha(plan.model_dump_json()),state.id,plan.plan_version,now()))
++    stored=conn.execute('SELECT payload_hash FROM workflow_plan_versions WHERE plan_version_id=?',(pvid,)).fetchone()
++    if stored['payload_hash']!=sha(plan.model_dump_json()):
++        raise AppError('WORKFLOW_PLAN_CONFLICT','不可变计划归属冲突。',409)
++    conn.execute('INSERT INTO workflow_approval_links VALUES (?,?,?,?,?,?,?,?,?)',
++        (approval.approval_id,state.workflow_id,state.id,pvid,request.approval_request_id,
++         sha(request.model_dump_json()),digest(approval.snapshot),source_kind,now()))
++
++
++def bind_execution(conn,state,execution_id,request):
++    wf=identity(conn,state)
++    if wf is None:return None
++    approval=state.engine_approval
++    link=conn.execute('SELECT * FROM workflow_approval_links WHERE approval_id=? AND workflow_id=?',
++        (approval.approval_id,state.workflow_id)).fetchone()
++    if link is None:
++        # On-demand reference registration for a pre-C2 immutable Approval; not an approval replay or Trace backfill.
++        from app.domain.plan_review import ReviewApproval
++        from types import SimpleNamespace
++        row=conn.execute('SELECT record,request FROM plan_approvals WHERE approval_id=? AND session_id=?',
++            (approval.approval_id,state.id)).fetchone()
++        if row is None:raise AppError('WORKFLOW_APPROVAL_UNBOUND','审批缺少可核验归属。',409)
++        saved=ReviewApproval.model_validate_json(row['record'])
++        if saved.snapshot!=approval:raise AppError('WORKFLOW_APPROVAL_UNBOUND','旧审批快照不一致。',409)
++        raw_request=row['request']
++        request_ref=SimpleNamespace(approval_request_id=json.loads(raw_request)['approval_request_id'],model_dump_json=lambda:raw_request)
++        bind_approval(conn,state,saved,request_ref,'legacy_ref')
++        link=conn.execute('SELECT * FROM workflow_approval_links WHERE approval_id=?',(approval.approval_id,)).fetchone()
++    key=execution_id+'@'+str(state.revision)
++    conn.execute('INSERT INTO workflow_execution_links VALUES (?,?,?,?,?,?,?,?,?,?)',
++        (execution_id,state.workflow_id,state.id,approval.approval_id,link['plan_version_id'],key,
++         request.execution_request_id,sha(request.model_dump_json()),'native',now()))
++    return dict(conn.execute('SELECT * FROM workflow_execution_links WHERE execution_id=?',(execution_id,)).fetchone())
++
++
++def current_execution(conn,state,execution_id,plan_version,approval_id):
++    wf=identity(conn,state)
++    if wf is None:return None
++    link=conn.execute('SELECT * FROM workflow_execution_links WHERE execution_id=?',(execution_id,)).fetchone()
++    if (not link or link['workflow_id']!=state.workflow_id or link['approval_id']!=approval_id or
++        not state.engine_execution_ids or state.engine_execution_ids[-1]!=execution_id or
++        state.current_plan_version!=plan_version or state.dataset_ref is None or state.file.id!=state.dataset_ref.dataset_id):
++        raise AppError('WORKFLOW_EXECUTION_STALE','执行已不属于当前流程分支。',409)
++    return dict(link)
++
++
++def branch_hash(state):
++    return sha(json.dumps({'workflow_id':state.workflow_id,'root_run_id':state.root_run_id,
++        'plan_version':state.current_plan_version,'plan':state.review_plan.model_dump(mode='json') if state.review_plan else None,
++        'approval_id':state.engine_approval.approval_id if state.engine_approval else None,
++        'executions':state.engine_execution_ids,'dataset':state.dataset_ref.model_dump(mode='json') if state.dataset_ref else None},
++        sort_keys=True,ensure_ascii=False,separators=(',',':')))
+--- before/backend/app/workflow/reporting.py
++++ after/backend/app/workflow/reporting.py
+@@ -26,9 +26,13 @@
+         return record, fresh
+ 
+     async def generate(self, execution_id, attempt):
+-        if self.reports.start(execution_id, attempt) is None:
++        generation = self.reports.start(execution_id, attempt)
++        if generation is None:
+             return
+         trace = self.traces.start(execution_id, attempt)
++        observer = getattr(self,'observations',None)
++        if observer:
++            trace = observer.reporting(execution_id,attempt,trace,generation.workflow_binding)
+         closed = False
+         try:
+             execution = self.executions.complete(execution_id)
+@@ -49,14 +53,24 @@
+             from app.reporting.prompt import PROMPT_VERSION
+             if getattr(self.service,'prompt_source',None):
+                 PROMPT_VERSION = self.service.prompt_source.version
+-            with trace.span('report_persistence'):
+-                accepted = self.reports.finish(execution_id, attempt, report=report, audit={
++            with trace.span('report_persistence') as persistence:
++                span_id = persistence.record.span_id if persistence.record else None
++                audit = {
+                     'session_id': execution.session_id, 'execution_id': execution_id,
+                     'approval_id': approval.approval_id, 'dataset_id': execution.dataset_id,
+                     'dataset_version': execution.dataset_version, 'plan_id': plan.plan_id,
+                     'plan_version': plan.plan_version, 'prompt_version': PROMPT_VERSION,
+                     'schema_version': 'analysis-report-v1', 'original_query': session.user_goal,
+-                    'constraints_confirmed': approval.constraints_confirmed})
++                    'constraints_confirmed': approval.constraints_confirmed, 'persistence_span_id':span_id}
++                try:
++                    accepted = self.reports.finish(execution_id,attempt,report=report,audit=audit)
++                except Exception:
++                    if not self.reports.committed(execution_id,attempt,report.report_id,span_id):
++                        raise
++                    accepted = True
++                if accepted:
++                    accepted = self.reports.committed(execution_id,attempt,report.report_id,span_id)
++                persistence.attributes(report_id=report.report_id)
+                 if not accepted:
+                     raise AppError('REPORT_STALE_CALLBACK', '报告尝试已被替代，未提交旧报告。', 409)
+             from app.observability.snapshots import report_projection
+--- before/backend/tests/test_trace_closure_c2.py
++++ after/backend/tests/test_trace_closure_c2.py
+@@ -0,0 +1,289 @@
++"""Real APIs and persisted records with a declared local HTTP test transport."""
++import json
++from contextlib import closing
++import pytest
++from fastapi.testclient import TestClient
++from app.core.config import Settings
++from app.domain.errors import AppError
++from app.main import create_app
++from test_report_workflow import Provider,run,QUERY,SALES
++from test_workflow_trace_v031 import http_provider
++AUTH={'X-Admin-Token':'read'}
++
++
++def application(path,control=None):
++    provider,_=http_provider(control or Provider())
++    return create_app(Settings(path,admin_read_token='read'),provider)
++
++
++def trace(client,workflow_id):
++    response=client.get('/admin/workflow-traces/'+workflow_id,headers=AUTH)
++    assert response.status_code==200,response.text
++    return response.json()
++
++
++def test_public_workflow_id_full_trace_and_business_refs_persist(tmp_path):
++    app=application(tmp_path)
++    with TestClient(app) as client:
++        _,execution,session=run(client)
++        data=trace(client,session['workflow_id'])
++        assert data['collection']['status']=='observed',data['collection']
++        assert data['root_run_id']==session['root_run_id']
++        assert {s['name'] for s in data['nodes']}=={'data_profiler','intent_parser','analysis_planner','plan_validator','hitl','analysis_engine','evidence_builder','chart_builder','insight_generator','fact_validator','report_assembler','report_persistence'}
++        assert all(s['run_id']==session['root_run_id'] and s['parent_span_id'] is None and s['duration_ms']>=0 for s in data['nodes'])
++        assert len({s['span_id'] for s in data['nodes']})==len(data['nodes'])
++        assert all(s['status']=='complete' for s in data['nodes'])
++        assert len(data['llm_calls'])==3 and all(c['status']=='succeeded' for c in data['llm_calls'])
++        assert data['executions'][0]['execution_id']==execution['execution_id']
++        report=data['reports'][0];receipt=report['commit_receipt']
++        persistence=next(s for s in data['nodes'] if s['name']=='report_persistence')
++        assert receipt['persistence_span_id']==persistence['span_id']
++        assert receipt['workflow_id']==session['workflow_id'] and receipt['execution_id']==execution['execution_id']
++        assert data['approvals'][0]['approval_id']==execution['approval_id']
++        from app.storage.workflow_reader import WorkflowReader
++        reader=WorkflowReader(app.state.repository.database.path)
++        reader.plan(session['workflow_id'],execution['plan_version'])
++        reader.approval(session['workflow_id'],execution['approval_id'])
++        reader.execution(session['workflow_id'],execution['execution_id'])
++        reader.report(session['workflow_id'],report['report_id'])
++        assert data['executions'][0]['plan_version_id']==data['plan_versions'][0]['plan_version_id']
++        assert client.get('/admin/workflow-traces/'+session['workflow_id']).status_code==403
++        assert client.get('/admin/workflow-traces/missing',headers=AUTH).status_code==404
++        stored=json.dumps(data['nodes'],sort_keys=True)
++    with TestClient(application(tmp_path)) as client:
++        assert json.dumps(trace(client,session['workflow_id'])['nodes'],sort_keys=True)==stored
++
++
++def test_report_commit_acknowledgement_lost_reads_durable_fact(tmp_path,monkeypatch):
++    app=application(tmp_path);finish=app.state.reports.finish
++    def lost_ack(*args,**kwargs):
++        result=finish(*args,**kwargs)
++        if kwargs.get('report') and result:raise OSError('commit acknowledgement lost')
++        return result
++    monkeypatch.setattr(app.state.reports,'finish',lost_ack)
++    with TestClient(app) as client:
++        _,execution,session=run(client)
++        assert session['report_generations'][0]['status']=='completed'
++        data=trace(client,session['workflow_id'])
++        assert next(s for s in data['nodes'] if s['name']=='report_persistence')['status']=='complete'
++        assert app.state.executions.get(execution['execution_id']).execution_status=='success'
++
++
++@pytest.mark.parametrize('failure',['disabled','terminal_write'])
++def test_trace_unavailable_or_write_failure_preserves_business(tmp_path,monkeypatch,failure):
++    app=application(tmp_path)
++    if failure=='disabled':app.state.traces.repository=None
++    else:monkeypatch.setattr(app.state.traces.repository,'save_span',lambda *a: (_ for _ in ()).throw(OSError('down')))
++    with TestClient(app) as client:
++        _,execution,session=run(client)
++        assert execution['execution_status']=='success' and session['report_generations'][0]['status']=='completed'
++        data=trace(client,session['workflow_id'])
++        assert data['collection']['status']=='incomplete' and data['collection']['gaps']
++        if failure=='disabled':assert data['nodes']==[]
++        assert data['reports'][0]['report_id']==session['report_generations'][0]['report_id']
++
++
++def test_failed_report_and_retry_keep_separate_nodes_and_attempts(tmp_path):
++    control=Provider(report_error=AppError('LLM_TIMEOUT','timeout',504));app=application(tmp_path,control)
++    with TestClient(app) as client:
++        _,execution,session=run(client)
++        first=trace(client,session['workflow_id'])
++        generation=next(s for s in first['nodes'] if s['name']=='insight_generator')
++        assert generation['status']=='failed'
++        old_id=generation['span_id']
++        assert not [s for s in first['nodes'] if s['name']=='report_persistence']
++        control.report_provider.error=None
++        response=client.post('/api/v1/executions/'+execution['execution_id']+'/report',json={'expected_attempt':1})
++        assert response.status_code==202,response.text
++        final=trace(client,session['workflow_id'])
++        candidates=[s for s in final['nodes'] if s['name']=='insight_generator']
++        assert len(candidates)==2 and [s['attributes']['report_attempt'] for s in candidates]==[1,2]
++        assert candidates[0]['span_id']==old_id and candidates[0]['status']=='failed' and candidates[1]['status']=='complete'
++        assert len(final['report_artifact_runs'])==2
++
++
++def test_missing_persistence_span_is_a_gap_not_a_synthetic_node(tmp_path,monkeypatch):
++    app=application(tmp_path);reserve=app.state.traces.repository.reserve_workflow_span
++    def missing(span):
++        if span.name=='report_persistence':raise OSError('single node observation unavailable')
++        return reserve(span)
++    monkeypatch.setattr(app.state.traces.repository,'reserve_workflow_span',missing)
++    with TestClient(app) as client:
++        _,_,session=run(client);data=trace(client,session['workflow_id'])
++        assert session['report_generations'][0]['status']=='completed'
++        assert not [s for s in data['nodes'] if s['name']=='report_persistence']
++        assert any(g['code']=='REPORT_COMMIT_SPAN_NOT_COLLECTED' for g in data['collection']['gaps'])
++        assert data['reports'][0]['commit_receipt']['persistence_span_id'] is None
++
++
++def test_real_engine_partial_outcome_has_partial_node_and_exact_errors(tmp_path,monkeypatch):
++    from workflow_v1_fixtures import ControlledWorkflowProvider,create_real
++    from hitl_fixtures import approval,execution
++    app=create_app(Settings(tmp_path,admin_read_token='read'),ControlledWorkflowProvider())
++    runner=app.state.analysis_engine.runner.run
++    def fail_second(task,*args):
++        if task.task_id=='A02':
++            error=app.state.analysis_engine.skipped(task.task_id,'TEST_TASK_FAILURE','isolated task failure')
++            error=error.model_copy(update={'status':'failed'})
++            return error,None,None,0
++        return runner(task,*args)
++    monkeypatch.setattr(app.state.analysis_engine.runner,'run',fail_second)
++    with TestClient(app) as client:
++        state=create_real(client)
++        approved=client.post('/api/v1/sessions/'+state['id']+'/approvals',json=approval(state)).json()
++        from app.domain.execution import ExecutionRequest
++        result=app.state.analysis_engine.execute(ExecutionRequest(**execution(approved)))
++        assert result.execution_status=='partial_success'
++        data=trace(client,state['workflow_id'])
++        node=next(s for s in data['nodes'] if s['name']=='analysis_engine')
++        assert node['status']=='partial' and node['error_code']=='TEST_TASK_FAILURE'
++        assert data['executions'][0]['outcome']=='partial_success'
++
++
++def test_waiting_root_active_node_is_interrupted_on_recovery(tmp_path):
++    from app.observability.recorder import SpanHandle
++    from workflow_v1_fixtures import create_real,ControlledWorkflowProvider
++    from app.observability.workflow import preparation_context
++    app=create_app(Settings(tmp_path),ControlledWorkflowProvider())
++    with TestClient(app) as client:
++        state=create_real(client);saved=app.state.repository.get(state['id'])
++        identity=app.state.workflow.identity(saved)
++        context=preparation_context(app.state.traces,saved.id,identity,explicit_only=True)
++        span=SpanHandle(context,'hitl')
++        app.state.traces.recover()
++        stored=app.state.traces.repository.span(span.record.span_id)
++        assert stored.status=='interrupted' and stored.duration_ms is None
++        span.finish()
++        assert app.state.traces.repository.span(span.record.span_id).status=='interrupted'
++
++
++def test_pre_c2_approval_is_registered_by_reference_without_reapproval(tmp_path,monkeypatch):
++    from workflow_v1_fixtures import ControlledWorkflowProvider,create_real
++    from hitl_fixtures import approval,execution
++    from app.domain.execution import ExecutionRequest
++    app=create_app(Settings(tmp_path),ControlledWorkflowProvider())
++    with TestClient(app) as client:
++        state=create_real(client)
++        # Reproduce an immutable Approval created by the previous release (before link writes existed).
++        with monkeypatch.context() as patch:
++            patch.setattr('app.storage.workflow_bindings.bind_approval',lambda *a,**k:None)
++            approved=client.post('/api/v1/sessions/'+state['id']+'/approvals',json=approval(state)).json()
++        original=app.state.plan_review.audit.approvals(state['id'])[0].model_dump_json()
++        result=app.state.analysis_engine.execute(ExecutionRequest(**execution(approved)))
++        assert result.execution_status=='success'
++        assert len(app.state.plan_review.audit.approvals(state['id']))==1
++        assert app.state.plan_review.audit.approvals(state['id'])[0].model_dump_json()==original
++        with closing(app.state.repository.database.connect()) as conn:
++            assert conn.execute('SELECT source_kind FROM workflow_approval_links WHERE approval_id=?',(result.approval_id,)).fetchone()[0]=='legacy_ref'
++
++
++def test_pre_identity_legacy_report_runs_remain_owning_spans(tmp_path):
++    provider,_=http_provider(Provider())
++    app=create_app(Settings(tmp_path,admin_read_token='read'),provider,bootstrap_identity=False)
++    with TestClient(app) as client:
++        _,result,session=run(client)
++        assert session['workflow_id'] is None
++        report_run=app.state.traces.repository.attempt(result['execution_id'],1)
++        nodes=app.state.traces.repository.spans(report_run.run_id)
++        assert len(nodes)==6 and all(n.run_id==report_run.run_id for n in nodes)
++        assert report_run.status=='complete'
++
++
++def test_no_evidence_records_skip_decision_without_unexecuted_llm_span(tmp_path,monkeypatch):
++    app=application(tmp_path)
++    def unavailable(task,*args,**kwargs):
++        failure=app.state.analysis_engine.skipped(task.task_id,'TEST_TASK_FAILURE','isolated failure')
++        return failure.model_copy(update={'status':'failed'}),None,None,0
++    monkeypatch.setattr(app.state.analysis_engine.runner,'run',unavailable)
++    with TestClient(app) as client:
++        _,result,session=run(client);data=trace(client,session['workflow_id'])
++        assert result['execution_status']=='failed' and data['report_generations'][0]['status']=='unavailable'
++        assert not [s for s in data['nodes'] if s['name'] in {'insight_generator','fact_validator'}]
++        assert {e['payload']['node_name'] for e in data['events'] if e['event_type']=='report.node_skipped'}=={'insight_generator','fact_validator'}
++        assert len(data['llm_calls'])==2
++
++
++def test_artifact_snapshot_failure_is_a_collection_gap(tmp_path,monkeypatch):
++    app=application(tmp_path)
++    monkeypatch.setattr(app.state.traces.repository,'save_snapshot',lambda *a: (_ for _ in ()).throw(OSError('snapshots down')))
++    with TestClient(app) as client:
++        _,_,session=run(client);data=trace(client,session['workflow_id'])
++        assert session['report_generations'][0]['status']=='completed'
++        assert any(g['code']=='REPORT_ARTIFACT_COLLECTION_GAP' for g in data['collection']['gaps'])
++
++
++def test_missing_historical_ownership_is_explicit_not_inferred(tmp_path,monkeypatch):
++    from workflow_v1_fixtures import ControlledWorkflowProvider,create_real
++    from hitl_fixtures import approval
++    app=create_app(Settings(tmp_path,admin_read_token='read'),ControlledWorkflowProvider())
++    with TestClient(app) as client:
++        state=create_real(client)
++        with monkeypatch.context() as patch:
++            patch.setattr('app.storage.workflow_bindings.bind_approval',lambda *a,**k:None)
++            response=client.post('/api/v1/sessions/'+state['id']+'/approvals',json=approval(state))
++            assert response.status_code==200
++        data=trace(client,state['workflow_id'])
++        assert data['approvals']==[]
++        assert any(g['code']=='APPROVAL_OWNERSHIP_NOT_REGISTERED' for g in data['collection']['gaps'])
++
++
++def test_native_context_lookup_failure_does_not_reparent_nodes_to_artifact_run(tmp_path,monkeypatch):
++    app=application(tmp_path)
++    monkeypatch.setattr(app.state.report_workflow.observations,'context',lambda *a: (_ for _ in ()).throw(OSError('binding read temporarily unavailable')))
++    with TestClient(app) as client:
++        _,_,session=run(client);data=trace(client,session['workflow_id'])
++        assert session['report_generations'][0]['status']=='completed'
++        assert data['collection']['status']=='incomplete'
++        artifact=data['report_artifact_runs'][0]
++        with closing(app.state.traces.repository.connect()) as conn:
++            assert conn.execute('SELECT count(*) FROM trace_spans WHERE run_id=?',(artifact['run_id'],)).fetchone()[0]==0
++        assert data['reports'][0]['commit_receipt']['persistence_span_id'] is None
++
++
++def test_process_loss_after_report_commit_retains_business_delivery_on_restart(tmp_path,monkeypatch):
++    import asyncio
++    from workflow_v1_fixtures import create_real
++    from hitl_fixtures import approval,execution
++    from app.domain.execution import ExecutionRequest
++    class SimulatedProcessLoss(BaseException):pass
++    app=application(tmp_path);finish=app.state.reports.finish
++    def crash_after_commit(*args,**kwargs):
++        accepted=finish(*args,**kwargs)
++        if accepted and kwargs.get('report'):raise SimulatedProcessLoss()
++        return accepted
++    with TestClient(app) as client:
++        state=create_real(client,SALES,'sales.csv',QUERY)
++        approved=client.post('/api/v1/sessions/'+state['id']+'/approvals',json=approval(state)).json()
++        result=app.state.analysis_engine.execute(ExecutionRequest(**execution(approved)))
++        generation,_=app.state.report_workflow.enqueue(result.execution_id)
++        with monkeypatch.context() as patch:
++            patch.setattr(app.state.reports,'finish',crash_after_commit)
++            with pytest.raises(SimulatedProcessLoss):
++                asyncio.run(app.state.report_workflow.generate(result.execution_id,generation.attempt))
++        saved=app.state.reports.generation(result.execution_id)
++        assert saved.status=='completed' and saved.report_id
++    with TestClient(application(tmp_path)) as client:
++        data=trace(client,state['workflow_id'])
++        assert data['report_generations'][0]['status']=='completed'
++        assert data['reports'][0]['report_id']==saved.report_id
++        assert data['collection']['status']=='incomplete'
++        persistence=next(n for n in data['nodes'] if n['name']=='report_persistence')
++        assert persistence['status']=='interrupted'
++
++
++def test_recover_obsolete_execution_keeps_history_without_mutating_new_branch(tmp_path):
++    from workflow_v1_fixtures import create_real
++    from hitl_fixtures import approval,execution
++    from app.domain.execution import ExecutionRequest
++    app=application(tmp_path)
++    with TestClient(app) as client:
++        state=create_real(client,SALES,'sales.csv',QUERY)
++        approved=client.post('/api/v1/sessions/'+state['id']+'/approvals',json=approval(state)).json()
++        current=app.state.repository.get(state['id'])
++        claim=app.state.executions.claim(ExecutionRequest(**execution(approved)),current.revision,app.state.analysis_engine.check_approval)
++        app.state.repository.mutate(state['id'],lambda s:setattr(s,'current_plan_version',2))
++        before=app.state.repository.get(state['id'])
++        app.state.analysis_engine.recover_interrupted()
++        assert app.state.repository.get(state['id'])==before
++        historical=app.state.executions.get(claim['execution_id'])
++        assert historical.plan_version==1 and any(e.code=='EXECUTION_INTERRUPTED' for e in historical.errors)
+--- before/backend/tests/test_vertical_slice02_hitl.py
++++ after/backend/tests/test_vertical_slice02_hitl.py
+@@ -95,8 +95,8 @@
+         assert len(app.state.plan_review.audit.approvals(state['id']))==1
+ 
+ 
+-def test_engine_finish_fencing_gap_is_reproducible_in_isolated_state(tmp_path):
+-    """A synthetic branch drift proves the primitive lacks a guard, not a public API exploit."""
++def test_engine_finish_fencing_gap_is_closed_in_isolated_state(tmp_path):
++    """The REQ-0085 isolated drift reproduction is now a rejection regression."""
+     app=make(tmp_path)
+     with TestClient(app) as client:
+         state=create_real(client);approved=client.post('/api/v1/sessions/'+state['id']+'/approvals',json=approval(state)).json()
+@@ -106,14 +106,14 @@
+         result=engine.outcome(claim['execution_id'],request,claim['approval'],claim['started_at'],[],0)
+         def branch_drift(s):s.current_plan_version+=1
+         app.state.repository.mutate(state['id'],branch_drift)
+-        app.state.executions.finish(result)
+-        # This is the audited blocker: no active execution/plan fence rejects this write.
+-        assert app.state.repository.get(state['id']).status.value=='FAILED'
+-        assert app.state.executions.get(result.execution_id).plan_version==1
+-        assert not [s for s in app.state.traces.repository.spans(state['root_run_id']) if s.name=='analysis_engine']
++        with pytest.raises(AppError) as error:app.state.executions.finish(result)
++        assert error.value.error.code=='WORKFLOW_EXECUTION_STALE'
++        assert app.state.repository.get(state['id']).status.value=='RUNNING'
++        with closing(app.state.repository.database.connect()) as conn:
++            assert conn.execute('SELECT status FROM executions WHERE id=?',(result.execution_id,)).fetchone()[0]=='running' 
+ 
+ 
+-def test_report_attempt_guard_does_not_fence_changed_plan(tmp_path):
++def test_report_attempt_guard_now_fences_changed_plan(tmp_path):
+     """Only synthetic Session drift is used; the full observed production path is not enabled."""
+     app=create_app(Settings(tmp_path),Provider())
+     with TestClient(app) as client:
+@@ -125,8 +125,8 @@
+         assert app.state.reports.start(execution_result.execution_id,record.attempt)
+         def branch_drift(s):s.current_plan_version+=1
+         app.state.repository.mutate(state['id'],branch_drift)
+-        # The real commit primitive accepts the old attempt after the synthetic branch changes.
++        # The repaired commit primitive rejects the obsolete authorization.
+         accepted=app.state.reports.finish(execution_result.execution_id,record.attempt,
+             error=AppError('TEST_FAILURE','isolated test').error)
+-        assert accepted and app.state.reports.generation(execution_result.execution_id).status=='failed'
++        assert not accepted and app.state.reports.generation(execution_result.execution_id).status=='generating'
+         assert not [s for s in app.state.traces.repository.spans(state['root_run_id']) if s.name=='report_persistence']
+--- before/backend/tests/test_workflow_trace.py
++++ after/backend/tests/test_workflow_trace.py
+@@ -50,7 +50,7 @@
+         detail=client.get('/admin/runs/'+item['run_id'],headers=headers()).json()
+         assert detail['business_source']['status']=='completed' and detail['business_source']['report_status']=='complete'
+         spans=client.get('/admin/runs/'+item['run_id']+'/spans',headers=headers()).json()['items']
+-        assert [s['name'] for s in spans]==['evidence_builder','insight_generator','fact_validator','report_assembler','report_persistence']
++        assert [s['name'] for s in spans]==['evidence_builder','chart_builder','insight_generator','fact_validator','report_assembler','report_persistence']
+         assert all(s['status']=='complete' and s['duration_ms']>=0 for s in spans)
+         gen=next(s for s in spans if s['name']=='insight_generator')
+         assert gen['attributes']['candidate_count']==1 and gen['attributes']['is_mock'] is False
+@@ -58,7 +58,8 @@
+         assert validator['attributes']['accepted_count']==1 and validator['attributes']['rejected_count']==0
+         events=client.get('/admin/spans/'+validator['span_id']+'/events',headers=headers()).json()['items']
+         assert any(e['payload'].get('candidate_status')=='accepted' for e in events)
+-        assert all(e['run_id']==item['run_id'] for e in events)
++        assert all(e['run_id']==validator['run_id'] for e in events)
++        assert validator['run_id']==item['workflow_run_id']
+         assert client.post('/api/v1/executions',json=execution(approved)).json()==result
+         assert len(listing(client))==1
+         assert client.get('/api/v1/admin/runs',headers=headers()).json()['items']==listing(client)
+@@ -274,7 +275,7 @@
+             assert current['status']=='complete'
+             assert current['retry_of_run_id']==next(r['run_id'] for r in records if r['execution_id']==eid and r['attempt']==1)
+             stages=app.state.traces.repository.spans(current['run_id'])
+-            assert all(s.run_id==current['run_id'] for s in stages)
++            assert all(s.run_id==current['workflow_run_id'] and s.parent_span_id is None for s in stages)
+             assert next(s for s in stages if s.name=='fact_validator').attributes['accepted_count']==1
+ 
+ 
+--- before/backend/tests/test_workflow_trace_v031.py
++++ after/backend/tests/test_workflow_trace_v031.py
+@@ -136,7 +136,7 @@
+         assert report.manifest.capture_scope=='report_generation' and report.manifest.bindings['execution_id']==result['execution_id']
+         response=client.get('/admin/workflows/old-uncollected',headers=AUTH).json()
+         assert response['availability']=='not_collected' and response['run'] is None
+-        assert len(app.state.traces.repository.spans(report.run_id))==5
++        assert len(app.state.traces.repository.spans(report.run_id))==6
+ 
+ def test_unique_root_and_concurrent_sequences_and_attempts(tmp_path):
+     app=create_app(config(tmp_path),ControlledWorkflowProvider())

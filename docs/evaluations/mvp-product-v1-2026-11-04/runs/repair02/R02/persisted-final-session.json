@@ -1,0 +1,803 @@
+{
+  "workflow_id": "wf_b4caa90d922c4830ace0d4ec50612b60",
+  "root_run_id": "run_ff94d82e74c74396a90455319703d730",
+  "id": "2012e129b87c4937816a2ecfa89ab4ad",
+  "title": "计算薪资区间的平均值，不使用薪资元字段替代，也不要自行解",
+  "status": "AWAITING_APPROVAL",
+  "revision": 8,
+  "created_at": "2026-11-04T10:46:19.476800+00:00",
+  "updated_at": "2026-11-04T10:46:30.037385+00:00",
+  "data_source": "uploaded",
+  "workflow_kind": "real_v1",
+  "profile_options": {
+    "header_row": 1,
+    "sheet_name": null,
+    "encoding": "utf-8-sig",
+    "delimiter": ","
+  },
+  "planner_result": {
+    "plan": {
+      "dataset_id": "7d577466f68e4581979b5531d96f7d20",
+      "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+      "plan_id": "plan_c8e6a8e95c154a75bf42c5841813d04f",
+      "plan_version": 1,
+      "tasks": [
+        {
+          "task_id": "T01",
+          "title": "薪资区间平均值计算（待澄清）",
+          "business_question": "计算薪资区间的平均值。注意：用户明确约束不使用薪资元字段替代，也不要自行解析区间文本。由于'薪资区间'为字符串类型且禁止解析/替代，当前无法直接执行数值聚合。",
+          "priority": "P0",
+          "priority_reason": "核心分析目标要求计算平均值，但受限于数据格式（字符串）和明确的业务禁令（不解析、不用其他字段），导致标准统计操作不可行。必须保留此任务以标记缺失能力或等待用户对计算定义的澄清，不能静默省略或降级。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03"
+          ],
+          "depends_on": [],
+          "missing_inputs": [
+            "需要确认在不使用'薪资元'且不解析'薪资区间'文本的前提下，如何定义并获取用于计算平均值的数值来源；或者解除对'薪资区间'文本解析的限制以提取数值。"
+          ],
+          "steps": []
+        }
+      ],
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "计算薪资区间的平均值"
+        },
+        {
+          "requirement_id": "C02",
+          "description": "metric_requirements：薪资区间的平均值"
+        },
+        {
+          "requirement_id": "C03",
+          "description": "analysis_limits：不使用薪资元字段替代，也不要自行解析区间"
+        }
+      ]
+    },
+    "validation_results": [
+      {
+        "task_id": "T01",
+        "feasibility": "F0",
+        "reason_code": "MISSING_FIELD",
+        "validation_issues": [
+          {
+            "code": "MISSING_FIELD",
+            "message": "任务明确缺少必要输入：需要确认在不使用'薪资元'且不解析'薪资区间'文本的前提下，如何定义并获取用于计算平均值的数值来源；或者解除对'薪资区间'文本解析的限制以提取数值。",
+            "step_id": null,
+            "field": null
+          }
+        ],
+        "executable": false
+      }
+    ],
+    "unmet_core_requirements": [
+      {
+        "requirement_id": "C01",
+        "description": "计算薪资区间的平均值",
+        "task_ids": [
+          "T01"
+        ],
+        "reason_codes": [
+          "MISSING_FIELD"
+        ]
+      },
+      {
+        "requirement_id": "C02",
+        "description": "metric_requirements：薪资区间的平均值",
+        "task_ids": [
+          "T01"
+        ],
+        "reason_codes": [
+          "MISSING_FIELD"
+        ]
+      },
+      {
+        "requirement_id": "C03",
+        "description": "analysis_limits：不使用薪资元字段替代，也不要自行解析区间",
+        "task_ids": [
+          "T01"
+        ],
+        "reason_codes": [
+          "MISSING_FIELD"
+        ]
+      }
+    ],
+    "coverage_status": "blocked",
+    "executable_task_ids": [],
+    "blocked_task_ids": [
+      "T01"
+    ],
+    "fully_executable": false,
+    "validation_version": "1.0",
+    "registry_version": "1.0",
+    "approval_required": true,
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "7d577466f68e4581979b5531d96f7d20",
+      "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+      "plan_version": 1,
+      "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+    },
+    "intent_snapshot": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "薪资区间",
+        "business_goal": "计算薪资区间的平均值",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "薪资区间的平均值",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "不使用薪资元字段替代，也不要自行解析区间",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [
+        {
+          "id": "method_conflict",
+          "description": "用户要求计算“薪资区间”的平均值，但明确禁止使用数值字段（薪资元）且禁止自行解析区间文本。在“薪资区间”为字符串类型且无其他数值来源的情况下，直接计算平均值的统计可行性存疑。",
+          "impact": "当前约束排除了常规的数值化处理路径，后续规划器需评估是否能在不违反禁令的前提下执行该指标计算，或是否需要进一步澄清具体的计算定义。",
+          "action": "defer",
+          "resolve_at": "plan_approval"
+        }
+      ],
+      "clarification_questions": []
+    }
+  },
+  "workflow_events": [
+    {
+      "status": "CREATED",
+      "recorded_at": "2026-11-04T10:46:19.477398+00:00"
+    },
+    {
+      "status": "PROFILING",
+      "recorded_at": "2026-11-04T10:46:19.520625+00:00"
+    },
+    {
+      "status": "PARSING_INTENT",
+      "recorded_at": "2026-11-04T10:46:19.529592+00:00"
+    },
+    {
+      "status": "PLANNING",
+      "recorded_at": "2026-11-04T10:46:24.547658+00:00"
+    },
+    {
+      "status": "VALIDATING",
+      "recorded_at": "2026-11-04T10:46:30.031926+00:00"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "recorded_at": "2026-11-04T10:46:30.037264+00:00"
+    }
+  ],
+  "file": {
+    "id": "7d577466f68e4581979b5531d96f7d20",
+    "name": "recruitment.csv",
+    "size": 377,
+    "extension": ".csv",
+    "content_sha256": "d38d1dc6cef8b931aaed5600e1532101528a75ac01e8c304cd345556addd04b2"
+  },
+  "user_goal": "计算薪资区间的平均值，不使用薪资元字段替代，也不要自行解析区间。",
+  "analysis_mode": "goal_driven",
+  "intent": {
+    "analysis_mode": "goal_driven",
+    "next_action": "proceed",
+    "analysis_goal": {
+      "analysis_object": "薪资区间",
+      "business_goal": "计算薪资区间的平均值",
+      "decision_goal": null
+    },
+    "constraints": {
+      "time_range": null,
+      "filters": [],
+      "metric_requirements": [
+        {
+          "raw_text": "薪资区间的平均值",
+          "validation_status": "unverified"
+        }
+      ],
+      "analysis_limits": [
+        {
+          "raw_text": "不使用薪资元字段替代，也不要自行解析区间",
+          "validation_status": "unverified"
+        }
+      ]
+    },
+    "uncertainties": [
+      {
+        "id": "method_conflict",
+        "description": "用户要求计算“薪资区间”的平均值，但明确禁止使用数值字段（薪资元）且禁止自行解析区间文本。在“薪资区间”为字符串类型且无其他数值来源的情况下，直接计算平均值的统计可行性存疑。",
+        "impact": "当前约束排除了常规的数值化处理路径，后续规划器需评估是否能在不违反禁令的前提下执行该指标计算，或是否需要进一步澄清具体的计算定义。",
+        "action": "defer",
+        "resolve_at": "plan_approval"
+      }
+    ],
+    "clarification_questions": [],
+    "user_query": "计算薪资区间的平均值，不使用薪资元字段替代，也不要自行解析区间。",
+    "clarification_answers": [],
+    "dataset_ref": {
+      "dataset_id": "7d577466f68e4581979b5531d96f7d20",
+      "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60"
+    },
+    "parse_origin": "llm",
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "7d577466f68e4581979b5531d96f7d20",
+      "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+      "plan_version": null,
+      "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+    },
+    "parser_version": "1.1",
+    "prompt_version": "intent-v1.3.3",
+    "llm_attempts": 1,
+    "parse_id": "e1c4a6ce246d4ad0aa0d97453e2ae7c2"
+  },
+  "intent_history": [
+    {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "薪资区间",
+        "business_goal": "计算薪资区间的平均值",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "薪资区间的平均值",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "不使用薪资元字段替代，也不要自行解析区间",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [
+        {
+          "id": "method_conflict",
+          "description": "用户要求计算“薪资区间”的平均值，但明确禁止使用数值字段（薪资元）且禁止自行解析区间文本。在“薪资区间”为字符串类型且无其他数值来源的情况下，直接计算平均值的统计可行性存疑。",
+          "impact": "当前约束排除了常规的数值化处理路径，后续规划器需评估是否能在不违反禁令的前提下执行该指标计算，或是否需要进一步澄清具体的计算定义。",
+          "action": "defer",
+          "resolve_at": "plan_approval"
+        }
+      ],
+      "clarification_questions": [],
+      "user_query": "计算薪资区间的平均值，不使用薪资元字段替代，也不要自行解析区间。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "7d577466f68e4581979b5531d96f7d20",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "7d577466f68e4581979b5531d96f7d20",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "e1c4a6ce246d4ad0aa0d97453e2ae7c2"
+    }
+  ],
+  "clarification_answers": [],
+  "profile": {
+    "dataset_id": "7d577466f68e4581979b5531d96f7d20",
+    "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+    "schema_version": "1.0",
+    "profiler_version": "1.1.0",
+    "content_sha256": "d38d1dc6cef8b931aaed5600e1532101528a75ac01e8c304cd345556addd04b2",
+    "file_name": "recruitment.csv",
+    "file_format": "csv",
+    "sheet_name": null,
+    "available_sheets": [],
+    "options": {
+      "header_row": 1,
+      "sheet_name": null,
+      "encoding": "utf-8-sig",
+      "delimiter": ","
+    },
+    "row_count": 8,
+    "column_count": 5,
+    "total_cell_count": 40,
+    "missing_cell_count": 1,
+    "missing_cell_rate": 0.025,
+    "duplicate_row_count": 0,
+    "duplicate_row_rate": 0.0,
+    "fields": [
+      {
+        "field_id": "field_0001",
+        "position": 1,
+        "original_name": "城市",
+        "display_name": "城市",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 4,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "北京",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "上海",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "杭州",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "南京",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0002",
+        "position": 2,
+        "original_name": "岗位名称",
+        "display_name": "岗位名称",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 4,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "产品经理",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "运营经理",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "运营专员",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "数据分析",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0003",
+        "position": 3,
+        "original_name": "薪资区间",
+        "display_name": "薪资区间",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 6,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "20-30K",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "25-35K",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "15-25K",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "18-28K",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "10-15K",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0004",
+        "position": 4,
+        "original_name": "薪资元",
+        "display_name": "薪资元",
+        "physical_type": "string",
+        "logical_type": "integer",
+        "missing_count": 1,
+        "missing_rate": 0.125,
+        "non_missing_count": 7,
+        "unique_count": 5,
+        "physical_type_counts": {
+          "string": 7
+        },
+        "logical_type_counts": {
+          "integer": 7
+        },
+        "samples": [
+          {
+            "value": "25000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "30000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "20000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "23000",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "12500",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0005",
+        "position": 5,
+        "original_name": "学历",
+        "display_name": "学历",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 2,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "本科",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "硕士",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      }
+    ],
+    "quality_issues": [],
+    "provenance": {
+      "source": "uploaded",
+      "dataset": "7d577466f68e4581979b5531d96f7d20",
+      "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+      "plan_version": null,
+      "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+    }
+  },
+  "dataset_ref": {
+    "dataset_id": "7d577466f68e4581979b5531d96f7d20",
+    "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60"
+  },
+  "plans": [],
+  "current_plan_version": 1,
+  "approved_plan_version": null,
+  "node_runs": [
+    {
+      "run_id": "00c7427e6c764758a51513710ffd1dab",
+      "node_name": "data_profiler",
+      "status": "success",
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "7d577466f68e4581979b5531d96f7d20",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_version": null,
+        "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T10:46:19.526651+00:00"
+    },
+    {
+      "run_id": "457a41b8a57e4358a73304f41475cea5",
+      "node_name": "intent_parser",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "7d577466f68e4581979b5531d96f7d20",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T10:46:24.544748+00:00"
+    },
+    {
+      "run_id": "d0c6bcd3b1d546ef8045d1726a655b7c",
+      "node_name": "analysis_planner_v1",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "7d577466f68e4581979b5531d96f7d20",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T10:46:30.029416+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "id": "dfb0ca02ddc44a6da4b43d4f51b150e9",
+      "role": "user",
+      "kind": "text",
+      "content": "计算薪资区间的平均值，不使用薪资元字段替代，也不要自行解析区间。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:46:19.476785+00:00"
+    },
+    {
+      "id": "20a390d578eb49c98b477068a975d85c",
+      "role": "assistant",
+      "kind": "status",
+      "content": "正在解析上传文件并计算真实数据画像。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:46:19.520615+00:00"
+    },
+    {
+      "id": "e2ce85ad4e0544d481b2daa84033e3c9",
+      "role": "assistant",
+      "kind": "status",
+      "content": "真实画像完成：8行、5列；正在理解分析需求。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:46:19.529587+00:00"
+    },
+    {
+      "id": "69a0d067455c43269a426ff14bf92744",
+      "role": "assistant",
+      "kind": "status",
+      "content": "需求已理解，正在生成受控分析计划。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:46:24.547652+00:00"
+    },
+    {
+      "id": "c92ff1fad33d4c859aa7dfe98083925f",
+      "role": "assistant",
+      "kind": "plan",
+      "content": "真实计划已保存，目标覆盖：blocked。请审核任务、未满足需求和约束；批准前不会计算。",
+      "plan_version": 1,
+      "created_at": "2026-11-04T10:46:30.037258+00:00"
+    }
+  ],
+  "review_plan": {
+    "session_id": "2012e129b87c4937816a2ecfa89ab4ad",
+    "plan_id": "plan_c8e6a8e95c154a75bf42c5841813d04f",
+    "plan_version": 1,
+    "dataset_id": "7d577466f68e4581979b5531d96f7d20",
+    "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+    "validation_version": "1.0",
+    "created_at": "2026-11-04T10:46:30.037148+00:00",
+    "change_type": "created",
+    "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "7d577466f68e4581979b5531d96f7d20",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_id": "plan_c8e6a8e95c154a75bf42c5841813d04f",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T01",
+            "title": "薪资区间平均值计算（待澄清）",
+            "business_question": "计算薪资区间的平均值。注意：用户明确约束不使用薪资元字段替代，也不要自行解析区间文本。由于'薪资区间'为字符串类型且禁止解析/替代，当前无法直接执行数值聚合。",
+            "priority": "P0",
+            "priority_reason": "核心分析目标要求计算平均值，但受限于数据格式（字符串）和明确的业务禁令（不解析、不用其他字段），导致标准统计操作不可行。必须保留此任务以标记缺失能力或等待用户对计算定义的澄清，不能静默省略或降级。",
+            "requirement_ids": [
+              "C01",
+              "C02",
+              "C03"
+            ],
+            "depends_on": [],
+            "missing_inputs": [
+              "需要确认在不使用'薪资元'且不解析'薪资区间'文本的前提下，如何定义并获取用于计算平均值的数值来源；或者解除对'薪资区间'文本解析的限制以提取数值。"
+            ],
+            "steps": []
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "计算薪资区间的平均值"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：薪资区间的平均值"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "analysis_limits：不使用薪资元字段替代，也不要自行解析区间"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T01",
+          "feasibility": "F0",
+          "reason_code": "MISSING_FIELD",
+          "validation_issues": [
+            {
+              "code": "MISSING_FIELD",
+              "message": "任务明确缺少必要输入：需要确认在不使用'薪资元'且不解析'薪资区间'文本的前提下，如何定义并获取用于计算平均值的数值来源；或者解除对'薪资区间'文本解析的限制以提取数值。",
+              "step_id": null,
+              "field": null
+            }
+          ],
+          "executable": false
+        }
+      ],
+      "unmet_core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "计算薪资区间的平均值",
+          "task_ids": [
+            "T01"
+          ],
+          "reason_codes": [
+            "MISSING_FIELD"
+          ]
+        },
+        {
+          "requirement_id": "C02",
+          "description": "metric_requirements：薪资区间的平均值",
+          "task_ids": [
+            "T01"
+          ],
+          "reason_codes": [
+            "MISSING_FIELD"
+          ]
+        },
+        {
+          "requirement_id": "C03",
+          "description": "analysis_limits：不使用薪资元字段替代，也不要自行解析区间",
+          "task_ids": [
+            "T01"
+          ],
+          "reason_codes": [
+            "MISSING_FIELD"
+          ]
+        }
+      ],
+      "coverage_status": "blocked",
+      "executable_task_ids": [],
+      "blocked_task_ids": [
+        "T01"
+      ],
+      "fully_executable": false,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "7d577466f68e4581979b5531d96f7d20",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_version": 1,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "薪资区间",
+          "business_goal": "计算薪资区间的平均值",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "薪资区间的平均值",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "不使用薪资元字段替代，也不要自行解析区间",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [
+          {
+            "id": "method_conflict",
+            "description": "用户要求计算“薪资区间”的平均值，但明确禁止使用数值字段（薪资元）且禁止自行解析区间文本。在“薪资区间”为字符串类型且无其他数值来源的情况下，直接计算平均值的统计可行性存疑。",
+            "impact": "当前约束排除了常规的数值化处理路径，后续规划器需评估是否能在不违反禁令的前提下执行该指标计算，或是否需要进一步澄清具体的计算定义。",
+            "action": "defer",
+            "resolve_at": "plan_approval"
+          }
+        ],
+        "clarification_questions": []
+      }
+    }
+  },
+  "review_status": "awaiting_review",
+  "engine_approval": null,
+  "engine_execution_ids": [],
+  "report_generations": [],
+  "execution_result": null,
+  "report": null,
+  "error": null
+}

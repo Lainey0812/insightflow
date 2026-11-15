@@ -1,0 +1,17 @@
+{
+  "thread_id": "01a16e64-6e52-7260-a727-3f583c95f8f8",
+  "turn_id": "01a17c6a-f793-7303-ae1f-31cb37b1f015",
+  "message_id": "01a17c6a-f7a9-72c3-9ae2-f31feaece281",
+  "started_at": 1793088747,
+  "content": [
+    {
+      "type": "text",
+      "text": "# InsightFlow — Workflow V1 真实主链路集成任务书\n\n## 一、目标\n\n将已实现的 Data Profiler、Intent Parser V1.3.3、Analysis Planner V1、Plan Validator、HITL 和 Analysis Engine 串联为真实可用的分析流程。\n\n本轮终点为持久化 ExecutionResult，不接入新的 Report Insight Generator。\n\n## 二、集成原则\n\n1. 复用现有服务、API、Schema 和 Repository。\n2. 不重写已通过测试的 Engine、Validator 或 HITL。\n3. 不引入新的 Agent 编排框架。\n4. 使用明确的 Workflow 状态机管理流程。\n5. 所有关键阶段持久化，支持刷新恢复。\n6. 不允许 Mock Planner、Mock Engine 或 Mock 执行结果进入真实主流程。\n7. LLM 失败、业务澄清、计划不可执行必须作为明确状态返回。\n8. 不允许跳过 HITL 审批直接执行。\n\n## 三、主流程\n\n用户上传 CSV/XLSX 并输入自然语言问题后：\n\n1. 获取真实 DatasetProfile。\n2. 调用真实 Intent Parser。\n3. 如 next_action=clarify，暂停流程，返回澄清问题。\n4. 如允许继续，调用真实 Analysis Planner。\n5. 调用现有 Plan Validator。\n6. 保存计划及校验结果。\n7. 进入 HITL，展示任务、优先级、可执行性、缺失要求及风险。\n8. 用户审核后批准。\n9. 服务端核验审批绑定的 dataset、plan、validation 版本。\n10. 调用真实 Analysis Engine。\n11. 保存 ExecutionResult 并允许查询任务结果。\n\n## 四、状态管理\n\n优先复用现有 Workflow 状态和持久化机制。\n\n至少能够区分：\n\n- profiling\n- parsing_intent\n- clarification_required\n- planning\n- validating\n- awaiting_approval\n- executing\n- completed\n- failed\n\n若已有状态模型不同，请先给出映射，不要擅自创建第二套状态系统。\n\n## 五、澄清与不确定性\n\n当 Intent Parser 要求澄清时：\n\n- 不得继续生成计划。\n- 保存已有意图和问题。\n- 支持用户补充信息后继续。\n\n当 Planner 产生 F0 核心任务时：\n\n- 保留该任务。\n- 明确显示无法执行的原因。\n- 不得伪造完整覆盖。\n\n当存在未解决的核心统计口径、筛选范围或禁止性约束时：\n\n- 不得静默假设。\n- 不得将待确认要求当作已确认。\n- 按现有审批规则阻止不安全的执行。\n\n## 六、HITL 与执行\n\n使用已有真实 HITL 审批接口。\n\n要求：\n\n- 删除任务后重新校验。\n- 计划版本不可变。\n- 旧审批不能批准新计划。\n- 执行必须绑定已批准快照。\n- 重复请求遵循现有幂等机制。\n- 单个任务失败不得伪造成全部成功。\n\n不在本轮增加 LLM 自然语言修改计划功能。\n\n## 七、前端集成\n\n将当前用户主入口的 Mock 分析流程替换为真实后端服务。\n\n至少支持：\n\n- 上传文件。\n- 输入分析需求。\n- 查看澄清问题。\n- 查看生成的分析计划。\n- 查看每项任务的 P0/P1/P2、F0/F1/F2。\n- 查看未满足的核心要求。\n- 删除任务并重新校验。\n- 批准可执行计划。\n- 查看真实执行状态与计算结果。\n- 页面刷新后恢复当前流程。\n\n不得通过前端模拟审批或模拟统计结果。\n\n## 八、端到端测试\n\n至少覆盖：\n\n1. 明确需求，正常执行。\n2. 需要澄清，暂停后继续。\n3. 单一统计任务。\n4. 多筛选、多步骤聚合。\n5. 排除条件。\n6. 排序与 Top N。\n7. F0 核心任务。\n8. F1 需要派生步骤。\n9. 未确认统计口径。\n10. 删除任务后重新校验。\n11. 旧版本审批失效。\n12. 重复执行请求。\n13. 单任务失败。\n14. LLM 超时或调用失败。\n15. 刷新页面恢复。\n16. 服务重启后恢复。\n\n必须至少使用一个真实 CSV/XLSX 文件完成浏览器端到端测试，并核对 Pandas 计算结果。\n\n## 九、验收要求\n\n- 真实模型参与 Intent 和 Planner。\n- 真实 Validator 负责可行性判断。\n- 真实 HITL 负责批准。\n- 真实 Engine 执行计算。\n- 结果与上传数据一致。\n- 不存在未经批准的执行。\n- 不存在 Mock 结果冒充真实分析。\n- 澄清、失败和部分覆盖均可见。\n- 刷新后流程状态可恢复。\n- 原有自动化测试不得退化。\n\n## 十、交付\n\n请提供：\n\n- 实际 Workflow 状态图。\n- API 与数据流说明。\n- 修改文件清单。\n- 自动化测试结果。\n- 浏览器端到端测试记录。\n- 真实数据执行结果。\n- 剩余风险和 Bad Case。\n\n本轮不修改 Report Insight Generator，也不新增多 Agent 架构。\n"
+    }
+  ],
+  "source": "codex_app.read_thread.userMessage",
+  "type": "original_user_message_recovered_from_desktop_thread",
+  "cleaning": "request.md removes ambient browser packaging and extracts My request when present; original content retained in source.json.",
+  "recovered_at": "2026-10-28",
+  "history_note": "Backfilled from available thread history; not proof that requirements were archived before the original implementation."
+}

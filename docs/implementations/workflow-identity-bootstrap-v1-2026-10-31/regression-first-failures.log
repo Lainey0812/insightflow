@@ -1,0 +1,924 @@
+........................................................................ [  5%]
+........................................................................ [ 10%]
+........................................................................ [ 15%]
+........................................................................ [ 20%]
+........................................................................ [ 25%]
+........................................................................ [ 30%]
+........................................................................ [ 35%]
+........................................................................ [ 40%]
+........................................................................ [ 45%]
+........................................................................ [ 50%]
+...........................................................FF........... [ 55%]
+..FF.F..FFFF.FFFFFFFFFFFFFF..FFF........................................ [ 60%]
+........................................................................ [ 65%]
+........................................................................ [ 70%]
+........................................................................ [ 75%]
+........................................................................ [ 80%]
+........................................................................ [ 85%]
+........................................................................ [ 90%]
+........................................................................ [ 95%]
+...............................................................          [100%]
+=================================== FAILURES ===================================
+____ test_late_planner_result_or_error_cannot_modify_resumed_session[False] ____
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_late_planner_result_or_er0')
+late_error = False
+
+    @pytest.mark.parametrize('late_error', [False, True])
+    def test_late_planner_result_or_error_cannot_modify_resumed_session(tmp_path, late_error):
+        provider = ControlledWorkflowProvider()
+        app = create_app(Settings(tmp_path), provider)
+        with TestClient(app) as client:
+            workflow = app.state.workflow
+            prepare = workflow.prepare_real
+            async def defer(_):
+                pass
+            workflow.prepare_real = defer
+>           initial = create_real(client)
+                      ^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_trace_write_safety.py:144: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/workflow_v1_fixtures.py:40: in create_real
+    response=client.post('/api/v1/sessions',data={'goal':goal,'real_workflow':'true'},files={'file':(name,content)})
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/httpx/_client.py:1144: in post
+    return self.request(
+.venv/lib/python3.14/site-packages/starlette/testclient.py:518: in request
+    return super().request(
+.venv/lib/python3.14/site-packages/httpx/_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/httpx/_client.py:928: in send
+    raise exc
+.venv/lib/python3.14/site-packages/httpx/_client.py:922: in send
+    response.read()
+.venv/lib/python3.14/site-packages/httpx/_models.py:881: in read
+    self._content = b"".join(self.iter_bytes())
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/httpx/_models.py:897: in iter_bytes
+    for raw_bytes in self.iter_raw():
+                     ^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/httpx/_models.py:951: in iter_raw
+    for raw_stream_bytes in self.stream:
+                            ^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/httpx/_client.py:153: in __iter__
+    for chunk in self._stream:
+                 ^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/starlette/testclient.py:384: in iter_body
+    exit_stack.close()
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py:627: in close
+    self.__exit__(None, None, None)
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py:619: in __exit__
+    raise exc
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py:604: in __exit__
+    if cb(*exc_details):
+       ^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/starlette/testclient.py:399: in close_app
+    raise exception
+.venv/lib/python3.14/site-packages/anyio/from_thread.py:265: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/starlette/testclient.py:366: in run_app
+    await self.app(scope, receive, send)
+.venv/lib/python3.14/site-packages/fastapi/applications.py:1194: in __call__
+    await super().__call__(scope, receive, send)
+.venv/lib/python3.14/site-packages/starlette/applications.py:96: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.14/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+.venv/lib/python3.14/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+.venv/lib/python3.14/site-packages/fastapi/telemetry/_asgi.py:151: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.14/site-packages/starlette/routing.py:683: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.14/site-packages/fastapi/routing.py:2811: in app
+    await route.handle(scope, receive, send)
+.venv/lib/python3.14/site-packages/fastapi/routing.py:1839: in handle
+    await self.original_router.handle(scope, receive, send)
+.venv/lib/python3.14/site-packages/fastapi/routing.py:2894: in handle
+    await included_router._handle_selected(scope, receive, send)
+.venv/lib/python3.14/site-packages/fastapi/routing.py:1865: in _handle_selected
+    await original_route.handle(scope, receive, send)
+.venv/lib/python3.14/site-packages/fastapi/routing.py:1328: in handle
+    await effective_context.app(scope, receive, send)
+.venv/lib/python3.14/site-packages/fastapi/routing.py:166: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.14/site-packages/fastapi/routing.py:153: in app
+    await response(scope, receive, send)
+.venv/lib/python3.14/site-packages/starlette/responses.py:175: in __call__
+    await self.background()
+.venv/lib/python3.14/site-packages/fastapi/background.py:67: in __call__
+    await task()
+.venv/lib/python3.14/site-packages/starlette/background.py:21: in __call__
+    await self.func(*self.args, **self.kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.workflow.orchestrator.WorkflowOrchestrator object at 0x11d15a6d0>
+session_id = 'f9d5438fffbd4b25ae9848bf81e71c9e', profile_options = None
+manual_review = False, real_workflow = True
+identity = WorkflowIdentity(session_id='f9d5438fffbd4b25ae9848bf81e71c9e', workflow_id='wf_9e68c302fde54efc82a41832a79f401b', root_run_id='run_c70ebfeacb4d442092571832154f84d5')
+
+    async def prepare(self, session_id: str, profile_options: ProfileOptions | None = None, manual_review: bool = False,
+                      real_workflow: bool = False, identity=None) -> SessionState:
+        if real_workflow:
+>           return await self.prepare_real(session_id, identity)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: test_late_planner_result_or_error_cannot_modify_resumed_session.<locals>.defer() takes 1 positional argument but 2 were given
+
+backend/app/workflow/orchestrator.py:99: TypeError
+------------------------------ Captured log call -------------------------------
+ERROR    app.api.errors:errors.py:31 Unexpected API error
+Traceback (most recent call last):
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/telemetry/_asgi.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/routing.py", line 683, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 2811, in app
+    await route.handle(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1839, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 2894, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1865, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1328, in handle
+    await effective_context.app(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 166, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 153, in app
+    await response(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/responses.py", line 175, in __call__
+    await self.background()
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/background.py", line 67, in __call__
+    await task()
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/background.py", line 21, in __call__
+    await self.func(*self.args, **self.kwargs)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/workflow/orchestrator.py", line 99, in prepare
+    return await self.prepare_real(session_id, identity)
+                 ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+TypeError: test_late_planner_result_or_error_cannot_modify_resumed_session.<locals>.defer() takes 1 positional argument but 2 were given
+____ test_late_planner_result_or_error_cannot_modify_resumed_session[True] _____
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_late_planner_result_or_er1')
+late_error = True
+
+    @pytest.mark.parametrize('late_error', [False, True])
+    def test_late_planner_result_or_error_cannot_modify_resumed_session(tmp_path, late_error):
+        provider = ControlledWorkflowProvider()
+        app = create_app(Settings(tmp_path), provider)
+        with TestClient(app) as client:
+            workflow = app.state.workflow
+            prepare = workflow.prepare_real
+            async def defer(_):
+                pass
+            workflow.prepare_real = defer
+>           initial = create_real(client)
+                      ^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_trace_write_safety.py:144: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/workflow_v1_fixtures.py:40: in create_real
+    response=client.post('/api/v1/sessions',data={'goal':goal,'real_workflow':'true'},files={'file':(name,content)})
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/httpx/_client.py:1144: in post
+    return self.request(
+.venv/lib/python3.14/site-packages/starlette/testclient.py:518: in request
+    return super().request(
+.venv/lib/python3.14/site-packages/httpx/_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/httpx/_client.py:928: in send
+    raise exc
+.venv/lib/python3.14/site-packages/httpx/_client.py:922: in send
+    response.read()
+.venv/lib/python3.14/site-packages/httpx/_models.py:881: in read
+    self._content = b"".join(self.iter_bytes())
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/httpx/_models.py:897: in iter_bytes
+    for raw_bytes in self.iter_raw():
+                     ^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/httpx/_models.py:951: in iter_raw
+    for raw_stream_bytes in self.stream:
+                            ^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/httpx/_client.py:153: in __iter__
+    for chunk in self._stream:
+                 ^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/starlette/testclient.py:384: in iter_body
+    exit_stack.close()
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py:627: in close
+    self.__exit__(None, None, None)
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py:619: in __exit__
+    raise exc
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py:604: in __exit__
+    if cb(*exc_details):
+       ^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/starlette/testclient.py:399: in close_app
+    raise exception
+.venv/lib/python3.14/site-packages/anyio/from_thread.py:265: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/starlette/testclient.py:366: in run_app
+    await self.app(scope, receive, send)
+.venv/lib/python3.14/site-packages/fastapi/applications.py:1194: in __call__
+    await super().__call__(scope, receive, send)
+.venv/lib/python3.14/site-packages/starlette/applications.py:96: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.14/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+.venv/lib/python3.14/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+.venv/lib/python3.14/site-packages/fastapi/telemetry/_asgi.py:151: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.14/site-packages/starlette/routing.py:683: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.14/site-packages/fastapi/routing.py:2811: in app
+    await route.handle(scope, receive, send)
+.venv/lib/python3.14/site-packages/fastapi/routing.py:1839: in handle
+    await self.original_router.handle(scope, receive, send)
+.venv/lib/python3.14/site-packages/fastapi/routing.py:2894: in handle
+    await included_router._handle_selected(scope, receive, send)
+.venv/lib/python3.14/site-packages/fastapi/routing.py:1865: in _handle_selected
+    await original_route.handle(scope, receive, send)
+.venv/lib/python3.14/site-packages/fastapi/routing.py:1328: in handle
+    await effective_context.app(scope, receive, send)
+.venv/lib/python3.14/site-packages/fastapi/routing.py:166: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.14/site-packages/fastapi/routing.py:153: in app
+    await response(scope, receive, send)
+.venv/lib/python3.14/site-packages/starlette/responses.py:175: in __call__
+    await self.background()
+.venv/lib/python3.14/site-packages/fastapi/background.py:67: in __call__
+    await task()
+.venv/lib/python3.14/site-packages/starlette/background.py:21: in __call__
+    await self.func(*self.args, **self.kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.workflow.orchestrator.WorkflowOrchestrator object at 0x11b83d7b0>
+session_id = 'b5534f7ec86c40eb813a1136db1088dd', profile_options = None
+manual_review = False, real_workflow = True
+identity = WorkflowIdentity(session_id='b5534f7ec86c40eb813a1136db1088dd', workflow_id='wf_d08feae16dbc496a9b3b981c1b94c0ec', root_run_id='run_3e5c193a1c5348a0b78ff72f5928fded')
+
+    async def prepare(self, session_id: str, profile_options: ProfileOptions | None = None, manual_review: bool = False,
+                      real_workflow: bool = False, identity=None) -> SessionState:
+        if real_workflow:
+>           return await self.prepare_real(session_id, identity)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: test_late_planner_result_or_error_cannot_modify_resumed_session.<locals>.defer() takes 1 positional argument but 2 were given
+
+backend/app/workflow/orchestrator.py:99: TypeError
+------------------------------ Captured log call -------------------------------
+ERROR    app.api.errors:errors.py:31 Unexpected API error
+Traceback (most recent call last):
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/telemetry/_asgi.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/routing.py", line 683, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 2811, in app
+    await route.handle(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1839, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 2894, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1865, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1328, in handle
+    await effective_context.app(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 166, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 153, in app
+    await response(scope, receive, send)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/responses.py", line 175, in __call__
+    await self.background()
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/background.py", line 67, in __call__
+    await task()
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/starlette/background.py", line 21, in __call__
+    await self.func(*self.args, **self.kwargs)
+  File "/Users/lainey/Desktop/vibe-coding/insightflow/backend/app/workflow/orchestrator.py", line 99, in prepare
+    return await self.prepare_real(session_id, identity)
+                 ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+TypeError: test_late_planner_result_or_error_cannot_modify_resumed_session.<locals>.defer() takes 1 positional argument but 2 were given
+___ test_expand_preserves_all_legacy_schema_rows_and_is_idempotent[business] ___
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_expand_preserves...b5523cf44401bfc5ebb2b05b784b', 'id': '6ab00eb1f7b94ff8839a01ba4a595164', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+kind = 'business'
+
+    @pytest.mark.parametrize('kind', KINDS)
+    def test_expand_preserves_all_legacy_schema_rows_and_is_idempotent(legacy, kind):
+        directory, _, _, _, _ = legacy
+        path = directory / PATHS[kind]
+        with closing(connect(path, readonly=True)) as c:
+            before = schema(c)
+            names = [r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'")]
+            rows = contents(c, names)
+>       assert inspect_expand(path, kind)['status'] == 'pending'
+E       AssertionError: assert 'applied' == 'pending'
+E         
+E         - pending
+E         + applied
+
+backend/tests/test_workflow_expand.py:60: AssertionError
+____ test_expand_preserves_all_legacy_schema_rows_and_is_idempotent[trace] _____
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_expand_preserves...3d3737ec42a79336c2afca312a3f', 'id': 'fa3433ed8b624cabadaf6d4709ca2ee7', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+kind = 'trace'
+
+    @pytest.mark.parametrize('kind', KINDS)
+    def test_expand_preserves_all_legacy_schema_rows_and_is_idempotent(legacy, kind):
+        directory, _, _, _, _ = legacy
+        path = directory / PATHS[kind]
+        with closing(connect(path, readonly=True)) as c:
+            before = schema(c)
+            names = [r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'")]
+            rows = contents(c, names)
+>       assert inspect_expand(path, kind)['status'] == 'pending'
+E       AssertionError: assert 'applied' == 'pending'
+E         
+E         - pending
+E         + applied
+
+backend/tests/test_workflow_expand.py:60: AssertionError
+__________ test_partial_or_drift_is_detected_without_repair[partial] ___________
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_partial_or_drift...b3dfdd714eeb96e770c5ea85d7d7', 'id': 'db5ee72614374b5ab1f982c9451026ec', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+fault = 'partial'
+
+    @pytest.mark.parametrize('fault', ['partial', 'column', 'extra_trigger', 'checksum', 'missing_version'])
+    def test_partial_or_drift_is_detected_without_repair(legacy, fault):
+        directory, _, _, _, _ = legacy
+        path = directory / PATHS['business']
+        if fault in {'partial', 'checksum', 'missing_version'}:
+            with closing(connect(path)) as c, c:
+                source, _, _ = specification('business')
+                pieces = list(statements(source))
+                for statement in pieces[:1] if fault == 'partial' else pieces:
+>                   c.execute(statement)
+E                   sqlite3.OperationalError: table workflow_expand_migrations already exists
+
+backend/tests/test_workflow_expand.py:86: OperationalError
+__________ test_partial_or_drift_is_detected_without_repair[checksum] __________
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_partial_or_drift...e45d508c4f8f9caf31098185392d', 'id': '5613eb61985a47ccb7d82c3418f43593', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+fault = 'checksum'
+
+    @pytest.mark.parametrize('fault', ['partial', 'column', 'extra_trigger', 'checksum', 'missing_version'])
+    def test_partial_or_drift_is_detected_without_repair(legacy, fault):
+        directory, _, _, _, _ = legacy
+        path = directory / PATHS['business']
+        if fault in {'partial', 'checksum', 'missing_version'}:
+            with closing(connect(path)) as c, c:
+                source, _, _ = specification('business')
+                pieces = list(statements(source))
+                for statement in pieces[:1] if fault == 'partial' else pieces:
+>                   c.execute(statement)
+E                   sqlite3.OperationalError: table workflow_expand_migrations already exists
+
+backend/tests/test_workflow_expand.py:86: OperationalError
+______ test_partial_or_drift_is_detected_without_repair[missing_version] _______
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_partial_or_drift...04e739f54d61aa225b6c4fb2f18e', 'id': '0b90815121244c9c8736f5ab4913b845', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+fault = 'missing_version'
+
+    @pytest.mark.parametrize('fault', ['partial', 'column', 'extra_trigger', 'checksum', 'missing_version'])
+    def test_partial_or_drift_is_detected_without_repair(legacy, fault):
+        directory, _, _, _, _ = legacy
+        path = directory / PATHS['business']
+        if fault in {'partial', 'checksum', 'missing_version'}:
+            with closing(connect(path)) as c, c:
+                source, _, _ = specification('business')
+                pieces = list(statements(source))
+                for statement in pieces[:1] if fault == 'partial' else pieces:
+>                   c.execute(statement)
+E                   sqlite3.OperationalError: table workflow_expand_migrations already exists
+
+backend/tests/test_workflow_expand.py:86: OperationalError
+_________ test_failed_validation_rolls_back_ddl_and_version[business] __________
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_failed_validatio...5217c2d546cba4ef075aecf19d75', 'id': '1d9ca510e0a943f38dbe1ebcb1372191', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11d40c7c0>
+kind = 'business'
+
+    @pytest.mark.parametrize('kind', KINDS)
+    def test_failed_validation_rolls_back_ddl_and_version(legacy, monkeypatch, kind):
+        from app.storage import workflow_expand as module
+        directory, _, _, _, _ = legacy
+        path = directory / PATHS[kind]
+        with closing(connect(path, readonly=True)) as c:
+            before = schema(c)
+        original = module._state
+        calls = 0
+        def fail_after_ddl(*args):
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                raise ExpandError('INJECTED', 'fail before commit')
+            return original(*args)
+        monkeypatch.setattr(module, '_state', fail_after_ddl)
+>       with pytest.raises(ExpandError, match='fail before commit'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ExpandError
+
+backend/tests/test_workflow_expand.py:121: Failed
+___________ test_failed_validation_rolls_back_ddl_and_version[trace] ___________
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_failed_validatio...55b6491f49d4948bc54f7f03b33b', 'id': 'a859553cbb9e424e9f578fa47c183246', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x13cc1d080>
+kind = 'trace'
+
+    @pytest.mark.parametrize('kind', KINDS)
+    def test_failed_validation_rolls_back_ddl_and_version(legacy, monkeypatch, kind):
+        from app.storage import workflow_expand as module
+        directory, _, _, _, _ = legacy
+        path = directory / PATHS[kind]
+        with closing(connect(path, readonly=True)) as c:
+            before = schema(c)
+        original = module._state
+        calls = 0
+        def fail_after_ddl(*args):
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                raise ExpandError('INJECTED', 'fail before commit')
+            return original(*args)
+        monkeypatch.setattr(module, '_state', fail_after_ddl)
+>       with pytest.raises(ExpandError, match='fail before commit'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ExpandError
+
+backend/tests/test_workflow_expand.py:121: Failed
+_ test_workflow_creation_identity_and_idempotency_constraints[workflow_id-wf-a] _
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_workflow_creatio...1449f12f4589a03d46dcaf4d93a6', 'id': '34b36ac5e9e44815afbe8440aa571a26', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+field = 'workflow_id', value = 'wf-a'
+
+    @pytest.mark.parametrize('field,value', [('workflow_id', 'wf-a'), ('workflow_id', None),
+        ('root_run_id', 'same-root'), ('creation_request_id', 'create-a')])
+    def test_workflow_creation_identity_and_idempotency_constraints(legacy, field, value):
+>       rows, _, _ = seed_workflows(legacy)
+                     ^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_expand.py:192: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_workflow_expand.py:137: in seed_workflows
+    insert(c, 'session_datasets', {'session_id': sid, 'dataset_id': session['dataset_ref']['dataset_id'], 'created_at': NOW})
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x11d7afb50>, table = 'session_datasets'
+data = {'session_id': '34b36ac5e9e44815afbe8440aa571a26', 'dataset_id': '1cc8af9ad0f44e4daed4b42dff7233e7', 'created_at': '2026-10-30T00:00:00Z'}
+
+    def insert(conn, table, data):
+        columns = ','.join(data)
+>       conn.execute(f'INSERT INTO {table} ({columns}) VALUES ({",".join("?" for _ in data)})', tuple(data.values()))
+E       sqlite3.IntegrityError: UNIQUE constraint failed: session_datasets.session_id, session_datasets.dataset_id
+
+backend/tests/test_workflow_expand.py:33: IntegrityError
+_ test_workflow_creation_identity_and_idempotency_constraints[workflow_id-None] _
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_workflow_creatio...f7678ee54794a68521757fe56007', 'id': 'a2224179270b41f8983ac0801ee70286', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+field = 'workflow_id', value = None
+
+    @pytest.mark.parametrize('field,value', [('workflow_id', 'wf-a'), ('workflow_id', None),
+        ('root_run_id', 'same-root'), ('creation_request_id', 'create-a')])
+    def test_workflow_creation_identity_and_idempotency_constraints(legacy, field, value):
+>       rows, _, _ = seed_workflows(legacy)
+                     ^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_expand.py:192: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_workflow_expand.py:137: in seed_workflows
+    insert(c, 'session_datasets', {'session_id': sid, 'dataset_id': session['dataset_ref']['dataset_id'], 'created_at': NOW})
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x13bbbad40>, table = 'session_datasets'
+data = {'session_id': 'a2224179270b41f8983ac0801ee70286', 'dataset_id': '8c77616e7ba34c9da06194e89f272033', 'created_at': '2026-10-30T00:00:00Z'}
+
+    def insert(conn, table, data):
+        columns = ','.join(data)
+>       conn.execute(f'INSERT INTO {table} ({columns}) VALUES ({",".join("?" for _ in data)})', tuple(data.values()))
+E       sqlite3.IntegrityError: UNIQUE constraint failed: session_datasets.session_id, session_datasets.dataset_id
+
+backend/tests/test_workflow_expand.py:33: IntegrityError
+_ test_workflow_creation_identity_and_idempotency_constraints[root_run_id-same-root] _
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_workflow_creatio...c8357a1346898c6e70a928215918', 'id': '5458d2492a7042baa8aec6c8571b55bc', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+field = 'root_run_id', value = 'same-root'
+
+    @pytest.mark.parametrize('field,value', [('workflow_id', 'wf-a'), ('workflow_id', None),
+        ('root_run_id', 'same-root'), ('creation_request_id', 'create-a')])
+    def test_workflow_creation_identity_and_idempotency_constraints(legacy, field, value):
+>       rows, _, _ = seed_workflows(legacy)
+                     ^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_expand.py:192: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_workflow_expand.py:137: in seed_workflows
+    insert(c, 'session_datasets', {'session_id': sid, 'dataset_id': session['dataset_ref']['dataset_id'], 'created_at': NOW})
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x10be88130>, table = 'session_datasets'
+data = {'session_id': '5458d2492a7042baa8aec6c8571b55bc', 'dataset_id': 'c4564ad75ada4fbeb87f475dc830f07a', 'created_at': '2026-10-30T00:00:00Z'}
+
+    def insert(conn, table, data):
+        columns = ','.join(data)
+>       conn.execute(f'INSERT INTO {table} ({columns}) VALUES ({",".join("?" for _ in data)})', tuple(data.values()))
+E       sqlite3.IntegrityError: UNIQUE constraint failed: session_datasets.session_id, session_datasets.dataset_id
+
+backend/tests/test_workflow_expand.py:33: IntegrityError
+_ test_workflow_creation_identity_and_idempotency_constraints[creation_request_id-create-a] _
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_workflow_creatio...8d6881cd4d7e8930f64981fb1079', 'id': '183ea20ccb2c4207b0a8ddae66308da9', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+field = 'creation_request_id', value = 'create-a'
+
+    @pytest.mark.parametrize('field,value', [('workflow_id', 'wf-a'), ('workflow_id', None),
+        ('root_run_id', 'same-root'), ('creation_request_id', 'create-a')])
+    def test_workflow_creation_identity_and_idempotency_constraints(legacy, field, value):
+>       rows, _, _ = seed_workflows(legacy)
+                     ^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_expand.py:192: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_workflow_expand.py:137: in seed_workflows
+    insert(c, 'session_datasets', {'session_id': sid, 'dataset_id': session['dataset_ref']['dataset_id'], 'created_at': NOW})
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x10cdf1f30>, table = 'session_datasets'
+data = {'session_id': '183ea20ccb2c4207b0a8ddae66308da9', 'dataset_id': '19fdfcd6ad8d499cac9d7e5664e18e83', 'created_at': '2026-10-30T00:00:00Z'}
+
+    def insert(conn, table, data):
+        columns = ','.join(data)
+>       conn.execute(f'INSERT INTO {table} ({columns}) VALUES ({",".join("?" for _ in data)})', tuple(data.values()))
+E       sqlite3.IntegrityError: UNIQUE constraint failed: session_datasets.session_id, session_datasets.dataset_id
+
+backend/tests/test_workflow_expand.py:33: IntegrityError
+___________ test_independent_v1_and_readonly_legacy_native_resolver ____________
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_independent_v1_a...bc11325c4d07912453a428ec1d30', 'id': '2142296f62d44a1781121cc1eaa3f019', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+
+    def test_independent_v1_and_readonly_legacy_native_resolver(legacy):
+>       _, plans, approval = seed_workflows(legacy)
+                             ^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_expand.py:202: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_workflow_expand.py:137: in seed_workflows
+    insert(c, 'session_datasets', {'session_id': sid, 'dataset_id': session['dataset_ref']['dataset_id'], 'created_at': NOW})
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x10c962a70>, table = 'session_datasets'
+data = {'session_id': '2142296f62d44a1781121cc1eaa3f019', 'dataset_id': '938f0f8bd1294492b9dcceb94bec6ebe', 'created_at': '2026-10-30T00:00:00Z'}
+
+    def insert(conn, table, data):
+        columns = ','.join(data)
+>       conn.execute(f'INSERT INTO {table} ({columns}) VALUES ({",".join("?" for _ in data)})', tuple(data.values()))
+E       sqlite3.IntegrityError: UNIQUE constraint failed: session_datasets.session_id, session_datasets.dataset_id
+
+backend/tests/test_workflow_expand.py:33: IntegrityError
+_ test_current_pointer_composite_fk_rejects_other_workflow[current_plan_version_id-pv-b] _
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_current_pointer_...4b62c1b049d0b8b595b18ad334c8', 'id': 'c5167041a417467eb05bbf7f25902adb', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+field = 'current_plan_version_id', value = 'pv-b'
+
+    @pytest.mark.parametrize('field,value', [('current_plan_version_id','pv-b'), ('current_approval_id','approval-b')])
+    def test_current_pointer_composite_fk_rejects_other_workflow(legacy, field, value):
+>       seed_workflows(legacy)
+
+backend/tests/test_workflow_expand.py:228: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_workflow_expand.py:137: in seed_workflows
+    insert(c, 'session_datasets', {'session_id': sid, 'dataset_id': session['dataset_ref']['dataset_id'], 'created_at': NOW})
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x10c9d06d0>, table = 'session_datasets'
+data = {'session_id': 'c5167041a417467eb05bbf7f25902adb', 'dataset_id': '63ac543626f14e3280338e0a308219e4', 'created_at': '2026-10-30T00:00:00Z'}
+
+    def insert(conn, table, data):
+        columns = ','.join(data)
+>       conn.execute(f'INSERT INTO {table} ({columns}) VALUES ({",".join("?" for _ in data)})', tuple(data.values()))
+E       sqlite3.IntegrityError: UNIQUE constraint failed: session_datasets.session_id, session_datasets.dataset_id
+
+backend/tests/test_workflow_expand.py:33: IntegrityError
+_ test_current_pointer_composite_fk_rejects_other_workflow[current_approval_id-approval-b] _
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_current_pointer_...c1bb21f145e69d5f7c09ee72221f', 'id': 'a44d115b423140e29387f6d3088e6097', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+field = 'current_approval_id', value = 'approval-b'
+
+    @pytest.mark.parametrize('field,value', [('current_plan_version_id','pv-b'), ('current_approval_id','approval-b')])
+    def test_current_pointer_composite_fk_rejects_other_workflow(legacy, field, value):
+>       seed_workflows(legacy)
+
+backend/tests/test_workflow_expand.py:228: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_workflow_expand.py:137: in seed_workflows
+    insert(c, 'session_datasets', {'session_id': sid, 'dataset_id': session['dataset_ref']['dataset_id'], 'created_at': NOW})
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x10d1826b0>, table = 'session_datasets'
+data = {'session_id': 'a44d115b423140e29387f6d3088e6097', 'dataset_id': '8dfea4c496794692a59c014132be98f4', 'created_at': '2026-10-30T00:00:00Z'}
+
+    def insert(conn, table, data):
+        columns = ','.join(data)
+>       conn.execute(f'INSERT INTO {table} ({columns}) VALUES ({",".join("?" for _ in data)})', tuple(data.values()))
+E       sqlite3.IntegrityError: UNIQUE constraint failed: session_datasets.session_id, session_datasets.dataset_id
+
+backend/tests/test_workflow_expand.py:33: IntegrityError
+_____________ test_origin_parent_and_dataset_require_same_session ______________
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_origin_parent_an...1212ea6a47f792b0b4ded20236f4', 'id': '988ae5504420438498385cced840bc7c', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+
+    def test_origin_parent_and_dataset_require_same_session(legacy):
+>       rows, _, _ = seed_workflows(legacy)
+                     ^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_expand.py:235: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_workflow_expand.py:137: in seed_workflows
+    insert(c, 'session_datasets', {'session_id': sid, 'dataset_id': session['dataset_ref']['dataset_id'], 'created_at': NOW})
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x10cb2d210>, table = 'session_datasets'
+data = {'session_id': '988ae5504420438498385cced840bc7c', 'dataset_id': 'bbc5d949bcf1465babeac36d2acbfc6d', 'created_at': '2026-10-30T00:00:00Z'}
+
+    def insert(conn, table, data):
+        columns = ','.join(data)
+>       conn.execute(f'INSERT INTO {table} ({columns}) VALUES ({",".join("?" for _ in data)})', tuple(data.values()))
+E       sqlite3.IntegrityError: UNIQUE constraint failed: session_datasets.session_id, session_datasets.dataset_id
+
+backend/tests/test_workflow_expand.py:33: IntegrityError
+__________ test_new_fact_and_failed_link_rollback_in_one_transaction ___________
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_new_fact_and_fai...036ab1a048a8a756d88e2810fdf8', 'id': '88470ae103a0475fac8071ed3e4030a5', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+
+    def test_new_fact_and_failed_link_rollback_in_one_transaction(legacy):
+>       _, _, approval = seed_workflows(legacy)
+                         ^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_workflow_expand.py:251: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_workflow_expand.py:137: in seed_workflows
+    insert(c, 'session_datasets', {'session_id': sid, 'dataset_id': session['dataset_ref']['dataset_id'], 'created_at': NOW})
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x13d48ab60>, table = 'session_datasets'
+data = {'session_id': '88470ae103a0475fac8071ed3e4030a5', 'dataset_id': 'd85c21899e954c0aa9958e10c14e4b51', 'created_at': '2026-10-30T00:00:00Z'}
+
+    def insert(conn, table, data):
+        columns = ','.join(data)
+>       conn.execute(f'INSERT INTO {table} ({columns}) VALUES ({",".join("?" for _ in data)})', tuple(data.values()))
+E       sqlite3.IntegrityError: UNIQUE constraint failed: session_datasets.session_id, session_datasets.dataset_id
+
+backend/tests/test_workflow_expand.py:33: IntegrityError
+_______ test_new_history_bindings_are_immutable[workflow_plan_versions] ________
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_new_history_bind...ebace23c491cb9b6c4bdf66e4d53', 'id': '96e30fab0284477ba0b1113173b0cd31', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+table = 'workflow_plan_versions'
+
+    @pytest.mark.parametrize('table', ['workflow_plan_versions','workflow_approval_links','workflow_execution_links','workflow_report_links'])
+    def test_new_history_bindings_are_immutable(legacy, table):
+>       seed_workflows(legacy)
+
+backend/tests/test_workflow_expand.py:268: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_workflow_expand.py:137: in seed_workflows
+    insert(c, 'session_datasets', {'session_id': sid, 'dataset_id': session['dataset_ref']['dataset_id'], 'created_at': NOW})
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x12b7be6b0>, table = 'session_datasets'
+data = {'session_id': '96e30fab0284477ba0b1113173b0cd31', 'dataset_id': '919487a32a4a4f3cad6dfb67812af0f2', 'created_at': '2026-10-30T00:00:00Z'}
+
+    def insert(conn, table, data):
+        columns = ','.join(data)
+>       conn.execute(f'INSERT INTO {table} ({columns}) VALUES ({",".join("?" for _ in data)})', tuple(data.values()))
+E       sqlite3.IntegrityError: UNIQUE constraint failed: session_datasets.session_id, session_datasets.dataset_id
+
+backend/tests/test_workflow_expand.py:33: IntegrityError
+_______ test_new_history_bindings_are_immutable[workflow_approval_links] _______
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_new_history_bind...e646764d4b358bc8e755e272505f', 'id': '593b5935bf5c483f886198b85b476a8d', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+table = 'workflow_approval_links'
+
+    @pytest.mark.parametrize('table', ['workflow_plan_versions','workflow_approval_links','workflow_execution_links','workflow_report_links'])
+    def test_new_history_bindings_are_immutable(legacy, table):
+>       seed_workflows(legacy)
+
+backend/tests/test_workflow_expand.py:268: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_workflow_expand.py:137: in seed_workflows
+    insert(c, 'session_datasets', {'session_id': sid, 'dataset_id': session['dataset_ref']['dataset_id'], 'created_at': NOW})
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x12b7bdb70>, table = 'session_datasets'
+data = {'session_id': '593b5935bf5c483f886198b85b476a8d', 'dataset_id': '15804d50912d4c678bf80f5afb6c55fc', 'created_at': '2026-10-30T00:00:00Z'}
+
+    def insert(conn, table, data):
+        columns = ','.join(data)
+>       conn.execute(f'INSERT INTO {table} ({columns}) VALUES ({",".join("?" for _ in data)})', tuple(data.values()))
+E       sqlite3.IntegrityError: UNIQUE constraint failed: session_datasets.session_id, session_datasets.dataset_id
+
+backend/tests/test_workflow_expand.py:33: IntegrityError
+______ test_new_history_bindings_are_immutable[workflow_execution_links] _______
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_new_history_bind...d5197c93469a8c73e67e290b9728', 'id': '5cc7af99a6674d7487f0980c0d90ae37', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+table = 'workflow_execution_links'
+
+    @pytest.mark.parametrize('table', ['workflow_plan_versions','workflow_approval_links','workflow_execution_links','workflow_report_links'])
+    def test_new_history_bindings_are_immutable(legacy, table):
+>       seed_workflows(legacy)
+
+backend/tests/test_workflow_expand.py:268: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_workflow_expand.py:137: in seed_workflows
+    insert(c, 'session_datasets', {'session_id': sid, 'dataset_id': session['dataset_ref']['dataset_id'], 'created_at': NOW})
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x13d488130>, table = 'session_datasets'
+data = {'session_id': '5cc7af99a6674d7487f0980c0d90ae37', 'dataset_id': 'fa0f6ccfd01c4514bf7ebaaca93038ee', 'created_at': '2026-10-30T00:00:00Z'}
+
+    def insert(conn, table, data):
+        columns = ','.join(data)
+>       conn.execute(f'INSERT INTO {table} ({columns}) VALUES ({",".join("?" for _ in data)})', tuple(data.values()))
+E       sqlite3.IntegrityError: UNIQUE constraint failed: session_datasets.session_id, session_datasets.dataset_id
+
+backend/tests/test_workflow_expand.py:33: IntegrityError
+________ test_new_history_bindings_are_immutable[workflow_report_links] ________
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_new_history_bind...ebcb6ba4426ca9d5ae5e6578cfd4', 'id': '6c919bd2177b4d8b99b311cb98995318', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+table = 'workflow_report_links'
+
+    @pytest.mark.parametrize('table', ['workflow_plan_versions','workflow_approval_links','workflow_execution_links','workflow_report_links'])
+    def test_new_history_bindings_are_immutable(legacy, table):
+>       seed_workflows(legacy)
+
+backend/tests/test_workflow_expand.py:268: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_workflow_expand.py:137: in seed_workflows
+    insert(c, 'session_datasets', {'session_id': sid, 'dataset_id': session['dataset_ref']['dataset_id'], 'created_at': NOW})
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x10cbc2b60>, table = 'session_datasets'
+data = {'session_id': '6c919bd2177b4d8b99b311cb98995318', 'dataset_id': '1d9aac08a2634065b0fa5003bf1e88ba', 'created_at': '2026-10-30T00:00:00Z'}
+
+    def insert(conn, table, data):
+        columns = ','.join(data)
+>       conn.execute(f'INSERT INTO {table} ({columns}) VALUES ({",".join("?" for _ in data)})', tuple(data.values()))
+E       sqlite3.IntegrityError: UNIQUE constraint failed: session_datasets.session_id, session_datasets.dataset_id
+
+backend/tests/test_workflow_expand.py:33: IntegrityError
+______ test_three_database_failure_is_resumable_without_distributed_claim ______
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_three_database_f...6d73ea6f40839312fe443db36ed8', 'id': 'e61178f0d86241c88b8f6b906dc59966', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x12bd77310>
+
+    def test_three_database_failure_is_resumable_without_distributed_claim(legacy, monkeypatch):
+        from app.storage import workflow_expand as module
+        directory = legacy[0]
+>       assert apply_expand(directory / PATHS['business'], 'business')['status'] == 'applied'
+E       AssertionError: assert 'already_applied' == 'applied'
+E         
+E         - applied
+E         + already_applied
+
+backend/tests/test_workflow_expand.py:277: AssertionError
+____________ test_cli_requires_maintenance_and_rejects_active_tasks ____________
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_cli_requires_mai...c804fcbb424799b2f5772632991c', 'id': 'd6b0dea29ebf4160964bf375e0647556', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+
+    def test_cli_requires_maintenance_and_rejects_active_tasks(legacy):
+        directory, app, _, _, session = legacy
+        cli = maintenance_cli()
+>       assert all(v['status']=='pending' for v in cli.run(directory)['databases'].values())
+E       assert False
+E        +  where False = all(<generator object test_cli_requires_maintenance_and_rejects_active_tasks.<locals>.<genexpr> at 0x11ee21970>)
+
+backend/tests/test_workflow_expand.py:334: AssertionError
+_____________ test_cli_backup_apply_partial_failure_and_safe_rerun _____________
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_cli_backup_apply...d15aa3f345f3974385bc8729b115', 'id': '1d332cd179db4393b32b5bb2f5369cf3', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11b829470>
+
+    def test_cli_backup_apply_partial_failure_and_safe_rerun(legacy, monkeypatch):
+        directory = legacy[0]
+        cli = maintenance_cli()
+        apply = cli.apply_expand
+        def fail_trace(path, kind):
+            if kind == 'trace':
+                raise ExpandError('INJECTED', 'trace temporarily unavailable')
+            return apply(path, kind)
+        monkeypatch.setattr(cli, 'apply_expand', fail_trace)
+        result = cli.run(directory, apply=True, backup_dir=directory/'backup-first', maintenance=True)
+        assert not result['complete']
+>       assert result['databases']['business']['status']=='applied'
+E       AssertionError: assert 'already_applied' == 'applied'
+E         
+E         - applied
+E         + already_applied
+
+backend/tests/test_workflow_expand.py:358: AssertionError
+_______ test_trace_links_and_original_session_unique_root_are_preserved ________
+
+legacy = (PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-168/test_trace_links_and_...093ee0964a648e1d70f960106b3d', 'id': '764a9eff6fcc4b8383ad3ab33900e705', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...})
+
+    def test_trace_links_and_original_session_unique_root_are_preserved(legacy):
+>       seed_workflows(legacy)
+
+backend/tests/test_workflow_expand.py:369: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_workflow_expand.py:137: in seed_workflows
+    insert(c, 'session_datasets', {'session_id': sid, 'dataset_id': session['dataset_ref']['dataset_id'], 'created_at': NOW})
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+conn = <sqlite3.Connection object at 0x12a570c70>, table = 'session_datasets'
+data = {'session_id': '764a9eff6fcc4b8383ad3ab33900e705', 'dataset_id': 'e360724d73d1469e981920aca32166ee', 'created_at': '2026-10-30T00:00:00Z'}
+
+    def insert(conn, table, data):
+        columns = ','.join(data)
+>       conn.execute(f'INSERT INTO {table} ({columns}) VALUES ({",".join("?" for _ in data)})', tuple(data.values()))
+E       sqlite3.IntegrityError: UNIQUE constraint failed: session_datasets.session_id, session_datasets.dataset_id
+
+backend/tests/test_workflow_expand.py:33: IntegrityError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_trace_write_safety.py::test_late_planner_result_or_error_cannot_modify_resumed_session[False]
+FAILED backend/tests/test_trace_write_safety.py::test_late_planner_result_or_error_cannot_modify_resumed_session[True]
+FAILED backend/tests/test_workflow_expand.py::test_expand_preserves_all_legacy_schema_rows_and_is_idempotent[business]
+FAILED backend/tests/test_workflow_expand.py::test_expand_preserves_all_legacy_schema_rows_and_is_idempotent[trace]
+FAILED backend/tests/test_workflow_expand.py::test_partial_or_drift_is_detected_without_repair[partial]
+FAILED backend/tests/test_workflow_expand.py::test_partial_or_drift_is_detected_without_repair[checksum]
+FAILED backend/tests/test_workflow_expand.py::test_partial_or_drift_is_detected_without_repair[missing_version]
+FAILED backend/tests/test_workflow_expand.py::test_failed_validation_rolls_back_ddl_and_version[business]
+FAILED backend/tests/test_workflow_expand.py::test_failed_validation_rolls_back_ddl_and_version[trace]
+FAILED backend/tests/test_workflow_expand.py::test_workflow_creation_identity_and_idempotency_constraints[workflow_id-wf-a]
+FAILED backend/tests/test_workflow_expand.py::test_workflow_creation_identity_and_idempotency_constraints[workflow_id-None]
+FAILED backend/tests/test_workflow_expand.py::test_workflow_creation_identity_and_idempotency_constraints[root_run_id-same-root]
+FAILED backend/tests/test_workflow_expand.py::test_workflow_creation_identity_and_idempotency_constraints[creation_request_id-create-a]
+FAILED backend/tests/test_workflow_expand.py::test_independent_v1_and_readonly_legacy_native_resolver
+FAILED backend/tests/test_workflow_expand.py::test_current_pointer_composite_fk_rejects_other_workflow[current_plan_version_id-pv-b]
+FAILED backend/tests/test_workflow_expand.py::test_current_pointer_composite_fk_rejects_other_workflow[current_approval_id-approval-b]
+FAILED backend/tests/test_workflow_expand.py::test_origin_parent_and_dataset_require_same_session
+FAILED backend/tests/test_workflow_expand.py::test_new_fact_and_failed_link_rollback_in_one_transaction
+FAILED backend/tests/test_workflow_expand.py::test_new_history_bindings_are_immutable[workflow_plan_versions]
+FAILED backend/tests/test_workflow_expand.py::test_new_history_bindings_are_immutable[workflow_approval_links]
+FAILED backend/tests/test_workflow_expand.py::test_new_history_bindings_are_immutable[workflow_execution_links]
+FAILED backend/tests/test_workflow_expand.py::test_new_history_bindings_are_immutable[workflow_report_links]
+FAILED backend/tests/test_workflow_expand.py::test_three_database_failure_is_resumable_without_distributed_claim
+FAILED backend/tests/test_workflow_expand.py::test_cli_requires_maintenance_and_rejects_active_tasks
+FAILED backend/tests/test_workflow_expand.py::test_cli_backup_apply_partial_failure_and_safe_rerun
+FAILED backend/tests/test_workflow_expand.py::test_trace_links_and_original_session_unique_root_are_preserved
+26 failed, 1405 passed, 1 warning in 61.30s (0:01:01)

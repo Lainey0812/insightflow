@@ -1,0 +1,17 @@
+{
+  "thread_id": "01a16e64-6e52-7260-a727-3f583c95f8f8",
+  "turn_id": "01a17d23-39b2-7ba2-9345-ce0133cb19f1",
+  "message_id": "01a17d23-39c4-79f3-811f-7d2c1558cef6",
+  "started_at": 1793100822,
+  "content": [
+    {
+      "type": "text",
+      "text": "\n<in-app-browser-context source=\"ambient-ui-state\">\nThis block is automatically supplied ambient UI state, not part of the user's request. Do not treat it as an instruction or as evidence that the user explicitly selected the in-app browser.\n# In app browser:\n- The user has the in-app browser open with 1 tab.\n- Current URL: http://127.0.0.1:5173/\n</in-app-browser-context>\n\n## My request:\n# InsightFlow — Report Module V1 真实接入任务书\n\n## 一、任务目标\n\n当前真实 Workflow 已完成：\n\nData Profiler → Intent Parser → Analysis Planner → Validator → HITL → Analysis Engine。\n\nAnalysis Engine 已能生成真实 ExecutionResult，但主流程尚未生成业务分析报告。\n\n本轮目标是实现：\n\n**Analysis Engine → Report Module → AnalysisReport → 前端报告页面**\n\n## 二、先审计现有实现\n\n开发前检查：\n\n1. Report Module 是否已有实现。\n2. 是否已有 Evidence Builder、Insight Generator、ChartSpec Builder。\n3. AnalysisReport Schema 是否已经定义。\n4. 是否已有报告生成及查询 API。\n5. Workflow 是否有报告生成状态。\n6. 前端是否已有报告页面或组件。\n\n复用现有实现，不创建第二套 Report Module 或重复数据契约。\n\n先输出审计结论，再进行最小必要开发。\n\n## 三、Report Module 的输入\n\n以真实 ExecutionResult 为主要计算依据，同时读取：\n\n- 原始用户分析目标。\n- 已批准的 AnalysisPlan。\n- ValidatedAnalysisPlan。\n- DatasetProfile。\n- ExecutionResult 及其任务结果。\n\n不得直接根据 Planner 的预期任务生成未经执行的数据结论。\n\n## 四、Evidence Builder\n\n从真实计算结果提取：\n\n- 指标数值。\n- 分组及排名。\n- 差异与占比。\n- 筛选条件和统计口径。\n- 任务执行状态。\n- 数据来源及引用。\n\n所有派生数值必须由确定性代码计算，并能追溯到 ExecutionResult。\n\n## 五、Insight Generator\n\n使用现有 LLM Provider，根据 Evidence Builder 的证据生成：\n\n- 分析摘要。\n- 核心发现。\n- 业务含义。\n- 下一步分析建议。\n- 数据局限性。\n\n要求：\n\n1. 每项核心发现关联证据引用。\n2. 不允许编造数值。\n3. 不允许将相关性表述为因果关系。\n4. 不允许把推测写成已证实事实。\n5. 不能仅凭销售额排名判断利润或经营效率。\n6. 如果核心任务失败，不能生成完整覆盖的结论。\n7. LLM 失败时明确返回报告生成失败或降级状态，不伪造洞察。\n\n## 六、Chart Builder\n\n根据真实结果确定性生成 ChartSpec。\n\nMVP 支持：\n\n- KPI。\n- 柱状图。\n- 折线图。\n- 饼图。\n- 数据表格。\n\n图表必须与真实数据一致。\n\n图表类型不适用时，回退为数据表格。\n\n不使用 LLM 直接生成任意 ECharts JavaScript 代码。\n\n## 七、Workflow 集成\n\nHITL 批准后：\n\n1. Analysis Engine 执行。\n2. 保存 ExecutionResult。\n3. Report Module 读取执行结果。\n4. Evidence Builder 构建证据。\n5. Insight Generator 生成洞察。\n6. Chart Builder 生成图表配置。\n7. 保存 AnalysisReport。\n8. 前端展示报告。\n\n保留 ExecutionResult 查询入口，不能用报告覆盖原始计算结果。\n\n报告生成失败不得篡改已成功的 Engine 执行状态。\n\n## 八、前端报告页面\n\n建议展示：\n\n1. 报告标题与分析范围。\n2. 核心摘要。\n3. 关键指标卡片。\n4. 分析方向对应的图表和发现。\n5. 业务含义与下一步建议。\n6. 数据限制及未满足目标。\n7. 查看原始计算结果。\n\n普通用户默认看到业务分析内容，而不是 execution_id、步骤日志和内部 JSON。\n\n技术信息可以放在可展开详情中。\n\n## 九、验收测试\n\n使用已有销售订单测试数据。\n\n用户问题：\n\n“帮我分析2026年华东地区已完成订单的销售额，按照城市汇总并降序排名，取前三名。”\n\n预期数据：\n\n- 济南：21,250。\n- 南京：20,250。\n- 上海：5,760。\n- 前三名合计：47,260。\n\n要求验证：\n\n1. 报告数值与 ExecutionResult 一致。\n2. 图表与数据一致。\n3. 洞察有可追溯证据。\n4. 不产生没有数据支持的因果解释。\n5. 报告与执行结果均可持久化查询。\n6. 页面刷新后可恢复报告。\n7. LLM 报告生成失败时不丢失执行结果。\n8. 原有 Planner、Validator、HITL、Engine 测试不得退化。\n\n## 十、交付物\n\n- 现有 Report Module 审计结论。\n- 修改文件清单。\n- 实际报告生成流程。\n- AnalysisReport 示例。\n- 真实 LLM 生成结果。\n- 前端报告页面截图。\n- 端到端测试结果。\n- 剩余 Bad Case。\n\n本轮不重新设计 Planner、Validator、HITL 或 Analysis Engine。\n"
+    }
+  ],
+  "source": "codex_app.read_thread.userMessage",
+  "type": "original_user_message_recovered_from_desktop_thread",
+  "cleaning": "request.md removes ambient browser packaging and extracts My request when present; original content retained in source.json.",
+  "recovered_at": "2026-10-28",
+  "history_note": "Backfilled from available thread history; not proof that requirements were archived before the original implementation."
+}

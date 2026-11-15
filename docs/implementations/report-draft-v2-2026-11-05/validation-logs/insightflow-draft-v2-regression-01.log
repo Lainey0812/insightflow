@@ -1,0 +1,2288 @@
+........................................................................ [  4%]
+........................................................................ [  9%]
+........................................................................ [ 14%]
+......................F.F...................................F........... [ 18%]
+........................................................................ [ 23%]
+........................................................................ [ 28%]
+........................................................................ [ 32%]
+........................................................................ [ 37%]
+....F..F...........F...FF...F..............F............................ [ 42%]
+................................................................FFFFFFFF [ 46%]
+....F...........F....................................................... [ 51%]
+..................................................F..................... [ 56%]
+........................................................................ [ 60%]
+........................................................................ [ 65%]
+........................................................................ [ 70%]
+........................................................................ [ 75%]
+........................................................................ [ 79%]
+........................................................................ [ 84%]
+........................................................................ [ 89%]
+........................................................................ [ 93%]
+.....................................FF................................. [ 98%]
+.......................                                                  [100%]
+=================================== FAILURES ===================================
+___ test_new_presentation_and_html_use_saved_insights_without_view_evidence ____
+
+    def test_new_presentation_and_html_use_saved_insights_without_view_evidence():
+        inputs=case();e,_,_=artifacts(inputs);rel=next(x for x in e if x.value.get('comparison_kind')=='relative_lead')
+        output=draft(rel.evidence_id,[next(x for x in e if x.evidence_type=='ranking').evidence_id,rel.evidence_id]).model_dump()
+>       report=asyncio.run(AnalysisReportService(ReportProvider(output),CapabilityRegistry()).generate(*inputs))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_insight_composition.py:142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:204: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:127: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.services.analysis_report.AnalysisReportService object at 0x1517d03d0>
+intent = ParsedIntent(analysis_mode=<AnalysisMode.GOAL_DRIVEN: 'goal_driven'>, next_action='proceed', analysis_goal=AnalysisGoa...time_range=None, filters=[], metric_requirements=[], analysis_limits=[]), uncertainties=[], clarification_questions=[])
+validated = ValidatedAnalysisPlan(plan=AnalysisPlan(dataset_id='report-dataset', dataset_version='ff79d77c027feb3febca218ab32f6246...8ab32f624669a417d9890dc3ad3408077d04b90f1b', plan_version=1, notice='依据真实画像确定性校验；未执行统计，仍需用户审批。'), intent_snapshot=None)
+execution = ExecutionResultV1(dataset_id='report-dataset', dataset_version='ff79d77c027feb3febca218ab32f624669a417d9890dc3ad340807...，保留缺失分组。', failure_reason=None, result_id=None, result_ref=None, row_count=None, execution_metadata=None, error=None)])
+profile = DatasetProfile(dataset_id='report-dataset', dataset_version='ff79d77c027feb3febca218ab32f624669a417d9890dc3ad3408077d0...9d77c027feb3febca218ab32f624669a417d9890dc3ad3408077d04b90f1b', plan_version=None, notice='从实际上传文件确定性计算；未清洗、未调用 LLM。'))
+approved_snapshot = None, original_query = None
+trace = <app.observability.recorder.TraceContext object at 0x151782510>
+
+    async def generate(self, intent: ParsedIntent, validated: ValidatedAnalysisPlan,
+                       execution: ExecutionResultV1, profile: DatasetProfile, *, approved_snapshot=None, original_query=None, trace=None) -> AnalysisReport:
+        trace = trace or TraceContext(TraceRecorder())
+        # Reparse all input instances; neither model_copy nor caller validation claims are trusted.
+        try:
+            intent = type(intent).model_validate(intent.model_dump())
+            execution = ExecutionResultV1.model_validate(execution.model_dump())
+            validated = ValidatedAnalysisPlan.model_validate(validated.model_dump())
+            profile = DatasetProfile.model_validate(profile.model_dump())
+        except (ValidationError, ValueError, TypeError, AttributeError):
+            raise AppError("REPORT_INPUT_INVALID", "报告输入结构不正确，未生成报告。", 422) from None
+        if len(execution.model_dump_json().encode()) > 4 * 1024 * 1024:
+            raise AppError("REPORT_INPUT_TOO_LARGE", "计算结果过大，请缩小返回结果范围并明确截断信息。", 422)
+        checked, descriptions = prepare(intent, validated, execution, profile, self.registry)
+        tasks = {task.task_id: task for task in checked.plan.tasks}
+        with trace.span('evidence_builder') as stage:
+            evidence = EvidenceBuilder().build(execution, profile, descriptions)
+            stage.attributes(evidence_count=len(evidence))
+            trace.snapshot('evidence',[e.model_dump(mode='json') for e in evidence],lambda:evidence_projection(evidence))
+        # Stable task priority ordering, retaining evidence IDs and row references.
+        evidence.sort(key=lambda item: (tasks[item.task_id].priority, item.evidence_id))
+        evidenced_tasks = {item.task_id for item in evidence}
+        uncompleted = [UncompletedTask(task_id=t.task_id, title=tasks[t.task_id].title,
+            priority=tasks[t.task_id].priority,
+            reason=t.failure_reason or "结果没有可用于报告的有效数据证据。")
+            for t in execution.tasks if t.status != "success" or t.task_id not in evidenced_tasks]
+        core_tasks = [task for task in tasks.values() if task.priority == "P0"]
+        core_success = [task for task in core_tasks if task.task_id in evidenced_tasks]
+        coverage = "blocked" if not core_success else ("partial" if checked.coverage_status != "complete" or len(core_success) < len(core_tasks) else "complete")
+        confirmed, resolved = False, set()
+        if approved_snapshot is not None:
+            from app.domain.execution import ApprovedExecutionSnapshot
+            approved = ApprovedExecutionSnapshot.model_validate(approved_snapshot.model_dump())
+            plain = ParsedIntent.model_validate({key: getattr(intent, key) for key in ParsedIntent.model_fields})
+            if (execution.source != "engine" or approved.status != "approved" or
+                    approved.approval_id != execution.approval_id or approved.session_id != execution.session_id or
+                    approved.validated_plan != validated or approved.intent != plain):
+                raise AppError("REPORT_APPROVAL_MISMATCH", "报告输入与批准快照不一致。", 422)
+            confirmed = approved.constraints_confirmed
+            resolved = set(approved.resolved_uncertainty_ids)
+        unresolved = [u for u in intent.uncertainties if u.id not in resolved]
+        constraints = intent.constraints
+        pending = ([constraints.time_range] if constraints.time_range else []) + constraints.filters + constraints.metric_requirements + constraints.analysis_limits
+        if coverage == "complete" and ((pending and not confirmed) or any(u.action == "defer" for u in unresolved)):
+            coverage = "partial"
+        limitations = ["结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+            "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"]
+        if execution.source == "imported":
+            limitations.append("计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。")
+        limitations.extend(issue.message[:2000] for issue in profile.quality_issues[:20])
+        used_metrics = {metric.field for desc in descriptions.values() for metric in desc.metrics.values() if metric.field}
+        limitations.extend(f'上传范围内，{field.display_name[:100]}有 {field.missing_count} 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。'
+            for field in profile.fields if field.field_id in used_metrics and field.missing_count)
+        limitations.extend(f'未完成任务：{t.title[:300]}；{t.reason[:600]}' for t in uncompleted)
+        limitations.extend(f"待解决事项：{u.description}"[:2000] for u in unresolved)
+        limitations.extend(f"需求约束尚需对照执行口径确认：{item.raw_text}"[:2000] for item in pending if not confirmed)
+        for t in execution.tasks:
+            if t.result and t.result.truncated:
+                limitations.append(f"{tasks[t.task_id].title[:200]}：仅返回部分结果，不能据此推断未返回分组的排名或总体占比。")
+            if t.result and any(step.operation == "top_n" for step in tasks[t.task_id].steps):
+                limitations.append(f"{tasks[t.task_id].title[:200]}：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。")
+        with trace.span('chart_builder') as chart_stage:
+            charts = VisualizationBuilder().build(execution, descriptions, evidence, tasks, intent)
+            chart_stage.attributes(chart_count=len(charts))
+        charts.sort(key=lambda chart: (tasks[chart.task_id].priority, chart.chart_id))
+        from app.review.presentation import PlanPresentationMapper
+        mapper = PlanPresentationMapper(profile)
+        llm, insights, rejected_insights, text_validation = None, [], [], []
+        candidate_repairs = []
+        missing_core_metrics = []
+        if evidence:
+            # Only bounded structured evidence, never all result rows / raw dataset.
+            selected = select_evidence(evidence, tasks)
+            required_groups = [{"task_id": tid, "data_ref": ref, "result_field": field,
+                "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected
+                    if tasks[e.task_id].priority == 'P0' and e.evidence_type != 'coverage')]
+            if len(required_groups) > 8:
+                raise AppError('REPORT_CORE_SCOPE_TOO_LARGE', '核心指标组超过单次报告可覆盖范围，原计算结果保留；请缩小分析范围。', 422)
+            allowed_limitations = list(dict.fromkeys(["结论仅适用于当前返回范围，不能外推整体市场。", *limitations]))
+            # These exact deterministic statements may contain verified quality
+            # counts. Free model prose still cannot add numeric assertions.
+            limitations = list(dict.fromkeys([*limitations, allowed_limitations[0]]))
+            limitation_pool = {f'L{index+1:04d}': text for index, text in enumerate(allowed_limitations)}
+            recommendation_options = build_catalog(selected, tasks, profile, intent)
+            payload = {"analysis_goal": intent.analysis_goal.model_dump(), "goal_coverage": coverage,
+                "draft_schema_version": "insight-selection-v2",
+                "required_core_groups": required_groups,
+                "allowed_limitations": allowed_limitations,
+                "recommendation_options": list(recommendation_options.values()),
+                "limitation_pool": limitation_pool,
+                "original_query": (original_query or intent.analysis_goal.business_goal or '')[:2000],
+                "constraints": intent.constraints.model_dump(), "constraints_confirmed": confirmed,
+                "scope_context": [{"task_id": t.task_id, "approved_steps": mapper.steps(t)} for t in tasks.values()],
+                "fields": [{"field_id": f.field_id, "name": f.display_name, "logical_type": f.logical_type,
+                            "upload_missing_count": f.missing_count} for f in profile.fields],
+                "uncompleted_tasks": [t.model_dump() for t in uncompleted],
+                "task_sample_context": [{"task_id": t.task_id, "status": t.status,
+                    "valid_sample_count": t.valid_sample_count, "sample_definition": t.sample_definition,
+                    "metric_valid_counts": t.execution_metadata.metric_valid_counts if t.execution_metadata else {}}
+                    for t in execution.tasks],
+                "tasks": [{"task_id": t.task_id, "priority": t.priority, "business_question": t.business_question}
+                          for t in tasks.values() if t.task_id in evidenced_tasks],
+                "evidence": [item.model_dump() for item in selected],
+                "evidence_groups": [{"task_id": tid, "data_ref": ref, "result_field": field,
+                    "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                    for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected)],
+                "limitations": limitations}
+            instruction = json.dumps(payload, ensure_ascii=False)
+            if len(instruction.encode()) > 160 * 1024:
+                raise AppError("REPORT_CONTEXT_TOO_LARGE", "证据上下文过大，未调用模型。", 422)
+            request = LLMRequest(purpose="report_insights_v1", system_prompt=SYSTEM_PROMPT,
+                instruction=instruction, response_schema=selection_schema(selected, recommendation_options, limitation_pool, required_groups), enable_thinking=self.enable_thinking)
+            with trace.span('insight_generator', {'purpose': request.purpose, 'input_bytes': len(instruction.encode()),
+                    'selected_evidence_count': len(selected), 'evidence_refs': [e.evidence_id for e in selected], 'candidate_count': None,
+                    'timeout_seconds': self.timeout_seconds, 'enable_thinking': self.enable_thinking}) as generation:
+                try:
+                    if self.prompt_source:
+                        request = request.model_copy(update={'call_binding':self.prompt_source.binding(uuid4().hex,trace=trace)})
+                    generation.event('llm.started', purpose=request.purpose)
+                    response = await asyncio.wait_for(self.provider.generate(request), timeout=self.timeout_seconds)
+                    trace.snapshot('llm_output',response.text,lambda:llm_projection(response))
+                    generation.event('llm.returned', provider=response.provider, model=response.model,
+                        is_mock=response.is_mock, output_bytes=len(response.text.encode()),
+                        call_id=response.call_id,request_snapshot_id=response.request_snapshot_id,
+                        template_snapshot_id=response.template_snapshot_id)
+                except TimeoutError:
+                    raise AppError("LLM_TIMEOUT", "报告洞察生成超时，未用虚构内容替代。", 504) from None
+                except AppError:
+                    raise
+                except Exception:
+                    raise AppError("REPORT_LLM_CALL_FAILED", "报告洞察生成失败。", 502) from None
+                try:
+                    if len(response.text.encode()) > 64 * 1024:
+                        raise ValueError("Oversized response")
+                    draft = InsightSelection.model_validate(strict_json(response.text))
+                except (ValidationError, ValueError, TypeError, AttributeError):
+>                   raise AppError("REPORT_LLM_INVALID_OUTPUT", "洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。", 502) from None
+E                   app.domain.errors.AppError: ('REPORT_LLM_INVALID_OUTPUT', '洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。', 502)
+
+backend/app/services/analysis_report.py:178: AppError
+_ test_invalid_candidate_is_disclosed_without_losing_valid_facts_or_fake_success _
+
+    def test_invalid_candidate_is_disclosed_without_losing_valid_facts_or_fake_success():
+        inputs=case();e,_,_=artifacts(inputs);ranks=[x for x in e if x.evidence_type=='ranking']
+        output=draft(ranks[0].evidence_id,[ranks[0].evidence_id],'highlight').model_dump()
+        output['insights']+=draft(ranks[1].evidence_id,[ranks[1].evidence_id],'highlight','利润高于其他城市。').model_dump()['insights']
+>       report=asyncio.run(AnalysisReportService(ReportProvider(output),CapabilityRegistry()).generate(*inputs))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_insight_composition.py:163: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:204: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:127: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.services.analysis_report.AnalysisReportService object at 0x1514fb8c0>
+intent = ParsedIntent(analysis_mode=<AnalysisMode.GOAL_DRIVEN: 'goal_driven'>, next_action='proceed', analysis_goal=AnalysisGoa...time_range=None, filters=[], metric_requirements=[], analysis_limits=[]), uncertainties=[], clarification_questions=[])
+validated = ValidatedAnalysisPlan(plan=AnalysisPlan(dataset_id='report-dataset', dataset_version='ff79d77c027feb3febca218ab32f6246...8ab32f624669a417d9890dc3ad3408077d04b90f1b', plan_version=1, notice='依据真实画像确定性校验；未执行统计，仍需用户审批。'), intent_snapshot=None)
+execution = ExecutionResultV1(dataset_id='report-dataset', dataset_version='ff79d77c027feb3febca218ab32f624669a417d9890dc3ad340807...，保留缺失分组。', failure_reason=None, result_id=None, result_ref=None, row_count=None, execution_metadata=None, error=None)])
+profile = DatasetProfile(dataset_id='report-dataset', dataset_version='ff79d77c027feb3febca218ab32f624669a417d9890dc3ad3408077d0...9d77c027feb3febca218ab32f624669a417d9890dc3ad3408077d04b90f1b', plan_version=None, notice='从实际上传文件确定性计算；未清洗、未调用 LLM。'))
+approved_snapshot = None, original_query = None
+trace = <app.observability.recorder.TraceContext object at 0x151988550>
+
+    async def generate(self, intent: ParsedIntent, validated: ValidatedAnalysisPlan,
+                       execution: ExecutionResultV1, profile: DatasetProfile, *, approved_snapshot=None, original_query=None, trace=None) -> AnalysisReport:
+        trace = trace or TraceContext(TraceRecorder())
+        # Reparse all input instances; neither model_copy nor caller validation claims are trusted.
+        try:
+            intent = type(intent).model_validate(intent.model_dump())
+            execution = ExecutionResultV1.model_validate(execution.model_dump())
+            validated = ValidatedAnalysisPlan.model_validate(validated.model_dump())
+            profile = DatasetProfile.model_validate(profile.model_dump())
+        except (ValidationError, ValueError, TypeError, AttributeError):
+            raise AppError("REPORT_INPUT_INVALID", "报告输入结构不正确，未生成报告。", 422) from None
+        if len(execution.model_dump_json().encode()) > 4 * 1024 * 1024:
+            raise AppError("REPORT_INPUT_TOO_LARGE", "计算结果过大，请缩小返回结果范围并明确截断信息。", 422)
+        checked, descriptions = prepare(intent, validated, execution, profile, self.registry)
+        tasks = {task.task_id: task for task in checked.plan.tasks}
+        with trace.span('evidence_builder') as stage:
+            evidence = EvidenceBuilder().build(execution, profile, descriptions)
+            stage.attributes(evidence_count=len(evidence))
+            trace.snapshot('evidence',[e.model_dump(mode='json') for e in evidence],lambda:evidence_projection(evidence))
+        # Stable task priority ordering, retaining evidence IDs and row references.
+        evidence.sort(key=lambda item: (tasks[item.task_id].priority, item.evidence_id))
+        evidenced_tasks = {item.task_id for item in evidence}
+        uncompleted = [UncompletedTask(task_id=t.task_id, title=tasks[t.task_id].title,
+            priority=tasks[t.task_id].priority,
+            reason=t.failure_reason or "结果没有可用于报告的有效数据证据。")
+            for t in execution.tasks if t.status != "success" or t.task_id not in evidenced_tasks]
+        core_tasks = [task for task in tasks.values() if task.priority == "P0"]
+        core_success = [task for task in core_tasks if task.task_id in evidenced_tasks]
+        coverage = "blocked" if not core_success else ("partial" if checked.coverage_status != "complete" or len(core_success) < len(core_tasks) else "complete")
+        confirmed, resolved = False, set()
+        if approved_snapshot is not None:
+            from app.domain.execution import ApprovedExecutionSnapshot
+            approved = ApprovedExecutionSnapshot.model_validate(approved_snapshot.model_dump())
+            plain = ParsedIntent.model_validate({key: getattr(intent, key) for key in ParsedIntent.model_fields})
+            if (execution.source != "engine" or approved.status != "approved" or
+                    approved.approval_id != execution.approval_id or approved.session_id != execution.session_id or
+                    approved.validated_plan != validated or approved.intent != plain):
+                raise AppError("REPORT_APPROVAL_MISMATCH", "报告输入与批准快照不一致。", 422)
+            confirmed = approved.constraints_confirmed
+            resolved = set(approved.resolved_uncertainty_ids)
+        unresolved = [u for u in intent.uncertainties if u.id not in resolved]
+        constraints = intent.constraints
+        pending = ([constraints.time_range] if constraints.time_range else []) + constraints.filters + constraints.metric_requirements + constraints.analysis_limits
+        if coverage == "complete" and ((pending and not confirmed) or any(u.action == "defer" for u in unresolved)):
+            coverage = "partial"
+        limitations = ["结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+            "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"]
+        if execution.source == "imported":
+            limitations.append("计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。")
+        limitations.extend(issue.message[:2000] for issue in profile.quality_issues[:20])
+        used_metrics = {metric.field for desc in descriptions.values() for metric in desc.metrics.values() if metric.field}
+        limitations.extend(f'上传范围内，{field.display_name[:100]}有 {field.missing_count} 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。'
+            for field in profile.fields if field.field_id in used_metrics and field.missing_count)
+        limitations.extend(f'未完成任务：{t.title[:300]}；{t.reason[:600]}' for t in uncompleted)
+        limitations.extend(f"待解决事项：{u.description}"[:2000] for u in unresolved)
+        limitations.extend(f"需求约束尚需对照执行口径确认：{item.raw_text}"[:2000] for item in pending if not confirmed)
+        for t in execution.tasks:
+            if t.result and t.result.truncated:
+                limitations.append(f"{tasks[t.task_id].title[:200]}：仅返回部分结果，不能据此推断未返回分组的排名或总体占比。")
+            if t.result and any(step.operation == "top_n" for step in tasks[t.task_id].steps):
+                limitations.append(f"{tasks[t.task_id].title[:200]}：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。")
+        with trace.span('chart_builder') as chart_stage:
+            charts = VisualizationBuilder().build(execution, descriptions, evidence, tasks, intent)
+            chart_stage.attributes(chart_count=len(charts))
+        charts.sort(key=lambda chart: (tasks[chart.task_id].priority, chart.chart_id))
+        from app.review.presentation import PlanPresentationMapper
+        mapper = PlanPresentationMapper(profile)
+        llm, insights, rejected_insights, text_validation = None, [], [], []
+        candidate_repairs = []
+        missing_core_metrics = []
+        if evidence:
+            # Only bounded structured evidence, never all result rows / raw dataset.
+            selected = select_evidence(evidence, tasks)
+            required_groups = [{"task_id": tid, "data_ref": ref, "result_field": field,
+                "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected
+                    if tasks[e.task_id].priority == 'P0' and e.evidence_type != 'coverage')]
+            if len(required_groups) > 8:
+                raise AppError('REPORT_CORE_SCOPE_TOO_LARGE', '核心指标组超过单次报告可覆盖范围，原计算结果保留；请缩小分析范围。', 422)
+            allowed_limitations = list(dict.fromkeys(["结论仅适用于当前返回范围，不能外推整体市场。", *limitations]))
+            # These exact deterministic statements may contain verified quality
+            # counts. Free model prose still cannot add numeric assertions.
+            limitations = list(dict.fromkeys([*limitations, allowed_limitations[0]]))
+            limitation_pool = {f'L{index+1:04d}': text for index, text in enumerate(allowed_limitations)}
+            recommendation_options = build_catalog(selected, tasks, profile, intent)
+            payload = {"analysis_goal": intent.analysis_goal.model_dump(), "goal_coverage": coverage,
+                "draft_schema_version": "insight-selection-v2",
+                "required_core_groups": required_groups,
+                "allowed_limitations": allowed_limitations,
+                "recommendation_options": list(recommendation_options.values()),
+                "limitation_pool": limitation_pool,
+                "original_query": (original_query or intent.analysis_goal.business_goal or '')[:2000],
+                "constraints": intent.constraints.model_dump(), "constraints_confirmed": confirmed,
+                "scope_context": [{"task_id": t.task_id, "approved_steps": mapper.steps(t)} for t in tasks.values()],
+                "fields": [{"field_id": f.field_id, "name": f.display_name, "logical_type": f.logical_type,
+                            "upload_missing_count": f.missing_count} for f in profile.fields],
+                "uncompleted_tasks": [t.model_dump() for t in uncompleted],
+                "task_sample_context": [{"task_id": t.task_id, "status": t.status,
+                    "valid_sample_count": t.valid_sample_count, "sample_definition": t.sample_definition,
+                    "metric_valid_counts": t.execution_metadata.metric_valid_counts if t.execution_metadata else {}}
+                    for t in execution.tasks],
+                "tasks": [{"task_id": t.task_id, "priority": t.priority, "business_question": t.business_question}
+                          for t in tasks.values() if t.task_id in evidenced_tasks],
+                "evidence": [item.model_dump() for item in selected],
+                "evidence_groups": [{"task_id": tid, "data_ref": ref, "result_field": field,
+                    "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                    for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected)],
+                "limitations": limitations}
+            instruction = json.dumps(payload, ensure_ascii=False)
+            if len(instruction.encode()) > 160 * 1024:
+                raise AppError("REPORT_CONTEXT_TOO_LARGE", "证据上下文过大，未调用模型。", 422)
+            request = LLMRequest(purpose="report_insights_v1", system_prompt=SYSTEM_PROMPT,
+                instruction=instruction, response_schema=selection_schema(selected, recommendation_options, limitation_pool, required_groups), enable_thinking=self.enable_thinking)
+            with trace.span('insight_generator', {'purpose': request.purpose, 'input_bytes': len(instruction.encode()),
+                    'selected_evidence_count': len(selected), 'evidence_refs': [e.evidence_id for e in selected], 'candidate_count': None,
+                    'timeout_seconds': self.timeout_seconds, 'enable_thinking': self.enable_thinking}) as generation:
+                try:
+                    if self.prompt_source:
+                        request = request.model_copy(update={'call_binding':self.prompt_source.binding(uuid4().hex,trace=trace)})
+                    generation.event('llm.started', purpose=request.purpose)
+                    response = await asyncio.wait_for(self.provider.generate(request), timeout=self.timeout_seconds)
+                    trace.snapshot('llm_output',response.text,lambda:llm_projection(response))
+                    generation.event('llm.returned', provider=response.provider, model=response.model,
+                        is_mock=response.is_mock, output_bytes=len(response.text.encode()),
+                        call_id=response.call_id,request_snapshot_id=response.request_snapshot_id,
+                        template_snapshot_id=response.template_snapshot_id)
+                except TimeoutError:
+                    raise AppError("LLM_TIMEOUT", "报告洞察生成超时，未用虚构内容替代。", 504) from None
+                except AppError:
+                    raise
+                except Exception:
+                    raise AppError("REPORT_LLM_CALL_FAILED", "报告洞察生成失败。", 502) from None
+                try:
+                    if len(response.text.encode()) > 64 * 1024:
+                        raise ValueError("Oversized response")
+                    draft = InsightSelection.model_validate(strict_json(response.text))
+                except (ValidationError, ValueError, TypeError, AttributeError):
+>                   raise AppError("REPORT_LLM_INVALID_OUTPUT", "洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。", 502) from None
+E                   app.domain.errors.AppError: ('REPORT_LLM_INVALID_OUTPUT', '洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。', 502)
+
+backend/app/services/analysis_report.py:178: AppError
+_______ test_saved_report_fact_finding_and_summary_are_not_three_copies ________
+
+    def test_saved_report_fact_finding_and_summary_are_not_three_copies():
+        inputs=case();e,t,tables=artifacts(inputs);r=next(x for x in e if x.value.get('comparison_kind')=='relative_lead')
+        absolute=next(x for x in e if x.evidence_type=='difference')
+        d=draft(r.evidence_id,[absolute.evidence_id,r.evidence_id])
+>       report=asyncio.run(AnalysisReportService(ReportProvider(d.model_dump()),CapabilityRegistry()).generate(*inputs))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_insight_reliability.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:204: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:127: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.services.analysis_report.AnalysisReportService object at 0x14a74f310>
+intent = ParsedIntent(analysis_mode=<AnalysisMode.GOAL_DRIVEN: 'goal_driven'>, next_action='proceed', analysis_goal=AnalysisGoa...time_range=None, filters=[], metric_requirements=[], analysis_limits=[]), uncertainties=[], clarification_questions=[])
+validated = ValidatedAnalysisPlan(plan=AnalysisPlan(dataset_id='report-dataset', dataset_version='ff79d77c027feb3febca218ab32f6246...8ab32f624669a417d9890dc3ad3408077d04b90f1b', plan_version=1, notice='依据真实画像确定性校验；未执行统计，仍需用户审批。'), intent_snapshot=None)
+execution = ExecutionResultV1(dataset_id='report-dataset', dataset_version='ff79d77c027feb3febca218ab32f624669a417d9890dc3ad340807...，保留缺失分组。', failure_reason=None, result_id=None, result_ref=None, row_count=None, execution_metadata=None, error=None)])
+profile = DatasetProfile(dataset_id='report-dataset', dataset_version='ff79d77c027feb3febca218ab32f624669a417d9890dc3ad3408077d0...9d77c027feb3febca218ab32f624669a417d9890dc3ad3408077d04b90f1b', plan_version=None, notice='从实际上传文件确定性计算；未清洗、未调用 LLM。'))
+approved_snapshot = None, original_query = None
+trace = <app.observability.recorder.TraceContext object at 0x15198b250>
+
+    async def generate(self, intent: ParsedIntent, validated: ValidatedAnalysisPlan,
+                       execution: ExecutionResultV1, profile: DatasetProfile, *, approved_snapshot=None, original_query=None, trace=None) -> AnalysisReport:
+        trace = trace or TraceContext(TraceRecorder())
+        # Reparse all input instances; neither model_copy nor caller validation claims are trusted.
+        try:
+            intent = type(intent).model_validate(intent.model_dump())
+            execution = ExecutionResultV1.model_validate(execution.model_dump())
+            validated = ValidatedAnalysisPlan.model_validate(validated.model_dump())
+            profile = DatasetProfile.model_validate(profile.model_dump())
+        except (ValidationError, ValueError, TypeError, AttributeError):
+            raise AppError("REPORT_INPUT_INVALID", "报告输入结构不正确，未生成报告。", 422) from None
+        if len(execution.model_dump_json().encode()) > 4 * 1024 * 1024:
+            raise AppError("REPORT_INPUT_TOO_LARGE", "计算结果过大，请缩小返回结果范围并明确截断信息。", 422)
+        checked, descriptions = prepare(intent, validated, execution, profile, self.registry)
+        tasks = {task.task_id: task for task in checked.plan.tasks}
+        with trace.span('evidence_builder') as stage:
+            evidence = EvidenceBuilder().build(execution, profile, descriptions)
+            stage.attributes(evidence_count=len(evidence))
+            trace.snapshot('evidence',[e.model_dump(mode='json') for e in evidence],lambda:evidence_projection(evidence))
+        # Stable task priority ordering, retaining evidence IDs and row references.
+        evidence.sort(key=lambda item: (tasks[item.task_id].priority, item.evidence_id))
+        evidenced_tasks = {item.task_id for item in evidence}
+        uncompleted = [UncompletedTask(task_id=t.task_id, title=tasks[t.task_id].title,
+            priority=tasks[t.task_id].priority,
+            reason=t.failure_reason or "结果没有可用于报告的有效数据证据。")
+            for t in execution.tasks if t.status != "success" or t.task_id not in evidenced_tasks]
+        core_tasks = [task for task in tasks.values() if task.priority == "P0"]
+        core_success = [task for task in core_tasks if task.task_id in evidenced_tasks]
+        coverage = "blocked" if not core_success else ("partial" if checked.coverage_status != "complete" or len(core_success) < len(core_tasks) else "complete")
+        confirmed, resolved = False, set()
+        if approved_snapshot is not None:
+            from app.domain.execution import ApprovedExecutionSnapshot
+            approved = ApprovedExecutionSnapshot.model_validate(approved_snapshot.model_dump())
+            plain = ParsedIntent.model_validate({key: getattr(intent, key) for key in ParsedIntent.model_fields})
+            if (execution.source != "engine" or approved.status != "approved" or
+                    approved.approval_id != execution.approval_id or approved.session_id != execution.session_id or
+                    approved.validated_plan != validated or approved.intent != plain):
+                raise AppError("REPORT_APPROVAL_MISMATCH", "报告输入与批准快照不一致。", 422)
+            confirmed = approved.constraints_confirmed
+            resolved = set(approved.resolved_uncertainty_ids)
+        unresolved = [u for u in intent.uncertainties if u.id not in resolved]
+        constraints = intent.constraints
+        pending = ([constraints.time_range] if constraints.time_range else []) + constraints.filters + constraints.metric_requirements + constraints.analysis_limits
+        if coverage == "complete" and ((pending and not confirmed) or any(u.action == "defer" for u in unresolved)):
+            coverage = "partial"
+        limitations = ["结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+            "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"]
+        if execution.source == "imported":
+            limitations.append("计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。")
+        limitations.extend(issue.message[:2000] for issue in profile.quality_issues[:20])
+        used_metrics = {metric.field for desc in descriptions.values() for metric in desc.metrics.values() if metric.field}
+        limitations.extend(f'上传范围内，{field.display_name[:100]}有 {field.missing_count} 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。'
+            for field in profile.fields if field.field_id in used_metrics and field.missing_count)
+        limitations.extend(f'未完成任务：{t.title[:300]}；{t.reason[:600]}' for t in uncompleted)
+        limitations.extend(f"待解决事项：{u.description}"[:2000] for u in unresolved)
+        limitations.extend(f"需求约束尚需对照执行口径确认：{item.raw_text}"[:2000] for item in pending if not confirmed)
+        for t in execution.tasks:
+            if t.result and t.result.truncated:
+                limitations.append(f"{tasks[t.task_id].title[:200]}：仅返回部分结果，不能据此推断未返回分组的排名或总体占比。")
+            if t.result and any(step.operation == "top_n" for step in tasks[t.task_id].steps):
+                limitations.append(f"{tasks[t.task_id].title[:200]}：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。")
+        with trace.span('chart_builder') as chart_stage:
+            charts = VisualizationBuilder().build(execution, descriptions, evidence, tasks, intent)
+            chart_stage.attributes(chart_count=len(charts))
+        charts.sort(key=lambda chart: (tasks[chart.task_id].priority, chart.chart_id))
+        from app.review.presentation import PlanPresentationMapper
+        mapper = PlanPresentationMapper(profile)
+        llm, insights, rejected_insights, text_validation = None, [], [], []
+        candidate_repairs = []
+        missing_core_metrics = []
+        if evidence:
+            # Only bounded structured evidence, never all result rows / raw dataset.
+            selected = select_evidence(evidence, tasks)
+            required_groups = [{"task_id": tid, "data_ref": ref, "result_field": field,
+                "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected
+                    if tasks[e.task_id].priority == 'P0' and e.evidence_type != 'coverage')]
+            if len(required_groups) > 8:
+                raise AppError('REPORT_CORE_SCOPE_TOO_LARGE', '核心指标组超过单次报告可覆盖范围，原计算结果保留；请缩小分析范围。', 422)
+            allowed_limitations = list(dict.fromkeys(["结论仅适用于当前返回范围，不能外推整体市场。", *limitations]))
+            # These exact deterministic statements may contain verified quality
+            # counts. Free model prose still cannot add numeric assertions.
+            limitations = list(dict.fromkeys([*limitations, allowed_limitations[0]]))
+            limitation_pool = {f'L{index+1:04d}': text for index, text in enumerate(allowed_limitations)}
+            recommendation_options = build_catalog(selected, tasks, profile, intent)
+            payload = {"analysis_goal": intent.analysis_goal.model_dump(), "goal_coverage": coverage,
+                "draft_schema_version": "insight-selection-v2",
+                "required_core_groups": required_groups,
+                "allowed_limitations": allowed_limitations,
+                "recommendation_options": list(recommendation_options.values()),
+                "limitation_pool": limitation_pool,
+                "original_query": (original_query or intent.analysis_goal.business_goal or '')[:2000],
+                "constraints": intent.constraints.model_dump(), "constraints_confirmed": confirmed,
+                "scope_context": [{"task_id": t.task_id, "approved_steps": mapper.steps(t)} for t in tasks.values()],
+                "fields": [{"field_id": f.field_id, "name": f.display_name, "logical_type": f.logical_type,
+                            "upload_missing_count": f.missing_count} for f in profile.fields],
+                "uncompleted_tasks": [t.model_dump() for t in uncompleted],
+                "task_sample_context": [{"task_id": t.task_id, "status": t.status,
+                    "valid_sample_count": t.valid_sample_count, "sample_definition": t.sample_definition,
+                    "metric_valid_counts": t.execution_metadata.metric_valid_counts if t.execution_metadata else {}}
+                    for t in execution.tasks],
+                "tasks": [{"task_id": t.task_id, "priority": t.priority, "business_question": t.business_question}
+                          for t in tasks.values() if t.task_id in evidenced_tasks],
+                "evidence": [item.model_dump() for item in selected],
+                "evidence_groups": [{"task_id": tid, "data_ref": ref, "result_field": field,
+                    "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                    for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected)],
+                "limitations": limitations}
+            instruction = json.dumps(payload, ensure_ascii=False)
+            if len(instruction.encode()) > 160 * 1024:
+                raise AppError("REPORT_CONTEXT_TOO_LARGE", "证据上下文过大，未调用模型。", 422)
+            request = LLMRequest(purpose="report_insights_v1", system_prompt=SYSTEM_PROMPT,
+                instruction=instruction, response_schema=selection_schema(selected, recommendation_options, limitation_pool, required_groups), enable_thinking=self.enable_thinking)
+            with trace.span('insight_generator', {'purpose': request.purpose, 'input_bytes': len(instruction.encode()),
+                    'selected_evidence_count': len(selected), 'evidence_refs': [e.evidence_id for e in selected], 'candidate_count': None,
+                    'timeout_seconds': self.timeout_seconds, 'enable_thinking': self.enable_thinking}) as generation:
+                try:
+                    if self.prompt_source:
+                        request = request.model_copy(update={'call_binding':self.prompt_source.binding(uuid4().hex,trace=trace)})
+                    generation.event('llm.started', purpose=request.purpose)
+                    response = await asyncio.wait_for(self.provider.generate(request), timeout=self.timeout_seconds)
+                    trace.snapshot('llm_output',response.text,lambda:llm_projection(response))
+                    generation.event('llm.returned', provider=response.provider, model=response.model,
+                        is_mock=response.is_mock, output_bytes=len(response.text.encode()),
+                        call_id=response.call_id,request_snapshot_id=response.request_snapshot_id,
+                        template_snapshot_id=response.template_snapshot_id)
+                except TimeoutError:
+                    raise AppError("LLM_TIMEOUT", "报告洞察生成超时，未用虚构内容替代。", 504) from None
+                except AppError:
+                    raise
+                except Exception:
+                    raise AppError("REPORT_LLM_CALL_FAILED", "报告洞察生成失败。", 502) from None
+                try:
+                    if len(response.text.encode()) > 64 * 1024:
+                        raise ValueError("Oversized response")
+                    draft = InsightSelection.model_validate(strict_json(response.text))
+                except (ValidationError, ValueError, TypeError, AttributeError):
+>                   raise AppError("REPORT_LLM_INVALID_OUTPUT", "洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。", 502) from None
+E                   app.domain.errors.AppError: ('REPORT_LLM_INVALID_OUTPUT', '洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。', 502)
+
+backend/app/services/analysis_report.py:178: AppError
+_____ test_actual_http_body_equals_persisted_snapshot_and_restart[report] ______
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-219/test_actual_http_body_equals_p2')
+node = 'report'
+
+    @pytest.mark.parametrize('node',['intent','planner','report'])
+    def test_actual_http_body_equals_persisted_snapshot_and_restart(tmp_path,node):
+        output = intent_payload(business_goal='比较城市岗位数量') if node=='intent' else ({'tasks':[task()]} if node=='planner' else report_output)
+        llm,repo,bodies=provider(tmp_path,[output])
+        profile=recruiting_profile()
+        if node=='intent':
+            service=IntentParserService(llm,enable_thinking=False)
+            result=asyncio.run(service.parse('比较城市岗位数量',profile))
+            assert result.next_action=='proceed'
+        elif node=='planner':
+            service=AnalysisPlannerService(llm,CapabilityRegistry())
+            intent=report_case()[0]
+            result=asyncio.run(service.plan(intent,profile))
+            assert result.coverage_status=='complete'
+        else:
+            service=AnalysisReportService(llm,CapabilityRegistry())
+>           result=asyncio.run(service.generate(*report_case()))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_prompt_registry.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:204: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:127: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.services.analysis_report.AnalysisReportService object at 0x1553cd320>
+intent = ParsedIntent(analysis_mode=<AnalysisMode.GOAL_DRIVEN: 'goal_driven'>, next_action='proceed', analysis_goal=AnalysisGoa...time_range=None, filters=[], metric_requirements=[], analysis_limits=[]), uncertainties=[], clarification_questions=[])
+validated = ValidatedAnalysisPlan(plan=AnalysisPlan(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc63...734ef3dc6377e6ecae09f0492aa76c03f89ea84c10', plan_version=1, notice='依据真实画像确定性校验；未执行统计，仍需用户审批。'), intent_snapshot=None)
+execution = ExecutionResultV1(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03...，保留缺失分组。', failure_reason=None, result_id=None, result_ref=None, row_count=None, execution_metadata=None, error=None)])
+profile = DatasetProfile(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03f89...e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03f89ea84c10', plan_version=None, notice='从实际上传文件确定性计算；未清洗、未调用 LLM。'))
+approved_snapshot = None, original_query = None
+trace = <app.observability.recorder.TraceContext object at 0x14f1827b0>
+
+    async def generate(self, intent: ParsedIntent, validated: ValidatedAnalysisPlan,
+                       execution: ExecutionResultV1, profile: DatasetProfile, *, approved_snapshot=None, original_query=None, trace=None) -> AnalysisReport:
+        trace = trace or TraceContext(TraceRecorder())
+        # Reparse all input instances; neither model_copy nor caller validation claims are trusted.
+        try:
+            intent = type(intent).model_validate(intent.model_dump())
+            execution = ExecutionResultV1.model_validate(execution.model_dump())
+            validated = ValidatedAnalysisPlan.model_validate(validated.model_dump())
+            profile = DatasetProfile.model_validate(profile.model_dump())
+        except (ValidationError, ValueError, TypeError, AttributeError):
+            raise AppError("REPORT_INPUT_INVALID", "报告输入结构不正确，未生成报告。", 422) from None
+        if len(execution.model_dump_json().encode()) > 4 * 1024 * 1024:
+            raise AppError("REPORT_INPUT_TOO_LARGE", "计算结果过大，请缩小返回结果范围并明确截断信息。", 422)
+        checked, descriptions = prepare(intent, validated, execution, profile, self.registry)
+        tasks = {task.task_id: task for task in checked.plan.tasks}
+        with trace.span('evidence_builder') as stage:
+            evidence = EvidenceBuilder().build(execution, profile, descriptions)
+            stage.attributes(evidence_count=len(evidence))
+            trace.snapshot('evidence',[e.model_dump(mode='json') for e in evidence],lambda:evidence_projection(evidence))
+        # Stable task priority ordering, retaining evidence IDs and row references.
+        evidence.sort(key=lambda item: (tasks[item.task_id].priority, item.evidence_id))
+        evidenced_tasks = {item.task_id for item in evidence}
+        uncompleted = [UncompletedTask(task_id=t.task_id, title=tasks[t.task_id].title,
+            priority=tasks[t.task_id].priority,
+            reason=t.failure_reason or "结果没有可用于报告的有效数据证据。")
+            for t in execution.tasks if t.status != "success" or t.task_id not in evidenced_tasks]
+        core_tasks = [task for task in tasks.values() if task.priority == "P0"]
+        core_success = [task for task in core_tasks if task.task_id in evidenced_tasks]
+        coverage = "blocked" if not core_success else ("partial" if checked.coverage_status != "complete" or len(core_success) < len(core_tasks) else "complete")
+        confirmed, resolved = False, set()
+        if approved_snapshot is not None:
+            from app.domain.execution import ApprovedExecutionSnapshot
+            approved = ApprovedExecutionSnapshot.model_validate(approved_snapshot.model_dump())
+            plain = ParsedIntent.model_validate({key: getattr(intent, key) for key in ParsedIntent.model_fields})
+            if (execution.source != "engine" or approved.status != "approved" or
+                    approved.approval_id != execution.approval_id or approved.session_id != execution.session_id or
+                    approved.validated_plan != validated or approved.intent != plain):
+                raise AppError("REPORT_APPROVAL_MISMATCH", "报告输入与批准快照不一致。", 422)
+            confirmed = approved.constraints_confirmed
+            resolved = set(approved.resolved_uncertainty_ids)
+        unresolved = [u for u in intent.uncertainties if u.id not in resolved]
+        constraints = intent.constraints
+        pending = ([constraints.time_range] if constraints.time_range else []) + constraints.filters + constraints.metric_requirements + constraints.analysis_limits
+        if coverage == "complete" and ((pending and not confirmed) or any(u.action == "defer" for u in unresolved)):
+            coverage = "partial"
+        limitations = ["结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+            "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"]
+        if execution.source == "imported":
+            limitations.append("计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。")
+        limitations.extend(issue.message[:2000] for issue in profile.quality_issues[:20])
+        used_metrics = {metric.field for desc in descriptions.values() for metric in desc.metrics.values() if metric.field}
+        limitations.extend(f'上传范围内，{field.display_name[:100]}有 {field.missing_count} 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。'
+            for field in profile.fields if field.field_id in used_metrics and field.missing_count)
+        limitations.extend(f'未完成任务：{t.title[:300]}；{t.reason[:600]}' for t in uncompleted)
+        limitations.extend(f"待解决事项：{u.description}"[:2000] for u in unresolved)
+        limitations.extend(f"需求约束尚需对照执行口径确认：{item.raw_text}"[:2000] for item in pending if not confirmed)
+        for t in execution.tasks:
+            if t.result and t.result.truncated:
+                limitations.append(f"{tasks[t.task_id].title[:200]}：仅返回部分结果，不能据此推断未返回分组的排名或总体占比。")
+            if t.result and any(step.operation == "top_n" for step in tasks[t.task_id].steps):
+                limitations.append(f"{tasks[t.task_id].title[:200]}：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。")
+        with trace.span('chart_builder') as chart_stage:
+            charts = VisualizationBuilder().build(execution, descriptions, evidence, tasks, intent)
+            chart_stage.attributes(chart_count=len(charts))
+        charts.sort(key=lambda chart: (tasks[chart.task_id].priority, chart.chart_id))
+        from app.review.presentation import PlanPresentationMapper
+        mapper = PlanPresentationMapper(profile)
+        llm, insights, rejected_insights, text_validation = None, [], [], []
+        candidate_repairs = []
+        missing_core_metrics = []
+        if evidence:
+            # Only bounded structured evidence, never all result rows / raw dataset.
+            selected = select_evidence(evidence, tasks)
+            required_groups = [{"task_id": tid, "data_ref": ref, "result_field": field,
+                "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected
+                    if tasks[e.task_id].priority == 'P0' and e.evidence_type != 'coverage')]
+            if len(required_groups) > 8:
+                raise AppError('REPORT_CORE_SCOPE_TOO_LARGE', '核心指标组超过单次报告可覆盖范围，原计算结果保留；请缩小分析范围。', 422)
+            allowed_limitations = list(dict.fromkeys(["结论仅适用于当前返回范围，不能外推整体市场。", *limitations]))
+            # These exact deterministic statements may contain verified quality
+            # counts. Free model prose still cannot add numeric assertions.
+            limitations = list(dict.fromkeys([*limitations, allowed_limitations[0]]))
+            limitation_pool = {f'L{index+1:04d}': text for index, text in enumerate(allowed_limitations)}
+            recommendation_options = build_catalog(selected, tasks, profile, intent)
+            payload = {"analysis_goal": intent.analysis_goal.model_dump(), "goal_coverage": coverage,
+                "draft_schema_version": "insight-selection-v2",
+                "required_core_groups": required_groups,
+                "allowed_limitations": allowed_limitations,
+                "recommendation_options": list(recommendation_options.values()),
+                "limitation_pool": limitation_pool,
+                "original_query": (original_query or intent.analysis_goal.business_goal or '')[:2000],
+                "constraints": intent.constraints.model_dump(), "constraints_confirmed": confirmed,
+                "scope_context": [{"task_id": t.task_id, "approved_steps": mapper.steps(t)} for t in tasks.values()],
+                "fields": [{"field_id": f.field_id, "name": f.display_name, "logical_type": f.logical_type,
+                            "upload_missing_count": f.missing_count} for f in profile.fields],
+                "uncompleted_tasks": [t.model_dump() for t in uncompleted],
+                "task_sample_context": [{"task_id": t.task_id, "status": t.status,
+                    "valid_sample_count": t.valid_sample_count, "sample_definition": t.sample_definition,
+                    "metric_valid_counts": t.execution_metadata.metric_valid_counts if t.execution_metadata else {}}
+                    for t in execution.tasks],
+                "tasks": [{"task_id": t.task_id, "priority": t.priority, "business_question": t.business_question}
+                          for t in tasks.values() if t.task_id in evidenced_tasks],
+                "evidence": [item.model_dump() for item in selected],
+                "evidence_groups": [{"task_id": tid, "data_ref": ref, "result_field": field,
+                    "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                    for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected)],
+                "limitations": limitations}
+            instruction = json.dumps(payload, ensure_ascii=False)
+            if len(instruction.encode()) > 160 * 1024:
+                raise AppError("REPORT_CONTEXT_TOO_LARGE", "证据上下文过大，未调用模型。", 422)
+            request = LLMRequest(purpose="report_insights_v1", system_prompt=SYSTEM_PROMPT,
+                instruction=instruction, response_schema=selection_schema(selected, recommendation_options, limitation_pool, required_groups), enable_thinking=self.enable_thinking)
+            with trace.span('insight_generator', {'purpose': request.purpose, 'input_bytes': len(instruction.encode()),
+                    'selected_evidence_count': len(selected), 'evidence_refs': [e.evidence_id for e in selected], 'candidate_count': None,
+                    'timeout_seconds': self.timeout_seconds, 'enable_thinking': self.enable_thinking}) as generation:
+                try:
+                    if self.prompt_source:
+                        request = request.model_copy(update={'call_binding':self.prompt_source.binding(uuid4().hex,trace=trace)})
+                    generation.event('llm.started', purpose=request.purpose)
+                    response = await asyncio.wait_for(self.provider.generate(request), timeout=self.timeout_seconds)
+                    trace.snapshot('llm_output',response.text,lambda:llm_projection(response))
+                    generation.event('llm.returned', provider=response.provider, model=response.model,
+                        is_mock=response.is_mock, output_bytes=len(response.text.encode()),
+                        call_id=response.call_id,request_snapshot_id=response.request_snapshot_id,
+                        template_snapshot_id=response.template_snapshot_id)
+                except TimeoutError:
+                    raise AppError("LLM_TIMEOUT", "报告洞察生成超时，未用虚构内容替代。", 504) from None
+                except AppError:
+                    raise
+                except Exception:
+                    raise AppError("REPORT_LLM_CALL_FAILED", "报告洞察生成失败。", 502) from None
+                try:
+                    if len(response.text.encode()) > 64 * 1024:
+                        raise ValueError("Oversized response")
+                    draft = InsightSelection.model_validate(strict_json(response.text))
+                except (ValidationError, ValueError, TypeError, AttributeError):
+>                   raise AppError("REPORT_LLM_INVALID_OUTPUT", "洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。", 502) from None
+E                   app.domain.errors.AppError: ('REPORT_LLM_INVALID_OUTPUT', '洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。', 502)
+
+backend/app/services/analysis_report.py:178: AppError
+________ test_dynamic_evidence_schema_and_multiple_calls_share_template ________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-219/test_dynamic_evidence_schema_a0')
+
+    def test_dynamic_evidence_schema_and_multiple_calls_share_template(tmp_path):
+        llm,repo,bodies=provider(tmp_path,[report_output])
+        service=AnalysisReportService(llm,CapabilityRegistry())
+>       asyncio.run(service.generate(*report_case()))
+
+backend/tests/test_prompt_registry.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:204: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:127: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.services.analysis_report.AnalysisReportService object at 0x1257abc40>
+intent = ParsedIntent(analysis_mode=<AnalysisMode.GOAL_DRIVEN: 'goal_driven'>, next_action='proceed', analysis_goal=AnalysisGoa...time_range=None, filters=[], metric_requirements=[], analysis_limits=[]), uncertainties=[], clarification_questions=[])
+validated = ValidatedAnalysisPlan(plan=AnalysisPlan(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc63...734ef3dc6377e6ecae09f0492aa76c03f89ea84c10', plan_version=1, notice='依据真实画像确定性校验；未执行统计，仍需用户审批。'), intent_snapshot=None)
+execution = ExecutionResultV1(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03...，保留缺失分组。', failure_reason=None, result_id=None, result_ref=None, row_count=None, execution_metadata=None, error=None)])
+profile = DatasetProfile(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03f89...e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03f89ea84c10', plan_version=None, notice='从实际上传文件确定性计算；未清洗、未调用 LLM。'))
+approved_snapshot = None, original_query = None
+trace = <app.observability.recorder.TraceContext object at 0x14a226170>
+
+    async def generate(self, intent: ParsedIntent, validated: ValidatedAnalysisPlan,
+                       execution: ExecutionResultV1, profile: DatasetProfile, *, approved_snapshot=None, original_query=None, trace=None) -> AnalysisReport:
+        trace = trace or TraceContext(TraceRecorder())
+        # Reparse all input instances; neither model_copy nor caller validation claims are trusted.
+        try:
+            intent = type(intent).model_validate(intent.model_dump())
+            execution = ExecutionResultV1.model_validate(execution.model_dump())
+            validated = ValidatedAnalysisPlan.model_validate(validated.model_dump())
+            profile = DatasetProfile.model_validate(profile.model_dump())
+        except (ValidationError, ValueError, TypeError, AttributeError):
+            raise AppError("REPORT_INPUT_INVALID", "报告输入结构不正确，未生成报告。", 422) from None
+        if len(execution.model_dump_json().encode()) > 4 * 1024 * 1024:
+            raise AppError("REPORT_INPUT_TOO_LARGE", "计算结果过大，请缩小返回结果范围并明确截断信息。", 422)
+        checked, descriptions = prepare(intent, validated, execution, profile, self.registry)
+        tasks = {task.task_id: task for task in checked.plan.tasks}
+        with trace.span('evidence_builder') as stage:
+            evidence = EvidenceBuilder().build(execution, profile, descriptions)
+            stage.attributes(evidence_count=len(evidence))
+            trace.snapshot('evidence',[e.model_dump(mode='json') for e in evidence],lambda:evidence_projection(evidence))
+        # Stable task priority ordering, retaining evidence IDs and row references.
+        evidence.sort(key=lambda item: (tasks[item.task_id].priority, item.evidence_id))
+        evidenced_tasks = {item.task_id for item in evidence}
+        uncompleted = [UncompletedTask(task_id=t.task_id, title=tasks[t.task_id].title,
+            priority=tasks[t.task_id].priority,
+            reason=t.failure_reason or "结果没有可用于报告的有效数据证据。")
+            for t in execution.tasks if t.status != "success" or t.task_id not in evidenced_tasks]
+        core_tasks = [task for task in tasks.values() if task.priority == "P0"]
+        core_success = [task for task in core_tasks if task.task_id in evidenced_tasks]
+        coverage = "blocked" if not core_success else ("partial" if checked.coverage_status != "complete" or len(core_success) < len(core_tasks) else "complete")
+        confirmed, resolved = False, set()
+        if approved_snapshot is not None:
+            from app.domain.execution import ApprovedExecutionSnapshot
+            approved = ApprovedExecutionSnapshot.model_validate(approved_snapshot.model_dump())
+            plain = ParsedIntent.model_validate({key: getattr(intent, key) for key in ParsedIntent.model_fields})
+            if (execution.source != "engine" or approved.status != "approved" or
+                    approved.approval_id != execution.approval_id or approved.session_id != execution.session_id or
+                    approved.validated_plan != validated or approved.intent != plain):
+                raise AppError("REPORT_APPROVAL_MISMATCH", "报告输入与批准快照不一致。", 422)
+            confirmed = approved.constraints_confirmed
+            resolved = set(approved.resolved_uncertainty_ids)
+        unresolved = [u for u in intent.uncertainties if u.id not in resolved]
+        constraints = intent.constraints
+        pending = ([constraints.time_range] if constraints.time_range else []) + constraints.filters + constraints.metric_requirements + constraints.analysis_limits
+        if coverage == "complete" and ((pending and not confirmed) or any(u.action == "defer" for u in unresolved)):
+            coverage = "partial"
+        limitations = ["结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+            "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"]
+        if execution.source == "imported":
+            limitations.append("计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。")
+        limitations.extend(issue.message[:2000] for issue in profile.quality_issues[:20])
+        used_metrics = {metric.field for desc in descriptions.values() for metric in desc.metrics.values() if metric.field}
+        limitations.extend(f'上传范围内，{field.display_name[:100]}有 {field.missing_count} 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。'
+            for field in profile.fields if field.field_id in used_metrics and field.missing_count)
+        limitations.extend(f'未完成任务：{t.title[:300]}；{t.reason[:600]}' for t in uncompleted)
+        limitations.extend(f"待解决事项：{u.description}"[:2000] for u in unresolved)
+        limitations.extend(f"需求约束尚需对照执行口径确认：{item.raw_text}"[:2000] for item in pending if not confirmed)
+        for t in execution.tasks:
+            if t.result and t.result.truncated:
+                limitations.append(f"{tasks[t.task_id].title[:200]}：仅返回部分结果，不能据此推断未返回分组的排名或总体占比。")
+            if t.result and any(step.operation == "top_n" for step in tasks[t.task_id].steps):
+                limitations.append(f"{tasks[t.task_id].title[:200]}：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。")
+        with trace.span('chart_builder') as chart_stage:
+            charts = VisualizationBuilder().build(execution, descriptions, evidence, tasks, intent)
+            chart_stage.attributes(chart_count=len(charts))
+        charts.sort(key=lambda chart: (tasks[chart.task_id].priority, chart.chart_id))
+        from app.review.presentation import PlanPresentationMapper
+        mapper = PlanPresentationMapper(profile)
+        llm, insights, rejected_insights, text_validation = None, [], [], []
+        candidate_repairs = []
+        missing_core_metrics = []
+        if evidence:
+            # Only bounded structured evidence, never all result rows / raw dataset.
+            selected = select_evidence(evidence, tasks)
+            required_groups = [{"task_id": tid, "data_ref": ref, "result_field": field,
+                "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected
+                    if tasks[e.task_id].priority == 'P0' and e.evidence_type != 'coverage')]
+            if len(required_groups) > 8:
+                raise AppError('REPORT_CORE_SCOPE_TOO_LARGE', '核心指标组超过单次报告可覆盖范围，原计算结果保留；请缩小分析范围。', 422)
+            allowed_limitations = list(dict.fromkeys(["结论仅适用于当前返回范围，不能外推整体市场。", *limitations]))
+            # These exact deterministic statements may contain verified quality
+            # counts. Free model prose still cannot add numeric assertions.
+            limitations = list(dict.fromkeys([*limitations, allowed_limitations[0]]))
+            limitation_pool = {f'L{index+1:04d}': text for index, text in enumerate(allowed_limitations)}
+            recommendation_options = build_catalog(selected, tasks, profile, intent)
+            payload = {"analysis_goal": intent.analysis_goal.model_dump(), "goal_coverage": coverage,
+                "draft_schema_version": "insight-selection-v2",
+                "required_core_groups": required_groups,
+                "allowed_limitations": allowed_limitations,
+                "recommendation_options": list(recommendation_options.values()),
+                "limitation_pool": limitation_pool,
+                "original_query": (original_query or intent.analysis_goal.business_goal or '')[:2000],
+                "constraints": intent.constraints.model_dump(), "constraints_confirmed": confirmed,
+                "scope_context": [{"task_id": t.task_id, "approved_steps": mapper.steps(t)} for t in tasks.values()],
+                "fields": [{"field_id": f.field_id, "name": f.display_name, "logical_type": f.logical_type,
+                            "upload_missing_count": f.missing_count} for f in profile.fields],
+                "uncompleted_tasks": [t.model_dump() for t in uncompleted],
+                "task_sample_context": [{"task_id": t.task_id, "status": t.status,
+                    "valid_sample_count": t.valid_sample_count, "sample_definition": t.sample_definition,
+                    "metric_valid_counts": t.execution_metadata.metric_valid_counts if t.execution_metadata else {}}
+                    for t in execution.tasks],
+                "tasks": [{"task_id": t.task_id, "priority": t.priority, "business_question": t.business_question}
+                          for t in tasks.values() if t.task_id in evidenced_tasks],
+                "evidence": [item.model_dump() for item in selected],
+                "evidence_groups": [{"task_id": tid, "data_ref": ref, "result_field": field,
+                    "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                    for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected)],
+                "limitations": limitations}
+            instruction = json.dumps(payload, ensure_ascii=False)
+            if len(instruction.encode()) > 160 * 1024:
+                raise AppError("REPORT_CONTEXT_TOO_LARGE", "证据上下文过大，未调用模型。", 422)
+            request = LLMRequest(purpose="report_insights_v1", system_prompt=SYSTEM_PROMPT,
+                instruction=instruction, response_schema=selection_schema(selected, recommendation_options, limitation_pool, required_groups), enable_thinking=self.enable_thinking)
+            with trace.span('insight_generator', {'purpose': request.purpose, 'input_bytes': len(instruction.encode()),
+                    'selected_evidence_count': len(selected), 'evidence_refs': [e.evidence_id for e in selected], 'candidate_count': None,
+                    'timeout_seconds': self.timeout_seconds, 'enable_thinking': self.enable_thinking}) as generation:
+                try:
+                    if self.prompt_source:
+                        request = request.model_copy(update={'call_binding':self.prompt_source.binding(uuid4().hex,trace=trace)})
+                    generation.event('llm.started', purpose=request.purpose)
+                    response = await asyncio.wait_for(self.provider.generate(request), timeout=self.timeout_seconds)
+                    trace.snapshot('llm_output',response.text,lambda:llm_projection(response))
+                    generation.event('llm.returned', provider=response.provider, model=response.model,
+                        is_mock=response.is_mock, output_bytes=len(response.text.encode()),
+                        call_id=response.call_id,request_snapshot_id=response.request_snapshot_id,
+                        template_snapshot_id=response.template_snapshot_id)
+                except TimeoutError:
+                    raise AppError("LLM_TIMEOUT", "报告洞察生成超时，未用虚构内容替代。", 504) from None
+                except AppError:
+                    raise
+                except Exception:
+                    raise AppError("REPORT_LLM_CALL_FAILED", "报告洞察生成失败。", 502) from None
+                try:
+                    if len(response.text.encode()) > 64 * 1024:
+                        raise ValueError("Oversized response")
+                    draft = InsightSelection.model_validate(strict_json(response.text))
+                except (ValidationError, ValueError, TypeError, AttributeError):
+>                   raise AppError("REPORT_LLM_INVALID_OUTPUT", "洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。", 502) from None
+E                   app.domain.errors.AppError: ('REPORT_LLM_INVALID_OUTPUT', '洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。', 502)
+
+backend/app/services/analysis_report.py:178: AppError
+______ test_report_span_call_link_and_trace_write_failure_is_independent _______
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-219/test_report_span_call_link_and0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1683ffe70>
+
+    def test_report_span_call_link_and_trace_write_failure_is_independent(tmp_path,monkeypatch):
+        llm,repo,_=provider(tmp_path,[report_output])
+        traces,context=trace_fixture(tmp_path)
+        service=AnalysisReportService(llm,CapabilityRegistry())
+>       result=asyncio.run(service.generate(*report_case(),trace=context))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_prompt_registry.py:277: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:204: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:127: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.services.analysis_report.AnalysisReportService object at 0x14c6965f0>
+intent = ParsedIntent(analysis_mode=<AnalysisMode.GOAL_DRIVEN: 'goal_driven'>, next_action='proceed', analysis_goal=AnalysisGoa...time_range=None, filters=[], metric_requirements=[], analysis_limits=[]), uncertainties=[], clarification_questions=[])
+validated = ValidatedAnalysisPlan(plan=AnalysisPlan(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc63...734ef3dc6377e6ecae09f0492aa76c03f89ea84c10', plan_version=1, notice='依据真实画像确定性校验；未执行统计，仍需用户审批。'), intent_snapshot=None)
+execution = ExecutionResultV1(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03...，保留缺失分组。', failure_reason=None, result_id=None, result_ref=None, row_count=None, execution_metadata=None, error=None)])
+profile = DatasetProfile(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03f89...e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03f89ea84c10', plan_version=None, notice='从实际上传文件确定性计算；未清洗、未调用 LLM。'))
+approved_snapshot = None, original_query = None
+trace = <app.observability.recorder.TraceContext object at 0x1553d3890>
+
+    async def generate(self, intent: ParsedIntent, validated: ValidatedAnalysisPlan,
+                       execution: ExecutionResultV1, profile: DatasetProfile, *, approved_snapshot=None, original_query=None, trace=None) -> AnalysisReport:
+        trace = trace or TraceContext(TraceRecorder())
+        # Reparse all input instances; neither model_copy nor caller validation claims are trusted.
+        try:
+            intent = type(intent).model_validate(intent.model_dump())
+            execution = ExecutionResultV1.model_validate(execution.model_dump())
+            validated = ValidatedAnalysisPlan.model_validate(validated.model_dump())
+            profile = DatasetProfile.model_validate(profile.model_dump())
+        except (ValidationError, ValueError, TypeError, AttributeError):
+            raise AppError("REPORT_INPUT_INVALID", "报告输入结构不正确，未生成报告。", 422) from None
+        if len(execution.model_dump_json().encode()) > 4 * 1024 * 1024:
+            raise AppError("REPORT_INPUT_TOO_LARGE", "计算结果过大，请缩小返回结果范围并明确截断信息。", 422)
+        checked, descriptions = prepare(intent, validated, execution, profile, self.registry)
+        tasks = {task.task_id: task for task in checked.plan.tasks}
+        with trace.span('evidence_builder') as stage:
+            evidence = EvidenceBuilder().build(execution, profile, descriptions)
+            stage.attributes(evidence_count=len(evidence))
+            trace.snapshot('evidence',[e.model_dump(mode='json') for e in evidence],lambda:evidence_projection(evidence))
+        # Stable task priority ordering, retaining evidence IDs and row references.
+        evidence.sort(key=lambda item: (tasks[item.task_id].priority, item.evidence_id))
+        evidenced_tasks = {item.task_id for item in evidence}
+        uncompleted = [UncompletedTask(task_id=t.task_id, title=tasks[t.task_id].title,
+            priority=tasks[t.task_id].priority,
+            reason=t.failure_reason or "结果没有可用于报告的有效数据证据。")
+            for t in execution.tasks if t.status != "success" or t.task_id not in evidenced_tasks]
+        core_tasks = [task for task in tasks.values() if task.priority == "P0"]
+        core_success = [task for task in core_tasks if task.task_id in evidenced_tasks]
+        coverage = "blocked" if not core_success else ("partial" if checked.coverage_status != "complete" or len(core_success) < len(core_tasks) else "complete")
+        confirmed, resolved = False, set()
+        if approved_snapshot is not None:
+            from app.domain.execution import ApprovedExecutionSnapshot
+            approved = ApprovedExecutionSnapshot.model_validate(approved_snapshot.model_dump())
+            plain = ParsedIntent.model_validate({key: getattr(intent, key) for key in ParsedIntent.model_fields})
+            if (execution.source != "engine" or approved.status != "approved" or
+                    approved.approval_id != execution.approval_id or approved.session_id != execution.session_id or
+                    approved.validated_plan != validated or approved.intent != plain):
+                raise AppError("REPORT_APPROVAL_MISMATCH", "报告输入与批准快照不一致。", 422)
+            confirmed = approved.constraints_confirmed
+            resolved = set(approved.resolved_uncertainty_ids)
+        unresolved = [u for u in intent.uncertainties if u.id not in resolved]
+        constraints = intent.constraints
+        pending = ([constraints.time_range] if constraints.time_range else []) + constraints.filters + constraints.metric_requirements + constraints.analysis_limits
+        if coverage == "complete" and ((pending and not confirmed) or any(u.action == "defer" for u in unresolved)):
+            coverage = "partial"
+        limitations = ["结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+            "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"]
+        if execution.source == "imported":
+            limitations.append("计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。")
+        limitations.extend(issue.message[:2000] for issue in profile.quality_issues[:20])
+        used_metrics = {metric.field for desc in descriptions.values() for metric in desc.metrics.values() if metric.field}
+        limitations.extend(f'上传范围内，{field.display_name[:100]}有 {field.missing_count} 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。'
+            for field in profile.fields if field.field_id in used_metrics and field.missing_count)
+        limitations.extend(f'未完成任务：{t.title[:300]}；{t.reason[:600]}' for t in uncompleted)
+        limitations.extend(f"待解决事项：{u.description}"[:2000] for u in unresolved)
+        limitations.extend(f"需求约束尚需对照执行口径确认：{item.raw_text}"[:2000] for item in pending if not confirmed)
+        for t in execution.tasks:
+            if t.result and t.result.truncated:
+                limitations.append(f"{tasks[t.task_id].title[:200]}：仅返回部分结果，不能据此推断未返回分组的排名或总体占比。")
+            if t.result and any(step.operation == "top_n" for step in tasks[t.task_id].steps):
+                limitations.append(f"{tasks[t.task_id].title[:200]}：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。")
+        with trace.span('chart_builder') as chart_stage:
+            charts = VisualizationBuilder().build(execution, descriptions, evidence, tasks, intent)
+            chart_stage.attributes(chart_count=len(charts))
+        charts.sort(key=lambda chart: (tasks[chart.task_id].priority, chart.chart_id))
+        from app.review.presentation import PlanPresentationMapper
+        mapper = PlanPresentationMapper(profile)
+        llm, insights, rejected_insights, text_validation = None, [], [], []
+        candidate_repairs = []
+        missing_core_metrics = []
+        if evidence:
+            # Only bounded structured evidence, never all result rows / raw dataset.
+            selected = select_evidence(evidence, tasks)
+            required_groups = [{"task_id": tid, "data_ref": ref, "result_field": field,
+                "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected
+                    if tasks[e.task_id].priority == 'P0' and e.evidence_type != 'coverage')]
+            if len(required_groups) > 8:
+                raise AppError('REPORT_CORE_SCOPE_TOO_LARGE', '核心指标组超过单次报告可覆盖范围，原计算结果保留；请缩小分析范围。', 422)
+            allowed_limitations = list(dict.fromkeys(["结论仅适用于当前返回范围，不能外推整体市场。", *limitations]))
+            # These exact deterministic statements may contain verified quality
+            # counts. Free model prose still cannot add numeric assertions.
+            limitations = list(dict.fromkeys([*limitations, allowed_limitations[0]]))
+            limitation_pool = {f'L{index+1:04d}': text for index, text in enumerate(allowed_limitations)}
+            recommendation_options = build_catalog(selected, tasks, profile, intent)
+            payload = {"analysis_goal": intent.analysis_goal.model_dump(), "goal_coverage": coverage,
+                "draft_schema_version": "insight-selection-v2",
+                "required_core_groups": required_groups,
+                "allowed_limitations": allowed_limitations,
+                "recommendation_options": list(recommendation_options.values()),
+                "limitation_pool": limitation_pool,
+                "original_query": (original_query or intent.analysis_goal.business_goal or '')[:2000],
+                "constraints": intent.constraints.model_dump(), "constraints_confirmed": confirmed,
+                "scope_context": [{"task_id": t.task_id, "approved_steps": mapper.steps(t)} for t in tasks.values()],
+                "fields": [{"field_id": f.field_id, "name": f.display_name, "logical_type": f.logical_type,
+                            "upload_missing_count": f.missing_count} for f in profile.fields],
+                "uncompleted_tasks": [t.model_dump() for t in uncompleted],
+                "task_sample_context": [{"task_id": t.task_id, "status": t.status,
+                    "valid_sample_count": t.valid_sample_count, "sample_definition": t.sample_definition,
+                    "metric_valid_counts": t.execution_metadata.metric_valid_counts if t.execution_metadata else {}}
+                    for t in execution.tasks],
+                "tasks": [{"task_id": t.task_id, "priority": t.priority, "business_question": t.business_question}
+                          for t in tasks.values() if t.task_id in evidenced_tasks],
+                "evidence": [item.model_dump() for item in selected],
+                "evidence_groups": [{"task_id": tid, "data_ref": ref, "result_field": field,
+                    "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                    for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected)],
+                "limitations": limitations}
+            instruction = json.dumps(payload, ensure_ascii=False)
+            if len(instruction.encode()) > 160 * 1024:
+                raise AppError("REPORT_CONTEXT_TOO_LARGE", "证据上下文过大，未调用模型。", 422)
+            request = LLMRequest(purpose="report_insights_v1", system_prompt=SYSTEM_PROMPT,
+                instruction=instruction, response_schema=selection_schema(selected, recommendation_options, limitation_pool, required_groups), enable_thinking=self.enable_thinking)
+            with trace.span('insight_generator', {'purpose': request.purpose, 'input_bytes': len(instruction.encode()),
+                    'selected_evidence_count': len(selected), 'evidence_refs': [e.evidence_id for e in selected], 'candidate_count': None,
+                    'timeout_seconds': self.timeout_seconds, 'enable_thinking': self.enable_thinking}) as generation:
+                try:
+                    if self.prompt_source:
+                        request = request.model_copy(update={'call_binding':self.prompt_source.binding(uuid4().hex,trace=trace)})
+                    generation.event('llm.started', purpose=request.purpose)
+                    response = await asyncio.wait_for(self.provider.generate(request), timeout=self.timeout_seconds)
+                    trace.snapshot('llm_output',response.text,lambda:llm_projection(response))
+                    generation.event('llm.returned', provider=response.provider, model=response.model,
+                        is_mock=response.is_mock, output_bytes=len(response.text.encode()),
+                        call_id=response.call_id,request_snapshot_id=response.request_snapshot_id,
+                        template_snapshot_id=response.template_snapshot_id)
+                except TimeoutError:
+                    raise AppError("LLM_TIMEOUT", "报告洞察生成超时，未用虚构内容替代。", 504) from None
+                except AppError:
+                    raise
+                except Exception:
+                    raise AppError("REPORT_LLM_CALL_FAILED", "报告洞察生成失败。", 502) from None
+                try:
+                    if len(response.text.encode()) > 64 * 1024:
+                        raise ValueError("Oversized response")
+                    draft = InsightSelection.model_validate(strict_json(response.text))
+                except (ValidationError, ValueError, TypeError, AttributeError):
+>                   raise AppError("REPORT_LLM_INVALID_OUTPUT", "洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。", 502) from None
+E                   app.domain.errors.AppError: ('REPORT_LLM_INVALID_OUTPUT', '洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。', 502)
+
+backend/app/services/analysis_report.py:178: AppError
+_ test_request_body_unchanged_from_frozen_preimplementation_capture[report-R01-imported] _
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-219/test_request_body_unchanged_fr2')
+node = 'report', baseline = 'R01-imported'
+
+    @pytest.mark.parametrize('node,baseline',[('intent','I01-first'),('planner','P01-first'),('report','R01-imported')])
+    def test_request_body_unchanged_from_frozen_preimplementation_capture(tmp_path,node,baseline):
+        from app.domain.intent import ParsedIntent
+        historical=Path(__file__).resolve().parents[2]/'docs/audits/prompt-loading-paths-2026-10-29/captures-v3'
+        expected=json.loads((historical/(baseline+'.json')).read_text())['calls'][0]['request']
+        good=intent_payload(business_goal='比较城市岗位数量',analysis_object='招聘数据')
+        output=good if node=='intent' else ({'tasks':[task()]} if node=='planner' else report_output)
+        llm,repo,bodies=provider(tmp_path,[output])
+        if node=='intent':
+            asyncio.run(IntentParserService(llm,enable_thinking=False).parse('比较城市岗位数量',recruiting_profile(),['保留全部城市']))
+        elif node=='planner':
+            asyncio.run(AnalysisPlannerService(llm,CapabilityRegistry()).plan(ParsedIntent.model_validate(good),recruiting_profile()))
+        else:
+>           asyncio.run(AnalysisReportService(llm,CapabilityRegistry()).generate(*report_case()))
+
+backend/tests/test_prompt_registry.py:324: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:204: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:127: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.services.analysis_report.AnalysisReportService object at 0x154716270>
+intent = ParsedIntent(analysis_mode=<AnalysisMode.GOAL_DRIVEN: 'goal_driven'>, next_action='proceed', analysis_goal=AnalysisGoa...time_range=None, filters=[], metric_requirements=[], analysis_limits=[]), uncertainties=[], clarification_questions=[])
+validated = ValidatedAnalysisPlan(plan=AnalysisPlan(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc63...734ef3dc6377e6ecae09f0492aa76c03f89ea84c10', plan_version=1, notice='依据真实画像确定性校验；未执行统计，仍需用户审批。'), intent_snapshot=None)
+execution = ExecutionResultV1(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03...，保留缺失分组。', failure_reason=None, result_id=None, result_ref=None, row_count=None, execution_metadata=None, error=None)])
+profile = DatasetProfile(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03f89...e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03f89ea84c10', plan_version=None, notice='从实际上传文件确定性计算；未清洗、未调用 LLM。'))
+approved_snapshot = None, original_query = None
+trace = <app.observability.recorder.TraceContext object at 0x14a3ed950>
+
+    async def generate(self, intent: ParsedIntent, validated: ValidatedAnalysisPlan,
+                       execution: ExecutionResultV1, profile: DatasetProfile, *, approved_snapshot=None, original_query=None, trace=None) -> AnalysisReport:
+        trace = trace or TraceContext(TraceRecorder())
+        # Reparse all input instances; neither model_copy nor caller validation claims are trusted.
+        try:
+            intent = type(intent).model_validate(intent.model_dump())
+            execution = ExecutionResultV1.model_validate(execution.model_dump())
+            validated = ValidatedAnalysisPlan.model_validate(validated.model_dump())
+            profile = DatasetProfile.model_validate(profile.model_dump())
+        except (ValidationError, ValueError, TypeError, AttributeError):
+            raise AppError("REPORT_INPUT_INVALID", "报告输入结构不正确，未生成报告。", 422) from None
+        if len(execution.model_dump_json().encode()) > 4 * 1024 * 1024:
+            raise AppError("REPORT_INPUT_TOO_LARGE", "计算结果过大，请缩小返回结果范围并明确截断信息。", 422)
+        checked, descriptions = prepare(intent, validated, execution, profile, self.registry)
+        tasks = {task.task_id: task for task in checked.plan.tasks}
+        with trace.span('evidence_builder') as stage:
+            evidence = EvidenceBuilder().build(execution, profile, descriptions)
+            stage.attributes(evidence_count=len(evidence))
+            trace.snapshot('evidence',[e.model_dump(mode='json') for e in evidence],lambda:evidence_projection(evidence))
+        # Stable task priority ordering, retaining evidence IDs and row references.
+        evidence.sort(key=lambda item: (tasks[item.task_id].priority, item.evidence_id))
+        evidenced_tasks = {item.task_id for item in evidence}
+        uncompleted = [UncompletedTask(task_id=t.task_id, title=tasks[t.task_id].title,
+            priority=tasks[t.task_id].priority,
+            reason=t.failure_reason or "结果没有可用于报告的有效数据证据。")
+            for t in execution.tasks if t.status != "success" or t.task_id not in evidenced_tasks]
+        core_tasks = [task for task in tasks.values() if task.priority == "P0"]
+        core_success = [task for task in core_tasks if task.task_id in evidenced_tasks]
+        coverage = "blocked" if not core_success else ("partial" if checked.coverage_status != "complete" or len(core_success) < len(core_tasks) else "complete")
+        confirmed, resolved = False, set()
+        if approved_snapshot is not None:
+            from app.domain.execution import ApprovedExecutionSnapshot
+            approved = ApprovedExecutionSnapshot.model_validate(approved_snapshot.model_dump())
+            plain = ParsedIntent.model_validate({key: getattr(intent, key) for key in ParsedIntent.model_fields})
+            if (execution.source != "engine" or approved.status != "approved" or
+                    approved.approval_id != execution.approval_id or approved.session_id != execution.session_id or
+                    approved.validated_plan != validated or approved.intent != plain):
+                raise AppError("REPORT_APPROVAL_MISMATCH", "报告输入与批准快照不一致。", 422)
+            confirmed = approved.constraints_confirmed
+            resolved = set(approved.resolved_uncertainty_ids)
+        unresolved = [u for u in intent.uncertainties if u.id not in resolved]
+        constraints = intent.constraints
+        pending = ([constraints.time_range] if constraints.time_range else []) + constraints.filters + constraints.metric_requirements + constraints.analysis_limits
+        if coverage == "complete" and ((pending and not confirmed) or any(u.action == "defer" for u in unresolved)):
+            coverage = "partial"
+        limitations = ["结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+            "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"]
+        if execution.source == "imported":
+            limitations.append("计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。")
+        limitations.extend(issue.message[:2000] for issue in profile.quality_issues[:20])
+        used_metrics = {metric.field for desc in descriptions.values() for metric in desc.metrics.values() if metric.field}
+        limitations.extend(f'上传范围内，{field.display_name[:100]}有 {field.missing_count} 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。'
+            for field in profile.fields if field.field_id in used_metrics and field.missing_count)
+        limitations.extend(f'未完成任务：{t.title[:300]}；{t.reason[:600]}' for t in uncompleted)
+        limitations.extend(f"待解决事项：{u.description}"[:2000] for u in unresolved)
+        limitations.extend(f"需求约束尚需对照执行口径确认：{item.raw_text}"[:2000] for item in pending if not confirmed)
+        for t in execution.tasks:
+            if t.result and t.result.truncated:
+                limitations.append(f"{tasks[t.task_id].title[:200]}：仅返回部分结果，不能据此推断未返回分组的排名或总体占比。")
+            if t.result and any(step.operation == "top_n" for step in tasks[t.task_id].steps):
+                limitations.append(f"{tasks[t.task_id].title[:200]}：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。")
+        with trace.span('chart_builder') as chart_stage:
+            charts = VisualizationBuilder().build(execution, descriptions, evidence, tasks, intent)
+            chart_stage.attributes(chart_count=len(charts))
+        charts.sort(key=lambda chart: (tasks[chart.task_id].priority, chart.chart_id))
+        from app.review.presentation import PlanPresentationMapper
+        mapper = PlanPresentationMapper(profile)
+        llm, insights, rejected_insights, text_validation = None, [], [], []
+        candidate_repairs = []
+        missing_core_metrics = []
+        if evidence:
+            # Only bounded structured evidence, never all result rows / raw dataset.
+            selected = select_evidence(evidence, tasks)
+            required_groups = [{"task_id": tid, "data_ref": ref, "result_field": field,
+                "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected
+                    if tasks[e.task_id].priority == 'P0' and e.evidence_type != 'coverage')]
+            if len(required_groups) > 8:
+                raise AppError('REPORT_CORE_SCOPE_TOO_LARGE', '核心指标组超过单次报告可覆盖范围，原计算结果保留；请缩小分析范围。', 422)
+            allowed_limitations = list(dict.fromkeys(["结论仅适用于当前返回范围，不能外推整体市场。", *limitations]))
+            # These exact deterministic statements may contain verified quality
+            # counts. Free model prose still cannot add numeric assertions.
+            limitations = list(dict.fromkeys([*limitations, allowed_limitations[0]]))
+            limitation_pool = {f'L{index+1:04d}': text for index, text in enumerate(allowed_limitations)}
+            recommendation_options = build_catalog(selected, tasks, profile, intent)
+            payload = {"analysis_goal": intent.analysis_goal.model_dump(), "goal_coverage": coverage,
+                "draft_schema_version": "insight-selection-v2",
+                "required_core_groups": required_groups,
+                "allowed_limitations": allowed_limitations,
+                "recommendation_options": list(recommendation_options.values()),
+                "limitation_pool": limitation_pool,
+                "original_query": (original_query or intent.analysis_goal.business_goal or '')[:2000],
+                "constraints": intent.constraints.model_dump(), "constraints_confirmed": confirmed,
+                "scope_context": [{"task_id": t.task_id, "approved_steps": mapper.steps(t)} for t in tasks.values()],
+                "fields": [{"field_id": f.field_id, "name": f.display_name, "logical_type": f.logical_type,
+                            "upload_missing_count": f.missing_count} for f in profile.fields],
+                "uncompleted_tasks": [t.model_dump() for t in uncompleted],
+                "task_sample_context": [{"task_id": t.task_id, "status": t.status,
+                    "valid_sample_count": t.valid_sample_count, "sample_definition": t.sample_definition,
+                    "metric_valid_counts": t.execution_metadata.metric_valid_counts if t.execution_metadata else {}}
+                    for t in execution.tasks],
+                "tasks": [{"task_id": t.task_id, "priority": t.priority, "business_question": t.business_question}
+                          for t in tasks.values() if t.task_id in evidenced_tasks],
+                "evidence": [item.model_dump() for item in selected],
+                "evidence_groups": [{"task_id": tid, "data_ref": ref, "result_field": field,
+                    "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                    for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected)],
+                "limitations": limitations}
+            instruction = json.dumps(payload, ensure_ascii=False)
+            if len(instruction.encode()) > 160 * 1024:
+                raise AppError("REPORT_CONTEXT_TOO_LARGE", "证据上下文过大，未调用模型。", 422)
+            request = LLMRequest(purpose="report_insights_v1", system_prompt=SYSTEM_PROMPT,
+                instruction=instruction, response_schema=selection_schema(selected, recommendation_options, limitation_pool, required_groups), enable_thinking=self.enable_thinking)
+            with trace.span('insight_generator', {'purpose': request.purpose, 'input_bytes': len(instruction.encode()),
+                    'selected_evidence_count': len(selected), 'evidence_refs': [e.evidence_id for e in selected], 'candidate_count': None,
+                    'timeout_seconds': self.timeout_seconds, 'enable_thinking': self.enable_thinking}) as generation:
+                try:
+                    if self.prompt_source:
+                        request = request.model_copy(update={'call_binding':self.prompt_source.binding(uuid4().hex,trace=trace)})
+                    generation.event('llm.started', purpose=request.purpose)
+                    response = await asyncio.wait_for(self.provider.generate(request), timeout=self.timeout_seconds)
+                    trace.snapshot('llm_output',response.text,lambda:llm_projection(response))
+                    generation.event('llm.returned', provider=response.provider, model=response.model,
+                        is_mock=response.is_mock, output_bytes=len(response.text.encode()),
+                        call_id=response.call_id,request_snapshot_id=response.request_snapshot_id,
+                        template_snapshot_id=response.template_snapshot_id)
+                except TimeoutError:
+                    raise AppError("LLM_TIMEOUT", "报告洞察生成超时，未用虚构内容替代。", 504) from None
+                except AppError:
+                    raise
+                except Exception:
+                    raise AppError("REPORT_LLM_CALL_FAILED", "报告洞察生成失败。", 502) from None
+                try:
+                    if len(response.text.encode()) > 64 * 1024:
+                        raise ValueError("Oversized response")
+                    draft = InsightSelection.model_validate(strict_json(response.text))
+                except (ValidationError, ValueError, TypeError, AttributeError):
+>                   raise AppError("REPORT_LLM_INVALID_OUTPUT", "洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。", 502) from None
+E                   app.domain.errors.AppError: ('REPORT_LLM_INVALID_OUTPUT', '洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。', 502)
+
+backend/app/services/analysis_report.py:178: AppError
+_____________ test_run_manifest_pins_same_template_as_report_call ______________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-219/test_run_manifest_pins_same_te0')
+
+    def test_run_manifest_pins_same_template_as_report_call(tmp_path):
+        from app.domain.execution import ApprovedExecutionSnapshot
+        llm,repo,_=provider(tmp_path,[report_output])
+        service=AnalysisReportService(llm,CapabilityRegistry())
+        intent,validated,execution,profile=report_case()
+        execution=execution.model_copy(update={'session_id':'session-test','approval_id':'approval-test'})
+        approval=ApprovedExecutionSnapshot(approval_id='approval-test',approved_at='audit-time',validated_plan=validated,intent=intent)
+        traces=TraceRecorder(TraceRepository(tmp_path/'trace'))
+        traces.queue(execution,SimpleNamespace(attempt=1,queued_at='2026-10-29T00:00:00+00:00'),lambda:approval,service)
+        run=traces.repository.attempt(execution.execution_id,1)
+        assert run.manifest.prompt_template_snapshots['insight_generator']==service.prompt_source.snapshot.template_snapshot_id
+        context=traces.start(execution.execution_id,1)
+>       asyncio.run(service.generate(intent,validated,execution,profile,trace=context))
+
+backend/tests/test_prompt_registry.py:360: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:204: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:127: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.services.analysis_report.AnalysisReportService object at 0x1523300c0>
+intent = ParsedIntent(analysis_mode=<AnalysisMode.GOAL_DRIVEN: 'goal_driven'>, next_action='proceed', analysis_goal=AnalysisGoa...time_range=None, filters=[], metric_requirements=[], analysis_limits=[]), uncertainties=[], clarification_questions=[])
+validated = ValidatedAnalysisPlan(plan=AnalysisPlan(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc63...734ef3dc6377e6ecae09f0492aa76c03f89ea84c10', plan_version=1, notice='依据真实画像确定性校验；未执行统计，仍需用户审批。'), intent_snapshot=None)
+execution = ExecutionResultV1(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03...，保留缺失分组。', failure_reason=None, result_id=None, result_ref=None, row_count=None, execution_metadata=None, error=None)])
+profile = DatasetProfile(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03f89...e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03f89ea84c10', plan_version=None, notice='从实际上传文件确定性计算；未清洗、未调用 LLM。'))
+approved_snapshot = None, original_query = None
+trace = <app.observability.recorder.TraceContext object at 0x14e622fd0>
+
+    async def generate(self, intent: ParsedIntent, validated: ValidatedAnalysisPlan,
+                       execution: ExecutionResultV1, profile: DatasetProfile, *, approved_snapshot=None, original_query=None, trace=None) -> AnalysisReport:
+        trace = trace or TraceContext(TraceRecorder())
+        # Reparse all input instances; neither model_copy nor caller validation claims are trusted.
+        try:
+            intent = type(intent).model_validate(intent.model_dump())
+            execution = ExecutionResultV1.model_validate(execution.model_dump())
+            validated = ValidatedAnalysisPlan.model_validate(validated.model_dump())
+            profile = DatasetProfile.model_validate(profile.model_dump())
+        except (ValidationError, ValueError, TypeError, AttributeError):
+            raise AppError("REPORT_INPUT_INVALID", "报告输入结构不正确，未生成报告。", 422) from None
+        if len(execution.model_dump_json().encode()) > 4 * 1024 * 1024:
+            raise AppError("REPORT_INPUT_TOO_LARGE", "计算结果过大，请缩小返回结果范围并明确截断信息。", 422)
+        checked, descriptions = prepare(intent, validated, execution, profile, self.registry)
+        tasks = {task.task_id: task for task in checked.plan.tasks}
+        with trace.span('evidence_builder') as stage:
+            evidence = EvidenceBuilder().build(execution, profile, descriptions)
+            stage.attributes(evidence_count=len(evidence))
+            trace.snapshot('evidence',[e.model_dump(mode='json') for e in evidence],lambda:evidence_projection(evidence))
+        # Stable task priority ordering, retaining evidence IDs and row references.
+        evidence.sort(key=lambda item: (tasks[item.task_id].priority, item.evidence_id))
+        evidenced_tasks = {item.task_id for item in evidence}
+        uncompleted = [UncompletedTask(task_id=t.task_id, title=tasks[t.task_id].title,
+            priority=tasks[t.task_id].priority,
+            reason=t.failure_reason or "结果没有可用于报告的有效数据证据。")
+            for t in execution.tasks if t.status != "success" or t.task_id not in evidenced_tasks]
+        core_tasks = [task for task in tasks.values() if task.priority == "P0"]
+        core_success = [task for task in core_tasks if task.task_id in evidenced_tasks]
+        coverage = "blocked" if not core_success else ("partial" if checked.coverage_status != "complete" or len(core_success) < len(core_tasks) else "complete")
+        confirmed, resolved = False, set()
+        if approved_snapshot is not None:
+            from app.domain.execution import ApprovedExecutionSnapshot
+            approved = ApprovedExecutionSnapshot.model_validate(approved_snapshot.model_dump())
+            plain = ParsedIntent.model_validate({key: getattr(intent, key) for key in ParsedIntent.model_fields})
+            if (execution.source != "engine" or approved.status != "approved" or
+                    approved.approval_id != execution.approval_id or approved.session_id != execution.session_id or
+                    approved.validated_plan != validated or approved.intent != plain):
+                raise AppError("REPORT_APPROVAL_MISMATCH", "报告输入与批准快照不一致。", 422)
+            confirmed = approved.constraints_confirmed
+            resolved = set(approved.resolved_uncertainty_ids)
+        unresolved = [u for u in intent.uncertainties if u.id not in resolved]
+        constraints = intent.constraints
+        pending = ([constraints.time_range] if constraints.time_range else []) + constraints.filters + constraints.metric_requirements + constraints.analysis_limits
+        if coverage == "complete" and ((pending and not confirmed) or any(u.action == "defer" for u in unresolved)):
+            coverage = "partial"
+        limitations = ["结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+            "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"]
+        if execution.source == "imported":
+            limitations.append("计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。")
+        limitations.extend(issue.message[:2000] for issue in profile.quality_issues[:20])
+        used_metrics = {metric.field for desc in descriptions.values() for metric in desc.metrics.values() if metric.field}
+        limitations.extend(f'上传范围内，{field.display_name[:100]}有 {field.missing_count} 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。'
+            for field in profile.fields if field.field_id in used_metrics and field.missing_count)
+        limitations.extend(f'未完成任务：{t.title[:300]}；{t.reason[:600]}' for t in uncompleted)
+        limitations.extend(f"待解决事项：{u.description}"[:2000] for u in unresolved)
+        limitations.extend(f"需求约束尚需对照执行口径确认：{item.raw_text}"[:2000] for item in pending if not confirmed)
+        for t in execution.tasks:
+            if t.result and t.result.truncated:
+                limitations.append(f"{tasks[t.task_id].title[:200]}：仅返回部分结果，不能据此推断未返回分组的排名或总体占比。")
+            if t.result and any(step.operation == "top_n" for step in tasks[t.task_id].steps):
+                limitations.append(f"{tasks[t.task_id].title[:200]}：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。")
+        with trace.span('chart_builder') as chart_stage:
+            charts = VisualizationBuilder().build(execution, descriptions, evidence, tasks, intent)
+            chart_stage.attributes(chart_count=len(charts))
+        charts.sort(key=lambda chart: (tasks[chart.task_id].priority, chart.chart_id))
+        from app.review.presentation import PlanPresentationMapper
+        mapper = PlanPresentationMapper(profile)
+        llm, insights, rejected_insights, text_validation = None, [], [], []
+        candidate_repairs = []
+        missing_core_metrics = []
+        if evidence:
+            # Only bounded structured evidence, never all result rows / raw dataset.
+            selected = select_evidence(evidence, tasks)
+            required_groups = [{"task_id": tid, "data_ref": ref, "result_field": field,
+                "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected
+                    if tasks[e.task_id].priority == 'P0' and e.evidence_type != 'coverage')]
+            if len(required_groups) > 8:
+                raise AppError('REPORT_CORE_SCOPE_TOO_LARGE', '核心指标组超过单次报告可覆盖范围，原计算结果保留；请缩小分析范围。', 422)
+            allowed_limitations = list(dict.fromkeys(["结论仅适用于当前返回范围，不能外推整体市场。", *limitations]))
+            # These exact deterministic statements may contain verified quality
+            # counts. Free model prose still cannot add numeric assertions.
+            limitations = list(dict.fromkeys([*limitations, allowed_limitations[0]]))
+            limitation_pool = {f'L{index+1:04d}': text for index, text in enumerate(allowed_limitations)}
+            recommendation_options = build_catalog(selected, tasks, profile, intent)
+            payload = {"analysis_goal": intent.analysis_goal.model_dump(), "goal_coverage": coverage,
+                "draft_schema_version": "insight-selection-v2",
+                "required_core_groups": required_groups,
+                "allowed_limitations": allowed_limitations,
+                "recommendation_options": list(recommendation_options.values()),
+                "limitation_pool": limitation_pool,
+                "original_query": (original_query or intent.analysis_goal.business_goal or '')[:2000],
+                "constraints": intent.constraints.model_dump(), "constraints_confirmed": confirmed,
+                "scope_context": [{"task_id": t.task_id, "approved_steps": mapper.steps(t)} for t in tasks.values()],
+                "fields": [{"field_id": f.field_id, "name": f.display_name, "logical_type": f.logical_type,
+                            "upload_missing_count": f.missing_count} for f in profile.fields],
+                "uncompleted_tasks": [t.model_dump() for t in uncompleted],
+                "task_sample_context": [{"task_id": t.task_id, "status": t.status,
+                    "valid_sample_count": t.valid_sample_count, "sample_definition": t.sample_definition,
+                    "metric_valid_counts": t.execution_metadata.metric_valid_counts if t.execution_metadata else {}}
+                    for t in execution.tasks],
+                "tasks": [{"task_id": t.task_id, "priority": t.priority, "business_question": t.business_question}
+                          for t in tasks.values() if t.task_id in evidenced_tasks],
+                "evidence": [item.model_dump() for item in selected],
+                "evidence_groups": [{"task_id": tid, "data_ref": ref, "result_field": field,
+                    "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                    for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected)],
+                "limitations": limitations}
+            instruction = json.dumps(payload, ensure_ascii=False)
+            if len(instruction.encode()) > 160 * 1024:
+                raise AppError("REPORT_CONTEXT_TOO_LARGE", "证据上下文过大，未调用模型。", 422)
+            request = LLMRequest(purpose="report_insights_v1", system_prompt=SYSTEM_PROMPT,
+                instruction=instruction, response_schema=selection_schema(selected, recommendation_options, limitation_pool, required_groups), enable_thinking=self.enable_thinking)
+            with trace.span('insight_generator', {'purpose': request.purpose, 'input_bytes': len(instruction.encode()),
+                    'selected_evidence_count': len(selected), 'evidence_refs': [e.evidence_id for e in selected], 'candidate_count': None,
+                    'timeout_seconds': self.timeout_seconds, 'enable_thinking': self.enable_thinking}) as generation:
+                try:
+                    if self.prompt_source:
+                        request = request.model_copy(update={'call_binding':self.prompt_source.binding(uuid4().hex,trace=trace)})
+                    generation.event('llm.started', purpose=request.purpose)
+                    response = await asyncio.wait_for(self.provider.generate(request), timeout=self.timeout_seconds)
+                    trace.snapshot('llm_output',response.text,lambda:llm_projection(response))
+                    generation.event('llm.returned', provider=response.provider, model=response.model,
+                        is_mock=response.is_mock, output_bytes=len(response.text.encode()),
+                        call_id=response.call_id,request_snapshot_id=response.request_snapshot_id,
+                        template_snapshot_id=response.template_snapshot_id)
+                except TimeoutError:
+                    raise AppError("LLM_TIMEOUT", "报告洞察生成超时，未用虚构内容替代。", 504) from None
+                except AppError:
+                    raise
+                except Exception:
+                    raise AppError("REPORT_LLM_CALL_FAILED", "报告洞察生成失败。", 502) from None
+                try:
+                    if len(response.text.encode()) > 64 * 1024:
+                        raise ValueError("Oversized response")
+                    draft = InsightSelection.model_validate(strict_json(response.text))
+                except (ValidationError, ValueError, TypeError, AttributeError):
+>                   raise AppError("REPORT_LLM_INVALID_OUTPUT", "洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。", 502) from None
+E                   app.domain.errors.AppError: ('REPORT_LLM_INVALID_OUTPUT', '洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。', 502)
+
+backend/app/services/analysis_report.py:178: AppError
+_________ test_overlapping_reports_keep_explicit_run_and_span_bindings _________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-219/test_overlapping_reports_keep_0')
+
+    def test_overlapping_reports_keep_explicit_run_and_span_bindings(tmp_path):
+        async def delayed(body):
+            await asyncio.sleep(.02)
+            return report_output(body)
+        llm,repo,_=provider(tmp_path,[delayed])
+        traces=TraceRecorder(TraceRepository(tmp_path/'trace'))
+        contexts=[]
+        for name in ('left','right'):
+            run=TraceRun(run_id='run-'+name,session_id='session-'+name,execution_id='exec-'+name,attempt=1,
+                owner_instance='test',status='running',queued_at='2026-10-29T00:00:00+00:00',manifest=RunManifest())
+            traces.repository.create(run);contexts.append(TraceContext(traces,run))
+        service=AnalysisReportService(llm,CapabilityRegistry())
+        async def run():
+            return await asyncio.gather(*(service.generate(*report_case(),trace=context,original_query=context.run.run_id) for context in contexts))
+>       asyncio.run(run())
+
+backend/tests/test_prompt_registry.py:411: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:204: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:127: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+backend/tests/test_prompt_registry.py:410: in run
+    return await asyncio.gather(*(service.generate(*report_case(),trace=context,original_query=context.run.run_id) for context in contexts))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.services.analysis_report.AnalysisReportService object at 0x157407700>
+intent = ParsedIntent(analysis_mode=<AnalysisMode.GOAL_DRIVEN: 'goal_driven'>, next_action='proceed', analysis_goal=AnalysisGoa...time_range=None, filters=[], metric_requirements=[], analysis_limits=[]), uncertainties=[], clarification_questions=[])
+validated = ValidatedAnalysisPlan(plan=AnalysisPlan(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc63...734ef3dc6377e6ecae09f0492aa76c03f89ea84c10', plan_version=1, notice='依据真实画像确定性校验；未执行统计，仍需用户审批。'), intent_snapshot=None)
+execution = ExecutionResultV1(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03...，保留缺失分组。', failure_reason=None, result_id=None, result_ref=None, row_count=None, execution_metadata=None, error=None)])
+profile = DatasetProfile(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03f89...e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03f89ea84c10', plan_version=None, notice='从实际上传文件确定性计算；未清洗、未调用 LLM。'))
+approved_snapshot = None, original_query = 'run-left'
+trace = <app.observability.recorder.TraceContext object at 0x14a225770>
+
+    async def generate(self, intent: ParsedIntent, validated: ValidatedAnalysisPlan,
+                       execution: ExecutionResultV1, profile: DatasetProfile, *, approved_snapshot=None, original_query=None, trace=None) -> AnalysisReport:
+        trace = trace or TraceContext(TraceRecorder())
+        # Reparse all input instances; neither model_copy nor caller validation claims are trusted.
+        try:
+            intent = type(intent).model_validate(intent.model_dump())
+            execution = ExecutionResultV1.model_validate(execution.model_dump())
+            validated = ValidatedAnalysisPlan.model_validate(validated.model_dump())
+            profile = DatasetProfile.model_validate(profile.model_dump())
+        except (ValidationError, ValueError, TypeError, AttributeError):
+            raise AppError("REPORT_INPUT_INVALID", "报告输入结构不正确，未生成报告。", 422) from None
+        if len(execution.model_dump_json().encode()) > 4 * 1024 * 1024:
+            raise AppError("REPORT_INPUT_TOO_LARGE", "计算结果过大，请缩小返回结果范围并明确截断信息。", 422)
+        checked, descriptions = prepare(intent, validated, execution, profile, self.registry)
+        tasks = {task.task_id: task for task in checked.plan.tasks}
+        with trace.span('evidence_builder') as stage:
+            evidence = EvidenceBuilder().build(execution, profile, descriptions)
+            stage.attributes(evidence_count=len(evidence))
+            trace.snapshot('evidence',[e.model_dump(mode='json') for e in evidence],lambda:evidence_projection(evidence))
+        # Stable task priority ordering, retaining evidence IDs and row references.
+        evidence.sort(key=lambda item: (tasks[item.task_id].priority, item.evidence_id))
+        evidenced_tasks = {item.task_id for item in evidence}
+        uncompleted = [UncompletedTask(task_id=t.task_id, title=tasks[t.task_id].title,
+            priority=tasks[t.task_id].priority,
+            reason=t.failure_reason or "结果没有可用于报告的有效数据证据。")
+            for t in execution.tasks if t.status != "success" or t.task_id not in evidenced_tasks]
+        core_tasks = [task for task in tasks.values() if task.priority == "P0"]
+        core_success = [task for task in core_tasks if task.task_id in evidenced_tasks]
+        coverage = "blocked" if not core_success else ("partial" if checked.coverage_status != "complete" or len(core_success) < len(core_tasks) else "complete")
+        confirmed, resolved = False, set()
+        if approved_snapshot is not None:
+            from app.domain.execution import ApprovedExecutionSnapshot
+            approved = ApprovedExecutionSnapshot.model_validate(approved_snapshot.model_dump())
+            plain = ParsedIntent.model_validate({key: getattr(intent, key) for key in ParsedIntent.model_fields})
+            if (execution.source != "engine" or approved.status != "approved" or
+                    approved.approval_id != execution.approval_id or approved.session_id != execution.session_id or
+                    approved.validated_plan != validated or approved.intent != plain):
+                raise AppError("REPORT_APPROVAL_MISMATCH", "报告输入与批准快照不一致。", 422)
+            confirmed = approved.constraints_confirmed
+            resolved = set(approved.resolved_uncertainty_ids)
+        unresolved = [u for u in intent.uncertainties if u.id not in resolved]
+        constraints = intent.constraints
+        pending = ([constraints.time_range] if constraints.time_range else []) + constraints.filters + constraints.metric_requirements + constraints.analysis_limits
+        if coverage == "complete" and ((pending and not confirmed) or any(u.action == "defer" for u in unresolved)):
+            coverage = "partial"
+        limitations = ["结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+            "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"]
+        if execution.source == "imported":
+            limitations.append("计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。")
+        limitations.extend(issue.message[:2000] for issue in profile.quality_issues[:20])
+        used_metrics = {metric.field for desc in descriptions.values() for metric in desc.metrics.values() if metric.field}
+        limitations.extend(f'上传范围内，{field.display_name[:100]}有 {field.missing_count} 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。'
+            for field in profile.fields if field.field_id in used_metrics and field.missing_count)
+        limitations.extend(f'未完成任务：{t.title[:300]}；{t.reason[:600]}' for t in uncompleted)
+        limitations.extend(f"待解决事项：{u.description}"[:2000] for u in unresolved)
+        limitations.extend(f"需求约束尚需对照执行口径确认：{item.raw_text}"[:2000] for item in pending if not confirmed)
+        for t in execution.tasks:
+            if t.result and t.result.truncated:
+                limitations.append(f"{tasks[t.task_id].title[:200]}：仅返回部分结果，不能据此推断未返回分组的排名或总体占比。")
+            if t.result and any(step.operation == "top_n" for step in tasks[t.task_id].steps):
+                limitations.append(f"{tasks[t.task_id].title[:200]}：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。")
+        with trace.span('chart_builder') as chart_stage:
+            charts = VisualizationBuilder().build(execution, descriptions, evidence, tasks, intent)
+            chart_stage.attributes(chart_count=len(charts))
+        charts.sort(key=lambda chart: (tasks[chart.task_id].priority, chart.chart_id))
+        from app.review.presentation import PlanPresentationMapper
+        mapper = PlanPresentationMapper(profile)
+        llm, insights, rejected_insights, text_validation = None, [], [], []
+        candidate_repairs = []
+        missing_core_metrics = []
+        if evidence:
+            # Only bounded structured evidence, never all result rows / raw dataset.
+            selected = select_evidence(evidence, tasks)
+            required_groups = [{"task_id": tid, "data_ref": ref, "result_field": field,
+                "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected
+                    if tasks[e.task_id].priority == 'P0' and e.evidence_type != 'coverage')]
+            if len(required_groups) > 8:
+                raise AppError('REPORT_CORE_SCOPE_TOO_LARGE', '核心指标组超过单次报告可覆盖范围，原计算结果保留；请缩小分析范围。', 422)
+            allowed_limitations = list(dict.fromkeys(["结论仅适用于当前返回范围，不能外推整体市场。", *limitations]))
+            # These exact deterministic statements may contain verified quality
+            # counts. Free model prose still cannot add numeric assertions.
+            limitations = list(dict.fromkeys([*limitations, allowed_limitations[0]]))
+            limitation_pool = {f'L{index+1:04d}': text for index, text in enumerate(allowed_limitations)}
+            recommendation_options = build_catalog(selected, tasks, profile, intent)
+            payload = {"analysis_goal": intent.analysis_goal.model_dump(), "goal_coverage": coverage,
+                "draft_schema_version": "insight-selection-v2",
+                "required_core_groups": required_groups,
+                "allowed_limitations": allowed_limitations,
+                "recommendation_options": list(recommendation_options.values()),
+                "limitation_pool": limitation_pool,
+                "original_query": (original_query or intent.analysis_goal.business_goal or '')[:2000],
+                "constraints": intent.constraints.model_dump(), "constraints_confirmed": confirmed,
+                "scope_context": [{"task_id": t.task_id, "approved_steps": mapper.steps(t)} for t in tasks.values()],
+                "fields": [{"field_id": f.field_id, "name": f.display_name, "logical_type": f.logical_type,
+                            "upload_missing_count": f.missing_count} for f in profile.fields],
+                "uncompleted_tasks": [t.model_dump() for t in uncompleted],
+                "task_sample_context": [{"task_id": t.task_id, "status": t.status,
+                    "valid_sample_count": t.valid_sample_count, "sample_definition": t.sample_definition,
+                    "metric_valid_counts": t.execution_metadata.metric_valid_counts if t.execution_metadata else {}}
+                    for t in execution.tasks],
+                "tasks": [{"task_id": t.task_id, "priority": t.priority, "business_question": t.business_question}
+                          for t in tasks.values() if t.task_id in evidenced_tasks],
+                "evidence": [item.model_dump() for item in selected],
+                "evidence_groups": [{"task_id": tid, "data_ref": ref, "result_field": field,
+                    "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                    for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected)],
+                "limitations": limitations}
+            instruction = json.dumps(payload, ensure_ascii=False)
+            if len(instruction.encode()) > 160 * 1024:
+                raise AppError("REPORT_CONTEXT_TOO_LARGE", "证据上下文过大，未调用模型。", 422)
+            request = LLMRequest(purpose="report_insights_v1", system_prompt=SYSTEM_PROMPT,
+                instruction=instruction, response_schema=selection_schema(selected, recommendation_options, limitation_pool, required_groups), enable_thinking=self.enable_thinking)
+            with trace.span('insight_generator', {'purpose': request.purpose, 'input_bytes': len(instruction.encode()),
+                    'selected_evidence_count': len(selected), 'evidence_refs': [e.evidence_id for e in selected], 'candidate_count': None,
+                    'timeout_seconds': self.timeout_seconds, 'enable_thinking': self.enable_thinking}) as generation:
+                try:
+                    if self.prompt_source:
+                        request = request.model_copy(update={'call_binding':self.prompt_source.binding(uuid4().hex,trace=trace)})
+                    generation.event('llm.started', purpose=request.purpose)
+                    response = await asyncio.wait_for(self.provider.generate(request), timeout=self.timeout_seconds)
+                    trace.snapshot('llm_output',response.text,lambda:llm_projection(response))
+                    generation.event('llm.returned', provider=response.provider, model=response.model,
+                        is_mock=response.is_mock, output_bytes=len(response.text.encode()),
+                        call_id=response.call_id,request_snapshot_id=response.request_snapshot_id,
+                        template_snapshot_id=response.template_snapshot_id)
+                except TimeoutError:
+                    raise AppError("LLM_TIMEOUT", "报告洞察生成超时，未用虚构内容替代。", 504) from None
+                except AppError:
+                    raise
+                except Exception:
+                    raise AppError("REPORT_LLM_CALL_FAILED", "报告洞察生成失败。", 502) from None
+                try:
+                    if len(response.text.encode()) > 64 * 1024:
+                        raise ValueError("Oversized response")
+                    draft = InsightSelection.model_validate(strict_json(response.text))
+                except (ValidationError, ValueError, TypeError, AttributeError):
+>                   raise AppError("REPORT_LLM_INVALID_OUTPUT", "洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。", 502) from None
+E                   app.domain.errors.AppError: ('REPORT_LLM_INVALID_OUTPUT', '洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。', 502)
+
+backend/app/services/analysis_report.py:178: AppError
+__________ test_run_reference_is_only_linked_when_run_and_span_exist ___________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-219/test_run_reference_is_only_lin0')
+
+    def test_run_reference_is_only_linked_when_run_and_span_exist(tmp_path):
+        from test_prompt_registry import trace_fixture
+        from app.services.prompt_registry_query import PromptRegistryQuery
+        from app.services.analysis_report import AnalysisReportService
+        from app.planning.capabilities import CapabilityRegistry
+        llm,repo,_=provider(tmp_path,[report_output]);traces,context=trace_fixture(tmp_path)
+>       asyncio.run(AnalysisReportService(llm,CapabilityRegistry()).generate(*report_case(),trace=context))
+
+backend/tests/test_prompt_registry_read.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:204: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:127: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.services.analysis_report.AnalysisReportService object at 0x15050fb60>
+intent = ParsedIntent(analysis_mode=<AnalysisMode.GOAL_DRIVEN: 'goal_driven'>, next_action='proceed', analysis_goal=AnalysisGoa...time_range=None, filters=[], metric_requirements=[], analysis_limits=[]), uncertainties=[], clarification_questions=[])
+validated = ValidatedAnalysisPlan(plan=AnalysisPlan(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc63...734ef3dc6377e6ecae09f0492aa76c03f89ea84c10', plan_version=1, notice='依据真实画像确定性校验；未执行统计，仍需用户审批。'), intent_snapshot=None)
+execution = ExecutionResultV1(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03...，保留缺失分组。', failure_reason=None, result_id=None, result_ref=None, row_count=None, execution_metadata=None, error=None)])
+profile = DatasetProfile(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03f89...e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03f89ea84c10', plan_version=None, notice='从实际上传文件确定性计算；未清洗、未调用 LLM。'))
+approved_snapshot = None, original_query = None
+trace = <app.observability.recorder.TraceContext object at 0x14e24b250>
+
+    async def generate(self, intent: ParsedIntent, validated: ValidatedAnalysisPlan,
+                       execution: ExecutionResultV1, profile: DatasetProfile, *, approved_snapshot=None, original_query=None, trace=None) -> AnalysisReport:
+        trace = trace or TraceContext(TraceRecorder())
+        # Reparse all input instances; neither model_copy nor caller validation claims are trusted.
+        try:
+            intent = type(intent).model_validate(intent.model_dump())
+            execution = ExecutionResultV1.model_validate(execution.model_dump())
+            validated = ValidatedAnalysisPlan.model_validate(validated.model_dump())
+            profile = DatasetProfile.model_validate(profile.model_dump())
+        except (ValidationError, ValueError, TypeError, AttributeError):
+            raise AppError("REPORT_INPUT_INVALID", "报告输入结构不正确，未生成报告。", 422) from None
+        if len(execution.model_dump_json().encode()) > 4 * 1024 * 1024:
+            raise AppError("REPORT_INPUT_TOO_LARGE", "计算结果过大，请缩小返回结果范围并明确截断信息。", 422)
+        checked, descriptions = prepare(intent, validated, execution, profile, self.registry)
+        tasks = {task.task_id: task for task in checked.plan.tasks}
+        with trace.span('evidence_builder') as stage:
+            evidence = EvidenceBuilder().build(execution, profile, descriptions)
+            stage.attributes(evidence_count=len(evidence))
+            trace.snapshot('evidence',[e.model_dump(mode='json') for e in evidence],lambda:evidence_projection(evidence))
+        # Stable task priority ordering, retaining evidence IDs and row references.
+        evidence.sort(key=lambda item: (tasks[item.task_id].priority, item.evidence_id))
+        evidenced_tasks = {item.task_id for item in evidence}
+        uncompleted = [UncompletedTask(task_id=t.task_id, title=tasks[t.task_id].title,
+            priority=tasks[t.task_id].priority,
+            reason=t.failure_reason or "结果没有可用于报告的有效数据证据。")
+            for t in execution.tasks if t.status != "success" or t.task_id not in evidenced_tasks]
+        core_tasks = [task for task in tasks.values() if task.priority == "P0"]
+        core_success = [task for task in core_tasks if task.task_id in evidenced_tasks]
+        coverage = "blocked" if not core_success else ("partial" if checked.coverage_status != "complete" or len(core_success) < len(core_tasks) else "complete")
+        confirmed, resolved = False, set()
+        if approved_snapshot is not None:
+            from app.domain.execution import ApprovedExecutionSnapshot
+            approved = ApprovedExecutionSnapshot.model_validate(approved_snapshot.model_dump())
+            plain = ParsedIntent.model_validate({key: getattr(intent, key) for key in ParsedIntent.model_fields})
+            if (execution.source != "engine" or approved.status != "approved" or
+                    approved.approval_id != execution.approval_id or approved.session_id != execution.session_id or
+                    approved.validated_plan != validated or approved.intent != plain):
+                raise AppError("REPORT_APPROVAL_MISMATCH", "报告输入与批准快照不一致。", 422)
+            confirmed = approved.constraints_confirmed
+            resolved = set(approved.resolved_uncertainty_ids)
+        unresolved = [u for u in intent.uncertainties if u.id not in resolved]
+        constraints = intent.constraints
+        pending = ([constraints.time_range] if constraints.time_range else []) + constraints.filters + constraints.metric_requirements + constraints.analysis_limits
+        if coverage == "complete" and ((pending and not confirmed) or any(u.action == "defer" for u in unresolved)):
+            coverage = "partial"
+        limitations = ["结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+            "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"]
+        if execution.source == "imported":
+            limitations.append("计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。")
+        limitations.extend(issue.message[:2000] for issue in profile.quality_issues[:20])
+        used_metrics = {metric.field for desc in descriptions.values() for metric in desc.metrics.values() if metric.field}
+        limitations.extend(f'上传范围内，{field.display_name[:100]}有 {field.missing_count} 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。'
+            for field in profile.fields if field.field_id in used_metrics and field.missing_count)
+        limitations.extend(f'未完成任务：{t.title[:300]}；{t.reason[:600]}' for t in uncompleted)
+        limitations.extend(f"待解决事项：{u.description}"[:2000] for u in unresolved)
+        limitations.extend(f"需求约束尚需对照执行口径确认：{item.raw_text}"[:2000] for item in pending if not confirmed)
+        for t in execution.tasks:
+            if t.result and t.result.truncated:
+                limitations.append(f"{tasks[t.task_id].title[:200]}：仅返回部分结果，不能据此推断未返回分组的排名或总体占比。")
+            if t.result and any(step.operation == "top_n" for step in tasks[t.task_id].steps):
+                limitations.append(f"{tasks[t.task_id].title[:200]}：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。")
+        with trace.span('chart_builder') as chart_stage:
+            charts = VisualizationBuilder().build(execution, descriptions, evidence, tasks, intent)
+            chart_stage.attributes(chart_count=len(charts))
+        charts.sort(key=lambda chart: (tasks[chart.task_id].priority, chart.chart_id))
+        from app.review.presentation import PlanPresentationMapper
+        mapper = PlanPresentationMapper(profile)
+        llm, insights, rejected_insights, text_validation = None, [], [], []
+        candidate_repairs = []
+        missing_core_metrics = []
+        if evidence:
+            # Only bounded structured evidence, never all result rows / raw dataset.
+            selected = select_evidence(evidence, tasks)
+            required_groups = [{"task_id": tid, "data_ref": ref, "result_field": field,
+                "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected
+                    if tasks[e.task_id].priority == 'P0' and e.evidence_type != 'coverage')]
+            if len(required_groups) > 8:
+                raise AppError('REPORT_CORE_SCOPE_TOO_LARGE', '核心指标组超过单次报告可覆盖范围，原计算结果保留；请缩小分析范围。', 422)
+            allowed_limitations = list(dict.fromkeys(["结论仅适用于当前返回范围，不能外推整体市场。", *limitations]))
+            # These exact deterministic statements may contain verified quality
+            # counts. Free model prose still cannot add numeric assertions.
+            limitations = list(dict.fromkeys([*limitations, allowed_limitations[0]]))
+            limitation_pool = {f'L{index+1:04d}': text for index, text in enumerate(allowed_limitations)}
+            recommendation_options = build_catalog(selected, tasks, profile, intent)
+            payload = {"analysis_goal": intent.analysis_goal.model_dump(), "goal_coverage": coverage,
+                "draft_schema_version": "insight-selection-v2",
+                "required_core_groups": required_groups,
+                "allowed_limitations": allowed_limitations,
+                "recommendation_options": list(recommendation_options.values()),
+                "limitation_pool": limitation_pool,
+                "original_query": (original_query or intent.analysis_goal.business_goal or '')[:2000],
+                "constraints": intent.constraints.model_dump(), "constraints_confirmed": confirmed,
+                "scope_context": [{"task_id": t.task_id, "approved_steps": mapper.steps(t)} for t in tasks.values()],
+                "fields": [{"field_id": f.field_id, "name": f.display_name, "logical_type": f.logical_type,
+                            "upload_missing_count": f.missing_count} for f in profile.fields],
+                "uncompleted_tasks": [t.model_dump() for t in uncompleted],
+                "task_sample_context": [{"task_id": t.task_id, "status": t.status,
+                    "valid_sample_count": t.valid_sample_count, "sample_definition": t.sample_definition,
+                    "metric_valid_counts": t.execution_metadata.metric_valid_counts if t.execution_metadata else {}}
+                    for t in execution.tasks],
+                "tasks": [{"task_id": t.task_id, "priority": t.priority, "business_question": t.business_question}
+                          for t in tasks.values() if t.task_id in evidenced_tasks],
+                "evidence": [item.model_dump() for item in selected],
+                "evidence_groups": [{"task_id": tid, "data_ref": ref, "result_field": field,
+                    "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                    for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected)],
+                "limitations": limitations}
+            instruction = json.dumps(payload, ensure_ascii=False)
+            if len(instruction.encode()) > 160 * 1024:
+                raise AppError("REPORT_CONTEXT_TOO_LARGE", "证据上下文过大，未调用模型。", 422)
+            request = LLMRequest(purpose="report_insights_v1", system_prompt=SYSTEM_PROMPT,
+                instruction=instruction, response_schema=selection_schema(selected, recommendation_options, limitation_pool, required_groups), enable_thinking=self.enable_thinking)
+            with trace.span('insight_generator', {'purpose': request.purpose, 'input_bytes': len(instruction.encode()),
+                    'selected_evidence_count': len(selected), 'evidence_refs': [e.evidence_id for e in selected], 'candidate_count': None,
+                    'timeout_seconds': self.timeout_seconds, 'enable_thinking': self.enable_thinking}) as generation:
+                try:
+                    if self.prompt_source:
+                        request = request.model_copy(update={'call_binding':self.prompt_source.binding(uuid4().hex,trace=trace)})
+                    generation.event('llm.started', purpose=request.purpose)
+                    response = await asyncio.wait_for(self.provider.generate(request), timeout=self.timeout_seconds)
+                    trace.snapshot('llm_output',response.text,lambda:llm_projection(response))
+                    generation.event('llm.returned', provider=response.provider, model=response.model,
+                        is_mock=response.is_mock, output_bytes=len(response.text.encode()),
+                        call_id=response.call_id,request_snapshot_id=response.request_snapshot_id,
+                        template_snapshot_id=response.template_snapshot_id)
+                except TimeoutError:
+                    raise AppError("LLM_TIMEOUT", "报告洞察生成超时，未用虚构内容替代。", 504) from None
+                except AppError:
+                    raise
+                except Exception:
+                    raise AppError("REPORT_LLM_CALL_FAILED", "报告洞察生成失败。", 502) from None
+                try:
+                    if len(response.text.encode()) > 64 * 1024:
+                        raise ValueError("Oversized response")
+                    draft = InsightSelection.model_validate(strict_json(response.text))
+                except (ValidationError, ValueError, TypeError, AttributeError):
+>                   raise AppError("REPORT_LLM_INVALID_OUTPUT", "洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。", 502) from None
+E                   app.domain.errors.AppError: ('REPORT_LLM_INVALID_OUTPUT', '洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。', 502)
+
+backend/app/services/analysis_report.py:178: AppError
+_ test_model_cannot_introduce_unverified_facts_or_claims[output0-REPORT_INVALID_EVIDENCE_REFERENCE] _
+
+output = {'insights': [{'primary_evidence_id': 'E9999', 'evidence_refs': ['E9999'], 'finding_type': 'highlight', 'implication': '该分组值得继续评估。', ...}]}
+code = 'REPORT_INVALID_EVIDENCE_REFERENCE'
+
+    @pytest.mark.parametrize("output,code", [
+        (draft(primary="E9999"), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(refs=["E0002","E0002"]), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(kind="trend"), "REPORT_INVALID_EVIDENCE_TYPE"),
+        (draft(implication="当前有42条记录。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="占百分之五十。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="排名第一。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="需求导致岗位集中。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(recommendation="保证能够获得机会。"), "REPORT_UNVERIFIED_FACT"),
+        ("invalid JSON", "REPORT_LLM_INVALID_OUTPUT"),
+        ('{"insights":[],"insights":[]}', "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[],"headline":"目标完成"}, "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[{**draft()["insights"][0], "fact":"上海有42条"}]}, "REPORT_LLM_INVALID_OUTPUT"),
+    ])
+    def test_model_cannot_introduce_unverified_facts_or_claims(output, code):
+        with pytest.raises(AppError) as exc: generate(provider=ReportProvider(output))
+>       assert exc.value.error.code == code
+E       AssertionError: assert 'REPORT_LLM_INVALID_OUTPUT' == 'REPORT_INVAL...NCE_REFERENCE'
+E         
+E         - REPORT_INVALID_EVIDENCE_REFERENCE
+E         + REPORT_LLM_INVALID_OUTPUT
+
+backend/tests/test_report_module.py:98: AssertionError
+_ test_model_cannot_introduce_unverified_facts_or_claims[output1-REPORT_INVALID_EVIDENCE_REFERENCE] _
+
+output = {'insights': [{'primary_evidence_id': 'E0002', 'evidence_refs': ['E0002', 'E0002'], 'finding_type': 'highlight', 'implication': '该分组值得继续评估。', ...}]}
+code = 'REPORT_INVALID_EVIDENCE_REFERENCE'
+
+    @pytest.mark.parametrize("output,code", [
+        (draft(primary="E9999"), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(refs=["E0002","E0002"]), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(kind="trend"), "REPORT_INVALID_EVIDENCE_TYPE"),
+        (draft(implication="当前有42条记录。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="占百分之五十。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="排名第一。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="需求导致岗位集中。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(recommendation="保证能够获得机会。"), "REPORT_UNVERIFIED_FACT"),
+        ("invalid JSON", "REPORT_LLM_INVALID_OUTPUT"),
+        ('{"insights":[],"insights":[]}', "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[],"headline":"目标完成"}, "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[{**draft()["insights"][0], "fact":"上海有42条"}]}, "REPORT_LLM_INVALID_OUTPUT"),
+    ])
+    def test_model_cannot_introduce_unverified_facts_or_claims(output, code):
+        with pytest.raises(AppError) as exc: generate(provider=ReportProvider(output))
+>       assert exc.value.error.code == code
+E       AssertionError: assert 'REPORT_LLM_INVALID_OUTPUT' == 'REPORT_INVAL...NCE_REFERENCE'
+E         
+E         - REPORT_INVALID_EVIDENCE_REFERENCE
+E         + REPORT_LLM_INVALID_OUTPUT
+
+backend/tests/test_report_module.py:98: AssertionError
+_ test_model_cannot_introduce_unverified_facts_or_claims[output2-REPORT_INVALID_EVIDENCE_TYPE] _
+
+output = {'insights': [{'primary_evidence_id': 'E0002', 'evidence_refs': ['E0002'], 'finding_type': 'trend', 'implication': '该分组值得继续评估。', ...}]}
+code = 'REPORT_INVALID_EVIDENCE_TYPE'
+
+    @pytest.mark.parametrize("output,code", [
+        (draft(primary="E9999"), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(refs=["E0002","E0002"]), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(kind="trend"), "REPORT_INVALID_EVIDENCE_TYPE"),
+        (draft(implication="当前有42条记录。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="占百分之五十。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="排名第一。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="需求导致岗位集中。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(recommendation="保证能够获得机会。"), "REPORT_UNVERIFIED_FACT"),
+        ("invalid JSON", "REPORT_LLM_INVALID_OUTPUT"),
+        ('{"insights":[],"insights":[]}', "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[],"headline":"目标完成"}, "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[{**draft()["insights"][0], "fact":"上海有42条"}]}, "REPORT_LLM_INVALID_OUTPUT"),
+    ])
+    def test_model_cannot_introduce_unverified_facts_or_claims(output, code):
+        with pytest.raises(AppError) as exc: generate(provider=ReportProvider(output))
+>       assert exc.value.error.code == code
+E       AssertionError: assert 'REPORT_LLM_INVALID_OUTPUT' == 'REPORT_INVALID_EVIDENCE_TYPE'
+E         
+E         - REPORT_INVALID_EVIDENCE_TYPE
+E         + REPORT_LLM_INVALID_OUTPUT
+
+backend/tests/test_report_module.py:98: AssertionError
+_ test_model_cannot_introduce_unverified_facts_or_claims[output3-REPORT_UNVERIFIED_FACT] _
+
+output = {'insights': [{'primary_evidence_id': 'E0002', 'evidence_refs': ['E0002'], 'finding_type': 'highlight', 'implication': '当前有42条记录。', ...}]}
+code = 'REPORT_UNVERIFIED_FACT'
+
+    @pytest.mark.parametrize("output,code", [
+        (draft(primary="E9999"), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(refs=["E0002","E0002"]), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(kind="trend"), "REPORT_INVALID_EVIDENCE_TYPE"),
+        (draft(implication="当前有42条记录。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="占百分之五十。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="排名第一。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="需求导致岗位集中。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(recommendation="保证能够获得机会。"), "REPORT_UNVERIFIED_FACT"),
+        ("invalid JSON", "REPORT_LLM_INVALID_OUTPUT"),
+        ('{"insights":[],"insights":[]}', "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[],"headline":"目标完成"}, "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[{**draft()["insights"][0], "fact":"上海有42条"}]}, "REPORT_LLM_INVALID_OUTPUT"),
+    ])
+    def test_model_cannot_introduce_unverified_facts_or_claims(output, code):
+        with pytest.raises(AppError) as exc: generate(provider=ReportProvider(output))
+>       assert exc.value.error.code == code
+E       AssertionError: assert 'REPORT_LLM_INVALID_OUTPUT' == 'REPORT_UNVERIFIED_FACT'
+E         
+E         - REPORT_UNVERIFIED_FACT
+E         + REPORT_LLM_INVALID_OUTPUT
+
+backend/tests/test_report_module.py:98: AssertionError
+_ test_model_cannot_introduce_unverified_facts_or_claims[output4-REPORT_UNVERIFIED_FACT] _
+
+output = {'insights': [{'primary_evidence_id': 'E0002', 'evidence_refs': ['E0002'], 'finding_type': 'highlight', 'implication': '占百分之五十。', ...}]}
+code = 'REPORT_UNVERIFIED_FACT'
+
+    @pytest.mark.parametrize("output,code", [
+        (draft(primary="E9999"), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(refs=["E0002","E0002"]), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(kind="trend"), "REPORT_INVALID_EVIDENCE_TYPE"),
+        (draft(implication="当前有42条记录。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="占百分之五十。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="排名第一。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="需求导致岗位集中。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(recommendation="保证能够获得机会。"), "REPORT_UNVERIFIED_FACT"),
+        ("invalid JSON", "REPORT_LLM_INVALID_OUTPUT"),
+        ('{"insights":[],"insights":[]}', "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[],"headline":"目标完成"}, "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[{**draft()["insights"][0], "fact":"上海有42条"}]}, "REPORT_LLM_INVALID_OUTPUT"),
+    ])
+    def test_model_cannot_introduce_unverified_facts_or_claims(output, code):
+        with pytest.raises(AppError) as exc: generate(provider=ReportProvider(output))
+>       assert exc.value.error.code == code
+E       AssertionError: assert 'REPORT_LLM_INVALID_OUTPUT' == 'REPORT_UNVERIFIED_FACT'
+E         
+E         - REPORT_UNVERIFIED_FACT
+E         + REPORT_LLM_INVALID_OUTPUT
+
+backend/tests/test_report_module.py:98: AssertionError
+_ test_model_cannot_introduce_unverified_facts_or_claims[output5-REPORT_UNVERIFIED_FACT] _
+
+output = {'insights': [{'primary_evidence_id': 'E0002', 'evidence_refs': ['E0002'], 'finding_type': 'highlight', 'implication': '排名第一。', ...}]}
+code = 'REPORT_UNVERIFIED_FACT'
+
+    @pytest.mark.parametrize("output,code", [
+        (draft(primary="E9999"), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(refs=["E0002","E0002"]), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(kind="trend"), "REPORT_INVALID_EVIDENCE_TYPE"),
+        (draft(implication="当前有42条记录。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="占百分之五十。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="排名第一。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="需求导致岗位集中。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(recommendation="保证能够获得机会。"), "REPORT_UNVERIFIED_FACT"),
+        ("invalid JSON", "REPORT_LLM_INVALID_OUTPUT"),
+        ('{"insights":[],"insights":[]}', "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[],"headline":"目标完成"}, "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[{**draft()["insights"][0], "fact":"上海有42条"}]}, "REPORT_LLM_INVALID_OUTPUT"),
+    ])
+    def test_model_cannot_introduce_unverified_facts_or_claims(output, code):
+        with pytest.raises(AppError) as exc: generate(provider=ReportProvider(output))
+>       assert exc.value.error.code == code
+E       AssertionError: assert 'REPORT_LLM_INVALID_OUTPUT' == 'REPORT_UNVERIFIED_FACT'
+E         
+E         - REPORT_UNVERIFIED_FACT
+E         + REPORT_LLM_INVALID_OUTPUT
+
+backend/tests/test_report_module.py:98: AssertionError
+_ test_model_cannot_introduce_unverified_facts_or_claims[output6-REPORT_UNVERIFIED_FACT] _
+
+output = {'insights': [{'primary_evidence_id': 'E0002', 'evidence_refs': ['E0002'], 'finding_type': 'highlight', 'implication': '需求导致岗位集中。', ...}]}
+code = 'REPORT_UNVERIFIED_FACT'
+
+    @pytest.mark.parametrize("output,code", [
+        (draft(primary="E9999"), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(refs=["E0002","E0002"]), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(kind="trend"), "REPORT_INVALID_EVIDENCE_TYPE"),
+        (draft(implication="当前有42条记录。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="占百分之五十。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="排名第一。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="需求导致岗位集中。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(recommendation="保证能够获得机会。"), "REPORT_UNVERIFIED_FACT"),
+        ("invalid JSON", "REPORT_LLM_INVALID_OUTPUT"),
+        ('{"insights":[],"insights":[]}', "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[],"headline":"目标完成"}, "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[{**draft()["insights"][0], "fact":"上海有42条"}]}, "REPORT_LLM_INVALID_OUTPUT"),
+    ])
+    def test_model_cannot_introduce_unverified_facts_or_claims(output, code):
+        with pytest.raises(AppError) as exc: generate(provider=ReportProvider(output))
+>       assert exc.value.error.code == code
+E       AssertionError: assert 'REPORT_LLM_INVALID_OUTPUT' == 'REPORT_UNVERIFIED_FACT'
+E         
+E         - REPORT_UNVERIFIED_FACT
+E         + REPORT_LLM_INVALID_OUTPUT
+
+backend/tests/test_report_module.py:98: AssertionError
+_ test_model_cannot_introduce_unverified_facts_or_claims[output7-REPORT_UNVERIFIED_FACT] _
+
+output = {'insights': [{'primary_evidence_id': 'E0002', 'evidence_refs': ['E0002'], 'finding_type': 'highlight', 'implication': '该分组值得继续评估。', ...}]}
+code = 'REPORT_UNVERIFIED_FACT'
+
+    @pytest.mark.parametrize("output,code", [
+        (draft(primary="E9999"), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(refs=["E0002","E0002"]), "REPORT_INVALID_EVIDENCE_REFERENCE"),
+        (draft(kind="trend"), "REPORT_INVALID_EVIDENCE_TYPE"),
+        (draft(implication="当前有42条记录。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="占百分之五十。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="排名第一。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(implication="需求导致岗位集中。"), "REPORT_UNVERIFIED_FACT"),
+        (draft(recommendation="保证能够获得机会。"), "REPORT_UNVERIFIED_FACT"),
+        ("invalid JSON", "REPORT_LLM_INVALID_OUTPUT"),
+        ('{"insights":[],"insights":[]}', "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[],"headline":"目标完成"}, "REPORT_LLM_INVALID_OUTPUT"),
+        ({"insights":[{**draft()["insights"][0], "fact":"上海有42条"}]}, "REPORT_LLM_INVALID_OUTPUT"),
+    ])
+    def test_model_cannot_introduce_unverified_facts_or_claims(output, code):
+        with pytest.raises(AppError) as exc: generate(provider=ReportProvider(output))
+>       assert exc.value.error.code == code
+E       AssertionError: assert 'REPORT_LLM_INVALID_OUTPUT' == 'REPORT_UNVERIFIED_FACT'
+E         
+E         - REPORT_UNVERIFIED_FACT
+E         + REPORT_LLM_INVALID_OUTPUT
+
+backend/tests/test_report_module.py:98: AssertionError
+_________________ test_cautious_denial_of_causality_is_allowed _________________
+
+    def test_cautious_denial_of_causality_is_allowed():
+>       report = generate(provider=ReportProvider(draft(implication="该现象不代表因果关系。")))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_report_module.py:102: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_report_module.py:19: in generate
+    return asyncio.run(AnalysisReportService(provider, CapabilityRegistry(), timeout).generate(*(case or report_case())))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:204: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:127: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.services.analysis_report.AnalysisReportService object at 0x16865c360>
+intent = ParsedIntent(analysis_mode=<AnalysisMode.GOAL_DRIVEN: 'goal_driven'>, next_action='proceed', analysis_goal=AnalysisGoa...time_range=None, filters=[], metric_requirements=[], analysis_limits=[]), uncertainties=[], clarification_questions=[])
+validated = ValidatedAnalysisPlan(plan=AnalysisPlan(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc63...734ef3dc6377e6ecae09f0492aa76c03f89ea84c10', plan_version=1, notice='依据真实画像确定性校验；未执行统计，仍需用户审批。'), intent_snapshot=None)
+execution = ExecutionResultV1(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03...，保留缺失分组。', failure_reason=None, result_id=None, result_ref=None, row_count=None, execution_metadata=None, error=None)])
+profile = DatasetProfile(dataset_id='report-dataset', dataset_version='c02e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03f89...e8b546273380f495701734ef3dc6377e6ecae09f0492aa76c03f89ea84c10', plan_version=None, notice='从实际上传文件确定性计算；未清洗、未调用 LLM。'))
+approved_snapshot = None, original_query = None
+trace = <app.observability.recorder.TraceContext object at 0x14b6898b0>
+
+    async def generate(self, intent: ParsedIntent, validated: ValidatedAnalysisPlan,
+                       execution: ExecutionResultV1, profile: DatasetProfile, *, approved_snapshot=None, original_query=None, trace=None) -> AnalysisReport:
+        trace = trace or TraceContext(TraceRecorder())
+        # Reparse all input instances; neither model_copy nor caller validation claims are trusted.
+        try:
+            intent = type(intent).model_validate(intent.model_dump())
+            execution = ExecutionResultV1.model_validate(execution.model_dump())
+            validated = ValidatedAnalysisPlan.model_validate(validated.model_dump())
+            profile = DatasetProfile.model_validate(profile.model_dump())
+        except (ValidationError, ValueError, TypeError, AttributeError):
+            raise AppError("REPORT_INPUT_INVALID", "报告输入结构不正确，未生成报告。", 422) from None
+        if len(execution.model_dump_json().encode()) > 4 * 1024 * 1024:
+            raise AppError("REPORT_INPUT_TOO_LARGE", "计算结果过大，请缩小返回结果范围并明确截断信息。", 422)
+        checked, descriptions = prepare(intent, validated, execution, profile, self.registry)
+        tasks = {task.task_id: task for task in checked.plan.tasks}
+        with trace.span('evidence_builder') as stage:
+            evidence = EvidenceBuilder().build(execution, profile, descriptions)
+            stage.attributes(evidence_count=len(evidence))
+            trace.snapshot('evidence',[e.model_dump(mode='json') for e in evidence],lambda:evidence_projection(evidence))
+        # Stable task priority ordering, retaining evidence IDs and row references.
+        evidence.sort(key=lambda item: (tasks[item.task_id].priority, item.evidence_id))
+        evidenced_tasks = {item.task_id for item in evidence}
+        uncompleted = [UncompletedTask(task_id=t.task_id, title=tasks[t.task_id].title,
+            priority=tasks[t.task_id].priority,
+            reason=t.failure_reason or "结果没有可用于报告的有效数据证据。")
+            for t in execution.tasks if t.status != "success" or t.task_id not in evidenced_tasks]
+        core_tasks = [task for task in tasks.values() if task.priority == "P0"]
+        core_success = [task for task in core_tasks if task.task_id in evidenced_tasks]
+        coverage = "blocked" if not core_success else ("partial" if checked.coverage_status != "complete" or len(core_success) < len(core_tasks) else "complete")
+        confirmed, resolved = False, set()
+        if approved_snapshot is not None:
+            from app.domain.execution import ApprovedExecutionSnapshot
+            approved = ApprovedExecutionSnapshot.model_validate(approved_snapshot.model_dump())
+            plain = ParsedIntent.model_validate({key: getattr(intent, key) for key in ParsedIntent.model_fields})
+            if (execution.source != "engine" or approved.status != "approved" or
+                    approved.approval_id != execution.approval_id or approved.session_id != execution.session_id or
+                    approved.validated_plan != validated or approved.intent != plain):
+                raise AppError("REPORT_APPROVAL_MISMATCH", "报告输入与批准快照不一致。", 422)
+            confirmed = approved.constraints_confirmed
+            resolved = set(approved.resolved_uncertainty_ids)
+        unresolved = [u for u in intent.uncertainties if u.id not in resolved]
+        constraints = intent.constraints
+        pending = ([constraints.time_range] if constraints.time_range else []) + constraints.filters + constraints.metric_requirements + constraints.analysis_limits
+        if coverage == "complete" and ((pending and not confirmed) or any(u.action == "defer" for u in unresolved)):
+            coverage = "partial"
+        limitations = ["结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+            "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。"]
+        if execution.source == "imported":
+            limitations.append("计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。")
+        limitations.extend(issue.message[:2000] for issue in profile.quality_issues[:20])
+        used_metrics = {metric.field for desc in descriptions.values() for metric in desc.metrics.values() if metric.field}
+        limitations.extend(f'上传范围内，{field.display_name[:100]}有 {field.missing_count} 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。'
+            for field in profile.fields if field.field_id in used_metrics and field.missing_count)
+        limitations.extend(f'未完成任务：{t.title[:300]}；{t.reason[:600]}' for t in uncompleted)
+        limitations.extend(f"待解决事项：{u.description}"[:2000] for u in unresolved)
+        limitations.extend(f"需求约束尚需对照执行口径确认：{item.raw_text}"[:2000] for item in pending if not confirmed)
+        for t in execution.tasks:
+            if t.result and t.result.truncated:
+                limitations.append(f"{tasks[t.task_id].title[:200]}：仅返回部分结果，不能据此推断未返回分组的排名或总体占比。")
+            if t.result and any(step.operation == "top_n" for step in tasks[t.task_id].steps):
+                limitations.append(f"{tasks[t.task_id].title[:200]}：任务含 Top N 选择，不能仅凭返回表格确认所有分组均已覆盖。")
+        with trace.span('chart_builder') as chart_stage:
+            charts = VisualizationBuilder().build(execution, descriptions, evidence, tasks, intent)
+            chart_stage.attributes(chart_count=len(charts))
+        charts.sort(key=lambda chart: (tasks[chart.task_id].priority, chart.chart_id))
+        from app.review.presentation import PlanPresentationMapper
+        mapper = PlanPresentationMapper(profile)
+        llm, insights, rejected_insights, text_validation = None, [], [], []
+        candidate_repairs = []
+        missing_core_metrics = []
+        if evidence:
+            # Only bounded structured evidence, never all result rows / raw dataset.
+            selected = select_evidence(evidence, tasks)
+            required_groups = [{"task_id": tid, "data_ref": ref, "result_field": field,
+                "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected
+                    if tasks[e.task_id].priority == 'P0' and e.evidence_type != 'coverage')]
+            if len(required_groups) > 8:
+                raise AppError('REPORT_CORE_SCOPE_TOO_LARGE', '核心指标组超过单次报告可覆盖范围，原计算结果保留；请缩小分析范围。', 422)
+            allowed_limitations = list(dict.fromkeys(["结论仅适用于当前返回范围，不能外推整体市场。", *limitations]))
+            # These exact deterministic statements may contain verified quality
+            # counts. Free model prose still cannot add numeric assertions.
+            limitations = list(dict.fromkeys([*limitations, allowed_limitations[0]]))
+            limitation_pool = {f'L{index+1:04d}': text for index, text in enumerate(allowed_limitations)}
+            recommendation_options = build_catalog(selected, tasks, profile, intent)
+            payload = {"analysis_goal": intent.analysis_goal.model_dump(), "goal_coverage": coverage,
+                "draft_schema_version": "insight-selection-v2",
+                "required_core_groups": required_groups,
+                "allowed_limitations": allowed_limitations,
+                "recommendation_options": list(recommendation_options.values()),
+                "limitation_pool": limitation_pool,
+                "original_query": (original_query or intent.analysis_goal.business_goal or '')[:2000],
+                "constraints": intent.constraints.model_dump(), "constraints_confirmed": confirmed,
+                "scope_context": [{"task_id": t.task_id, "approved_steps": mapper.steps(t)} for t in tasks.values()],
+                "fields": [{"field_id": f.field_id, "name": f.display_name, "logical_type": f.logical_type,
+                            "upload_missing_count": f.missing_count} for f in profile.fields],
+                "uncompleted_tasks": [t.model_dump() for t in uncompleted],
+                "task_sample_context": [{"task_id": t.task_id, "status": t.status,
+                    "valid_sample_count": t.valid_sample_count, "sample_definition": t.sample_definition,
+                    "metric_valid_counts": t.execution_metadata.metric_valid_counts if t.execution_metadata else {}}
+                    for t in execution.tasks],
+                "tasks": [{"task_id": t.task_id, "priority": t.priority, "business_question": t.business_question}
+                          for t in tasks.values() if t.task_id in evidenced_tasks],
+                "evidence": [item.model_dump() for item in selected],
+                "evidence_groups": [{"task_id": tid, "data_ref": ref, "result_field": field,
+                    "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                    for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected)],
+                "limitations": limitations}
+            instruction = json.dumps(payload, ensure_ascii=False)
+            if len(instruction.encode()) > 160 * 1024:
+                raise AppError("REPORT_CONTEXT_TOO_LARGE", "证据上下文过大，未调用模型。", 422)
+            request = LLMRequest(purpose="report_insights_v1", system_prompt=SYSTEM_PROMPT,
+                instruction=instruction, response_schema=selection_schema(selected, recommendation_options, limitation_pool, required_groups), enable_thinking=self.enable_thinking)
+            with trace.span('insight_generator', {'purpose': request.purpose, 'input_bytes': len(instruction.encode()),
+                    'selected_evidence_count': len(selected), 'evidence_refs': [e.evidence_id for e in selected], 'candidate_count': None,
+                    'timeout_seconds': self.timeout_seconds, 'enable_thinking': self.enable_thinking}) as generation:
+                try:
+                    if self.prompt_source:
+                        request = request.model_copy(update={'call_binding':self.prompt_source.binding(uuid4().hex,trace=trace)})
+                    generation.event('llm.started', purpose=request.purpose)
+                    response = await asyncio.wait_for(self.provider.generate(request), timeout=self.timeout_seconds)
+                    trace.snapshot('llm_output',response.text,lambda:llm_projection(response))
+                    generation.event('llm.returned', provider=response.provider, model=response.model,
+                        is_mock=response.is_mock, output_bytes=len(response.text.encode()),
+                        call_id=response.call_id,request_snapshot_id=response.request_snapshot_id,
+                        template_snapshot_id=response.template_snapshot_id)
+                except TimeoutError:
+                    raise AppError("LLM_TIMEOUT", "报告洞察生成超时，未用虚构内容替代。", 504) from None
+                except AppError:
+                    raise
+                except Exception:
+                    raise AppError("REPORT_LLM_CALL_FAILED", "报告洞察生成失败。", 502) from None
+                try:
+                    if len(response.text.encode()) > 64 * 1024:
+                        raise ValueError("Oversized response")
+                    draft = InsightSelection.model_validate(strict_json(response.text))
+                except (ValidationError, ValueError, TypeError, AttributeError):
+>                   raise AppError("REPORT_LLM_INVALID_OUTPUT", "洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。", 502) from None
+E                   app.domain.errors.AppError: ('REPORT_LLM_INVALID_OUTPUT', '洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。', 502)
+
+backend/app/services/analysis_report.py:178: AppError
+_______ test_cross_task_evidence_and_omitted_core_findings_are_rejected ________
+
+    def test_cross_task_evidence_and_omitted_core_findings_are_rejected():
+        case = report_case([task(), task(tid="A02",priority="P1")])
+        baseline = generate(case)
+        primary = next(e.evidence_id for e in baseline.evidence if e.task_id == "A01" and e.evidence_type == "ranking")
+        other = next(e.evidence_id for e in baseline.evidence if e.task_id == "A02" and e.evidence_type == "ranking")
+        with pytest.raises(AppError) as exc:
+            generate(case, ReportProvider(draft(primary, [primary,other])))
+>       assert exc.value.error.code == "REPORT_INVALID_EVIDENCE_REFERENCE"
+E       AssertionError: assert 'REPORT_LLM_INVALID_OUTPUT' == 'REPORT_INVAL...NCE_REFERENCE'
+E         
+E         - REPORT_INVALID_EVIDENCE_REFERENCE
+E         + REPORT_LLM_INVALID_OUTPUT
+
+backend/tests/test_report_module.py:166: AssertionError
+__________ test_real_workflow_observation_snapshots_auth_and_restart ___________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-219/test_real_workflow_observation0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1687639a0>
+
+    def test_real_workflow_observation_snapshots_auth_and_restart(tmp_path,monkeypatch):
+        monkeypatch.setattr('app.observability.recorder.git_snapshot',lambda _: {})
+        app=create_app(settings(tmp_path),Provider())
+        with TestClient(app) as client:
+            _,execution,_=run(client);a=listing(client)[0]
+            assert set(a['manifest']['input_sha256'])=={'dataset','profile','user_goal','intent','approved_plan','execution'}
+            assert a['manifest']['git']=={} # actual project has no Git, no fake SHA
+            path='/admin/runs/'+a['run_id']+'/snapshots'
+            assert client.get(path).status_code==403
+            output=client.get(path,headers=headers()).json()['artifacts']
+            assert all(v['availability']=='available' for v in output.values())
+>           assert output['llm_output']['projection']['parsed'] is True
+E           assert False is True
+
+backend/tests/test_trace_comparison.py:149: AssertionError
+_______ test_partial_all_rejected_and_invalid_json[partial-partial-None] _______
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-219/test_partial_all_rejected_and_0')
+mode = 'partial', status = 'partial', rule = None
+
+    @pytest.mark.parametrize('mode,status,rule',[('partial','partial',None),('bad','failed','FREE_TEXT_GUARD'),('json','failed',None)])
+    def test_partial_all_rejected_and_invalid_json(tmp_path,mode,status,rule):
+        app=create_app(settings(tmp_path),CandidateProvider(mode))
+        with TestClient(app) as client:
+            _,result,_=run(client)
+            record=listing(client)[0]
+>           assert record['status']==status
+E           AssertionError: assert 'failed' == 'partial'
+E             
+E             - partial
+E             + failed
+
+backend/tests/test_workflow_trace.py:114: AssertionError
+____ test_partial_all_rejected_and_invalid_json[bad-failed-FREE_TEXT_GUARD] ____
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-219/test_partial_all_rejected_and_1')
+mode = 'bad', status = 'failed', rule = 'FREE_TEXT_GUARD'
+
+    @pytest.mark.parametrize('mode,status,rule',[('partial','partial',None),('bad','failed','FREE_TEXT_GUARD'),('json','failed',None)])
+    def test_partial_all_rejected_and_invalid_json(tmp_path,mode,status,rule):
+        app=create_app(settings(tmp_path),CandidateProvider(mode))
+        with TestClient(app) as client:
+            _,result,_=run(client)
+            record=listing(client)[0]
+            assert record['status']==status
+            spans=app.state.traces.repository.spans(record['run_id'])
+            if mode=='json':
+                assert next(s for s in spans if s.name=='insight_generator').attributes['candidate_count'] is None
+            else:
+>               stage=next(s for s in spans if s.name=='fact_validator')
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               StopIteration
+
+backend/tests/test_workflow_trace.py:119: StopIteration
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_insight_composition.py::test_new_presentation_and_html_use_saved_insights_without_view_evidence
+FAILED backend/tests/test_insight_composition.py::test_invalid_candidate_is_disclosed_without_losing_valid_facts_or_fake_success
+FAILED backend/tests/test_insight_reliability.py::test_saved_report_fact_finding_and_summary_are_not_three_copies
+FAILED backend/tests/test_prompt_registry.py::test_actual_http_body_equals_persisted_snapshot_and_restart[report]
+FAILED backend/tests/test_prompt_registry.py::test_dynamic_evidence_schema_and_multiple_calls_share_template
+FAILED backend/tests/test_prompt_registry.py::test_report_span_call_link_and_trace_write_failure_is_independent
+FAILED backend/tests/test_prompt_registry.py::test_request_body_unchanged_from_frozen_preimplementation_capture[report-R01-imported]
+FAILED backend/tests/test_prompt_registry.py::test_run_manifest_pins_same_template_as_report_call
+FAILED backend/tests/test_prompt_registry.py::test_overlapping_reports_keep_explicit_run_and_span_bindings
+FAILED backend/tests/test_prompt_registry_read.py::test_run_reference_is_only_linked_when_run_and_span_exist
+FAILED backend/tests/test_report_module.py::test_model_cannot_introduce_unverified_facts_or_claims[output0-REPORT_INVALID_EVIDENCE_REFERENCE]
+FAILED backend/tests/test_report_module.py::test_model_cannot_introduce_unverified_facts_or_claims[output1-REPORT_INVALID_EVIDENCE_REFERENCE]
+FAILED backend/tests/test_report_module.py::test_model_cannot_introduce_unverified_facts_or_claims[output2-REPORT_INVALID_EVIDENCE_TYPE]
+FAILED backend/tests/test_report_module.py::test_model_cannot_introduce_unverified_facts_or_claims[output3-REPORT_UNVERIFIED_FACT]
+FAILED backend/tests/test_report_module.py::test_model_cannot_introduce_unverified_facts_or_claims[output4-REPORT_UNVERIFIED_FACT]
+FAILED backend/tests/test_report_module.py::test_model_cannot_introduce_unverified_facts_or_claims[output5-REPORT_UNVERIFIED_FACT]
+FAILED backend/tests/test_report_module.py::test_model_cannot_introduce_unverified_facts_or_claims[output6-REPORT_UNVERIFIED_FACT]
+FAILED backend/tests/test_report_module.py::test_model_cannot_introduce_unverified_facts_or_claims[output7-REPORT_UNVERIFIED_FACT]
+FAILED backend/tests/test_report_module.py::test_cautious_denial_of_causality_is_allowed
+FAILED backend/tests/test_report_module.py::test_cross_task_evidence_and_omitted_core_findings_are_rejected
+FAILED backend/tests/test_trace_comparison.py::test_real_workflow_observation_snapshots_auth_and_restart
+FAILED backend/tests/test_workflow_trace.py::test_partial_all_rejected_and_invalid_json[partial-partial-None]
+FAILED backend/tests/test_workflow_trace.py::test_partial_all_rejected_and_invalid_json[bad-failed-FREE_TEXT_GUARD]
+23 failed, 1512 passed, 1 warning in 77.86s (0:01:17)

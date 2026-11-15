@@ -1,0 +1,27 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_empty_filtered_numeric_metric_remains_uncovered_instead_of_silent_complete _
+
+    def test_empty_filtered_numeric_metric_remains_uncovered_instead_of_silent_complete():
+        source=inputs(9)
+        metrics=source[1].plan.tasks[0].steps[0].params['metrics']
+        case=report_case([task([
+            step('filter',{'conditions':[{'field':'field_0001','operator':'eq','value':'无匹配地区'}]}),
+            step('aggregate',{'metrics':metrics},'S02')])],RAW)
+        report=generate(case)
+>       assert report.report_status=='partial' and report.goal_coverage=='partial'
+E       AssertionError: assert ('complete' == 'partial'
+E         
+E         - partial
+E         + complete)
+
+backend/tests/test_report_capacity.py:197: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_report_capacity.py::test_empty_filtered_numeric_metric_remains_uncovered_instead_of_silent_complete
+1 failed, 1 warning in 0.10s

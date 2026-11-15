@@ -1,0 +1,50 @@
+........................................................................ [ 36%]
+........................................................................ [ 73%]
+................................................F.F                      [100%]
+=================================== FAILURES ===================================
+_ test_presentation_and_download_are_authenticated_reads_without_rerunning_llm _
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-209/test_presentation_and_download0')
+
+    def test_presentation_and_download_are_authenticated_reads_without_rerunning_llm(tmp_path):
+        provider=Provider();app=create_app(Settings(tmp_path),provider)
+        with TestClient(app) as client:
+            _,result,state=run(client);job=state['report_generations'][0];rid=job['report_id']
+            original=client.get('/api/v1/reports/'+rid).json();calls=len(provider.requests)
+            view=client.get('/api/v1/reports/'+rid+'/presentation')
+            assert view.status_code==200,view.text
+>           assert [m['display_value'] for m in view.json()['key_metrics']]==['21,250','4.9%','87.8%']
+E           AssertionError: assert ['21,250', '4...60', '6', '3'] == ['21,250', '4.9%', '87.8%']
+E             
+E             Left contains 3 more items, first extra item: '47,260'
+E             Use -v to get more diff
+
+backend/tests/test_report_presentation.py:140: AssertionError
+__________ test_count_of_numeric_field_is_labeled_as_count_not_money ___________
+
+    def test_count_of_numeric_field_is_labeled_as_count_not_money():
+        candidate=task([step('group_aggregate',{'dimensions':['field_0001'],'metrics':[{'function':'count','field':'field_0002','alias':'count'}]}),
+            step('top_n',{'field':'count','direction':'desc','n':3},'S02')])
+        i,v,x,p=report_case([candidate],raw='城市,销售额\n甲,10\n甲,20\n甲,30\n乙,10\n乙,20\n丙,10\n'.encode())
+        x.tasks[0].result_id=x.tasks[0].result.result_id
+        report=asyncio.run(AnalysisReportService(ReportProvider(),CapabilityRegistry()).generate(i,v,x,p))
+        view=build_presentation(report,p)
+>       assert view.key_metrics[0].label=='第一名销售额非空记录数'
+E       AssertionError: assert '最高销售额非空记录数' == '第一名销售额非空记录数'
+E         
+E         - 第一名销售额非空记录数
+E         ? ^^^
+E         + 最高销售额非空记录数
+E         ? ^^
+
+backend/tests/test_report_presentation.py:162: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_report_presentation.py::test_presentation_and_download_are_authenticated_reads_without_rerunning_llm
+FAILED backend/tests/test_report_presentation.py::test_count_of_numeric_field_is_labeled_as_count_not_money
+2 failed, 193 passed, 1 warning in 7.78s

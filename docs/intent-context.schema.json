@@ -1,0 +1,98 @@
+{
+  "$defs": {
+    "ContextColumn": {
+      "additionalProperties": false,
+      "properties": {
+        "field_id": {
+          "title": "Field Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "physical_type": {
+          "$ref": "#/$defs/PhysicalType"
+        },
+        "logical_type": {
+          "$ref": "#/$defs/LogicalType"
+        }
+      },
+      "required": [
+        "field_id",
+        "name",
+        "physical_type",
+        "logical_type"
+      ],
+      "title": "ContextColumn",
+      "type": "object"
+    },
+    "LogicalType": {
+      "enum": [
+        "empty",
+        "boolean",
+        "integer",
+        "number",
+        "date",
+        "datetime",
+        "time",
+        "text",
+        "mixed"
+      ],
+      "title": "LogicalType",
+      "type": "string"
+    },
+    "PhysicalType": {
+      "enum": [
+        "null",
+        "boolean",
+        "integer",
+        "float",
+        "string",
+        "date",
+        "datetime",
+        "time",
+        "mixed"
+      ],
+      "title": "PhysicalType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "dataset_name": {
+      "title": "Dataset Name",
+      "type": "string"
+    },
+    "row_count": {
+      "exclusiveMinimum": 0,
+      "title": "Row Count",
+      "type": "integer"
+    },
+    "columns": {
+      "items": {
+        "$ref": "#/$defs/ContextColumn"
+      },
+      "title": "Columns",
+      "type": "array"
+    },
+    "sample_rows": {
+      "items": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "maxItems": 0,
+      "title": "Sample Rows",
+      "type": "array"
+    }
+  },
+  "required": [
+    "dataset_name",
+    "row_count",
+    "columns"
+  ],
+  "title": "DatasetContext",
+  "type": "object"
+}

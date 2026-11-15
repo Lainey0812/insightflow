@@ -1,0 +1,362 @@
+{
+  "dataset_id": "report-dataset",
+  "dataset_version": "2173e719e354b77e0d2cedbb8ad80ab1bbbdb4299915fe277371f3dfd37e3eb9",
+  "report_id": "report_f4acf9482e07489ea9dda5ba724322f5",
+  "execution_id": "exec_kernel_test",
+  "plan_version": 1,
+  "report_status": "complete",
+  "goal_coverage": "complete",
+  "analysis_goal": "比较渠道的平均处理分钟，并说明缺失值限制",
+  "dataset_name": "support.csv",
+  "dataset_row_count": 5,
+  "execution_source": "imported",
+  "summary": {
+    "headline": "渠道平均处理分钟与数据缺失",
+    "overview": "围绕「比较渠道的平均处理分钟，并说明缺失值限制」，基于 1 个任务的可用结果整理。 比较发现及其依据见下方；业务解释与建议仍需结合实际情况核查。",
+    "evidence_refs": [
+      "E0002",
+      "E0003",
+      "E0006"
+    ]
+  },
+  "key_metrics": [
+    {
+      "label": "第一名处理分钟",
+      "value": 25.0,
+      "unit": null,
+      "evidence_ref": "E0002"
+    },
+    {
+      "label": "上传数据记录数",
+      "value": 5,
+      "unit": "条",
+      "evidence_ref": "E0001"
+    },
+    {
+      "label": "首个核心任务有效样本量",
+      "value": 5,
+      "unit": "条",
+      "evidence_ref": "E0001"
+    },
+    {
+      "label": "返回结果最大值（电话）",
+      "value": 25.0,
+      "unit": null,
+      "evidence_ref": "E0004"
+    }
+  ],
+  "insights": [
+    {
+      "insight_id": "I001",
+      "task_id": "A01",
+      "fact": "E0002（value）：对象=电话，指标值=25，返回排名=1；E0003（value）：对象=在线，指标值=10，返回排名=2；E0006（value）：比较对象=电话，基准对象=在线，对象值=25，基准值=10，差值=15",
+      "finding": "电话的处理分钟平均值为 25，返回结果内排名 1（并列同名次）。 在线的处理分钟平均值为 10，返回结果内排名 2（并列同名次）。 电话与在线的处理分钟平均值差值为 15。",
+      "implication": "待验证的业务解释：电话与在线渠道的平均处理分钟存在差额，值得结合记录分布评估实际业务影响。当前结果不足以判断原因，且需考虑缺失数据对均值稳定性的潜在干扰。",
+      "recommendation": "下一步建议（尚未执行）：核查两个渠道的有效样本量及处理时长的离散程度，并确认缺失记录在渠道间的分布是否均衡；补充分析尚未执行。",
+      "evidence_refs": [
+        "E0002",
+        "E0003",
+        "E0006"
+      ],
+      "limitations": [
+        "结论仅适用于当前返回范围，不能外推整体市场。",
+        "上传数据中存在处理分钟缺失值，可能影响平均值的代表性。",
+        "业务解释是待验证假设，未经过完整语义事实验证；不能据此推断因果关系。"
+      ]
+    }
+  ],
+  "charts": [
+    {
+      "chart_id": "C001",
+      "task_id": "A01",
+      "title": "渠道平均处理分钟与数据缺失",
+      "chart_type": "bar",
+      "dimension": "field_0001",
+      "metrics": [
+        "value"
+      ],
+      "data_ref": "R001",
+      "supported_chart_types": [
+        "bar",
+        "table"
+      ],
+      "evidence_refs": [
+        "E0001",
+        "E0002",
+        "E0003",
+        "E0004",
+        "E0005",
+        "E0006"
+      ],
+      "display_limit": 10,
+      "order": "value_desc",
+      "note": null
+    }
+  ],
+  "recommendations": [
+    {
+      "text": "下一步建议（尚未执行）：核查两个渠道的有效样本量及处理时长的离散程度，并确认缺失记录在渠道间的分布是否均衡；补充分析尚未执行。",
+      "evidence_refs": [
+        "E0002",
+        "E0003",
+        "E0006"
+      ]
+    }
+  ],
+  "limitations": [
+    "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+    "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+    "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。",
+    "上传范围内，处理分钟有 2 条缺失；这不是本任务筛选范围的有效样本量，指标有效记录以执行口径为准。"
+  ],
+  "uncompleted_tasks": [],
+  "evidence": [
+    {
+      "evidence_id": "E0001",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "$execution.valid_sample_count",
+      "evidence_type": "coverage",
+      "value": {
+        "valid_samples": 5,
+        "effective_rows": 5,
+        "dataset_rows": 5,
+        "coverage_percent": 100
+      },
+      "scope": "比较渠道的平均处理分钟，并说明缺失值限制；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；进入聚合前的参与记录数；未针对单个指标剔除空值。；有效样本量 / 画像总行数 × 100；有效行数由执行模块提供。",
+      "statement": "该任务有效样本量为 5，占上传数据行数约 100%。",
+      "source_row_indices": [],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0002",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "电话",
+        "value": 25.0,
+        "rank": 1
+      },
+      "scope": "比较渠道的平均处理分钟，并说明缺失值限制；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，电话的处理分钟 · 平均值为 25，并列值采用同一名次，排名 1。",
+      "source_row_indices": [
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0003",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "在线",
+        "value": 10.0,
+        "rank": 2
+      },
+      "scope": "比较渠道的平均处理分钟，并说明缺失值限制；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，在线的处理分钟 · 平均值为 10，并列值采用同一名次，排名 2。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0004",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "maximum",
+      "value": {
+        "value": 25.0,
+        "category": "电话",
+        "tie_count": 1
+      },
+      "scope": "比较渠道的平均处理分钟，并说明缺失值限制；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；读取 value 的最大值，保留并列来源行。",
+      "statement": "该任务完整分组结果的处理分钟 · 平均值最大值为 25，对应 电话等 1 个分组。",
+      "source_row_indices": [
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0005",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "minimum",
+      "value": {
+        "value": 10.0,
+        "category": "在线",
+        "tie_count": 1
+      },
+      "scope": "比较渠道的平均处理分钟，并说明缺失值限制；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；读取 value 的最小值，保留并列来源行。",
+      "statement": "该任务完整分组结果的处理分钟 · 平均值最小值为 10，对应 在线等 1 个分组。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0006",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "difference",
+      "value": {
+        "left": "电话",
+        "right": "在线",
+        "left_value": 25.0,
+        "right_value": 10.0,
+        "difference": 15
+      },
+      "scope": "比较渠道的平均处理分钟，并说明缺失值限制；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算值相减：value[1] - value[0]；不是因果或显著性检验。",
+      "statement": "在该任务完整分组结果中，电话与在线的处理分钟 · 平均值差值为 15。",
+      "source_row_indices": [
+        1,
+        0
+      ],
+      "related_result_refs": []
+    }
+  ],
+  "result_data": {
+    "R001": {
+      "result_id": "R001",
+      "columns": [
+        {
+          "field": "field_0001",
+          "label": "渠道",
+          "logical_type": "text",
+          "role": "dimension",
+          "unit": null
+        },
+        {
+          "field": "value",
+          "label": "处理分钟 · 平均值",
+          "logical_type": "number",
+          "role": "metric",
+          "unit": null
+        }
+      ],
+      "rows": [
+        {
+          "field_0001": "在线",
+          "value": 10.0
+        },
+        {
+          "field_0001": "电话",
+          "value": 25.0
+        },
+        {
+          "field_0001": "邮件",
+          "value": null
+        }
+      ],
+      "truncated": false,
+      "total_result_rows": 3,
+      "row_offset": 0,
+      "total_refs": []
+    }
+  },
+  "execution_metadata": {
+    "A01": {
+      "task_id": "A01",
+      "status": "success",
+      "effective_row_count": 5,
+      "valid_sample_count": 5,
+      "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+      "scope": "比较渠道的平均处理分钟，并说明缺失值限制；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。",
+      "failure_reason": null,
+      "result_id": null,
+      "result_ref": null,
+      "row_count": null,
+      "execution_metadata": null,
+      "error": null,
+      "insight_generation_version": "evidence-composition-v1.1.1",
+      "rejected_insights": [],
+      "text_validation": [
+        {
+          "role": "recommendation",
+          "original_text": "核查两个渠道的有效样本量及处理时长的离散程度，并确认缺失记录在渠道间的分布是否均衡；补充分析尚未执行。",
+          "checking_view": "核查对应对象的有效样本量及处理时长的离散程度，并确认缺失记录在渠道间的分布是否均衡；补充分析尚未执行。",
+          "verified_references": [
+            {
+              "rule": "BOUND_COMPARISON_OBJECTS",
+              "fragment": "两个渠道"
+            }
+          ],
+          "display_text_changed": false,
+          "evidence_refs": [
+            "E0002",
+            "E0003",
+            "E0006"
+          ]
+        }
+      ],
+      "missing_core_metrics": [],
+      "approved_scope": [
+        "按渠道分组",
+        "拟用统计口径：处理分钟 · 均值"
+      ],
+      "original_query": null
+    }
+  },
+  "task_metadata": {
+    "A01": {
+      "task_id": "A01",
+      "title": "渠道平均处理分钟与数据缺失",
+      "business_question": "渠道平均处理分钟与数据缺失",
+      "priority": "P0",
+      "priority_reason": "删除后无法比较城市岗位数量，核心问题将无法回答。",
+      "requirement_ids": [
+        "C01"
+      ],
+      "depends_on": [],
+      "missing_inputs": [],
+      "steps": [
+        {
+          "step_id": "S01",
+          "operation": "group_aggregate",
+          "params": {
+            "dimensions": [
+              "field_0001"
+            ],
+            "metrics": [
+              {
+                "function": "avg",
+                "field": "field_0002",
+                "alias": "value"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "fact_validation": "structured_facts_verified_interpretations_unverified",
+  "llm": {
+    "provider": "compatible",
+    "model": "qwen3.8-flash",
+    "is_mock": false
+  },
+  "provenance": {
+    "source": "llm",
+    "dataset": "report-dataset",
+    "dataset_version": "2173e719e354b77e0d2cedbb8ad80ab1bbbdb4299915fe277371f3dfd37e3eb9",
+    "plan_version": 1,
+    "notice": "事实来自执行结果和确定性证据；解释性陈述未严格验证。"
+  },
+  "preview_url": "/reports/report_f4acf9482e07489ea9dda5ba724322f5",
+  "download_url": "/api/v1/reports/report_f4acf9482e07489ea9dda5ba724322f5/download",
+  "generated_at": "2026-10-28T03:25:21.200351+00:00"
+}

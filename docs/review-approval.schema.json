@@ -1,0 +1,986 @@
+{
+  "$defs": {
+    "AnalysisGoal": {
+      "additionalProperties": false,
+      "properties": {
+        "analysis_object": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "minLength": 1,
+              "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Analysis Object"
+        },
+        "business_goal": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "minLength": 1,
+              "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Business Goal"
+        },
+        "decision_goal": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "minLength": 1,
+              "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Decision Goal"
+        }
+      },
+      "required": [
+        "analysis_object",
+        "business_goal",
+        "decision_goal"
+      ],
+      "title": "AnalysisGoal",
+      "type": "object"
+    },
+    "AnalysisMode": {
+      "enum": [
+        "goal_driven",
+        "exploratory",
+        "undetermined"
+      ],
+      "title": "AnalysisMode",
+      "type": "string"
+    },
+    "AnalysisPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "dataset_id": {
+          "minLength": 1,
+          "title": "Dataset Id",
+          "type": "string"
+        },
+        "dataset_version": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Dataset Version",
+          "type": "string"
+        },
+        "plan_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Plan Id",
+          "type": "string"
+        },
+        "plan_version": {
+          "minimum": 1,
+          "title": "Plan Version",
+          "type": "integer"
+        },
+        "tasks": {
+          "items": {
+            "$ref": "#/$defs/AnalysisTask"
+          },
+          "maxItems": 10,
+          "title": "Tasks",
+          "type": "array"
+        },
+        "core_requirements": {
+          "items": {
+            "$ref": "#/$defs/CoreRequirement"
+          },
+          "maxItems": 10,
+          "minItems": 1,
+          "title": "Core Requirements",
+          "type": "array"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "dataset_version",
+        "plan_id",
+        "plan_version",
+        "tasks",
+        "core_requirements"
+      ],
+      "title": "AnalysisPlan",
+      "type": "object"
+    },
+    "AnalysisStep": {
+      "additionalProperties": false,
+      "properties": {
+        "step_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Step Id",
+          "type": "string"
+        },
+        "operation": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Operation",
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": true,
+          "title": "Params",
+          "type": "object"
+        }
+      },
+      "required": [
+        "step_id",
+        "operation",
+        "params"
+      ],
+      "title": "AnalysisStep",
+      "type": "object"
+    },
+    "AnalysisTask": {
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        },
+        "business_question": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Business Question",
+          "type": "string"
+        },
+        "priority": {
+          "enum": [
+            "P0",
+            "P1",
+            "P2"
+          ],
+          "title": "Priority",
+          "type": "string"
+        },
+        "priority_reason": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Priority Reason",
+          "type": "string"
+        },
+        "requirement_ids": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Requirement Ids",
+          "type": "array"
+        },
+        "depends_on": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Depends On",
+          "type": "array"
+        },
+        "missing_inputs": {
+          "items": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Missing Inputs",
+          "type": "array"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/AnalysisStep"
+          },
+          "maxItems": 20,
+          "title": "Steps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "task_id",
+        "title",
+        "business_question",
+        "priority",
+        "priority_reason",
+        "requirement_ids",
+        "depends_on",
+        "steps"
+      ],
+      "title": "AnalysisTask",
+      "type": "object"
+    },
+    "ApprovedExecutionSnapshot": {
+      "additionalProperties": false,
+      "description": "Server-owned approved snapshot. Never accepted by the execution HTTP endpoint.",
+      "properties": {
+        "approval_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Approval Id",
+          "type": "string"
+        },
+        "approved_at": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Approved At",
+          "type": "string"
+        },
+        "status": {
+          "default": "approved",
+          "enum": [
+            "approved",
+            "revoked"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "validated_plan": {
+          "$ref": "#/$defs/ValidatedAnalysisPlan"
+        },
+        "intent": {
+          "$ref": "#/$defs/ParsedIntent"
+        },
+        "resolved_uncertainty_ids": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Resolved Uncertainty Ids",
+          "type": "array"
+        },
+        "constraints_confirmed": {
+          "default": false,
+          "title": "Constraints Confirmed",
+          "type": "boolean"
+        },
+        "session_id": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Session Id"
+        },
+        "acknowledged_warnings": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Acknowledged Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "approval_id",
+        "approved_at",
+        "validated_plan",
+        "intent"
+      ],
+      "title": "ApprovedExecutionSnapshot",
+      "type": "object"
+    },
+    "CoreRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "requirement_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Requirement Id",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "requirement_id",
+        "description"
+      ],
+      "title": "CoreRequirement",
+      "type": "object"
+    },
+    "IntentConstraints": {
+      "additionalProperties": false,
+      "properties": {
+        "time_range": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UnverifiedConstraint"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "filters": {
+          "items": {
+            "$ref": "#/$defs/UnverifiedConstraint"
+          },
+          "title": "Filters",
+          "type": "array"
+        },
+        "metric_requirements": {
+          "items": {
+            "$ref": "#/$defs/UnverifiedConstraint"
+          },
+          "title": "Metric Requirements",
+          "type": "array"
+        },
+        "analysis_limits": {
+          "items": {
+            "$ref": "#/$defs/UnverifiedConstraint"
+          },
+          "title": "Analysis Limits",
+          "type": "array"
+        }
+      },
+      "required": [
+        "time_range",
+        "filters",
+        "metric_requirements",
+        "analysis_limits"
+      ],
+      "title": "IntentConstraints",
+      "type": "object"
+    },
+    "LLMMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Model"
+        },
+        "is_mock": {
+          "title": "Is Mock",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "provider",
+        "model",
+        "is_mock"
+      ],
+      "title": "LLMMetadata",
+      "type": "object"
+    },
+    "ParsedIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "analysis_mode": {
+          "$ref": "#/$defs/AnalysisMode"
+        },
+        "next_action": {
+          "enum": [
+            "proceed",
+            "clarify"
+          ],
+          "title": "Next Action",
+          "type": "string"
+        },
+        "analysis_goal": {
+          "$ref": "#/$defs/AnalysisGoal"
+        },
+        "constraints": {
+          "$ref": "#/$defs/IntentConstraints"
+        },
+        "uncertainties": {
+          "items": {
+            "$ref": "#/$defs/Uncertainty"
+          },
+          "title": "Uncertainties",
+          "type": "array"
+        },
+        "clarification_questions": {
+          "items": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+            "type": "string"
+          },
+          "maxItems": 3,
+          "title": "Clarification Questions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "analysis_mode",
+        "next_action",
+        "analysis_goal",
+        "constraints",
+        "uncertainties",
+        "clarification_questions"
+      ],
+      "title": "ParsedIntent",
+      "type": "object"
+    },
+    "Provenance": {
+      "properties": {
+        "source": {
+          "default": "mock",
+          "enum": [
+            "mock",
+            "uploaded",
+            "llm",
+            "input_guard"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "dataset": {
+          "default": "insightflow-demo-v1",
+          "title": "Dataset",
+          "type": "string"
+        },
+        "dataset_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dataset Version"
+        },
+        "plan_version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plan Version"
+        },
+        "notice": {
+          "default": "Mock 示例，非上传文件分析结果",
+          "title": "Notice",
+          "type": "string"
+        }
+      },
+      "title": "Provenance",
+      "type": "object"
+    },
+    "Uncertainty": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+          "title": "Id",
+          "type": "string"
+        },
+        "issue": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+          "title": "Issue",
+          "type": "string"
+        },
+        "reason": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+          "title": "Reason",
+          "type": "string"
+        },
+        "action": {
+          "enum": [
+            "clarify",
+            "defer",
+            "annotate"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "resolve_at": {
+          "enum": [
+            "before_planning",
+            "plan_approval",
+            "before_execution"
+          ],
+          "title": "Resolve At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "issue",
+        "reason",
+        "action",
+        "resolve_at"
+      ],
+      "title": "Uncertainty",
+      "type": "object"
+    },
+    "UnmetCoreRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "requirement_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Requirement Id",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Description",
+          "type": "string"
+        },
+        "task_ids": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Task Ids",
+          "type": "array"
+        },
+        "reason_codes": {
+          "items": {
+            "enum": [
+              "READY",
+              "MISSING_FIELD",
+              "INVALID_DATA",
+              "UNSUPPORTED_OPERATION",
+              "REQUIRES_TRANSFORMATION",
+              "INVALID_FIELD_REFERENCE",
+              "TYPE_MISMATCH",
+              "INVALID_OPERATION_ORDER",
+              "UNSUPPORTED_DEPENDENCY",
+              "INVALID_SCHEMA",
+              "DATASET_VERSION_MISMATCH",
+              "UNKNOWN_REQUIREMENT",
+              "CORE_NOT_COVERED"
+            ],
+            "type": "string"
+          },
+          "title": "Reason Codes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "requirement_id",
+        "description",
+        "task_ids",
+        "reason_codes"
+      ],
+      "title": "UnmetCoreRequirement",
+      "type": "object"
+    },
+    "UnverifiedConstraint": {
+      "additionalProperties": false,
+      "properties": {
+        "raw_text": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+          "title": "Raw Text",
+          "type": "string"
+        },
+        "validation_status": {
+          "const": "unverified",
+          "title": "Validation Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "raw_text",
+        "validation_status"
+      ],
+      "title": "UnverifiedConstraint",
+      "type": "object"
+    },
+    "ValidatedAnalysisPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "plan": {
+          "$ref": "#/$defs/AnalysisPlan"
+        },
+        "validation_results": {
+          "items": {
+            "$ref": "#/$defs/ValidationResult"
+          },
+          "title": "Validation Results",
+          "type": "array"
+        },
+        "unmet_core_requirements": {
+          "items": {
+            "$ref": "#/$defs/UnmetCoreRequirement"
+          },
+          "title": "Unmet Core Requirements",
+          "type": "array"
+        },
+        "coverage_status": {
+          "enum": [
+            "complete",
+            "partial",
+            "blocked"
+          ],
+          "title": "Coverage Status",
+          "type": "string"
+        },
+        "executable_task_ids": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Executable Task Ids",
+          "type": "array"
+        },
+        "blocked_task_ids": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Blocked Task Ids",
+          "type": "array"
+        },
+        "fully_executable": {
+          "title": "Fully Executable",
+          "type": "boolean"
+        },
+        "validation_version": {
+          "const": "1.0",
+          "default": "1.0",
+          "title": "Validation Version",
+          "type": "string"
+        },
+        "registry_version": {
+          "title": "Registry Version",
+          "type": "string"
+        },
+        "approval_required": {
+          "const": true,
+          "default": true,
+          "title": "Approval Required",
+          "type": "boolean"
+        },
+        "llm": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LLMMetadata"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "intent_snapshot": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ParsedIntent"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "plan",
+        "validation_results",
+        "unmet_core_requirements",
+        "coverage_status",
+        "executable_task_ids",
+        "blocked_task_ids",
+        "fully_executable",
+        "registry_version",
+        "provenance"
+      ],
+      "title": "ValidatedAnalysisPlan",
+      "type": "object"
+    },
+    "ValidationIssue": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": [
+            "READY",
+            "MISSING_FIELD",
+            "INVALID_DATA",
+            "UNSUPPORTED_OPERATION",
+            "REQUIRES_TRANSFORMATION",
+            "INVALID_FIELD_REFERENCE",
+            "TYPE_MISMATCH",
+            "INVALID_OPERATION_ORDER",
+            "UNSUPPORTED_DEPENDENCY",
+            "INVALID_SCHEMA",
+            "DATASET_VERSION_MISMATCH",
+            "UNKNOWN_REQUIREMENT",
+            "CORE_NOT_COVERED"
+          ],
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Message",
+          "type": "string"
+        },
+        "step_id": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Step Id"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "ValidationIssue",
+      "type": "object"
+    },
+    "ValidationResult": {
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "feasibility": {
+          "enum": [
+            "F0",
+            "F1",
+            "F2"
+          ],
+          "title": "Feasibility",
+          "type": "string"
+        },
+        "reason_code": {
+          "enum": [
+            "READY",
+            "MISSING_FIELD",
+            "INVALID_DATA",
+            "UNSUPPORTED_OPERATION",
+            "REQUIRES_TRANSFORMATION",
+            "INVALID_FIELD_REFERENCE",
+            "TYPE_MISMATCH",
+            "INVALID_OPERATION_ORDER",
+            "UNSUPPORTED_DEPENDENCY",
+            "INVALID_SCHEMA",
+            "DATASET_VERSION_MISMATCH",
+            "UNKNOWN_REQUIREMENT",
+            "CORE_NOT_COVERED"
+          ],
+          "title": "Reason Code",
+          "type": "string"
+        },
+        "validation_issues": {
+          "items": {
+            "$ref": "#/$defs/ValidationIssue"
+          },
+          "title": "Validation Issues",
+          "type": "array"
+        },
+        "executable": {
+          "title": "Executable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "task_id",
+        "feasibility",
+        "reason_code",
+        "validation_issues",
+        "executable"
+      ],
+      "title": "ValidationResult",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "approval_id": {
+      "maxLength": 120,
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Approval Id",
+      "type": "string"
+    },
+    "approval_request_id": {
+      "maxLength": 120,
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Approval Request Id",
+      "type": "string"
+    },
+    "session_id": {
+      "maxLength": 120,
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Session Id",
+      "type": "string"
+    },
+    "plan_id": {
+      "maxLength": 120,
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Plan Id",
+      "type": "string"
+    },
+    "plan_version": {
+      "minimum": 1,
+      "title": "Plan Version",
+      "type": "integer"
+    },
+    "validation_version": {
+      "title": "Validation Version",
+      "type": "string"
+    },
+    "dataset_id": {
+      "maxLength": 120,
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Dataset Id",
+      "type": "string"
+    },
+    "dataset_version": {
+      "title": "Dataset Version",
+      "type": "string"
+    },
+    "approved_at": {
+      "title": "Approved At",
+      "type": "string"
+    },
+    "approval_status": {
+      "const": "approved",
+      "default": "approved",
+      "title": "Approval Status",
+      "type": "string"
+    },
+    "acknowledged_warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Acknowledged Warnings",
+      "type": "array"
+    },
+    "snapshot": {
+      "$ref": "#/$defs/ApprovedExecutionSnapshot"
+    }
+  },
+  "required": [
+    "approval_id",
+    "approval_request_id",
+    "session_id",
+    "plan_id",
+    "plan_version",
+    "validation_version",
+    "dataset_id",
+    "dataset_version",
+    "approved_at",
+    "acknowledged_warnings",
+    "snapshot"
+  ],
+  "title": "ReviewApproval",
+  "type": "object"
+}

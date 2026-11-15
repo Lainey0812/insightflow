@@ -1,0 +1,478 @@
+{
+  "session_id": "8343cace3398465a8f2916c1f11fa101",
+  "revision": 8,
+  "plan_id": "plan_2018dfe1f66441c889d2d1c1d181d687",
+  "plan_version": 1,
+  "goal": "仅分析已完成任务，按项目统计任务数量，并按数量升序排列",
+  "coverage": "已安排核心问题的分析",
+  "conditions": [
+    {
+      "label": "分析条件",
+      "text": "仅分析已完成任务，按项目统计任务数量，并按数量升序排列",
+      "verification": "已核对分析步骤",
+      "source": "intent.analysis_goal.business_goal"
+    },
+    {
+      "label": "筛选范围",
+      "text": "仅分析已完成任务",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.filters[0]"
+    },
+    {
+      "label": "统计指标",
+      "text": "任务数量",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.metric_requirements[0]"
+    },
+    {
+      "label": "分析要求",
+      "text": "按数量升序",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.analysis_limits[0]"
+    },
+    {
+      "label": "分析要求",
+      "text": "不要推断差异原因",
+      "verification": "已核对报告表达边界",
+      "source": "intent.constraints.analysis_limits[1]"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按项目分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S2"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：记录数",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S2"
+    },
+    {
+      "label": "拟用排序与展示",
+      "text": "按记录数从低到高排列",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S3"
+    }
+  ],
+  "directions": [
+    {
+      "task_id": "T1",
+      "title": "已完成任务按项目统计数量并升序排列",
+      "question": "仅分析状态为“已完成”的任务，按项目分组统计任务数量，并按数量升序排列。不要推断差异原因。",
+      "importance": "核心分析",
+      "reason": "删除后无法回答核心问题：用户明确要求针对已完成任务的项目分布及排序，这是决策的唯一依据。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "状态 为 已完成",
+        "按项目分组",
+        "拟用统计口径：记录数",
+        "按上传记录逐行计数，不代表去重后的业务实体数量。",
+        "按记录数从低到高排列"
+      ],
+      "gaps": [],
+      "can_remove": true
+    }
+  ],
+  "issues": [],
+  "warnings": [],
+  "can_approve": true,
+  "can_execute": false,
+  "audit": {
+    "audit_version": "2.2",
+    "binding": {
+      "dataset_id": "f0c5c4661cfb45fdb603b801d9721c67",
+      "dataset_version": "0ab3292cc3c78dc5791d6e459139faa6a5c4ee5136c1efa3db3894b4be29f434",
+      "plan_id": "plan_2018dfe1f66441c889d2d1c1d181d687",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "registry_version": "1.0"
+    },
+    "digest": "f1fd34b5d3ae2739df4e191586461a81d2dbff686e16914829fc489cbc8cade3",
+    "all_verified": true,
+    "items": [
+      {
+        "source": "intent.analysis_goal.business_goal",
+        "raw_text": "仅分析已完成任务，按项目统计任务数量，并按数量升序排列",
+        "status": "verified",
+        "category": "goal_dimensions",
+        "message": "目标中的明确字段分组已核对。",
+        "field_ids": [
+          "field_0001"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S2",
+            "operation": "group_aggregate",
+            "dimensions": [
+              "field_0001"
+            ]
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.filters[0]",
+        "raw_text": "仅分析已完成任务",
+        "status": "verified",
+        "category": "filters",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0002"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S1",
+            "operation": "filter",
+            "condition": {
+              "field": "field_0002",
+              "operator": "eq",
+              "value": "已完成"
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.metric_requirements[0]",
+        "raw_text": "任务数量",
+        "status": "verified",
+        "category": "metric_requirements",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S2",
+            "operation": "group_aggregate",
+            "metric": {
+              "function": "count",
+              "field": null,
+              "alias": "task_count"
+            },
+            "count_basis": "uploaded_rows_not_distinct_entities"
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.analysis_limits[0]",
+        "raw_text": "按数量升序",
+        "status": "verified",
+        "category": "analysis_limits",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S3",
+            "operation": "sort",
+            "metric": {
+              "function": "count",
+              "field": null,
+              "alias": "task_count"
+            },
+            "params": {
+              "field": "task_count",
+              "direction": "asc"
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.analysis_limits[1]",
+        "raw_text": "不要推断差异原因",
+        "status": "verified",
+        "category": "analysis_limits",
+        "message": "已核对受控报告表达边界。",
+        "field_ids": [],
+        "matches": [
+          {
+            "task_id": "T1",
+            "check": "enforced_report_boundary",
+            "policy_version": "controlled-report-boundaries-v1",
+            "boundary": "no_causal_inference"
+          }
+        ]
+      }
+    ]
+  },
+  "technical_details": {
+    "record": {
+      "session_id": "8343cace3398465a8f2916c1f11fa101",
+      "plan_id": "plan_2018dfe1f66441c889d2d1c1d181d687",
+      "plan_version": 1,
+      "dataset_id": "f0c5c4661cfb45fdb603b801d9721c67",
+      "dataset_version": "0ab3292cc3c78dc5791d6e459139faa6a5c4ee5136c1efa3db3894b4be29f434",
+      "validation_version": "1.0",
+      "created_at": "2026-11-05T04:17:24.553962+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "f0c5c4661cfb45fdb603b801d9721c67",
+          "dataset_version": "0ab3292cc3c78dc5791d6e459139faa6a5c4ee5136c1efa3db3894b4be29f434",
+          "plan_id": "plan_2018dfe1f66441c889d2d1c1d181d687",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T1",
+              "title": "已完成任务按项目统计数量并升序排列",
+              "business_question": "仅分析状态为“已完成”的任务，按项目分组统计任务数量，并按数量升序排列。不要推断差异原因。",
+              "priority": "P0",
+              "priority_reason": "删除后无法回答核心问题：用户明确要求针对已完成任务的项目分布及排序，这是决策的唯一依据。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03",
+                "C04"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S1",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "field_0002",
+                        "operator": "eq",
+                        "value": "已完成"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S2",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "task_count"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0001"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S3",
+                  "operation": "sort",
+                  "params": {
+                    "field": "task_count",
+                    "direction": "asc"
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "仅分析已完成任务，按项目统计任务数量，并按数量升序排列"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "filters：仅分析已完成任务"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "metric_requirements：任务数量"
+            },
+            {
+              "requirement_id": "C04",
+              "description": "analysis_limits：按数量升序；不要推断差异原因"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T1",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T1"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "f0c5c4661cfb45fdb603b801d9721c67",
+          "dataset_version": "0ab3292cc3c78dc5791d6e459139faa6a5c4ee5136c1efa3db3894b4be29f434",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "已完成任务按项目统计的任务数量",
+            "business_goal": "仅分析已完成任务，按项目统计任务数量，并按数量升序排列",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [
+              {
+                "raw_text": "仅分析已完成任务",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "任务数量",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按数量升序",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "不要推断差异原因",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "constraint_audit": {
+      "audit_version": "2.2",
+      "binding": {
+        "dataset_id": "f0c5c4661cfb45fdb603b801d9721c67",
+        "dataset_version": "0ab3292cc3c78dc5791d6e459139faa6a5c4ee5136c1efa3db3894b4be29f434",
+        "plan_id": "plan_2018dfe1f66441c889d2d1c1d181d687",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "f1fd34b5d3ae2739df4e191586461a81d2dbff686e16914829fc489cbc8cade3",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "仅分析已完成任务，按项目统计任务数量，并按数量升序排列",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0001"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0001"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "仅分析已完成任务",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0002"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0002",
+                "operator": "eq",
+                "value": "已完成"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "任务数量",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "task_count"
+              },
+              "count_basis": "uploaded_rows_not_distinct_entities"
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "按数量升序",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S3",
+              "operation": "sort",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "task_count"
+              },
+              "params": {
+                "field": "task_count",
+                "direction": "asc"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[1]",
+          "raw_text": "不要推断差异原因",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已核对受控报告表达边界。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T1",
+              "check": "enforced_report_boundary",
+              "policy_version": "controlled-report-boundaries-v1",
+              "boundary": "no_causal_inference"
+            }
+          ]
+        }
+      ]
+    },
+    "session_status": "AWAITING_APPROVAL",
+    "revision": 8
+  }
+}

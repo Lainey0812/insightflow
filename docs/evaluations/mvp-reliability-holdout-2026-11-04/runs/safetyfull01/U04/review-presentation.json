@@ -1,0 +1,459 @@
+{
+  "session_id": "ca6a9e44517d4db5b33d6b7e85c6742d",
+  "revision": 8,
+  "plan_id": "plan_0105a0c434a542dd8e24bac001aca107",
+  "plan_version": 1,
+  "goal": "统计各城市的岗位数量并按数量降序排名取前两名",
+  "coverage": "已安排核心问题的分析",
+  "conditions": [
+    {
+      "label": "分析条件",
+      "text": "统计各城市的岗位数量并按数量降序排名取前两名",
+      "verification": "已核对分析步骤",
+      "source": "intent.analysis_goal.business_goal"
+    },
+    {
+      "label": "统计指标",
+      "text": "岗位数量",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.metric_requirements[0]"
+    },
+    {
+      "label": "分析要求",
+      "text": "按数量降序排名，取前两名",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.analysis_limits[0]"
+    },
+    {
+      "label": "分析要求",
+      "text": "不排除北京",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.analysis_limits[1]"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按城市分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S1"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：记录数",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S1"
+    },
+    {
+      "label": "拟用排序与展示",
+      "text": "按记录数从高到低排列",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S2"
+    },
+    {
+      "label": "拟用排序与展示",
+      "text": "按记录数从高到低排列，取前 2 名",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S3"
+    }
+  ],
+  "directions": [
+    {
+      "task_id": "T1",
+      "title": "各城市岗位数量排名（前两名）",
+      "question": "统计各城市的岗位数量，并按数量降序排名取前两名。注意：不排除北京。",
+      "importance": "核心分析",
+      "reason": "删除此任务将无法回答核心问题“各城市岗位数量”及支持决策“按数量降序排名取前两名”。这是唯一直接满足所有核心需求的路径。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "按城市分组",
+        "拟用统计口径：记录数",
+        "按记录数从高到低排列",
+        "按记录数从高到低排列，取前 2 名"
+      ],
+      "gaps": [],
+      "can_remove": true
+    }
+  ],
+  "issues": [],
+  "warnings": [],
+  "can_approve": true,
+  "can_execute": false,
+  "audit": {
+    "audit_version": "2.1",
+    "binding": {
+      "dataset_id": "40f83cc354eb4972902134a7eb1fe275",
+      "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+      "plan_id": "plan_0105a0c434a542dd8e24bac001aca107",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "registry_version": "1.0"
+    },
+    "digest": "3b899e32eddbb27207f525fff841db3d09b301d32b654f2a6680be0508230555",
+    "all_verified": true,
+    "items": [
+      {
+        "source": "intent.analysis_goal.business_goal",
+        "raw_text": "统计各城市的岗位数量并按数量降序排名取前两名",
+        "status": "verified",
+        "category": "goal_dimensions",
+        "message": "目标中的明确字段分组已核对。",
+        "field_ids": [
+          "field_0001"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S1",
+            "operation": "group_aggregate",
+            "dimensions": [
+              "field_0001"
+            ]
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.metric_requirements[0]",
+        "raw_text": "岗位数量",
+        "status": "verified",
+        "category": "metric_requirements",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S1",
+            "operation": "group_aggregate",
+            "metric": {
+              "function": "count",
+              "field": null,
+              "alias": "job_count"
+            },
+            "count_basis": "uploaded_rows_not_distinct_entities"
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.analysis_limits[0]",
+        "raw_text": "按数量降序排名，取前两名",
+        "status": "verified",
+        "category": "analysis_limits",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S3",
+            "operation": "top_n",
+            "metric": {
+              "function": "count",
+              "field": null,
+              "alias": "job_count"
+            },
+            "params": {
+              "field": "job_count",
+              "direction": "desc",
+              "n": 2
+            }
+          },
+          {
+            "task_id": "T1",
+            "step_id": "S3",
+            "operation": "top_n",
+            "metric": {
+              "function": "count",
+              "field": null,
+              "alias": "job_count"
+            },
+            "params": {
+              "field": "job_count",
+              "direction": "desc",
+              "n": 2
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.analysis_limits[1]",
+        "raw_text": "不排除北京",
+        "status": "verified",
+        "category": "analysis_limits",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0001"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "check": "no_field_filter",
+            "field": "field_0001",
+            "values": [
+              "北京"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "technical_details": {
+    "record": {
+      "session_id": "ca6a9e44517d4db5b33d6b7e85c6742d",
+      "plan_id": "plan_0105a0c434a542dd8e24bac001aca107",
+      "plan_version": 1,
+      "dataset_id": "40f83cc354eb4972902134a7eb1fe275",
+      "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+      "validation_version": "1.0",
+      "created_at": "2026-11-04T15:31:39.090167+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "40f83cc354eb4972902134a7eb1fe275",
+          "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+          "plan_id": "plan_0105a0c434a542dd8e24bac001aca107",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T1",
+              "title": "各城市岗位数量排名（前两名）",
+              "business_question": "统计各城市的岗位数量，并按数量降序排名取前两名。注意：不排除北京。",
+              "priority": "P0",
+              "priority_reason": "删除此任务将无法回答核心问题“各城市岗位数量”及支持决策“按数量降序排名取前两名”。这是唯一直接满足所有核心需求的路径。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S1",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "job_count"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0001"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S2",
+                  "operation": "sort",
+                  "params": {
+                    "field": "job_count",
+                    "direction": "desc"
+                  }
+                },
+                {
+                  "step_id": "S3",
+                  "operation": "top_n",
+                  "params": {
+                    "field": "job_count",
+                    "direction": "desc",
+                    "n": 2
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "统计各城市的岗位数量并按数量降序排名取前两名"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "metric_requirements：岗位数量"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "analysis_limits：按数量降序排名，取前两名；不排除北京"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T1",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T1"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "40f83cc354eb4972902134a7eb1fe275",
+          "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "各城市岗位数量",
+            "business_goal": "统计各城市的岗位数量并按数量降序排名取前两名",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [
+              {
+                "raw_text": "岗位数量",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按数量降序排名，取前两名",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "不排除北京",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "constraint_audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "40f83cc354eb4972902134a7eb1fe275",
+        "dataset_version": "d321dd9e90fd96681aba227344de4130518dde5a77c61fa62385f6dc1cfe7a60",
+        "plan_id": "plan_0105a0c434a542dd8e24bac001aca107",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "3b899e32eddbb27207f525fff841db3d09b301d32b654f2a6680be0508230555",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "统计各城市的岗位数量并按数量降序排名取前两名",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0001"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0001"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "岗位数量",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "job_count"
+              },
+              "count_basis": "uploaded_rows_not_distinct_entities"
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "按数量降序排名，取前两名",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S3",
+              "operation": "top_n",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "job_count"
+              },
+              "params": {
+                "field": "job_count",
+                "direction": "desc",
+                "n": 2
+              }
+            },
+            {
+              "task_id": "T1",
+              "step_id": "S3",
+              "operation": "top_n",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "job_count"
+              },
+              "params": {
+                "field": "job_count",
+                "direction": "desc",
+                "n": 2
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[1]",
+          "raw_text": "不排除北京",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0001"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "check": "no_field_filter",
+              "field": "field_0001",
+              "values": [
+                "北京"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "session_status": "AWAITING_APPROVAL",
+    "revision": 8
+  }
+}

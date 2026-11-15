@@ -1,0 +1,189 @@
+{
+  "tasks": [
+    {
+      "task_id": "T01",
+      "title": "销售数据整体概况",
+      "business_question": "当前数据集的总订单数、总销售额、平均单笔销售额及主要维度（地区、产品类别）的唯一值数量是多少？",
+      "priority": "P0",
+      "priority_reason": "这是探索性分析的基础，提供数据的量级和核心指标概览，直接支持对销售数据主要特征的初步理解。删除此任务将无法回答“主要特征”中的基础统计问题。",
+      "requirement_ids": [
+        "C01"
+      ],
+      "depends_on": [],
+      "missing_inputs": [],
+      "steps": [
+        {
+          "step_id": "S01",
+          "operation": "aggregate",
+          "params": {
+            "metrics": [
+              {
+                "function": "count",
+                "field": null,
+                "alias": "total_orders"
+              },
+              {
+                "function": "sum",
+                "field": "field_0011",
+                "alias": "total_sales_amount"
+              },
+              {
+                "function": "avg",
+                "field": "field_0011",
+                "alias": "avg_order_value"
+              },
+              {
+                "function": "distinct_count",
+                "field": "field_0003",
+                "alias": "unique_regions"
+              },
+              {
+                "function": "distinct_count",
+                "field": "field_0007",
+                "alias": "unique_product_categories"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "task_id": "T02",
+      "title": "按地区分布的销售表现",
+      "business_question": "不同地区的订单数量和销售额分别是多少？哪个地区贡献最大？",
+      "priority": "P0",
+      "priority_reason": "地区是销售数据的核心维度之一，分组统计能揭示地域分布规律和差异，是探索“主要特征”的关键部分。",
+      "requirement_ids": [
+        "C01"
+      ],
+      "depends_on": [],
+      "missing_inputs": [],
+      "steps": [
+        {
+          "step_id": "S01",
+          "operation": "group_aggregate",
+          "params": {
+            "metrics": [
+              {
+                "function": "count",
+                "field": null,
+                "alias": "order_count_by_region"
+              },
+              {
+                "function": "sum",
+                "field": "field_0011",
+                "alias": "sales_sum_by_region"
+              }
+            ],
+            "dimensions": [
+              "field_0003"
+            ]
+          }
+        },
+        {
+          "step_id": "S02",
+          "operation": "sort",
+          "params": {
+            "field": "sales_sum_by_region",
+            "direction": "desc"
+          }
+        }
+      ]
+    },
+    {
+      "task_id": "T03",
+      "title": "按产品类别的销售表现",
+      "business_question": "不同产品类别的订单数量和销售额分别是多少？哪类产品最畅销？",
+      "priority": "P0",
+      "priority_reason": "产品类别是业务分析的核心维度，了解各类别的销售占比有助于识别主力产品和潜在异常（如某类销量极低或极高）。",
+      "requirement_ids": [
+        "C01"
+      ],
+      "depends_on": [],
+      "missing_inputs": [],
+      "steps": [
+        {
+          "step_id": "S01",
+          "operation": "group_aggregate",
+          "params": {
+            "metrics": [
+              {
+                "function": "count",
+                "field": null,
+                "alias": "order_count_by_category"
+              },
+              {
+                "function": "sum",
+                "field": "field_0011",
+                "alias": "sales_sum_by_category"
+              }
+            ],
+            "dimensions": [
+              "field_0007"
+            ]
+          }
+        },
+        {
+          "step_id": "S02",
+          "operation": "sort",
+          "params": {
+            "field": "sales_sum_by_category",
+            "direction": "desc"
+          }
+        }
+      ]
+    },
+    {
+      "task_id": "T04",
+      "title": "按月度的销售趋势",
+      "business_question": "每月的订单数量和销售额如何变化？是否存在明显的季节性或时间规律？",
+      "priority": "P1",
+      "priority_reason": "虽然用户未指定具体时间范围，但探索“规律”通常包含时间维度。由于日期字段存在且可提取月份，此任务能提供有价值的时间序列视角，属于补充性但有意义的分析。若数据跨度短则价值降低，故定为P1。",
+      "requirement_ids": [
+        "C01"
+      ],
+      "depends_on": [],
+      "missing_inputs": [],
+      "steps": [
+        {
+          "step_id": "S01",
+          "operation": "derive",
+          "params": {
+            "function": "extract_month",
+            "field": "field_0002",
+            "alias": "order_month"
+          }
+        },
+        {
+          "step_id": "S02",
+          "operation": "group_aggregate",
+          "params": {
+            "metrics": [
+              {
+                "function": "count",
+                "field": null,
+                "alias": "monthly_order_count"
+              },
+              {
+                "function": "sum",
+                "field": "field_0011",
+                "alias": "monthly_sales_sum"
+              }
+            ],
+            "dimensions": [
+              "order_month"
+            ]
+          }
+        },
+        {
+          "step_id": "S03",
+          "operation": "sort",
+          "params": {
+            "field": "order_month",
+            "direction": "asc"
+          }
+        }
+      ]
+    }
+  ]
+}

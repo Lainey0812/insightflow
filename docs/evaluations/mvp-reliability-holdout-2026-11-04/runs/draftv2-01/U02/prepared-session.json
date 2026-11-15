@@ -1,0 +1,859 @@
+{
+  "workflow_id": "wf_a90122db802f499cbc635f5b377b8710",
+  "root_run_id": "run_8453460c7d894c0cbccc834e0474c740",
+  "id": "af86295294634c0fb6b92a358758063e",
+  "title": "只看一组与三组，按团队计算响应分钟中位数，升序排名。",
+  "status": "AWAITING_APPROVAL",
+  "revision": 8,
+  "created_at": "2026-11-04T16:36:17.948134+00:00",
+  "updated_at": "2026-11-04T16:36:26.564492+00:00",
+  "data_source": "uploaded",
+  "workflow_kind": "real_v1",
+  "profile_options": {
+    "header_row": 1,
+    "sheet_name": null,
+    "encoding": "utf-8-sig",
+    "delimiter": ","
+  },
+  "planner_result": {
+    "plan": {
+      "dataset_id": "ecf4104b44724f979141be977509f59a",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+      "plan_id": "plan_10c8acc8a39147bdaec62ad58bea0949",
+      "plan_version": 1,
+      "tasks": [
+        {
+          "task_id": "T01",
+          "title": "一组与三组响应分钟中位数排名",
+          "business_question": "计算团队为一组和团队的三组的响应分钟中位数，并按中位数升序排列。约束：只看一组与三组；按团队计算；升序排名。",
+          "priority": "P0",
+          "priority_reason": "删除此任务将无法回答核心问题（比较两组的中位数并排名）或支持决策。这是直接实现分析目标的唯一必要步骤。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03",
+            "C04"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S01",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "field_0002",
+                    "operator": "in",
+                    "value": [
+                      "一组",
+                      "三组"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "median",
+                    "field": "field_0005",
+                    "alias": "response_median"
+                  }
+                ],
+                "dimensions": [
+                  "field_0002"
+                ]
+              }
+            },
+            {
+              "step_id": "S03",
+              "operation": "sort",
+              "params": {
+                "field": "response_median",
+                "direction": "asc"
+              }
+            }
+          ]
+        }
+      ],
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "计算一组与三组的响应分钟中位数并按升序排名"
+        },
+        {
+          "requirement_id": "C02",
+          "description": "filters：只看一组与三组"
+        },
+        {
+          "requirement_id": "C03",
+          "description": "metric_requirements：响应分钟中位数"
+        },
+        {
+          "requirement_id": "C04",
+          "description": "analysis_limits：按团队计算；升序排名"
+        }
+      ]
+    },
+    "validation_results": [
+      {
+        "task_id": "T01",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      }
+    ],
+    "unmet_core_requirements": [],
+    "coverage_status": "complete",
+    "executable_task_ids": [
+      "T01"
+    ],
+    "blocked_task_ids": [],
+    "fully_executable": true,
+    "validation_version": "1.0",
+    "registry_version": "1.0",
+    "approval_required": true,
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "ecf4104b44724f979141be977509f59a",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+      "plan_version": 1,
+      "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+    },
+    "intent_snapshot": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "一组与三组团队的响应分钟中位数",
+        "business_goal": "计算一组与三组的响应分钟中位数并按升序排名",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [
+          {
+            "raw_text": "只看一组与三组",
+            "validation_status": "unverified"
+          }
+        ],
+        "metric_requirements": [
+          {
+            "raw_text": "响应分钟中位数",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "按团队计算",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "升序排名",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    }
+  },
+  "workflow_events": [
+    {
+      "status": "CREATED",
+      "recorded_at": "2026-11-04T16:36:17.948842+00:00"
+    },
+    {
+      "status": "PROFILING",
+      "recorded_at": "2026-11-04T16:36:17.989762+00:00"
+    },
+    {
+      "status": "PARSING_INTENT",
+      "recorded_at": "2026-11-04T16:36:17.997679+00:00"
+    },
+    {
+      "status": "PLANNING",
+      "recorded_at": "2026-11-04T16:36:21.179839+00:00"
+    },
+    {
+      "status": "VALIDATING",
+      "recorded_at": "2026-11-04T16:36:26.555755+00:00"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "recorded_at": "2026-11-04T16:36:26.564339+00:00"
+    }
+  ],
+  "file": {
+    "id": "ecf4104b44724f979141be977509f59a",
+    "name": "support.csv",
+    "size": 384,
+    "extension": ".csv",
+    "content_sha256": "9b89f9d75d9e1b9868bc276a8030a2336f68181c868e47fb0cd5406668081475"
+  },
+  "user_goal": "只看一组与三组，按团队计算响应分钟中位数，升序排名。",
+  "analysis_mode": "goal_driven",
+  "intent": {
+    "analysis_mode": "goal_driven",
+    "next_action": "proceed",
+    "analysis_goal": {
+      "analysis_object": "一组与三组团队的响应分钟中位数",
+      "business_goal": "计算一组与三组的响应分钟中位数并按升序排名",
+      "decision_goal": null
+    },
+    "constraints": {
+      "time_range": null,
+      "filters": [
+        {
+          "raw_text": "只看一组与三组",
+          "validation_status": "unverified"
+        }
+      ],
+      "metric_requirements": [
+        {
+          "raw_text": "响应分钟中位数",
+          "validation_status": "unverified"
+        }
+      ],
+      "analysis_limits": [
+        {
+          "raw_text": "按团队计算",
+          "validation_status": "unverified"
+        },
+        {
+          "raw_text": "升序排名",
+          "validation_status": "unverified"
+        }
+      ]
+    },
+    "uncertainties": [],
+    "clarification_questions": [],
+    "user_query": "只看一组与三组，按团队计算响应分钟中位数，升序排名。",
+    "clarification_answers": [],
+    "dataset_ref": {
+      "dataset_id": "ecf4104b44724f979141be977509f59a",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2"
+    },
+    "parse_origin": "llm",
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "ecf4104b44724f979141be977509f59a",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+      "plan_version": null,
+      "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+    },
+    "parser_version": "1.1",
+    "prompt_version": "intent-v1.3.3",
+    "llm_attempts": 1,
+    "parse_id": "c1c4dfb6abb2487f873f11085509e10d"
+  },
+  "intent_history": [
+    {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "一组与三组团队的响应分钟中位数",
+        "business_goal": "计算一组与三组的响应分钟中位数并按升序排名",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [
+          {
+            "raw_text": "只看一组与三组",
+            "validation_status": "unverified"
+          }
+        ],
+        "metric_requirements": [
+          {
+            "raw_text": "响应分钟中位数",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "按团队计算",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "升序排名",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "只看一组与三组，按团队计算响应分钟中位数，升序排名。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "ecf4104b44724f979141be977509f59a",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "ecf4104b44724f979141be977509f59a",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "c1c4dfb6abb2487f873f11085509e10d"
+    }
+  ],
+  "clarification_answers": [],
+  "profile": {
+    "dataset_id": "ecf4104b44724f979141be977509f59a",
+    "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+    "schema_version": "1.0",
+    "profiler_version": "1.1.0",
+    "content_sha256": "9b89f9d75d9e1b9868bc276a8030a2336f68181c868e47fb0cd5406668081475",
+    "file_name": "support.csv",
+    "file_format": "csv",
+    "sheet_name": null,
+    "available_sheets": [],
+    "options": {
+      "header_row": 1,
+      "sheet_name": null,
+      "encoding": "utf-8-sig",
+      "delimiter": ","
+    },
+    "row_count": 8,
+    "column_count": 6,
+    "total_cell_count": 48,
+    "missing_cell_count": 1,
+    "missing_cell_rate": 0.020833333333333332,
+    "duplicate_row_count": 0,
+    "duplicate_row_rate": 0.0,
+    "fields": [
+      {
+        "field_id": "field_0001",
+        "position": 1,
+        "original_name": "提交日期",
+        "display_name": "提交日期",
+        "physical_type": "string",
+        "logical_type": "date",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 8,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "date": 8
+        },
+        "samples": [
+          {
+            "value": "2026-01-01",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-01-02",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-02-03",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-02-04",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-03-05",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0002",
+        "position": 2,
+        "original_name": "团队",
+        "display_name": "团队",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "一组",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "二组",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "三组",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0003",
+        "position": 3,
+        "original_name": "状态",
+        "display_name": "状态",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "已解决",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "处理中",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "待分配",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0004",
+        "position": 4,
+        "original_name": "优先级",
+        "display_name": "优先级",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "高",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "低",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "中",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0005",
+        "position": 5,
+        "original_name": "响应分钟",
+        "display_name": "响应分钟",
+        "physical_type": "string",
+        "logical_type": "integer",
+        "missing_count": 1,
+        "missing_rate": 0.125,
+        "non_missing_count": 7,
+        "unique_count": 7,
+        "physical_type_counts": {
+          "string": 7
+        },
+        "logical_type_counts": {
+          "integer": 7
+        },
+        "samples": [
+          {
+            "value": "10",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "20",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "30",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "40",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "5",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0006",
+        "position": 6,
+        "original_name": "工单编号",
+        "display_name": "工单编号",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 8,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "T01",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "T02",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "T03",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "T04",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "T05",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      }
+    ],
+    "quality_issues": [],
+    "provenance": {
+      "source": "uploaded",
+      "dataset": "ecf4104b44724f979141be977509f59a",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+      "plan_version": null,
+      "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+    }
+  },
+  "dataset_ref": {
+    "dataset_id": "ecf4104b44724f979141be977509f59a",
+    "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2"
+  },
+  "plans": [],
+  "current_plan_version": 1,
+  "approved_plan_version": null,
+  "node_runs": [
+    {
+      "run_id": "b9badc121f8a4a0f8aa2ba7ad68e50d2",
+      "node_name": "data_profiler",
+      "status": "success",
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "ecf4104b44724f979141be977509f59a",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_version": null,
+        "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T16:36:17.994918+00:00"
+    },
+    {
+      "run_id": "0256dc1c48324c119e6cc8af5a339e0c",
+      "node_name": "intent_parser",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "ecf4104b44724f979141be977509f59a",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T16:36:21.173406+00:00"
+    },
+    {
+      "run_id": "6146d5c86cba4974b109a99cc35b327b",
+      "node_name": "analysis_planner_v1",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "ecf4104b44724f979141be977509f59a",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T16:36:26.551196+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "id": "9b4b2a8d27094f539d7c349d9fe3f530",
+      "role": "user",
+      "kind": "text",
+      "content": "只看一组与三组，按团队计算响应分钟中位数，升序排名。",
+      "plan_version": null,
+      "created_at": "2026-11-04T16:36:17.948123+00:00"
+    },
+    {
+      "id": "bde110fba0ed40d8bc9e03054eed85f2",
+      "role": "assistant",
+      "kind": "status",
+      "content": "正在解析上传文件并计算真实数据画像。",
+      "plan_version": null,
+      "created_at": "2026-11-04T16:36:17.989755+00:00"
+    },
+    {
+      "id": "6479523907504a55b6864ff32ef9069d",
+      "role": "assistant",
+      "kind": "status",
+      "content": "真实画像完成：8行、6列；正在理解分析需求。",
+      "plan_version": null,
+      "created_at": "2026-11-04T16:36:17.997674+00:00"
+    },
+    {
+      "id": "fbde0d79120148e8a918727591304abf",
+      "role": "assistant",
+      "kind": "status",
+      "content": "需求已理解，正在生成受控分析计划。",
+      "plan_version": null,
+      "created_at": "2026-11-04T16:36:21.179828+00:00"
+    },
+    {
+      "id": "43a336cea64e4978b648121484eef086",
+      "role": "assistant",
+      "kind": "plan",
+      "content": "真实计划已保存，目标覆盖：complete。请审核任务、未满足需求和约束；批准前不会计算。",
+      "plan_version": 1,
+      "created_at": "2026-11-04T16:36:26.564332+00:00"
+    }
+  ],
+  "review_plan": {
+    "session_id": "af86295294634c0fb6b92a358758063e",
+    "plan_id": "plan_10c8acc8a39147bdaec62ad58bea0949",
+    "plan_version": 1,
+    "dataset_id": "ecf4104b44724f979141be977509f59a",
+    "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+    "validation_version": "1.0",
+    "created_at": "2026-11-04T16:36:26.564194+00:00",
+    "change_type": "created",
+    "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "ecf4104b44724f979141be977509f59a",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_id": "plan_10c8acc8a39147bdaec62ad58bea0949",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T01",
+            "title": "一组与三组响应分钟中位数排名",
+            "business_question": "计算团队为一组和团队的三组的响应分钟中位数，并按中位数升序排列。约束：只看一组与三组；按团队计算；升序排名。",
+            "priority": "P0",
+            "priority_reason": "删除此任务将无法回答核心问题（比较两组的中位数并排名）或支持决策。这是直接实现分析目标的唯一必要步骤。",
+            "requirement_ids": [
+              "C01",
+              "C02",
+              "C03",
+              "C04"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "filter",
+                "params": {
+                  "conditions": [
+                    {
+                      "field": "field_0002",
+                      "operator": "in",
+                      "value": [
+                        "一组",
+                        "三组"
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "step_id": "S02",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "median",
+                      "field": "field_0005",
+                      "alias": "response_median"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S03",
+                "operation": "sort",
+                "params": {
+                  "field": "response_median",
+                  "direction": "asc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "计算一组与三组的响应分钟中位数并按升序排名"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "filters：只看一组与三组"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "metric_requirements：响应分钟中位数"
+          },
+          {
+            "requirement_id": "C04",
+            "description": "analysis_limits：按团队计算；升序排名"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T01",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T01"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "ecf4104b44724f979141be977509f59a",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_version": 1,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "一组与三组团队的响应分钟中位数",
+          "business_goal": "计算一组与三组的响应分钟中位数并按升序排名",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [
+            {
+              "raw_text": "只看一组与三组",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "响应分钟中位数",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按团队计算",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "升序排名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    }
+  },
+  "review_status": "awaiting_review",
+  "engine_approval": null,
+  "engine_execution_ids": [],
+  "report_generations": [],
+  "execution_result": null,
+  "report": null,
+  "error": null
+}

@@ -1,0 +1,36 @@
+.....F...........                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_edit_cannot_erase_or_acknowledge_away_original_constraints ________
+
+client = <starlette.testclient.TestClient object at 0x1154e4950>
+
+    def test_edit_cannot_erase_or_acknowledge_away_original_constraints(client):
+        from hitl_fixtures import candidate
+        state=create(client);data=candidate(state)
+        data['intent']['constraints']['metric_requirements']=[{'raw_text':'总销售额','validation_status':'unverified'}]
+        state=save(client,state,data);sid=state['id']
+        edits=[]
+        for t in state['review_plan']['validated_plan']['plan']['tasks']:
+            params={}
+            for step in t['steps']:
+                if step['operation'] in {'aggregate','group_aggregate'}:
+                    p=copy.deepcopy(step['params'])
+                    for m in p['metrics']:m['function']='avg'
+                    params[step['step_id']]=p
+            if params:edits.append({'task_id':t['task_id'],'step_params':params})
+        r=client.post(f'/api/v1/sessions/{sid}/plan-revisions',json={**revision(state,[]),'task_edits':edits})
+>       assert r.status_code==200,r.text
+E       AssertionError: {"error":{"code":"INVALID_STEP_PARAMS","message":"修改内容不符合当前计算规则，请检查字段、数值和统计方式。","node_name":null,"retryable":false,"details":{}}}
+E       assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+backend/tests/test_review_v3.py:94: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_review_v3.py::test_edit_cannot_erase_or_acknowledge_away_original_constraints
+1 failed, 16 passed, 1 warning in 1.68s

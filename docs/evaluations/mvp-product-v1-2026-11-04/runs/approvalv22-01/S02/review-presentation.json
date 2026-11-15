@@ -1,0 +1,331 @@
+{
+  "session_id": "adfffce3e4234dcfb24f098b8928a8f0",
+  "revision": 8,
+  "plan_id": "plan_1487ce755b7448bf943acd6d0e9c3a0c",
+  "plan_version": 1,
+  "goal": "统计各城市的订单数量",
+  "coverage": "已安排核心问题的分析",
+  "conditions": [
+    {
+      "label": "分析条件",
+      "text": "统计各城市的订单数量",
+      "verification": "已核对分析步骤",
+      "source": "intent.analysis_goal.business_goal"
+    },
+    {
+      "label": "统计指标",
+      "text": "订单数量",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.metric_requirements[0]"
+    },
+    {
+      "label": "分析要求",
+      "text": "不分析销售额",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.analysis_limits[0]"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按城市分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S01"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：记录数",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S01"
+    }
+  ],
+  "directions": [
+    {
+      "task_id": "T01",
+      "title": "各城市订单数量统计",
+      "question": "各城市的订单数量分别是多少？（注意：不分析销售额）",
+      "importance": "核心分析",
+      "reason": "直接回答核心业务目标“统计各城市的订单数量”，满足需求C01和C02。删除此任务将无法获取任何关于城市分布的数据，导致核心问题无法回答。同时严格遵守约束C03（不分析销售额），仅使用行数计数。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "按城市分组",
+        "拟用统计口径：记录数",
+        "按上传记录逐行计数，不代表去重后的业务实体数量。"
+      ],
+      "gaps": [],
+      "can_remove": true
+    }
+  ],
+  "issues": [],
+  "warnings": [],
+  "can_approve": true,
+  "can_execute": false,
+  "audit": {
+    "audit_version": "2.2",
+    "binding": {
+      "dataset_id": "2c3e01faccec47c29f90157489a091ce",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "plan_id": "plan_1487ce755b7448bf943acd6d0e9c3a0c",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "registry_version": "1.0"
+    },
+    "digest": "06361a3624a47c6c0bd6e307dfe5fdd23f21d85239f3ebf393ff81e1f3b01edc",
+    "all_verified": true,
+    "items": [
+      {
+        "source": "intent.analysis_goal.business_goal",
+        "raw_text": "统计各城市的订单数量",
+        "status": "verified",
+        "category": "goal_dimensions",
+        "message": "目标中的明确字段分组已核对。",
+        "field_ids": [
+          "field_0003"
+        ],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S01",
+            "operation": "group_aggregate",
+            "dimensions": [
+              "field_0003"
+            ]
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.metric_requirements[0]",
+        "raw_text": "订单数量",
+        "status": "verified",
+        "category": "metric_requirements",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S01",
+            "operation": "group_aggregate",
+            "metric": {
+              "function": "count",
+              "field": null,
+              "alias": "order_count"
+            },
+            "count_basis": "uploaded_rows_not_distinct_entities"
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.analysis_limits[0]",
+        "raw_text": "不分析销售额",
+        "status": "verified",
+        "category": "analysis_limits",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0005"
+        ],
+        "matches": [
+          {
+            "task_id": "T01",
+            "check": "field_absent"
+          }
+        ]
+      }
+    ]
+  },
+  "technical_details": {
+    "record": {
+      "session_id": "adfffce3e4234dcfb24f098b8928a8f0",
+      "plan_id": "plan_1487ce755b7448bf943acd6d0e9c3a0c",
+      "plan_version": 1,
+      "dataset_id": "2c3e01faccec47c29f90157489a091ce",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "validation_version": "1.0",
+      "created_at": "2026-11-05T04:13:26.007749+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "2c3e01faccec47c29f90157489a091ce",
+          "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+          "plan_id": "plan_1487ce755b7448bf943acd6d0e9c3a0c",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T01",
+              "title": "各城市订单数量统计",
+              "business_question": "各城市的订单数量分别是多少？（注意：不分析销售额）",
+              "priority": "P0",
+              "priority_reason": "直接回答核心业务目标“统计各城市的订单数量”，满足需求C01和C02。删除此任务将无法获取任何关于城市分布的数据，导致核心问题无法回答。同时严格遵守约束C03（不分析销售额），仅使用行数计数。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "order_count"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0003"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "统计各城市的订单数量"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "metric_requirements：订单数量"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "analysis_limits：不分析销售额"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "2c3e01faccec47c29f90157489a091ce",
+          "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "各城市订单数量",
+            "business_goal": "统计各城市的订单数量",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [
+              {
+                "raw_text": "订单数量",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "不分析销售额",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "constraint_audit": {
+      "audit_version": "2.2",
+      "binding": {
+        "dataset_id": "2c3e01faccec47c29f90157489a091ce",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_id": "plan_1487ce755b7448bf943acd6d0e9c3a0c",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "06361a3624a47c6c0bd6e307dfe5fdd23f21d85239f3ebf393ff81e1f3b01edc",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "统计各城市的订单数量",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0003"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "订单数量",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "order_count"
+              },
+              "count_basis": "uploaded_rows_not_distinct_entities"
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "不分析销售额",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0005"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "check": "field_absent"
+            }
+          ]
+        }
+      ]
+    },
+    "session_status": "AWAITING_APPROVAL",
+    "revision": 8
+  }
+}

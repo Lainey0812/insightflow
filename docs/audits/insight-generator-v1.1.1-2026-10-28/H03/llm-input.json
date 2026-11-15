@@ -1,0 +1,380 @@
+{
+  "analysis_goal": {
+    "analysis_object": "operations数据",
+    "business_goal": "比较批次耗时的小额差异，不据此确定瓶颈原因",
+    "decision_goal": null
+  },
+  "goal_coverage": "complete",
+  "original_query": "比较批次耗时的小额差异，不据此确定瓶颈原因",
+  "constraints": {
+    "time_range": null,
+    "filters": [],
+    "metric_requirements": [],
+    "analysis_limits": []
+  },
+  "constraints_confirmed": false,
+  "scope_context": [
+    {
+      "task_id": "A01",
+      "approved_steps": [
+        "按批次分组",
+        "拟用统计口径：耗时 · 合计"
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "field_id": "field_0001",
+      "name": "批次",
+      "logical_type": "text",
+      "upload_missing_count": 0
+    },
+    {
+      "field_id": "field_0002",
+      "name": "耗时",
+      "logical_type": "number",
+      "upload_missing_count": 0
+    }
+  ],
+  "uncompleted_tasks": [],
+  "task_sample_context": [
+    {
+      "task_id": "A01",
+      "status": "success",
+      "valid_sample_count": 3,
+      "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+      "metric_valid_counts": {}
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "A01",
+      "priority": "P0",
+      "business_question": "批次耗时比较"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E0012",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "comparison",
+      "value": {
+        "metric_field": "value",
+        "dimension_field": "field_0001",
+        "source_scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。",
+        "unit": "%",
+        "rounding": "half_up_1_decimal",
+        "left": "早批",
+        "right": "午批",
+        "left_value": "0.003",
+        "right_value": "0.0029",
+        "difference": "0.0001",
+        "formula": "(left_value - right_value) / right_value * 100",
+        "comparison_kind": "relative_lead",
+        "numerator": "0.0001",
+        "denominator": "0.0029",
+        "percent": "3.4"
+      },
+      "scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。；仅比较当前返回的同口径分组。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；relative_lead：(left_value - right_value) / right_value * 100；字段 value，分子 0.0001，分母 0.0029；分母必须为正，百分比四舍五入一位小数。",
+      "statement": "在当前返回结果中，早批的耗时合计比午批高 0.0001，相对午批领先约 3.4%。",
+      "source_row_indices": [
+        0,
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0013",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "comparison",
+      "value": {
+        "metric_field": "value",
+        "dimension_field": "field_0001",
+        "source_scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。",
+        "unit": "%",
+        "rounding": "half_up_1_decimal",
+        "left": "晚批",
+        "right": "早批",
+        "left_value": "0.0004",
+        "right_value": "0.003",
+        "formula": "left_value / right_value * 100",
+        "comparison_kind": "relative_ratio",
+        "numerator": "0.0004",
+        "denominator": "0.003",
+        "percent": "13.3"
+      },
+      "scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。；仅比较当前返回的同口径分组。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；relative_ratio：left_value / right_value * 100；字段 value，分子 0.0004，分母 0.003；分母必须为正，百分比四舍五入一位小数。",
+      "statement": "在当前返回结果中，晚批的耗时合计为 0.0004，约为早批的 13.3%。",
+      "source_row_indices": [
+        2,
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0014",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "comparison",
+      "value": {
+        "metric_field": "value",
+        "dimension_field": "field_0001",
+        "source_scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。",
+        "unit": "%",
+        "rounding": "half_up_1_decimal",
+        "left": "早批",
+        "right": "午批",
+        "left_value": "0.003",
+        "right_value": "0.0029",
+        "returned_group_count": 3,
+        "denominator_scope": "returned_groups_only",
+        "formula": "(left_value + right_value) / returned_group_sum * 100",
+        "comparison_kind": "returned_concentration",
+        "numerator": "0.0059",
+        "denominator": "0.0063",
+        "percent": "93.7"
+      },
+      "scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。；分母仅为本次完整返回的分组合计，不是全部筛选范围或整体市场。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；returned_concentration：(left_value + right_value) / returned_group_sum * 100；字段 value，分子 0.0059，分母 0.0063；分母必须为正，百分比四舍五入一位小数。",
+      "statement": "早批和午批合计占本次返回 3 个分组耗时合计合计的约 93.7%；分母仅为返回分组合计，不代表全部筛选范围或整体市场占比。",
+      "source_row_indices": [
+        0,
+        1,
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0007",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "difference",
+      "value": {
+        "left": "早批",
+        "right": "午批",
+        "left_value": 0.003,
+        "right_value": 0.0029,
+        "difference": 0.0001
+      },
+      "scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算值相减：value[0] - value[1]；不是因果或显著性检验。",
+      "statement": "在该任务完整分组结果中，早批与午批的耗时 · 合计差值为 0.0001。",
+      "source_row_indices": [
+        0,
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0002",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "早批",
+        "value": 0.003,
+        "rank": 1
+      },
+      "scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，早批的耗时 · 合计为 0.003，并列值采用同一名次，排名 1。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0003",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "午批",
+        "value": 0.0029,
+        "rank": 2
+      },
+      "scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，午批的耗时 · 合计为 0.0029，并列值采用同一名次，排名 2。",
+      "source_row_indices": [
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0004",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "ranking",
+      "value": {
+        "category": "晚批",
+        "value": 0.0004,
+        "rank": 3
+      },
+      "scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；对已返回的 value 降序比较，竞争排名；不推断未返回类别。",
+      "statement": "在该任务完整分组结果中，晚批的耗时 · 合计为 0.0004，并列值采用同一名次，排名 3。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0011",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "metric",
+      "value": {
+        "value": 0.0063,
+        "unit": null,
+        "label": "本次返回分组合计（耗时 · 合计）"
+      },
+      "scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；仅将当前完整返回表中的可加指标相加；含 Top N 时只代表所选分组，不作为总体占比分母。",
+      "statement": "本次返回的 3 个分组的耗时 · 合计合计为 0.0063。",
+      "source_row_indices": [
+        0,
+        1,
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0008",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "proportion",
+      "value": {
+        "category": "早批",
+        "numerator": 0.003,
+        "denominator": 0.0063,
+        "percent": 47.61904761904762
+      },
+      "scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+      "statement": "早批的耗时 · 合计占该任务同口径总体约 47.619%。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0009",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "proportion",
+      "value": {
+        "category": "午批",
+        "numerator": 0.0029,
+        "denominator": 0.0063,
+        "percent": 46.03174603174603
+      },
+      "scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+      "statement": "午批的耗时 · 合计占该任务同口径总体约 46.0317%。",
+      "source_row_indices": [
+        1
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0010",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "proportion",
+      "value": {
+        "category": "晚批",
+        "numerator": 0.0004,
+        "denominator": 0.0063,
+        "percent": 6.349206349206349
+      },
+      "scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+      "statement": "晚批的耗时 · 合计占该任务同口径总体约 6.3492%。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0005",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "maximum",
+      "value": {
+        "value": 0.003,
+        "category": "早批",
+        "tie_count": 1
+      },
+      "scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；读取 value 的最大值，保留并列来源行。",
+      "statement": "该任务完整分组结果的耗时 · 合计最大值为 0.003，对应 早批等 1 个分组。",
+      "source_row_indices": [
+        0
+      ],
+      "related_result_refs": []
+    },
+    {
+      "evidence_id": "E0006",
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_type": "minimum",
+      "value": {
+        "value": 0.0004,
+        "category": "晚批",
+        "tie_count": 1
+      },
+      "scope": "比较批次耗时的小额差异，不据此确定瓶颈原因；仅限当前上传数据与批准任务范围。",
+      "calculation": "按当前批准的受控操作链计算，保留缺失分组。；读取 value 的最小值，保留并列来源行。",
+      "statement": "该任务完整分组结果的耗时 · 合计最小值为 0.0004，对应 晚批等 1 个分组。",
+      "source_row_indices": [
+        2
+      ],
+      "related_result_refs": []
+    }
+  ],
+  "evidence_groups": [
+    {
+      "task_id": "A01",
+      "data_ref": "R001",
+      "result_field": "value",
+      "evidence_ids": [
+        "E0012",
+        "E0013",
+        "E0014",
+        "E0007",
+        "E0002",
+        "E0003",
+        "E0004",
+        "E0011",
+        "E0008",
+        "E0009",
+        "E0010",
+        "E0005",
+        "E0006"
+      ]
+    }
+  ],
+  "limitations": [
+    "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+    "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+    "计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。"
+  ]
+}

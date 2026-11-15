@@ -1,0 +1,8 @@
+# Report reliability V2.1 minimal implementation
+
+REQ-0104. Preserve the frozen 10-case baseline (REQ-0103), all candidates, model responses and historical reports. No Planner/HITL/Engine changes, no new LLM node, no outer retries, no silent factual rewrite.
+
+1. Dynamic request Schema binds finding_type to primary evidence compatibility; request payload lists valid types and requires every included real metric group, including auxiliary directions. Prompt version increments. Validator independently checks the same semantics. Public AnalysisReport and internal selected fields remain compatible.
+2. A candidate becomes a redundant, non-degrading omission only after full source/type/recommendation/limitation/composition validation and if every semantic fact is already accepted. Preserve its candidate/rule in metadata and Trace. Invalid candidates that happen to repeat a primary are still rejected as invalid. Primary reuse with genuinely new verified evidence is allowed. Partial remains for real invalid candidates, failed batches, missing required evidence or missing directions.
+3. Track successful directions lacking Insights. Preserve their charts and result_data, disclose the missing interpretation in uncompleted_tasks/limitations/metadata, mark report partial. Do not falsely alter Engine status. P0 metric coverage rules are retained. No templates fabricate missing Insights.
+4. Replay exact saved rejected/omitted candidates deterministically, then safety tests, full regression and one new run of the unchanged 10-case frozen suite. Compare actual system outcomes and agent review separately.

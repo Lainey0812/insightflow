@@ -1,0 +1,837 @@
+{
+  "workflow_id": "wf_2807805ddd244e5f8a17813a145e14ca",
+  "root_run_id": "run_0725c892830247fe9deb9012176091eb",
+  "id": "d16f2e147d894d33aa33989b54a0eb83",
+  "title": "比较各团队已解决工单数量，不要分析利润，也不要推断团队差",
+  "status": "AWAITING_APPROVAL",
+  "revision": 8,
+  "created_at": "2026-11-04T10:39:17.763123+00:00",
+  "updated_at": "2026-11-04T10:39:27.396384+00:00",
+  "data_source": "uploaded",
+  "workflow_kind": "real_v1",
+  "profile_options": {
+    "header_row": 1,
+    "sheet_name": null,
+    "encoding": "utf-8-sig",
+    "delimiter": ","
+  },
+  "planner_result": {
+    "plan": {
+      "dataset_id": "e1f6beb72f6645f1b3147ca159d28c91",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+      "plan_id": "plan_352f041306b544bb8f83a232c5e9ed5d",
+      "plan_version": 1,
+      "tasks": [
+        {
+          "task_id": "T1",
+          "title": "各团队已解决工单数量统计",
+          "business_question": "比较各团队的已解决工单数量是多少？注意：不要分析利润，也不要推断团队差异的原因。",
+          "priority": "P0",
+          "priority_reason": "直接回答核心业务目标“比较各团队的已解决工单数量”，关联所有核心需求（C01-C04）。删除此任务将无法获取任何数据支持决策。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03",
+            "C04"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "field_0003",
+                    "operator": "eq",
+                    "value": "已解决"
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "resolved_ticket_count"
+                  }
+                ],
+                "dimensions": [
+                  "field_0002"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "比较各团队的已解决工单数量"
+        },
+        {
+          "requirement_id": "C02",
+          "description": "filters：已解决工单"
+        },
+        {
+          "requirement_id": "C03",
+          "description": "metric_requirements：工单数量"
+        },
+        {
+          "requirement_id": "C04",
+          "description": "analysis_limits：不要分析利润；也不要推断团队差异的原因"
+        }
+      ]
+    },
+    "validation_results": [
+      {
+        "task_id": "T1",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      }
+    ],
+    "unmet_core_requirements": [],
+    "coverage_status": "complete",
+    "executable_task_ids": [
+      "T1"
+    ],
+    "blocked_task_ids": [],
+    "fully_executable": true,
+    "validation_version": "1.0",
+    "registry_version": "1.0",
+    "approval_required": true,
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "e1f6beb72f6645f1b3147ca159d28c91",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+      "plan_version": 1,
+      "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+    },
+    "intent_snapshot": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "各团队已解决工单数量",
+        "business_goal": "比较各团队的已解决工单数量",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [
+          {
+            "raw_text": "已解决工单",
+            "validation_status": "unverified"
+          }
+        ],
+        "metric_requirements": [
+          {
+            "raw_text": "工单数量",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "不要分析利润",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "也不要推断团队差异的原因",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    }
+  },
+  "workflow_events": [
+    {
+      "status": "CREATED",
+      "recorded_at": "2026-11-04T10:39:17.763683+00:00"
+    },
+    {
+      "status": "PROFILING",
+      "recorded_at": "2026-11-04T10:39:17.799811+00:00"
+    },
+    {
+      "status": "PARSING_INTENT",
+      "recorded_at": "2026-11-04T10:39:17.806390+00:00"
+    },
+    {
+      "status": "PLANNING",
+      "recorded_at": "2026-11-04T10:39:21.774615+00:00"
+    },
+    {
+      "status": "VALIDATING",
+      "recorded_at": "2026-11-04T10:39:27.387001+00:00"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "recorded_at": "2026-11-04T10:39:27.396198+00:00"
+    }
+  ],
+  "file": {
+    "id": "e1f6beb72f6645f1b3147ca159d28c91",
+    "name": "support.csv",
+    "size": 384,
+    "extension": ".csv",
+    "content_sha256": "9b89f9d75d9e1b9868bc276a8030a2336f68181c868e47fb0cd5406668081475"
+  },
+  "user_goal": "比较各团队已解决工单数量，不要分析利润，也不要推断团队差异的原因。",
+  "analysis_mode": "goal_driven",
+  "intent": {
+    "analysis_mode": "goal_driven",
+    "next_action": "proceed",
+    "analysis_goal": {
+      "analysis_object": "各团队已解决工单数量",
+      "business_goal": "比较各团队的已解决工单数量",
+      "decision_goal": null
+    },
+    "constraints": {
+      "time_range": null,
+      "filters": [
+        {
+          "raw_text": "已解决工单",
+          "validation_status": "unverified"
+        }
+      ],
+      "metric_requirements": [
+        {
+          "raw_text": "工单数量",
+          "validation_status": "unverified"
+        }
+      ],
+      "analysis_limits": [
+        {
+          "raw_text": "不要分析利润",
+          "validation_status": "unverified"
+        },
+        {
+          "raw_text": "也不要推断团队差异的原因",
+          "validation_status": "unverified"
+        }
+      ]
+    },
+    "uncertainties": [],
+    "clarification_questions": [],
+    "user_query": "比较各团队已解决工单数量，不要分析利润，也不要推断团队差异的原因。",
+    "clarification_answers": [],
+    "dataset_ref": {
+      "dataset_id": "e1f6beb72f6645f1b3147ca159d28c91",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2"
+    },
+    "parse_origin": "llm",
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "e1f6beb72f6645f1b3147ca159d28c91",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+      "plan_version": null,
+      "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+    },
+    "parser_version": "1.1",
+    "prompt_version": "intent-v1.3.3",
+    "llm_attempts": 1,
+    "parse_id": "99087722bdcb4ac1abfb5cd8dd41c89e"
+  },
+  "intent_history": [
+    {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "各团队已解决工单数量",
+        "business_goal": "比较各团队的已解决工单数量",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [
+          {
+            "raw_text": "已解决工单",
+            "validation_status": "unverified"
+          }
+        ],
+        "metric_requirements": [
+          {
+            "raw_text": "工单数量",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "不要分析利润",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "也不要推断团队差异的原因",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "比较各团队已解决工单数量，不要分析利润，也不要推断团队差异的原因。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "e1f6beb72f6645f1b3147ca159d28c91",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "e1f6beb72f6645f1b3147ca159d28c91",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "99087722bdcb4ac1abfb5cd8dd41c89e"
+    }
+  ],
+  "clarification_answers": [],
+  "profile": {
+    "dataset_id": "e1f6beb72f6645f1b3147ca159d28c91",
+    "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+    "schema_version": "1.0",
+    "profiler_version": "1.1.0",
+    "content_sha256": "9b89f9d75d9e1b9868bc276a8030a2336f68181c868e47fb0cd5406668081475",
+    "file_name": "support.csv",
+    "file_format": "csv",
+    "sheet_name": null,
+    "available_sheets": [],
+    "options": {
+      "header_row": 1,
+      "sheet_name": null,
+      "encoding": "utf-8-sig",
+      "delimiter": ","
+    },
+    "row_count": 8,
+    "column_count": 6,
+    "total_cell_count": 48,
+    "missing_cell_count": 1,
+    "missing_cell_rate": 0.020833333333333332,
+    "duplicate_row_count": 0,
+    "duplicate_row_rate": 0.0,
+    "fields": [
+      {
+        "field_id": "field_0001",
+        "position": 1,
+        "original_name": "提交日期",
+        "display_name": "提交日期",
+        "physical_type": "string",
+        "logical_type": "date",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 8,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "date": 8
+        },
+        "samples": [
+          {
+            "value": "2026-01-01",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-01-02",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-02-03",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-02-04",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "2026-03-05",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0002",
+        "position": 2,
+        "original_name": "团队",
+        "display_name": "团队",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "一组",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "二组",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "三组",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0003",
+        "position": 3,
+        "original_name": "状态",
+        "display_name": "状态",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "已解决",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "处理中",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "待分配",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0004",
+        "position": 4,
+        "original_name": "优先级",
+        "display_name": "优先级",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "高",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "低",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "中",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0005",
+        "position": 5,
+        "original_name": "响应分钟",
+        "display_name": "响应分钟",
+        "physical_type": "string",
+        "logical_type": "integer",
+        "missing_count": 1,
+        "missing_rate": 0.125,
+        "non_missing_count": 7,
+        "unique_count": 7,
+        "physical_type_counts": {
+          "string": 7
+        },
+        "logical_type_counts": {
+          "integer": 7
+        },
+        "samples": [
+          {
+            "value": "10",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "20",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "30",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "40",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "5",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0006",
+        "position": 6,
+        "original_name": "工单编号",
+        "display_name": "工单编号",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 8,
+        "unique_count": 8,
+        "physical_type_counts": {
+          "string": 8
+        },
+        "logical_type_counts": {
+          "text": 8
+        },
+        "samples": [
+          {
+            "value": "T01",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "T02",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "T03",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "T04",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "T05",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      }
+    ],
+    "quality_issues": [],
+    "provenance": {
+      "source": "uploaded",
+      "dataset": "e1f6beb72f6645f1b3147ca159d28c91",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+      "plan_version": null,
+      "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+    }
+  },
+  "dataset_ref": {
+    "dataset_id": "e1f6beb72f6645f1b3147ca159d28c91",
+    "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2"
+  },
+  "plans": [],
+  "current_plan_version": 1,
+  "approved_plan_version": null,
+  "node_runs": [
+    {
+      "run_id": "30b8f39287264ca2957da212d42a0039",
+      "node_name": "data_profiler",
+      "status": "success",
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "e1f6beb72f6645f1b3147ca159d28c91",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_version": null,
+        "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T10:39:17.804237+00:00"
+    },
+    {
+      "run_id": "077f657f943f4f1e90625caaf717d7df",
+      "node_name": "intent_parser",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "e1f6beb72f6645f1b3147ca159d28c91",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T10:39:21.767350+00:00"
+    },
+    {
+      "run_id": "4b377f25bbdf403bb543b0b96298585c",
+      "node_name": "analysis_planner_v1",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "e1f6beb72f6645f1b3147ca159d28c91",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "error": null,
+      "finished_at": "2026-11-04T10:39:27.381082+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "id": "ddcbbb1af540440f84bc7be22ffd9907",
+      "role": "user",
+      "kind": "text",
+      "content": "比较各团队已解决工单数量，不要分析利润，也不要推断团队差异的原因。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:39:17.763112+00:00"
+    },
+    {
+      "id": "27ad5989a62c408a8e48495bfb421e6e",
+      "role": "assistant",
+      "kind": "status",
+      "content": "正在解析上传文件并计算真实数据画像。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:39:17.799805+00:00"
+    },
+    {
+      "id": "a7cd5e5d64654e948365a491d48557da",
+      "role": "assistant",
+      "kind": "status",
+      "content": "真实画像完成：8行、6列；正在理解分析需求。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:39:17.806386+00:00"
+    },
+    {
+      "id": "e5ee88808c9745e194c195a90571da23",
+      "role": "assistant",
+      "kind": "status",
+      "content": "需求已理解，正在生成受控分析计划。",
+      "plan_version": null,
+      "created_at": "2026-11-04T10:39:21.774586+00:00"
+    },
+    {
+      "id": "201835ed4fa347e2859e089a0ff61239",
+      "role": "assistant",
+      "kind": "plan",
+      "content": "真实计划已保存，目标覆盖：complete。请审核任务、未满足需求和约束；批准前不会计算。",
+      "plan_version": 1,
+      "created_at": "2026-11-04T10:39:27.396188+00:00"
+    }
+  ],
+  "review_plan": {
+    "session_id": "d16f2e147d894d33aa33989b54a0eb83",
+    "plan_id": "plan_352f041306b544bb8f83a232c5e9ed5d",
+    "plan_version": 1,
+    "dataset_id": "e1f6beb72f6645f1b3147ca159d28c91",
+    "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+    "validation_version": "1.0",
+    "created_at": "2026-11-04T10:39:27.396010+00:00",
+    "change_type": "created",
+    "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "e1f6beb72f6645f1b3147ca159d28c91",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_id": "plan_352f041306b544bb8f83a232c5e9ed5d",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "各团队已解决工单数量统计",
+            "business_question": "比较各团队的已解决工单数量是多少？注意：不要分析利润，也不要推断团队差异的原因。",
+            "priority": "P0",
+            "priority_reason": "直接回答核心业务目标“比较各团队的已解决工单数量”，关联所有核心需求（C01-C04）。删除此任务将无法获取任何数据支持决策。",
+            "requirement_ids": [
+              "C01",
+              "C02",
+              "C03",
+              "C04"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "filter",
+                "params": {
+                  "conditions": [
+                    {
+                      "field": "field_0003",
+                      "operator": "eq",
+                      "value": "已解决"
+                    }
+                  ]
+                }
+              },
+              {
+                "step_id": "S2",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "resolved_ticket_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "比较各团队的已解决工单数量"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "filters：已解决工单"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "metric_requirements：工单数量"
+          },
+          {
+            "requirement_id": "C04",
+            "description": "analysis_limits：不要分析利润；也不要推断团队差异的原因"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T1"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "e1f6beb72f6645f1b3147ca159d28c91",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_version": 1,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "各团队已解决工单数量",
+          "business_goal": "比较各团队的已解决工单数量",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [
+            {
+              "raw_text": "已解决工单",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "工单数量",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "不要分析利润",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "也不要推断团队差异的原因",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    }
+  },
+  "review_status": "awaiting_review",
+  "engine_approval": null,
+  "engine_execution_ids": [],
+  "report_generations": [],
+  "execution_result": null,
+  "report": null,
+  "error": null
+}

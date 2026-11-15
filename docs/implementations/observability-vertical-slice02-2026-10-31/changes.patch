@@ -1,0 +1,299 @@
+--- before/backend/app/main.py
++++ after/backend/app/main.py
+@@ -82,6 +82,8 @@
+     if bootstrap_identity:
+         apply_expand(repository.database.path, 'business')
+     identities = WorkflowIdentityRepository(repository.database) if bootstrap_identity else None
++    from app.observability.hitl import HITLObserver
++    review.observations = HITLObserver(repository, identities, traces) if identities else None
+     workflow = WorkflowOrchestrator(repository, parser, profiler, planner, review, traces, identities)
+ 
+     @asynccontextmanager
+--- before/backend/app/observability/hitl.py
++++ after/backend/app/observability/hitl.py
+@@ -0,0 +1,109 @@
++"""Observe actual HITL commands only; commits and authorization remain in PlanReviewService."""
++from contextlib import closing
++from contextvars import ContextVar
++from functools import wraps
++
++from app.domain.errors import AppError
++from app.observability.context import bind_trace
++from app.observability.recorder import SpanHandle, error_code
++from app.observability.workflow import preparation_context
++
++_receipt = ContextVar('hitl_observation_receipt', default=None)
++
++
++def mark_approval_replay():
++    """Called at the existing idempotent branch; no database or Trace IO here."""
++    receipt = _receipt.get()
++    if receipt is not None:
++        receipt['replay'] = True
++
++
++def observe_hitl(command):
++    def decorate(method):
++        @wraps(method)
++        def wrapped(self, session_id, request):
++            observer = getattr(self, 'observations', None)
++            if observer is None:
++                return method(self, session_id, request)
++            return observer.perform(command, session_id, request,
++                                    lambda: method(self, session_id, request))
++        return wrapped
++    return decorate
++
++
++class HITLObserver:
++    def __init__(self, sessions, identities, recorder):
++        self.sessions, self.identities, self.recorder = sessions, identities, recorder
++
++    def _context(self, session_id):
++        state = self.sessions.get(session_id)
++        if state.workflow_id is None and state.root_run_id is None:
++            self.identities.require_unregistered(session_id)
++            return None  # Historical operations do not acquire a fabricated Workflow.
++        identity = self.identities.resolve(state)
++        return preparation_context(self.recorder, session_id, identity, explicit_only=True)
++
++    def _proof(self, command, result):
++        """Read exact immutable facts after the service's transaction has exited."""
++        identity = self.identities.resolve(result)
++        plan = result.review_plan
++        with closing(self.sessions.database.connect()) as conn:
++            conn.execute('BEGIN')
++            stored = conn.execute('SELECT record FROM plan_versions WHERE session_id=? AND plan_version=?',
++                                  (result.id, plan.plan_version)).fetchone()
++            if not stored or stored['record'] != plan.model_dump_json():
++                raise ValueError('Committed PlanVersion unavailable')
++            attributes = {'workflow_id':identity.workflow_id,'root_run_id':identity.root_run_id,
++                'plan_id':plan.plan_id,'plan_version':plan.plan_version,
++                'dataset_id':plan.dataset_id,'dataset_version':plan.dataset_version,
++                'validation_version':plan.validation_version}
++            if command == 'approve':
++                approval = result.engine_approval
++                row = conn.execute('SELECT record FROM plan_approvals WHERE session_id=? AND approval_id=?',
++                                   (result.id, approval.approval_id)).fetchone()
++                from app.domain.plan_review import ReviewApproval
++                if not row or ReviewApproval.model_validate_json(row['record']).snapshot != approval:
++                    raise ValueError('Committed Approval unavailable')
++                attributes['approval_id'] = approval.approval_id
++            return attributes
++
++    def perform(self, command, session_id, request, action):
++        # Every observation read/write is fail-open. Execute the business action exactly once.
++        ok, trace = self.recorder.call(lambda: self._context(session_id))
++        if not ok or trace is None or trace.run is None:
++            if not ok or (trace is not None and trace.run is None):
++                self.recorder.workflow_gap(session_id)
++            return action()
++        attributes = {'command':command,'plan_id':request.plan_id,'plan_version':request.plan_version,
++                      'session_revision':request.expected_revision}
++        _, handle = self.recorder.call(lambda: SpanHandle(trace, 'hitl', attributes))
++        trace.active = handle
++        receipt = {'replay':False}
++        token = _receipt.set(receipt)
++        try:
++            with bind_trace(trace):
++                try:
++                    result = action()
++                except BaseException as exc:
++                    self.recorder.call(lambda: trace.event('hitl.denied' if isinstance(exc, AppError) else 'hitl.failed',
++                        handle.record.span_id if handle and handle.record else None,
++                        command=command,error_code=error_code(exc)))
++                    if handle:
++                        self.recorder.call(lambda: handle.finish(exc))
++                    raise
++                def finish():
++                    proof = self._proof(command, result)
++                    outcome = 'replayed' if receipt['replay'] else ('approved' if command == 'approve' else 'revised')
++                    if handle:
++                        handle.attributes(**proof,command=command,outcome=outcome)
++                        handle.event('hitl.' + outcome,**proof,command=command,outcome=outcome)
++                        handle.finish()
++                observed, _ = self.recorder.call(finish)
++                if not observed:
++                    self.recorder.workflow_gap(session_id)
++                    if handle:
++                        self.recorder.call(lambda: handle.finish(AppError('TRACE_COMMIT_UNVERIFIED',
++                            '业务操作已返回，观测无法核验提交证据。')))
++                return result
++        finally:
++            _receipt.reset(token)
+--- before/backend/app/observability/recorder.py
++++ after/backend/app/observability/recorder.py
+@@ -23,7 +23,7 @@
+ SAFE_KEYS.update({'status','previous_status','session_revision','node_name','operation_id','validation_role',
+                   'next_action','coverage_status','executable_count','blocked_count','error_message',
+                   'dataset_id','dataset_version','plan_id','plan_version','validation_version'})
+-SAFE_KEYS.update({'row_count','column_count','workflow_id','root_run_id'})
++SAFE_KEYS.update({'row_count','column_count','workflow_id','root_run_id','approval_id','command','outcome'})
+ 
+ def safe_error_message(code):
+     messages={'LLM_TIMEOUT':'模型调用超时。','LLM_HTTP_ERROR':'模型服务返回错误。',
+--- before/backend/app/services/plan_review.py
++++ after/backend/app/services/plan_review.py
+@@ -1,4 +1,5 @@
+ import json
++from app.observability.hitl import observe_hitl, mark_approval_replay
+ from pydantic import BaseModel, Field, model_validator
+ 
+ from app.domain.errors import AppError
+@@ -166,6 +167,7 @@
+             raise AppError("PLAN_VERSION_MISMATCH", "只能操作本会话最新计划 ID 和版本。", 409)
+         return record
+ 
++    @observe_hitl('revise')
+     def revise_v1(self, session_id, request):
+         from app.domain.plan_review import PlanVersion
+         with self.audit.transaction(session_id) as (conn, state):
+@@ -270,6 +272,7 @@
+             and active and recorded and recorded.snapshot == active and active.validated_plan == record.validated_plan)
+         return view
+ 
++    @observe_hitl('approve')
+     def approve_v1(self, session_id, request):
+         from app.domain.execution import ApprovedExecutionSnapshot
+         from app.domain.plan_review import ReviewApproval
+@@ -284,6 +287,7 @@
+                     raise AppError("APPROVAL_REQUEST_CONFLICT", "审批请求 ID 已用于不同参数。", 409)
+                 if state.engine_approval is None or state.engine_approval.approval_id != json.loads(previous["record"])["approval_id"]:
+                     raise AppError("APPROVAL_SUPERSEDED", "原审批已不再是当前有效审批。", 409)
++                mark_approval_replay()
+                 return state
+             self.revision_guard(state, request.expected_revision)
+             if state.approved_plan_version == record.plan_version:
+--- before/backend/tests/test_vertical_slice02_hitl.py
++++ after/backend/tests/test_vertical_slice02_hitl.py
+@@ -0,0 +1,130 @@
++"""Only the audited HITL path is enabled. No Engine/Report integration is claimed."""
++from concurrent.futures import ThreadPoolExecutor
++from contextlib import closing
++import json
++
++import pytest
++from fastapi.testclient import TestClient
++
++from app.core.config import Settings
++from app.domain.errors import AppError
++from app.domain.execution import ExecutionRequest
++from app.main import create_app
++from workflow_v1_fixtures import ControlledWorkflowProvider, create_real
++from hitl_fixtures import approval, execution, revision
++from test_report_workflow import Provider, QUERY, SALES
++
++
++def make(path):
++    return create_app(Settings(path), ControlledWorkflowProvider())
++
++
++def spans(app,state):
++    return [s for s in app.state.traces.repository.spans(state['root_run_id']) if s.name=='hitl']
++
++
++def test_approval_replay_and_denial_have_committed_refs(tmp_path):
++    app=make(tmp_path)
++    with TestClient(app) as client:
++        state=create_real(client);assert spans(app,state)==[]
++        body=approval(state);url='/api/v1/sessions/'+state['id']+'/approvals'
++        first=client.post(url,json=body);assert first.status_code==200
++        assert client.post(url,json=body).json()==first.json()
++        denied=client.post(url,json={**body,'plan_version':999})
++        assert denied.status_code==409
++        observed=spans(app,state)
++        assert [s.status for s in observed]==['complete','complete','failed']
++        assert [s.attributes.get('outcome') for s in observed]==['approved','replayed',None]
++        assert observed[-1].error_code=='PLAN_VERSION_MISMATCH'
++        assert all(s.parent_span_id is None and s.attributes['workflow_id']==state['workflow_id'] for s in observed)
++        assert len({s.span_id for s in observed})==3
++        assert [s.node_attempt for s in observed]==[1,2,3]
++        assert len(app.state.plan_review.audit.approvals(state['id']))==1
++        assert observed[0].attributes['approval_id']==first.json()['engine_approval']['approval_id']
++        assert all(s.duration_ms>=0 and s.finished_at for s in observed)
++
++
++def test_revision_real_validation_and_no_long_waiting_span(tmp_path):
++    app=make(tmp_path)
++    with TestClient(app) as client:
++        state=create_real(client)
++        response=client.post('/api/v1/sessions/'+state['id']+'/plan-revisions',json=revision(state,['A02']))
++        assert response.status_code==200,response.text
++        updated=response.json();assert updated['review_plan']['plan_version']==2
++        observed=spans(app,state);assert len(observed)==1
++        assert observed[0].attributes['outcome']=='revised' and observed[0].attributes['plan_version']==2
++        assert 'approval_id' not in observed[0].attributes
++        assert all(s.status!='running' and s.parent_span_id is None for s in app.state.traces.repository.spans(state['root_run_id']))
++        assert len(app.state.plan_review.audit.versions(state['id']))==2
++
++
++@pytest.mark.parametrize('target',['event','reserve_workflow_span','save_span'])
++def test_trace_fault_does_not_change_approval(tmp_path,monkeypatch,target):
++    app=make(tmp_path)
++    with TestClient(app) as client:
++        state=create_real(client)
++        monkeypatch.setattr(app.state.traces.repository,target,lambda *a,**k: (_ for _ in ()).throw(OSError('down')))
++        response=client.post('/api/v1/sessions/'+state['id']+'/approvals',json=approval(state))
++        assert response.status_code==200 and response.json()['status']=='APPROVED'
++        assert len(app.state.plan_review.audit.approvals(state['id']))==1
++
++
++def test_proof_read_failure_preserves_business_and_not_success_span(tmp_path,monkeypatch):
++    app=make(tmp_path)
++    with TestClient(app) as client:
++        state=create_real(client)
++        monkeypatch.setattr(app.state.plan_review.observations,'_proof',lambda *a: (_ for _ in ()).throw(OSError('proof read down')))
++        response=client.post('/api/v1/sessions/'+state['id']+'/approvals',json=approval(state))
++        assert response.status_code==200 and response.json()['status']=='APPROVED'
++        assert spans(app,state)[0].status=='failed'
++        assert spans(app,state)[0].error_code=='TRACE_COMMIT_UNVERIFIED'
++
++
++def test_concurrent_replay_classified_at_business_branch(tmp_path):
++    app=make(tmp_path)
++    with TestClient(app) as client:
++        state=create_real(client)
++        from app.services.plan_review import ApprovalRequest
++        request=ApprovalRequest(**approval(state))
++        with ThreadPoolExecutor(max_workers=2) as pool:
++            results=list(pool.map(lambda _:app.state.plan_review.approve_v1(state['id'],request),range(2)))
++        assert results[0].engine_approval==results[1].engine_approval
++        assert sorted(s.attributes['outcome'] for s in spans(app,state))==['approved','replayed']
++        assert len(app.state.plan_review.audit.approvals(state['id']))==1
++
++
++def test_engine_finish_fencing_gap_is_reproducible_in_isolated_state(tmp_path):
++    """A synthetic branch drift proves the primitive lacks a guard, not a public API exploit."""
++    app=make(tmp_path)
++    with TestClient(app) as client:
++        state=create_real(client);approved=client.post('/api/v1/sessions/'+state['id']+'/approvals',json=approval(state)).json()
++        request=ExecutionRequest(**execution(approved))
++        current=app.state.repository.get(state['id']);engine=app.state.analysis_engine
++        claim=app.state.executions.claim(request,current.revision,engine.check_approval)
++        result=engine.outcome(claim['execution_id'],request,claim['approval'],claim['started_at'],[],0)
++        def branch_drift(s):s.current_plan_version+=1
++        app.state.repository.mutate(state['id'],branch_drift)
++        app.state.executions.finish(result)
++        # This is the audited blocker: no active execution/plan fence rejects this write.
++        assert app.state.repository.get(state['id']).status.value=='FAILED'
++        assert app.state.executions.get(result.execution_id).plan_version==1
++        assert not [s for s in app.state.traces.repository.spans(state['root_run_id']) if s.name=='analysis_engine']
++
++
++def test_report_attempt_guard_does_not_fence_changed_plan(tmp_path):
++    """Only synthetic Session drift is used; the full observed production path is not enabled."""
++    app=create_app(Settings(tmp_path),Provider())
++    with TestClient(app) as client:
++        state=create_real(client,SALES,'sales.csv',QUERY)
++        approved=client.post('/api/v1/sessions/'+state['id']+'/approvals',json=approval(state)).json()
++        execution_result=app.state.analysis_engine.execute(ExecutionRequest(**execution(approved)))
++        record,fresh=app.state.report_workflow.enqueue(execution_result.execution_id)
++        assert fresh
++        assert app.state.reports.start(execution_result.execution_id,record.attempt)
++        def branch_drift(s):s.current_plan_version+=1
++        app.state.repository.mutate(state['id'],branch_drift)
++        # The real commit primitive accepts the old attempt after the synthetic branch changes.
++        accepted=app.state.reports.finish(execution_result.execution_id,record.attempt,
++            error=AppError('TEST_FAILURE','isolated test').error)
++        assert accepted and app.state.reports.generation(execution_result.execution_id).status=='failed'
++        assert not [s for s in app.state.traces.repository.spans(state['root_run_id']) if s.name=='report_persistence']

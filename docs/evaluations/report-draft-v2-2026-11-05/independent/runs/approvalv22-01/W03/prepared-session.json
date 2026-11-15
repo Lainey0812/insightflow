@@ -1,0 +1,697 @@
+{
+  "workflow_id": "wf_811c1ec01e844309b80351f1d186b4c2",
+  "root_run_id": "run_262cc7fa4177407bb208bbaf86f831c1",
+  "id": "1edfb6bdcce048958687cc613e649771",
+  "title": "按团队统计响应分钟平均值，并按平均值降序排列；不要推断人",
+  "status": "AWAITING_APPROVAL",
+  "revision": 8,
+  "created_at": "2026-11-05T04:16:39.366385+00:00",
+  "updated_at": "2026-11-05T04:16:47.903901+00:00",
+  "data_source": "uploaded",
+  "workflow_kind": "real_v1",
+  "profile_options": {
+    "header_row": 1,
+    "sheet_name": null,
+    "encoding": "utf-8-sig",
+    "delimiter": ","
+  },
+  "planner_result": {
+    "plan": {
+      "dataset_id": "76c0a580f1ed48a99533a84fdc9548ee",
+      "dataset_version": "d9ef09df7cf0569167a6f5ee98a6843595e60789f04a18549cbb3ae04fdab195",
+      "plan_id": "plan_91de14ab9c6f407ebc1f45424043e068",
+      "plan_version": 1,
+      "tasks": [
+        {
+          "task_id": "T1",
+          "title": "各团队响应分钟平均值统计与排序",
+          "business_question": "按团队统计响应分钟的平均值，并按平均值降序排列。注意：不要推断人员绩效。",
+          "priority": "P0",
+          "priority_reason": "直接回答核心问题“各团队响应分钟平均值”，并满足“按平均值降序排列”及“不要推断人员绩效”的约束。删除此任务将无法完成分析目标。",
+          "requirement_ids": [
+            "C01",
+            "C02",
+            "C03"
+          ],
+          "depends_on": [],
+          "missing_inputs": [],
+          "steps": [
+            {
+              "step_id": "S1",
+              "operation": "group_aggregate",
+              "params": {
+                "metrics": [
+                  {
+                    "function": "avg",
+                    "field": "field_0002",
+                    "alias": "avg_response_minutes"
+                  }
+                ],
+                "dimensions": [
+                  "field_0001"
+                ]
+              }
+            },
+            {
+              "step_id": "S2",
+              "operation": "sort",
+              "params": {
+                "field": "avg_response_minutes",
+                "direction": "desc"
+              }
+            }
+          ]
+        }
+      ],
+      "core_requirements": [
+        {
+          "requirement_id": "C01",
+          "description": "按团队统计响应分钟平均值，并按平均值降序排列"
+        },
+        {
+          "requirement_id": "C02",
+          "description": "metric_requirements：响应分钟平均值"
+        },
+        {
+          "requirement_id": "C03",
+          "description": "analysis_limits：按平均值降序排列；不要推断人员绩效"
+        }
+      ]
+    },
+    "validation_results": [
+      {
+        "task_id": "T1",
+        "feasibility": "F2",
+        "reason_code": "READY",
+        "validation_issues": [],
+        "executable": true
+      }
+    ],
+    "unmet_core_requirements": [],
+    "coverage_status": "complete",
+    "executable_task_ids": [
+      "T1"
+    ],
+    "blocked_task_ids": [],
+    "fully_executable": true,
+    "validation_version": "1.0",
+    "registry_version": "1.0",
+    "approval_required": true,
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "76c0a580f1ed48a99533a84fdc9548ee",
+      "dataset_version": "d9ef09df7cf0569167a6f5ee98a6843595e60789f04a18549cbb3ae04fdab195",
+      "plan_version": 1,
+      "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+    },
+    "intent_snapshot": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "各团队响应分钟平均值",
+        "business_goal": "按团队统计响应分钟平均值，并按平均值降序排列",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "响应分钟平均值",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "按平均值降序排列",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "不要推断人员绩效",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": []
+    }
+  },
+  "workflow_events": [
+    {
+      "status": "CREATED",
+      "recorded_at": "2026-11-05T04:16:39.366949+00:00"
+    },
+    {
+      "status": "PROFILING",
+      "recorded_at": "2026-11-05T04:16:39.403637+00:00"
+    },
+    {
+      "status": "PARSING_INTENT",
+      "recorded_at": "2026-11-05T04:16:39.409965+00:00"
+    },
+    {
+      "status": "PLANNING",
+      "recorded_at": "2026-11-05T04:16:42.602299+00:00"
+    },
+    {
+      "status": "VALIDATING",
+      "recorded_at": "2026-11-05T04:16:47.895651+00:00"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "recorded_at": "2026-11-05T04:16:47.903742+00:00"
+    }
+  ],
+  "file": {
+    "id": "76c0a580f1ed48a99533a84fdc9548ee",
+    "name": "support.csv",
+    "size": 200,
+    "extension": ".csv",
+    "content_sha256": "4084d759c21117990f21b44350070a3c847f5e1073c9181f5cff41bb852f5046"
+  },
+  "user_goal": "按团队统计响应分钟平均值，并按平均值降序排列；不要推断人员绩效。",
+  "analysis_mode": "goal_driven",
+  "intent": {
+    "analysis_mode": "goal_driven",
+    "next_action": "proceed",
+    "analysis_goal": {
+      "analysis_object": "各团队响应分钟平均值",
+      "business_goal": "按团队统计响应分钟平均值，并按平均值降序排列",
+      "decision_goal": null
+    },
+    "constraints": {
+      "time_range": null,
+      "filters": [],
+      "metric_requirements": [
+        {
+          "raw_text": "响应分钟平均值",
+          "validation_status": "unverified"
+        }
+      ],
+      "analysis_limits": [
+        {
+          "raw_text": "按平均值降序排列",
+          "validation_status": "unverified"
+        },
+        {
+          "raw_text": "不要推断人员绩效",
+          "validation_status": "unverified"
+        }
+      ]
+    },
+    "uncertainties": [],
+    "clarification_questions": [],
+    "user_query": "按团队统计响应分钟平均值，并按平均值降序排列；不要推断人员绩效。",
+    "clarification_answers": [],
+    "dataset_ref": {
+      "dataset_id": "76c0a580f1ed48a99533a84fdc9548ee",
+      "dataset_version": "d9ef09df7cf0569167a6f5ee98a6843595e60789f04a18549cbb3ae04fdab195"
+    },
+    "parse_origin": "llm",
+    "llm": {
+      "provider": "compatible",
+      "model": "qwen3.8-flash",
+      "is_mock": false
+    },
+    "provenance": {
+      "source": "llm",
+      "dataset": "76c0a580f1ed48a99533a84fdc9548ee",
+      "dataset_version": "d9ef09df7cf0569167a6f5ee98a6843595e60789f04a18549cbb3ae04fdab195",
+      "plan_version": null,
+      "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+    },
+    "parser_version": "1.1",
+    "prompt_version": "intent-v1.3.3",
+    "llm_attempts": 1,
+    "parse_id": "b8ad69d325314821abce9fa6641502e8"
+  },
+  "intent_history": [
+    {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "各团队响应分钟平均值",
+        "business_goal": "按团队统计响应分钟平均值，并按平均值降序排列",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "响应分钟平均值",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "按平均值降序排列",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "不要推断人员绩效",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "按团队统计响应分钟平均值，并按平均值降序排列；不要推断人员绩效。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "76c0a580f1ed48a99533a84fdc9548ee",
+        "dataset_version": "d9ef09df7cf0569167a6f5ee98a6843595e60789f04a18549cbb3ae04fdab195"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "76c0a580f1ed48a99533a84fdc9548ee",
+        "dataset_version": "d9ef09df7cf0569167a6f5ee98a6843595e60789f04a18549cbb3ae04fdab195",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "b8ad69d325314821abce9fa6641502e8"
+    }
+  ],
+  "clarification_answers": [],
+  "profile": {
+    "dataset_id": "76c0a580f1ed48a99533a84fdc9548ee",
+    "dataset_version": "d9ef09df7cf0569167a6f5ee98a6843595e60789f04a18549cbb3ae04fdab195",
+    "schema_version": "1.0",
+    "profiler_version": "1.1.0",
+    "content_sha256": "4084d759c21117990f21b44350070a3c847f5e1073c9181f5cff41bb852f5046",
+    "file_name": "support.csv",
+    "file_format": "csv",
+    "sheet_name": null,
+    "available_sheets": [],
+    "options": {
+      "header_row": 1,
+      "sheet_name": null,
+      "encoding": "utf-8-sig",
+      "delimiter": ","
+    },
+    "row_count": 6,
+    "column_count": 4,
+    "total_cell_count": 24,
+    "missing_cell_count": 1,
+    "missing_cell_rate": 0.041666666666666664,
+    "duplicate_row_count": 0,
+    "duplicate_row_rate": 0.0,
+    "fields": [
+      {
+        "field_id": "field_0001",
+        "position": 1,
+        "original_name": "团队",
+        "display_name": "团队",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 6,
+        "unique_count": 3,
+        "physical_type_counts": {
+          "string": 6
+        },
+        "logical_type_counts": {
+          "text": 6
+        },
+        "samples": [
+          {
+            "value": "青队",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "蓝队",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "橙队",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0002",
+        "position": 2,
+        "original_name": "响应分钟",
+        "display_name": "响应分钟",
+        "physical_type": "string",
+        "logical_type": "integer",
+        "missing_count": 1,
+        "missing_rate": 0.16666666666666666,
+        "non_missing_count": 5,
+        "unique_count": 5,
+        "physical_type_counts": {
+          "string": 5
+        },
+        "logical_type_counts": {
+          "integer": 5
+        },
+        "samples": [
+          {
+            "value": "12",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "18",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "24",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "26",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "10",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0003",
+        "position": 3,
+        "original_name": "状态",
+        "display_name": "状态",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 6,
+        "unique_count": 2,
+        "physical_type_counts": {
+          "string": 6
+        },
+        "logical_type_counts": {
+          "text": 6
+        },
+        "samples": [
+          {
+            "value": "已解决",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "待处理",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "field_id": "field_0004",
+        "position": 4,
+        "original_name": "工单类型",
+        "display_name": "工单类型",
+        "physical_type": "string",
+        "logical_type": "text",
+        "missing_count": 0,
+        "missing_rate": 0.0,
+        "non_missing_count": 6,
+        "unique_count": 2,
+        "physical_type_counts": {
+          "string": 6
+        },
+        "logical_type_counts": {
+          "text": 6
+        },
+        "samples": [
+          {
+            "value": "咨询",
+            "physical_type": "string",
+            "truncated": false
+          },
+          {
+            "value": "故障",
+            "physical_type": "string",
+            "truncated": false
+          }
+        ]
+      }
+    ],
+    "quality_issues": [],
+    "provenance": {
+      "source": "uploaded",
+      "dataset": "76c0a580f1ed48a99533a84fdc9548ee",
+      "dataset_version": "d9ef09df7cf0569167a6f5ee98a6843595e60789f04a18549cbb3ae04fdab195",
+      "plan_version": null,
+      "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+    }
+  },
+  "dataset_ref": {
+    "dataset_id": "76c0a580f1ed48a99533a84fdc9548ee",
+    "dataset_version": "d9ef09df7cf0569167a6f5ee98a6843595e60789f04a18549cbb3ae04fdab195"
+  },
+  "plans": [],
+  "current_plan_version": 1,
+  "approved_plan_version": null,
+  "node_runs": [
+    {
+      "run_id": "c5456004dc174945b89384e1d29740d0",
+      "node_name": "data_profiler",
+      "status": "success",
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "76c0a580f1ed48a99533a84fdc9548ee",
+        "dataset_version": "d9ef09df7cf0569167a6f5ee98a6843595e60789f04a18549cbb3ae04fdab195",
+        "plan_version": null,
+        "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+      },
+      "error": null,
+      "finished_at": "2026-11-05T04:16:39.407878+00:00"
+    },
+    {
+      "run_id": "4d986d341e2f4425967252abfd1ccba6",
+      "node_name": "intent_parser",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "76c0a580f1ed48a99533a84fdc9548ee",
+        "dataset_version": "d9ef09df7cf0569167a6f5ee98a6843595e60789f04a18549cbb3ae04fdab195",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "error": null,
+      "finished_at": "2026-11-05T04:16:42.599227+00:00"
+    },
+    {
+      "run_id": "b04cf96013284904a04241e1d5547362",
+      "node_name": "analysis_planner_v1",
+      "status": "success",
+      "provenance": {
+        "source": "llm",
+        "dataset": "76c0a580f1ed48a99533a84fdc9548ee",
+        "dataset_version": "d9ef09df7cf0569167a6f5ee98a6843595e60789f04a18549cbb3ae04fdab195",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "error": null,
+      "finished_at": "2026-11-05T04:16:47.890838+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "id": "55699f3acd8546ab9cc85a1c5ce65402",
+      "role": "user",
+      "kind": "text",
+      "content": "按团队统计响应分钟平均值，并按平均值降序排列；不要推断人员绩效。",
+      "plan_version": null,
+      "created_at": "2026-11-05T04:16:39.366373+00:00"
+    },
+    {
+      "id": "ce5b18e423ae4f4898f4f02ebaf96c47",
+      "role": "assistant",
+      "kind": "status",
+      "content": "正在解析上传文件并计算真实数据画像。",
+      "plan_version": null,
+      "created_at": "2026-11-05T04:16:39.403630+00:00"
+    },
+    {
+      "id": "86d32eb793dd488ea2680d38492c543a",
+      "role": "assistant",
+      "kind": "status",
+      "content": "真实画像完成：6行、4列；正在理解分析需求。",
+      "plan_version": null,
+      "created_at": "2026-11-05T04:16:39.409961+00:00"
+    },
+    {
+      "id": "dbd49087a8fd4c899860f354c441bbca",
+      "role": "assistant",
+      "kind": "status",
+      "content": "需求已理解，正在生成受控分析计划。",
+      "plan_version": null,
+      "created_at": "2026-11-05T04:16:42.602293+00:00"
+    },
+    {
+      "id": "8f1c553f2f75470286627181318b57ad",
+      "role": "assistant",
+      "kind": "plan",
+      "content": "真实计划已保存，目标覆盖：complete。请审核任务、未满足需求和约束；批准前不会计算。",
+      "plan_version": 1,
+      "created_at": "2026-11-05T04:16:47.903733+00:00"
+    }
+  ],
+  "review_plan": {
+    "session_id": "1edfb6bdcce048958687cc613e649771",
+    "plan_id": "plan_91de14ab9c6f407ebc1f45424043e068",
+    "plan_version": 1,
+    "dataset_id": "76c0a580f1ed48a99533a84fdc9548ee",
+    "dataset_version": "d9ef09df7cf0569167a6f5ee98a6843595e60789f04a18549cbb3ae04fdab195",
+    "validation_version": "1.0",
+    "created_at": "2026-11-05T04:16:47.903528+00:00",
+    "change_type": "created",
+    "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+    "validated_plan": {
+      "plan": {
+        "dataset_id": "76c0a580f1ed48a99533a84fdc9548ee",
+        "dataset_version": "d9ef09df7cf0569167a6f5ee98a6843595e60789f04a18549cbb3ae04fdab195",
+        "plan_id": "plan_91de14ab9c6f407ebc1f45424043e068",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "各团队响应分钟平均值统计与排序",
+            "business_question": "按团队统计响应分钟的平均值，并按平均值降序排列。注意：不要推断人员绩效。",
+            "priority": "P0",
+            "priority_reason": "直接回答核心问题“各团队响应分钟平均值”，并满足“按平均值降序排列”及“不要推断人员绩效”的约束。删除此任务将无法完成分析目标。",
+            "requirement_ids": [
+              "C01",
+              "C02",
+              "C03"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "avg",
+                      "field": "field_0002",
+                      "alias": "avg_response_minutes"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0001"
+                  ]
+                }
+              },
+              {
+                "step_id": "S2",
+                "operation": "sort",
+                "params": {
+                  "field": "avg_response_minutes",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "按团队统计响应分钟平均值，并按平均值降序排列"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：响应分钟平均值"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "analysis_limits：按平均值降序排列；不要推断人员绩效"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T1"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": null,
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "76c0a580f1ed48a99533a84fdc9548ee",
+        "dataset_version": "d9ef09df7cf0569167a6f5ee98a6843595e60789f04a18549cbb3ae04fdab195",
+        "plan_version": 1,
+        "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "各团队响应分钟平均值",
+          "business_goal": "按团队统计响应分钟平均值，并按平均值降序排列",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "响应分钟平均值",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按平均值降序排列",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "不要推断人员绩效",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    }
+  },
+  "review_status": "awaiting_review",
+  "engine_approval": null,
+  "engine_execution_ids": [],
+  "report_generations": [],
+  "execution_result": null,
+  "report": null,
+  "error": null
+}

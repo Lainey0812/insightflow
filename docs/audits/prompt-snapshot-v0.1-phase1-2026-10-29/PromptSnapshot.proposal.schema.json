@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PromptSnapshot V0.1 proposal — not implemented",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "snapshot_id",
+    "prompt_id",
+    "node_id",
+    "version",
+    "definition_format",
+    "system_template",
+    "user_template",
+    "composition",
+    "variables_schema",
+    "output_schema_spec",
+    "renderer_version",
+    "content_hash",
+    "hash_algorithm",
+    "source",
+    "created_at",
+    "change_summary"
+  ],
+  "properties": {
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prompt_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "node_id": {
+      "enum": [
+        "intent_parser",
+        "analysis_planner",
+        "insight_generator"
+      ]
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "definition_format": {
+      "const": "prompt-definition-v0.1"
+    },
+    "system_template": {
+      "type": "string",
+      "minLength": 1
+    },
+    "user_template": {
+      "type": "object",
+      "description": "Complete controlled ordered JSON field binding definition. NOT null for executable snapshots."
+    },
+    "composition": {
+      "type": "object",
+      "description": "Includes purpose, ordered messages/fields, exact JSON serialization and static retry branches."
+    },
+    "variables_schema": {
+      "type": "object"
+    },
+    "output_schema_spec": {
+      "type": "object",
+      "description": "Complete static schema/base plus deterministic dynamic binding rules."
+    },
+    "renderer_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "hash_algorithm": {
+      "const": "insightflow-canonical-json-v1"
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "kind",
+        "git_commit",
+        "file_sha256"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "git",
+            "worktree",
+            "archived_source"
+          ]
+        },
+        "git_commit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dirty": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "file_sha256": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "First registration time, not inferred historical deployment date."
+    },
+    "change_summary": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

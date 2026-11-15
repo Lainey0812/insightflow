@@ -1,0 +1,648 @@
+[
+  {
+    "id": "c1f79edf0e964128ba3f148c11160f1b",
+    "user_goal": "通用口径验证：按类别统计记录数，按记录数降序排列。记录数按行计数，不要求分析处理分钟。",
+    "workflow_id": "wf_e732b1136d5d42b09833f69fff452c47",
+    "root_run_id": "run_96ab753812b34772af7665d4bb132cf6",
+    "status": "AWAITING_APPROVAL",
+    "revision": 8,
+    "current_plan_version": 1,
+    "engine_execution_ids": [],
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "各类别的记录数",
+        "business_goal": "按类别统计记录数，并按记录数降序排列",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "记录数",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "按记录数降序排列",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "不要求分析处理分钟",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "通用口径验证：按类别统计记录数，按记录数降序排列。记录数按行计数，不要求分析处理分钟。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "9ed14090b7eb453ab4e94bba03f8cf48",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "9ed14090b7eb453ab4e94bba03f8cf48",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "0cf8565c63bf47f4aef560bbe21fdf10"
+    },
+    "planner_result": {
+      "plan": {
+        "dataset_id": "9ed14090b7eb453ab4e94bba03f8cf48",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_id": "plan_7aa611cecba84fb398aab4d2fdac2706",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T01",
+            "title": "按类别统计记录数并降序排列",
+            "business_question": "各类别的记录数是多少？请按记录数降序排列。注意：不要求分析处理分钟。",
+            "priority": "P0",
+            "priority_reason": "直接回答核心问题“按类别统计记录数”，满足所有核心需求C01、C02、C03。删除后无法回答主要业务目标。",
+            "requirement_ids": [
+              "C01",
+              "C02",
+              "C03"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "record_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S02",
+                "operation": "sort",
+                "params": {
+                  "field": "record_count",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "按类别统计记录数，并按记录数降序排列"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：记录数"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "analysis_limits：按记录数降序排列；不要求分析处理分钟"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T01",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T01"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "9ed14090b7eb453ab4e94bba03f8cf48",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "各类别的记录数",
+          "business_goal": "按类别统计记录数，并按记录数降序排列",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "记录数",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按记录数降序排列",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "不要求分析处理分钟",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "review_plan": {
+      "session_id": "c1f79edf0e964128ba3f148c11160f1b",
+      "plan_id": "plan_7aa611cecba84fb398aab4d2fdac2706",
+      "plan_version": 1,
+      "dataset_id": "9ed14090b7eb453ab4e94bba03f8cf48",
+      "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+      "validation_version": "1.0",
+      "created_at": "2026-11-08T10:07:20.474384+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "9ed14090b7eb453ab4e94bba03f8cf48",
+          "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+          "plan_id": "plan_7aa611cecba84fb398aab4d2fdac2706",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T01",
+              "title": "按类别统计记录数并降序排列",
+              "business_question": "各类别的记录数是多少？请按记录数降序排列。注意：不要求分析处理分钟。",
+              "priority": "P0",
+              "priority_reason": "直接回答核心问题“按类别统计记录数”，满足所有核心需求C01、C02、C03。删除后无法回答主要业务目标。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "record_count"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0002"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "sort",
+                  "params": {
+                    "field": "record_count",
+                    "direction": "desc"
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "按类别统计记录数，并按记录数降序排列"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "metric_requirements：记录数"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "analysis_limits：按记录数降序排列；不要求分析处理分钟"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "9ed14090b7eb453ab4e94bba03f8cf48",
+          "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "各类别的记录数",
+            "business_goal": "按类别统计记录数，并按记录数降序排列",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [
+              {
+                "raw_text": "记录数",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按记录数降序排列",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "不要求分析处理分钟",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    }
+  },
+  {
+    "id": "6290b5f4d1cd4a74a7b696758d6745a7",
+    "user_goal": "口径入口验收：按类别统计记录数，按记录数降序排列。记录数按上传记录逐行计数。",
+    "workflow_id": "wf_073b87b4c2f74c178f18e10bbfd089cb",
+    "root_run_id": "run_c032a390b0c542deab35f4031b937f46",
+    "status": "AWAITING_APPROVAL",
+    "revision": 8,
+    "current_plan_version": 1,
+    "engine_execution_ids": [],
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "按类别统计记录数",
+        "business_goal": "按类别统计记录数，并按记录数降序排列",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "记录数",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "按记录数降序排列",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "记录数按上传记录逐行计数",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "口径入口验收：按类别统计记录数，按记录数降序排列。记录数按上传记录逐行计数。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "64c062d5f4ac4b5892f78137da8694ed",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "64c062d5f4ac4b5892f78137da8694ed",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "194f119702f443e198ff6fbea58aecaa"
+    },
+    "planner_result": {
+      "plan": {
+        "dataset_id": "64c062d5f4ac4b5892f78137da8694ed",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_id": "plan_886ed7e7e7cc48a78b9b95a7d3da0bb2",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "按类别统计记录数并降序排列",
+            "business_question": "各类别的记录数是多少？请按记录数降序排列。注意：记录数需按上传记录逐行计数（即行数），而非去重或特定字段非空计数。",
+            "priority": "P0",
+            "priority_reason": "直接回答核心分析问题“按类别统计记录数”，满足C01、C02及C03中关于排序和计数定义的约束。删除此任务将无法提供核心数据视图。",
+            "requirement_ids": [
+              "C01",
+              "C02",
+              "C03"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "record_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S2",
+                "operation": "sort",
+                "params": {
+                  "field": "record_count",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "按类别统计记录数，并按记录数降序排列"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：记录数"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "analysis_limits：按记录数降序排列；记录数按上传记录逐行计数"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T1"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "64c062d5f4ac4b5892f78137da8694ed",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "按类别统计记录数",
+          "business_goal": "按类别统计记录数，并按记录数降序排列",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "记录数",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按记录数降序排列",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "记录数按上传记录逐行计数",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "review_plan": {
+      "session_id": "6290b5f4d1cd4a74a7b696758d6745a7",
+      "plan_id": "plan_886ed7e7e7cc48a78b9b95a7d3da0bb2",
+      "plan_version": 1,
+      "dataset_id": "64c062d5f4ac4b5892f78137da8694ed",
+      "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+      "validation_version": "1.0",
+      "created_at": "2026-11-08T10:09:02.987565+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "64c062d5f4ac4b5892f78137da8694ed",
+          "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+          "plan_id": "plan_886ed7e7e7cc48a78b9b95a7d3da0bb2",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T1",
+              "title": "按类别统计记录数并降序排列",
+              "business_question": "各类别的记录数是多少？请按记录数降序排列。注意：记录数需按上传记录逐行计数（即行数），而非去重或特定字段非空计数。",
+              "priority": "P0",
+              "priority_reason": "直接回答核心分析问题“按类别统计记录数”，满足C01、C02及C03中关于排序和计数定义的约束。删除此任务将无法提供核心数据视图。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S1",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "record_count"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0002"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S2",
+                  "operation": "sort",
+                  "params": {
+                    "field": "record_count",
+                    "direction": "desc"
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "按类别统计记录数，并按记录数降序排列"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "metric_requirements：记录数"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "analysis_limits：按记录数降序排列；记录数按上传记录逐行计数"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T1",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T1"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "64c062d5f4ac4b5892f78137da8694ed",
+          "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "按类别统计记录数",
+            "business_goal": "按类别统计记录数，并按记录数降序排列",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [
+              {
+                "raw_text": "记录数",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按记录数降序排列",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "记录数按上传记录逐行计数",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    }
+  }
+]

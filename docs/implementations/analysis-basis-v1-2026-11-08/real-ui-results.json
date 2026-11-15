@@ -1,0 +1,1471 @@
+[
+  {
+    "session_id": "c1f79edf0e964128ba3f148c11160f1b",
+    "workflow_id": "wf_e732b1136d5d42b09833f69fff452c47",
+    "root_run_id": "run_96ab753812b34772af7665d4bb132cf6",
+    "query": "通用口径验证：按类别统计记录数，按记录数降序排列。记录数按行计数，不要求分析处理分钟。",
+    "status": "AWAITING_APPROVAL",
+    "plan_version": 1,
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "各类别的记录数",
+        "business_goal": "按类别统计记录数，并按记录数降序排列",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "记录数",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "按记录数降序排列",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "不要求分析处理分钟",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "通用口径验证：按类别统计记录数，按记录数降序排列。记录数按行计数，不要求分析处理分钟。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "9ed14090b7eb453ab4e94bba03f8cf48",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "9ed14090b7eb453ab4e94bba03f8cf48",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "0cf8565c63bf47f4aef560bbe21fdf10"
+    },
+    "planner_result": {
+      "plan": {
+        "dataset_id": "9ed14090b7eb453ab4e94bba03f8cf48",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_id": "plan_7aa611cecba84fb398aab4d2fdac2706",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T01",
+            "title": "按类别统计记录数并降序排列",
+            "business_question": "各类别的记录数是多少？请按记录数降序排列。注意：不要求分析处理分钟。",
+            "priority": "P0",
+            "priority_reason": "直接回答核心问题“按类别统计记录数”，满足所有核心需求C01、C02、C03。删除后无法回答主要业务目标。",
+            "requirement_ids": [
+              "C01",
+              "C02",
+              "C03"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "record_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S02",
+                "operation": "sort",
+                "params": {
+                  "field": "record_count",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "按类别统计记录数，并按记录数降序排列"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：记录数"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "analysis_limits：按记录数降序排列；不要求分析处理分钟"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T01",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T01"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "9ed14090b7eb453ab4e94bba03f8cf48",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "各类别的记录数",
+          "business_goal": "按类别统计记录数，并按记录数降序排列",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "记录数",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按记录数降序排列",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "不要求分析处理分钟",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "basis_versions": [
+      {
+        "version": "analysis-basis-v1",
+        "session_id": "c1f79edf0e964128ba3f148c11160f1b",
+        "plan_id": "plan_7aa611cecba84fb398aab4d2fdac2706",
+        "plan_version": 1,
+        "dataset_id": "9ed14090b7eb453ab4e94bba03f8cf48",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_hash": "85e5c31e422d39acee32cd5619281b585edbe6f13653b2439d93ef051b4bdfb1",
+        "row_grain": "unknown",
+        "entity_field_id": null,
+        "metrics": [
+          {
+            "task_id": "T01",
+            "step_id": "S01",
+            "alias": "record_count",
+            "field_id": null,
+            "label": "记录",
+            "function": "count",
+            "basis": "逐行计数，不是业务实体去重数量",
+            "unit_status": "record_count"
+          }
+        ],
+        "entity_field_options": [
+          {
+            "field_id": "field_0001",
+            "label": "记录编号",
+            "unique_non_null": true
+          },
+          {
+            "field_id": "field_0002",
+            "label": "类别",
+            "unique_non_null": false
+          },
+          {
+            "field_id": "field_0003",
+            "label": "处理分钟",
+            "unique_non_null": true
+          }
+        ],
+        "declaration_source": "unconfirmed",
+        "created_at": "2026-11-08T10:07:20.474572+00:00",
+        "digest": "06f92a6f6e5e2ef11a83d99a7aaa8c296a1229e2fe0f42dc4a5d0de7e49825ce"
+      }
+    ],
+    "approval_basis_snapshots": [],
+    "executions": [],
+    "reports": [],
+    "known_bad_case": "Existing constraint grammar did not map an explicit count-basis or optional-boundary phrase; approval remained blocked."
+  },
+  {
+    "session_id": "6290b5f4d1cd4a74a7b696758d6745a7",
+    "workflow_id": "wf_073b87b4c2f74c178f18e10bbfd089cb",
+    "root_run_id": "run_c032a390b0c542deab35f4031b937f46",
+    "query": "口径入口验收：按类别统计记录数，按记录数降序排列。记录数按上传记录逐行计数。",
+    "status": "AWAITING_APPROVAL",
+    "plan_version": 2,
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "按类别统计记录数",
+        "business_goal": "按类别统计记录数，并按记录数降序排列",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "记录数",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "按记录数降序排列",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "记录数按上传记录逐行计数",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "口径入口验收：按类别统计记录数，按记录数降序排列。记录数按上传记录逐行计数。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "64c062d5f4ac4b5892f78137da8694ed",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "64c062d5f4ac4b5892f78137da8694ed",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "194f119702f443e198ff6fbea58aecaa"
+    },
+    "planner_result": {
+      "plan": {
+        "dataset_id": "64c062d5f4ac4b5892f78137da8694ed",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_id": "plan_886ed7e7e7cc48a78b9b95a7d3da0bb2",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "按类别统计记录数并降序排列",
+            "business_question": "各类别的记录数是多少？请按记录数降序排列。注意：记录数需按上传记录逐行计数（即行数），而非去重或特定字段非空计数。",
+            "priority": "P0",
+            "priority_reason": "直接回答核心分析问题“按类别统计记录数”，满足C01、C02及C03中关于排序和计数定义的约束。删除此任务将无法提供核心数据视图。",
+            "requirement_ids": [
+              "C01",
+              "C02",
+              "C03"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "record_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S2",
+                "operation": "sort",
+                "params": {
+                  "field": "record_count",
+                  "direction": "desc"
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "按类别统计记录数，并按记录数降序排列"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：记录数"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "analysis_limits：按记录数降序排列；记录数按上传记录逐行计数"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T1"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "64c062d5f4ac4b5892f78137da8694ed",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "按类别统计记录数",
+          "business_goal": "按类别统计记录数，并按记录数降序排列",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "记录数",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按记录数降序排列",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "记录数按上传记录逐行计数",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "basis_versions": [
+      {
+        "version": "analysis-basis-v1",
+        "session_id": "6290b5f4d1cd4a74a7b696758d6745a7",
+        "plan_id": "plan_886ed7e7e7cc48a78b9b95a7d3da0bb2",
+        "plan_version": 1,
+        "dataset_id": "64c062d5f4ac4b5892f78137da8694ed",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_hash": "3a068ec941b2f08581ace77cab0c3caaaa27a7b463b63102170241a9f191ec59",
+        "row_grain": "unknown",
+        "entity_field_id": null,
+        "metrics": [
+          {
+            "task_id": "T1",
+            "step_id": "S1",
+            "alias": "record_count",
+            "field_id": null,
+            "label": "记录",
+            "function": "count",
+            "basis": "逐行计数，不是业务实体去重数量",
+            "unit_status": "record_count"
+          }
+        ],
+        "entity_field_options": [
+          {
+            "field_id": "field_0001",
+            "label": "记录编号",
+            "unique_non_null": true
+          },
+          {
+            "field_id": "field_0002",
+            "label": "类别",
+            "unique_non_null": false
+          },
+          {
+            "field_id": "field_0003",
+            "label": "处理分钟",
+            "unique_non_null": true
+          }
+        ],
+        "declaration_source": "unconfirmed",
+        "created_at": "2026-11-08T10:09:02.987855+00:00",
+        "digest": "013383f2282615599c60f55c3825252baab6fb29f4372eb23448babb6c75340c"
+      },
+      {
+        "version": "analysis-basis-v1",
+        "session_id": "6290b5f4d1cd4a74a7b696758d6745a7",
+        "plan_id": "plan_886ed7e7e7cc48a78b9b95a7d3da0bb2",
+        "plan_version": 2,
+        "dataset_id": "64c062d5f4ac4b5892f78137da8694ed",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_hash": "2d7ff47d8cdfe98c2f6a6eebeb4d25256cf579272a04d56e98c6af03e7d9aca0",
+        "row_grain": "entity",
+        "entity_field_id": "field_0001",
+        "metrics": [
+          {
+            "task_id": "T1",
+            "step_id": "S1",
+            "alias": "record_count",
+            "field_id": null,
+            "label": "记录",
+            "function": "count",
+            "basis": "逐行计数，不是业务实体去重数量",
+            "unit_status": "record_count"
+          }
+        ],
+        "entity_field_options": [
+          {
+            "field_id": "field_0001",
+            "label": "记录编号",
+            "unique_non_null": true
+          },
+          {
+            "field_id": "field_0002",
+            "label": "类别",
+            "unique_non_null": false
+          },
+          {
+            "field_id": "field_0003",
+            "label": "处理分钟",
+            "unique_non_null": true
+          }
+        ],
+        "declaration_source": "user",
+        "created_at": "2026-11-08T10:10:39.979090+00:00",
+        "digest": "d3fc165e78e4d8949b27d23ea84ac81b8921dde84a8f8327ff0f29c6326ea660"
+      }
+    ],
+    "approval_basis_snapshots": [],
+    "executions": [],
+    "reports": [],
+    "known_bad_case": "Existing constraint grammar did not map an explicit count-basis or optional-boundary phrase; approval remained blocked."
+  },
+  {
+    "session_id": "c48ef698bac24a68b95a0f4a35ac2036",
+    "workflow_id": "wf_d5f123209ea641edaba85007c7968d0a",
+    "root_run_id": "run_975c698d8db54dcf8273732de7182a5f",
+    "query": "按类别统计记录数",
+    "status": "COMPLETED",
+    "plan_version": 2,
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "按类别统计记录数",
+        "business_goal": "按类别统计记录数",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": null,
+        "filters": [],
+        "metric_requirements": [
+          {
+            "raw_text": "记录数",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": []
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "按类别统计记录数",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "d4dfd30a90c44b508b58d086e0042afb",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "d4dfd30a90c44b508b58d086e0042afb",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "1b3276afeaca4cf08f9590e17fc4c163"
+    },
+    "planner_result": {
+      "plan": {
+        "dataset_id": "d4dfd30a90c44b508b58d086e0042afb",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_id": "plan_0bc41f4b86944c1abd769e8ce7c98156",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T1",
+            "title": "按类别统计记录数",
+            "business_question": "各类别包含多少条记录？",
+            "priority": "P0",
+            "priority_reason": "删除此任务将无法回答核心问题“按类别统计记录数”，属于P0。",
+            "requirement_ids": [
+              "C01",
+              "C02"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "record_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "按类别统计记录数"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "metric_requirements：记录数"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T1",
+          "feasibility": "F2",
+          "reason_code": "READY",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T1"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "d4dfd30a90c44b508b58d086e0042afb",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "按类别统计记录数",
+          "business_goal": "按类别统计记录数",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "记录数",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "basis_versions": [
+      {
+        "version": "analysis-basis-v1",
+        "session_id": "c48ef698bac24a68b95a0f4a35ac2036",
+        "plan_id": "plan_0bc41f4b86944c1abd769e8ce7c98156",
+        "plan_version": 1,
+        "dataset_id": "d4dfd30a90c44b508b58d086e0042afb",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_hash": "568bc253ed3200a6d0a0535ce90d30d4f9e5e0c0ddbedc3325e68eb2adc6d54e",
+        "row_grain": "unknown",
+        "entity_field_id": null,
+        "metrics": [
+          {
+            "task_id": "T1",
+            "step_id": "S1",
+            "alias": "record_count",
+            "field_id": null,
+            "label": "记录",
+            "function": "count",
+            "basis": "逐行计数，不是业务实体去重数量",
+            "unit_status": "record_count"
+          }
+        ],
+        "entity_field_options": [
+          {
+            "field_id": "field_0001",
+            "label": "记录编号",
+            "unique_non_null": true
+          },
+          {
+            "field_id": "field_0002",
+            "label": "类别",
+            "unique_non_null": false
+          },
+          {
+            "field_id": "field_0003",
+            "label": "处理分钟",
+            "unique_non_null": true
+          }
+        ],
+        "declaration_source": "unconfirmed",
+        "created_at": "2026-11-08T10:11:14.920360+00:00",
+        "digest": "a45bd30c82cc128301b715b37ea2a793c7bd36a293392c18383c8b714c23efda"
+      },
+      {
+        "version": "analysis-basis-v1",
+        "session_id": "c48ef698bac24a68b95a0f4a35ac2036",
+        "plan_id": "plan_0bc41f4b86944c1abd769e8ce7c98156",
+        "plan_version": 2,
+        "dataset_id": "d4dfd30a90c44b508b58d086e0042afb",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_hash": "f70b88849591517e5667420478b9fb2154fb37b0554898200c0195b591fe9c11",
+        "row_grain": "entity",
+        "entity_field_id": "field_0001",
+        "metrics": [
+          {
+            "task_id": "T1",
+            "step_id": "S1",
+            "alias": "record_count",
+            "field_id": null,
+            "label": "记录",
+            "function": "count",
+            "basis": "逐行计数，不是业务实体去重数量",
+            "unit_status": "record_count"
+          }
+        ],
+        "entity_field_options": [
+          {
+            "field_id": "field_0001",
+            "label": "记录编号",
+            "unique_non_null": true
+          },
+          {
+            "field_id": "field_0002",
+            "label": "类别",
+            "unique_non_null": false
+          },
+          {
+            "field_id": "field_0003",
+            "label": "处理分钟",
+            "unique_non_null": true
+          }
+        ],
+        "declaration_source": "user",
+        "created_at": "2026-11-08T10:11:57.171663+00:00",
+        "digest": "e8cb514fada2b451adc6124e7b440a356559e4584fb7c411db96454d5fda2945"
+      }
+    ],
+    "approval_basis_snapshots": [
+      {
+        "version": "analysis-basis-v1",
+        "session_id": "c48ef698bac24a68b95a0f4a35ac2036",
+        "plan_id": "plan_0bc41f4b86944c1abd769e8ce7c98156",
+        "plan_version": 2,
+        "dataset_id": "d4dfd30a90c44b508b58d086e0042afb",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "plan_hash": "f70b88849591517e5667420478b9fb2154fb37b0554898200c0195b591fe9c11",
+        "row_grain": "entity",
+        "entity_field_id": "field_0001",
+        "metrics": [
+          {
+            "task_id": "T1",
+            "step_id": "S1",
+            "alias": "record_count",
+            "field_id": null,
+            "label": "记录",
+            "function": "count",
+            "basis": "逐行计数，不是业务实体去重数量",
+            "unit_status": "record_count"
+          }
+        ],
+        "entity_field_options": [
+          {
+            "field_id": "field_0001",
+            "label": "记录编号",
+            "unique_non_null": true
+          },
+          {
+            "field_id": "field_0002",
+            "label": "类别",
+            "unique_non_null": false
+          },
+          {
+            "field_id": "field_0003",
+            "label": "处理分钟",
+            "unique_non_null": true
+          }
+        ],
+        "declaration_source": "user",
+        "created_at": "2026-11-08T10:11:57.171663+00:00",
+        "digest": "e8cb514fada2b451adc6124e7b440a356559e4584fb7c411db96454d5fda2945"
+      }
+    ],
+    "executions": [
+      {
+        "dataset_id": "d4dfd30a90c44b508b58d086e0042afb",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "execution_id": "exec_f40db76dba8d4c1fa343d3b961dff61c",
+        "plan_id": "plan_0bc41f4b86944c1abd769e8ce7c98156",
+        "plan_version": 2,
+        "approved_plan_version": 2,
+        "execution_status": "success",
+        "source": "engine",
+        "producer": "insightflow-analysis-engine-v1",
+        "session_id": "c48ef698bac24a68b95a0f4a35ac2036",
+        "execution_request_id": "76106a62-b5c8-4ea1-988b-f9eb6079ee88",
+        "approval_id": "approval_7ca9a39957e74513820bf7938c90bb07",
+        "started_at": "2026-11-08T10:11:57.581425+00:00",
+        "finished_at": "2026-11-08T10:11:57.593376+00:00",
+        "duration_ms": 5.341582931578159,
+        "result_view": "preview",
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "d4dfd30a90c44b508b58d086e0042afb",
+          "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+          "plan_version": 2,
+          "notice": "从指定版本上传文件读取，复用受控统计内核计算；完整结果与预览分开保存。"
+        },
+        "errors": [],
+        "warnings": [],
+        "tasks": [
+          {
+            "task_id": "T1",
+            "status": "success",
+            "result": {
+              "result_id": "result_cba5fb8c67d945b3b88f3d047e862add",
+              "columns": [
+                {
+                  "field": "field_0002",
+                  "label": "类别",
+                  "logical_type": "text",
+                  "role": "dimension",
+                  "unit": null
+                },
+                {
+                  "field": "record_count",
+                  "label": "记录 · 计数",
+                  "logical_type": "integer",
+                  "role": "metric",
+                  "unit": "条"
+                }
+              ],
+              "rows": [
+                {
+                  "field_0002": "咨询",
+                  "record_count": 2
+                },
+                {
+                  "field_0002": "投诉",
+                  "record_count": 2
+                }
+              ],
+              "truncated": false,
+              "total_result_rows": 2,
+              "row_offset": 0,
+              "total_refs": []
+            },
+            "effective_row_count": 4,
+            "valid_sample_count": 4,
+            "sample_definition": "聚合前各最终指标的非缺失参与数；指标样本数不同时不提供统一有效样本量。",
+            "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+            "calculation": "批准操作链：group_aggregate",
+            "failure_reason": null,
+            "result_id": "result_cba5fb8c67d945b3b88f3d047e862add",
+            "result_ref": "result_cba5fb8c67d945b3b88f3d047e862add",
+            "row_count": 2,
+            "execution_metadata": {
+              "input_row_count": 4,
+              "started_at": "2026-11-08T10:11:57.588036+00:00",
+              "finished_at": "2026-11-08T10:11:57.591230+00:00",
+              "duration_ms": 3.192499978467822,
+              "preview_row_count": 2,
+              "metric_valid_counts": {
+                "record_count": 4
+              },
+              "sample_statistics": {
+                "version": "execution-sample-v1",
+                "scope": "before_single_aggregate",
+                "aggregate_step_id": "S1",
+                "input_row_count": 4,
+                "key_fields": [
+                  {
+                    "field": "field_0002",
+                    "label": "类别",
+                    "missing_count": 0
+                  }
+                ],
+                "complete_row_count": 4,
+                "missing_row_count": 0,
+                "metrics": {
+                  "record_count": {
+                    "function": "count",
+                    "field": null,
+                    "label": "记录",
+                    "basis": "rows",
+                    "participating_count": 4
+                  }
+                }
+              },
+              "analysis_basis": {
+                "version": "analysis-basis-v1",
+                "digest": "e8cb514fada2b451adc6124e7b440a356559e4584fb7c411db96454d5fda2945",
+                "plan_id": "plan_0bc41f4b86944c1abd769e8ce7c98156",
+                "plan_version": 2,
+                "dataset_id": "d4dfd30a90c44b508b58d086e0042afb",
+                "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+                "row_grain": "entity",
+                "entity_field_id": "field_0001",
+                "declaration_source": "user",
+                "metrics": [
+                  {
+                    "task_id": "T1",
+                    "step_id": "S1",
+                    "alias": "record_count",
+                    "field_id": null,
+                    "label": "记录",
+                    "function": "count",
+                    "basis": "逐行计数，不是业务实体去重数量",
+                    "unit_status": "record_count"
+                  }
+                ]
+              },
+              "steps": [
+                {
+                  "step_id": "S1",
+                  "operation": "group_aggregate",
+                  "status": "success",
+                  "input_row_count": 4,
+                  "output_row_count": 2,
+                  "duration_ms": 2.797833178192377,
+                  "warnings": [],
+                  "error": null
+                }
+              ],
+              "warnings": []
+            },
+            "error": null
+          }
+        ]
+      }
+    ],
+    "reports": [
+      {
+        "dataset_id": "d4dfd30a90c44b508b58d086e0042afb",
+        "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+        "report_id": "report_87b21283bec0446e959806483fdd3cc3",
+        "execution_id": "exec_f40db76dba8d4c1fa343d3b961dff61c",
+        "plan_version": 2,
+        "report_status": "partial",
+        "goal_coverage": "complete",
+        "analysis_goal": "按类别统计记录数",
+        "dataset_name": "insightflow-basis-verification.csv",
+        "dataset_row_count": 4,
+        "execution_source": "engine",
+        "summary": {
+          "headline": "按类别统计记录数",
+          "overview": "围绕「按类别统计记录数」，基于 1 个任务的可用结果整理。 比较发现及其依据见下方；业务解释与建议仍需结合实际情况核查。",
+          "evidence_refs": [
+            "E0006"
+          ]
+        },
+        "key_metrics": [
+          {
+            "label": "本次返回分组合计（记录 · 计数）",
+            "value": 4,
+            "unit": "条",
+            "evidence_ref": "E0009"
+          },
+          {
+            "label": "上传数据记录数",
+            "value": 4,
+            "unit": "条",
+            "evidence_ref": "E0001"
+          },
+          {
+            "label": "首个核心任务有效样本量",
+            "value": 4,
+            "unit": "条",
+            "evidence_ref": "E0001"
+          },
+          {
+            "label": "返回结果最大值（咨询）",
+            "value": 2,
+            "unit": "条",
+            "evidence_ref": "E0004"
+          },
+          {
+            "label": "同口径总体占比（咨询）",
+            "value": 50,
+            "unit": "%",
+            "evidence_ref": "E0007"
+          }
+        ],
+        "insights": [
+          {
+            "insight_id": "I001",
+            "task_id": "T1",
+            "fact": "E0006（record_count）：比较对象=咨询，基准对象=投诉，对象值=2，基准值=2，差值=0",
+            "finding": "咨询与投诉的记录计数差值为 0条。",
+            "implication": "该比较展示同一统计口径下已返回对象的差异；不能据此判断差异原因、人员绩效或经营效率。",
+            "recommendation": "现有证据仅支持上述统计结论，暂无额外建议。",
+            "evidence_refs": [
+              "E0006"
+            ],
+            "limitations": [
+              "结论仅适用于当前返回范围，不能外推整体市场。",
+              "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+              "本报告未验证差异原因或业务效果；后续建议尚未执行。"
+            ]
+          }
+        ],
+        "charts": [
+          {
+            "chart_id": "C001",
+            "task_id": "T1",
+            "title": "按类别统计记录数",
+            "chart_type": "bar",
+            "dimension": "field_0002",
+            "metrics": [
+              "record_count"
+            ],
+            "data_ref": "result_cba5fb8c67d945b3b88f3d047e862add",
+            "supported_chart_types": [
+              "bar",
+              "pie",
+              "table"
+            ],
+            "evidence_refs": [
+              "E0001",
+              "E0002",
+              "E0003",
+              "E0004",
+              "E0005",
+              "E0006",
+              "E0007",
+              "E0008",
+              "E0009"
+            ],
+            "display_limit": 10,
+            "order": "value_desc",
+            "note": null
+          }
+        ],
+        "recommendations": [],
+        "limitations": [
+          "结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。",
+          "业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。",
+          "结论仅适用于当前返回范围，不能外推整体市场。",
+          "有 1 条模型候选洞察未通过校验，未作为事实或建议输出；本报告为部分生成，拒绝原因保留在技术详情。"
+        ],
+        "uncompleted_tasks": [],
+        "evidence": [
+          {
+            "evidence_id": "E0001",
+            "task_id": "T1",
+            "data_ref": "result_cba5fb8c67d945b3b88f3d047e862add",
+            "result_field": "$execution.valid_sample_count",
+            "evidence_type": "coverage",
+            "value": {
+              "valid_samples": 4,
+              "effective_rows": 4,
+              "dataset_rows": 4,
+              "coverage_percent": 100
+            },
+            "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+            "calculation": "批准操作链：group_aggregate；聚合前各最终指标的非缺失参与数；指标样本数不同时不提供统一有效样本量。；有效样本量 / 画像总行数 × 100；有效行数由执行模块提供。",
+            "statement": "该任务有效样本量为 4，占上传数据行数约 100%。",
+            "source_row_indices": [],
+            "related_result_refs": []
+          },
+          {
+            "evidence_id": "E0002",
+            "task_id": "T1",
+            "data_ref": "result_cba5fb8c67d945b3b88f3d047e862add",
+            "result_field": "record_count",
+            "evidence_type": "ranking",
+            "value": {
+              "category": "咨询",
+              "value": 2,
+              "rank": 1
+            },
+            "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+            "calculation": "批准操作链：group_aggregate；对已返回的 record_count 降序比较，竞争排名；不推断未返回类别。",
+            "statement": "在该任务完整分组结果中，咨询的记录 · 计数为 2条，并列值采用同一名次，排名 1。",
+            "source_row_indices": [
+              0
+            ],
+            "related_result_refs": []
+          },
+          {
+            "evidence_id": "E0003",
+            "task_id": "T1",
+            "data_ref": "result_cba5fb8c67d945b3b88f3d047e862add",
+            "result_field": "record_count",
+            "evidence_type": "ranking",
+            "value": {
+              "category": "投诉",
+              "value": 2,
+              "rank": 1
+            },
+            "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+            "calculation": "批准操作链：group_aggregate；对已返回的 record_count 降序比较，竞争排名；不推断未返回类别。",
+            "statement": "在该任务完整分组结果中，投诉的记录 · 计数为 2条，并列值采用同一名次，排名 1。",
+            "source_row_indices": [
+              1
+            ],
+            "related_result_refs": []
+          },
+          {
+            "evidence_id": "E0004",
+            "task_id": "T1",
+            "data_ref": "result_cba5fb8c67d945b3b88f3d047e862add",
+            "result_field": "record_count",
+            "evidence_type": "maximum",
+            "value": {
+              "value": 2,
+              "category": "咨询",
+              "tie_count": 2
+            },
+            "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+            "calculation": "批准操作链：group_aggregate；读取 record_count 的最大值，保留并列来源行。",
+            "statement": "该任务完整分组结果的记录 · 计数最大值为 2条，对应 咨询等 2 个分组。",
+            "source_row_indices": [
+              0,
+              1
+            ],
+            "related_result_refs": []
+          },
+          {
+            "evidence_id": "E0005",
+            "task_id": "T1",
+            "data_ref": "result_cba5fb8c67d945b3b88f3d047e862add",
+            "result_field": "record_count",
+            "evidence_type": "minimum",
+            "value": {
+              "value": 2,
+              "category": "咨询",
+              "tie_count": 2
+            },
+            "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+            "calculation": "批准操作链：group_aggregate；读取 record_count 的最小值，保留并列来源行。",
+            "statement": "该任务完整分组结果的记录 · 计数最小值为 2条，对应 咨询等 2 个分组。",
+            "source_row_indices": [
+              0,
+              1
+            ],
+            "related_result_refs": []
+          },
+          {
+            "evidence_id": "E0006",
+            "task_id": "T1",
+            "data_ref": "result_cba5fb8c67d945b3b88f3d047e862add",
+            "result_field": "record_count",
+            "evidence_type": "difference",
+            "value": {
+              "left": "咨询",
+              "right": "投诉",
+              "left_value": 2,
+              "right_value": 2,
+              "difference": 0
+            },
+            "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+            "calculation": "批准操作链：group_aggregate；已计算值相减：record_count[0] - record_count[1]；不是因果或显著性检验。",
+            "statement": "在该任务完整分组结果中，咨询与投诉的记录 · 计数差值为 0条。",
+            "source_row_indices": [
+              0,
+              1
+            ],
+            "related_result_refs": []
+          },
+          {
+            "evidence_id": "E0007",
+            "task_id": "T1",
+            "data_ref": "result_cba5fb8c67d945b3b88f3d047e862add",
+            "result_field": "record_count",
+            "evidence_type": "proportion",
+            "value": {
+              "category": "咨询",
+              "numerator": 2,
+              "denominator": 4.0,
+              "percent": 50
+            },
+            "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+            "calculation": "批准操作链：group_aggregate；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+            "statement": "咨询的记录 · 计数占该任务同口径总体约 50%。",
+            "source_row_indices": [
+              0
+            ],
+            "related_result_refs": []
+          },
+          {
+            "evidence_id": "E0008",
+            "task_id": "T1",
+            "data_ref": "result_cba5fb8c67d945b3b88f3d047e862add",
+            "result_field": "record_count",
+            "evidence_type": "proportion",
+            "value": {
+              "category": "投诉",
+              "numerator": 2,
+              "denominator": 4.0,
+              "percent": 50
+            },
+            "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+            "calculation": "批准操作链：group_aggregate；已计算分组指标 / 已验证同口径总体分母 × 100；分母来自完整互斥分组之和。",
+            "statement": "投诉的记录 · 计数占该任务同口径总体约 50%。",
+            "source_row_indices": [
+              1
+            ],
+            "related_result_refs": []
+          },
+          {
+            "evidence_id": "E0009",
+            "task_id": "T1",
+            "data_ref": "result_cba5fb8c67d945b3b88f3d047e862add",
+            "result_field": "record_count",
+            "evidence_type": "metric",
+            "value": {
+              "value": 4,
+              "unit": "条",
+              "label": "本次返回分组合计（记录 · 计数）"
+            },
+            "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+            "calculation": "批准操作链：group_aggregate；仅将当前完整返回表中的可加指标相加；含 Top N 时只代表所选分组，不作为总体占比分母。",
+            "statement": "本次返回的 2 个分组的记录 · 计数合计为 4条。",
+            "source_row_indices": [
+              0,
+              1
+            ],
+            "related_result_refs": []
+          }
+        ],
+        "result_data": {
+          "result_cba5fb8c67d945b3b88f3d047e862add": {
+            "result_id": "result_cba5fb8c67d945b3b88f3d047e862add",
+            "columns": [
+              {
+                "field": "field_0002",
+                "label": "类别",
+                "logical_type": "text",
+                "role": "dimension",
+                "unit": null
+              },
+              {
+                "field": "record_count",
+                "label": "记录 · 计数",
+                "logical_type": "integer",
+                "role": "metric",
+                "unit": "条"
+              }
+            ],
+            "rows": [
+              {
+                "field_0002": "咨询",
+                "record_count": 2
+              },
+              {
+                "field_0002": "投诉",
+                "record_count": 2
+              }
+            ],
+            "truncated": false,
+            "total_result_rows": 2,
+            "row_offset": 0,
+            "total_refs": []
+          }
+        },
+        "execution_metadata": {
+          "T1": {
+            "task_id": "T1",
+            "status": "success",
+            "effective_row_count": 4,
+            "valid_sample_count": 4,
+            "sample_definition": "聚合前各最终指标的非缺失参与数；指标样本数不同时不提供统一有效样本量。",
+            "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+            "calculation": "批准操作链：group_aggregate",
+            "failure_reason": null,
+            "result_id": "result_cba5fb8c67d945b3b88f3d047e862add",
+            "result_ref": "result_cba5fb8c67d945b3b88f3d047e862add",
+            "row_count": 2,
+            "execution_metadata": {
+              "input_row_count": 4,
+              "started_at": "2026-11-08T10:11:57.588036+00:00",
+              "finished_at": "2026-11-08T10:11:57.591230+00:00",
+              "duration_ms": 3.192499978467822,
+              "preview_row_count": 2,
+              "metric_valid_counts": {
+                "record_count": 4
+              },
+              "sample_statistics": {
+                "version": "execution-sample-v1",
+                "scope": "before_single_aggregate",
+                "aggregate_step_id": "S1",
+                "input_row_count": 4,
+                "key_fields": [
+                  {
+                    "field": "field_0002",
+                    "label": "类别",
+                    "missing_count": 0
+                  }
+                ],
+                "complete_row_count": 4,
+                "missing_row_count": 0,
+                "metrics": {
+                  "record_count": {
+                    "function": "count",
+                    "field": null,
+                    "label": "记录",
+                    "basis": "rows",
+                    "participating_count": 4
+                  }
+                }
+              },
+              "analysis_basis": {
+                "version": "analysis-basis-v1",
+                "digest": "e8cb514fada2b451adc6124e7b440a356559e4584fb7c411db96454d5fda2945",
+                "plan_id": "plan_0bc41f4b86944c1abd769e8ce7c98156",
+                "plan_version": 2,
+                "dataset_id": "d4dfd30a90c44b508b58d086e0042afb",
+                "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+                "row_grain": "entity",
+                "entity_field_id": "field_0001",
+                "declaration_source": "user",
+                "metrics": [
+                  {
+                    "task_id": "T1",
+                    "step_id": "S1",
+                    "alias": "record_count",
+                    "field_id": null,
+                    "label": "记录",
+                    "function": "count",
+                    "basis": "逐行计数，不是业务实体去重数量",
+                    "unit_status": "record_count"
+                  }
+                ]
+              },
+              "steps": [
+                {
+                  "step_id": "S1",
+                  "operation": "group_aggregate",
+                  "status": "success",
+                  "input_row_count": 4,
+                  "output_row_count": 2,
+                  "duration_ms": 2.797833178192377,
+                  "warnings": [],
+                  "error": null
+                }
+              ],
+              "warnings": []
+            },
+            "error": null,
+            "insight_generation_version": "evidence-selection-v2.0",
+            "draft_schema_version": "insight-selection-v2",
+            "generation_mode": "controlled_evidence_selection",
+            "output_boundaries": [],
+            "report_capacity_version": "report-capacity-v1",
+            "report_batches": [
+              {
+                "batch_index": 1,
+                "group_refs": [
+                  [
+                    "T1",
+                    "result_cba5fb8c67d945b3b88f3d047e862add",
+                    "record_count"
+                  ]
+                ],
+                "status": "partial",
+                "call_id": "call_d03b3b2989af4994a6d4827156ff3aff",
+                "request_snapshot_id": "request_36f61a8b02c84e2e8f1321b713b248ad",
+                "accepted_count": 1,
+                "rejected_count": 1
+              }
+            ],
+            "selected_recommendations": [
+              {
+                "insight_id": "I001",
+                "text": "现有证据仅支持上述统计结论，暂无额外建议。"
+              }
+            ],
+            "rejected_insights": [
+              {
+                "candidate_index": 0,
+                "primary_evidence_id": "E0009",
+                "error_code": "REPORT_INVALID_EVIDENCE_TYPE",
+                "details": {},
+                "batch_index": 1
+              }
+            ],
+            "candidate_repairs": [],
+            "chart_builder_version": "1.1-preserve-approved-order",
+            "text_validation": [],
+            "missing_core_metrics": [],
+            "approved_scope": [
+              "按类别分组",
+              "拟用统计口径：记录数",
+              "按上传记录逐行计数，不代表去重后的业务实体数量。"
+            ],
+            "original_query": "按类别统计记录数"
+          }
+        },
+        "task_metadata": {
+          "T1": {
+            "task_id": "T1",
+            "title": "按类别统计记录数",
+            "business_question": "各类别包含多少条记录？",
+            "priority": "P0",
+            "priority_reason": "删除此任务将无法回答核心问题“按类别统计记录数”，属于P0。",
+            "requirement_ids": [
+              "C01",
+              "C02"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S1",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "count",
+                      "field": null,
+                      "alias": "record_count"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "fact_validation": "structured_facts_verified_interpretations_unverified",
+        "llm": {
+          "provider": "compatible",
+          "model": "qwen3.8-flash",
+          "is_mock": false
+        },
+        "provenance": {
+          "source": "llm",
+          "dataset": "d4dfd30a90c44b508b58d086e0042afb",
+          "dataset_version": "c13e0005c6f3b6b6b01018af22d0095dc71e8e8e1d56a938e2356681e5377ef0",
+          "plan_version": 2,
+          "notice": "事实来自执行结果和确定性证据；解释性陈述未严格验证。"
+        },
+        "preview_url": "/reports/report_87b21283bec0446e959806483fdd3cc3",
+        "download_url": "/api/v1/reports/report_87b21283bec0446e959806483fdd3cc3/download",
+        "generated_at": "2026-11-08T10:12:01.336679+00:00"
+      }
+    ],
+    "verified_result": {
+      "咨询": 2,
+      "投诉": 2
+    },
+    "binding_verified": true
+  }
+]

@@ -1,0 +1,26 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__ test_standalone_report_cannot_bypass_profit_boundary_even_without_approval __
+
+    def test_standalone_report_cannot_bypass_profit_boundary_even_without_approval():
+        inputs=report_case();inputs[0].constraints.analysis_limits=[constraint('不要分析利润')]
+        inputs[1].plan.tasks[0].steps[0].params['metrics'][0]['alias']='profit_total'
+        provider=ReportProvider()
+        with pytest.raises(AppError) as error:
+            asyncio.run(AnalysisReportService(provider,CapabilityRegistry()).generate(*inputs))
+>       assert error.value.error.code=='REPORT_BOUNDARY_VIOLATION'
+E       AssertionError: assert 'REPORT_INPUT_MISMATCH' == 'REPORT_BOUNDARY_VIOLATION'
+E         
+E         - REPORT_BOUNDARY_VIOLATION
+E         + REPORT_INPUT_MISMATCH
+
+backend/tests/test_approval_constraints_v22.py:125: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_approval_constraints_v22.py::test_standalone_report_cannot_bypass_profit_boundary_even_without_approval
+1 failed, 1 warning in 0.08s

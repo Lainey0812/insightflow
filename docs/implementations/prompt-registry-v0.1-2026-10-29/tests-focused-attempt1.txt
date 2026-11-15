@@ -1,0 +1,106 @@
+.....FF............                                                      [100%]
+=================================== FAILURES ===================================
+________ test_dynamic_evidence_schema_and_multiple_calls_share_template ________
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-117/test_dynamic_evidence_schema_a0')
+
+    def test_dynamic_evidence_schema_and_multiple_calls_share_template(tmp_path):
+        llm,repo,bodies=provider(tmp_path,[report_output])
+        service=AnalysisReportService(llm,CapabilityRegistry())
+        asyncio.run(service.generate(*report_case()))
+>       asyncio.run(service.generate(*report_case(tasks=[task(tid='A01'),task(tid='A02')])))
+
+backend/tests/test_prompt_registry.py:131: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:204: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:127: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+backend/app/services/analysis_report.py:160: in generate
+    insights, rejected_insights = materialize_candidates(draft, selected, tasks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+draft = InsightDraft(insights=[DraftInsight(primary_evidence_id='E0002', evidence_refs=['E0002'], finding_type='highlight', implication='该结果值得结合参与记录进一步评估。', recommendation='核查相关分组的记录构成；补充分析尚未执行。', limitations=['结论仅适用于当前返回范围。'])])
+evidence = [Evidence(evidence_id='E0019', task_id='A01', data_ref='R001', result_field='job_count', evidence_type='comparison', v...；不推断未返回类别。', statement='在该任务完整分组结果中，上海的岗位数量为 2条，并列值采用同一名次，排名 1。', source_row_indices=[0], related_result_refs=[]), ...]
+tasks = {'A01': AnalysisTask(task_id='A01', title='城市岗位数量', business_question='不同城市岗位有何差异？', priority='P0', priority_reason='删...='group_aggregate', params={'dimensions': ['field_0001'], 'metrics': [{'function': 'count', 'alias': 'job_count'}]})])}
+result_data = {'R001': ResultTable(result_id='R001', columns=[ResultColumn(field='field_0001', label='城市', logical_type=<LogicalType..._count': 2}, {'field_0001': '北京', 'job_count': 1}], truncated=False, total_result_rows=2, row_offset=0, total_refs=[])}
+trusted_limitations = ['结论仅适用于上传样本与本次分析范围，不能直接代表整体市场或总体人群。', '业务解释和行动建议采用谨慎表述，未经过严格事实验证，也不构成因果结论。', '计算结果由上游导入；报告模块核对版本、结构与证据一致性，未复算源数据。']
+diagnostics = []
+observer = <bound method TraceContext.candidate of <app.observability.recorder.TraceContext object at 0x10c76bed0>>
+
+    def materialize_candidates(draft, evidence, tasks, result_data, trusted_limitations=(), *, diagnostics=None, observer=None):
+        """Isolate rejected candidates visibly. Never repair claims or invent fallback insights."""
+        from app.domain.analysis_report import InsightDraft
+        def observe(**payload):
+            # Telemetry callbacks cannot change validation outcomes.
+            if observer:
+                try: observer(payload)
+                except Exception: pass
+        accepted, rejected, seen = [], [], set()
+        by_id = {e.evidence_id: e for e in evidence}
+        first_error = None
+        for index, item in enumerate(draft.insights):
+            try:
+                candidate = materialize(InsightDraft(insights=[item]), evidence, tasks, result_data,
+                    require_core=False, trusted_limitations=trusted_limitations, diagnostics=diagnostics)[0]
+                key = semantic_key(by_id[item.primary_evidence_id])
+                if key in seen:
+                    raise AppError('REPORT_DUPLICATE_FINDING', '该候选发现重复，没有新增事实。', 502)
+                seen.update(semantic_key(by_id[ref]) for ref in item.evidence_refs)
+                candidate.insight_id = f'I{len(accepted) + 1:03d}'
+                accepted.append(candidate)
+                observe(candidate_index=index, candidate_status='accepted', primary_evidence_id=item.primary_evidence_id,
+                    evidence_refs=item.evidence_refs)
+            except AppError as exc:
+                first_error = first_error or exc
+                # Rejected prose stays outside the saved business report. Keep rule
+                # identity and binding diagnostics, never embed a rejected assertion
+                # in metadata that might later be mistaken for a valid report fact.
+                details = {k: v for k, v in exc.error.details.items() if k not in {'text', 'matches'}}
+                if 'matches' in exc.error.details:
+                    details['triggered_rules'] = list(exc.error.details['matches'])
+                rejected.append({'candidate_index': index, 'primary_evidence_id': item.primary_evidence_id,
+                                 'error_code': exc.error.code, 'details': details})
+                observe(candidate_index=index, candidate_status='rejected', primary_evidence_id=item.primary_evidence_id,
+                    evidence_refs=item.evidence_refs, error_code=exc.error.code, role=details.get('role'),
+                    rule_ids=([details['rule']] if 'rule' in details else []) + details.get('triggered_rules', []))
+        observe(candidate_count=len(draft.insights), accepted_count=len(accepted), rejected_count=len(rejected))
+        if not accepted:
+            error = first_error or AppError('REPORT_NO_VALID_INSIGHTS', '没有通过校验的洞察。', 502)
+            error.error.details['rejected_candidates'] = rejected
+            raise error
+        missing_core = {e.task_id for e in evidence if tasks[e.task_id].priority == 'P0'} - {i.task_id for i in accepted}
+        if missing_core:
+>           raise AppError('REPORT_CORE_FINDINGS_MISSING', '已有证据的核心任务未形成合法洞察，未保存完整报告。', 502)
+E           app.domain.errors.AppError: ('REPORT_CORE_FINDINGS_MISSING', '已有证据的核心任务未形成合法洞察，未保存完整报告。', 502)
+
+backend/app/reporting/fact_validation.py:315: AppError
+____ test_template_idempotency_order_independent_hash_and_version_conflict _____
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-117/test_template_idempotency_orde0')
+
+    def test_template_idempotency_order_independent_hash_and_version_conflict(tmp_path):
+        llm,repo,_=provider(tmp_path)
+        template=IntentParserService(llm).prompt_source.snapshot
+        first=repo.register(template)
+>       assert repo.register(template.model_copy(update={'created_at':'another time'}))==first
+E       AssertionError: assert PromptTemplat...ext changes.') == PromptTemplat...ext changes.')
+E         
+E         Use -v to get more diff
+
+backend/tests/test_prompt_registry.py:144: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_prompt_registry.py::test_dynamic_evidence_schema_and_multiple_calls_share_template
+FAILED backend/tests/test_prompt_registry.py::test_template_idempotency_order_independent_hash_and_version_conflict
+2 failed, 17 passed, 1 warning in 2.40s

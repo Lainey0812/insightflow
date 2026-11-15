@@ -1,0 +1,4675 @@
+[
+  {
+    "case_id": "S01",
+    "domain": "sales",
+    "split": "development",
+    "query": "分析2026年华东地区已完成订单销售额，按城市降序取前三名",
+    "note": "Saved real Engine execution and real approval; source CSV 60 rows, effective 16.",
+    "expected": {
+      "important_families": [
+        "difference",
+        "relative_lead",
+        "relative_ratio",
+        "returned_concentration"
+      ],
+      "unsupported_business_claims_allowed": false,
+      "no_valid_evidence": false,
+      "failed_tasks": []
+    },
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "2026年华东地区已完成订单的销售额",
+          "business_goal": "按城市汇总并降序排名，取前三名的销售额",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "2026年",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "华东地区",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "已完成订单",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "销售额",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按照城市汇总并降序排名，取前三名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "validated": {
+        "plan": {
+          "dataset_id": "12f95d88d57a4c5aa30f3b525e54eb64",
+          "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a",
+          "plan_id": "plan_5351dc40654e4af29c6c0b21481d2a17",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T01",
+              "title": "2026年华东地区已完成订单城市销售额Top3",
+              "business_question": "在2026年、华东地区且状态为已完成的订单中，各城市的销售额总和是多少？请按销售额降序排列并取前三名。",
+              "priority": "P0",
+              "priority_reason": "删除此任务将无法回答核心问题“按城市汇总并降序排名，取前三名的销售额”，也无法支持基于该排名的任何决策。这是唯一直接满足所有核心约束（时间、地区、状态、指标、排序/TopN）的任务。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03",
+                "C04",
+                "C05"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "field_0002",
+                        "operator": "gte",
+                        "value": "2026-01-01"
+                      },
+                      {
+                        "field": "field_0002",
+                        "operator": "lt",
+                        "value": "2027-01-01"
+                      },
+                      {
+                        "field": "field_0003",
+                        "operator": "eq",
+                        "value": "华东"
+                      },
+                      {
+                        "field": "field_0006",
+                        "operator": "eq",
+                        "value": "已完成"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0011",
+                        "alias": "sales_total"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0005"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S03",
+                  "operation": "sort",
+                  "params": {
+                    "field": "sales_total",
+                    "direction": "desc"
+                  }
+                },
+                {
+                  "step_id": "S04",
+                  "operation": "top_n",
+                  "params": {
+                    "field": "sales_total",
+                    "direction": "desc",
+                    "n": 3
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "按城市汇总并降序排名，取前三名的销售额"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "time_range：2026年"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "filters：华东地区；已完成订单"
+            },
+            {
+              "requirement_id": "C04",
+              "description": "metric_requirements：销售额"
+            },
+            {
+              "requirement_id": "C05",
+              "description": "analysis_limits：按照城市汇总并降序排名，取前三名"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "12f95d88d57a4c5aa30f3b525e54eb64",
+          "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "2026年华东地区已完成订单的销售额",
+            "business_goal": "按城市汇总并降序排名，取前三名的销售额",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": {
+              "raw_text": "2026年",
+              "validation_status": "unverified"
+            },
+            "filters": [
+              {
+                "raw_text": "华东地区",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "已完成订单",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "销售额",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按照城市汇总并降序排名，取前三名",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      },
+      "execution": {
+        "dataset_id": "12f95d88d57a4c5aa30f3b525e54eb64",
+        "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a",
+        "execution_id": "exec_ac4cacacb9954a0693a944b331fa3db4",
+        "plan_id": "plan_5351dc40654e4af29c6c0b21481d2a17",
+        "plan_version": 1,
+        "approved_plan_version": 1,
+        "execution_status": "success",
+        "source": "engine",
+        "producer": "insightflow-analysis-engine-v1",
+        "session_id": "d5d7b017255b47d284844d77aaafa331",
+        "execution_request_id": "32ef0dee-6dff-4f11-bff2-3dbb48369519",
+        "approval_id": "approval_0f306d194cbd4a8dacd8d2db7c6397b9",
+        "started_at": "2026-10-27T13:53:13.575143+00:00",
+        "finished_at": "2026-10-27T13:53:13.582115+00:00",
+        "duration_ms": 5.771124997409061,
+        "result_view": "complete",
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "12f95d88d57a4c5aa30f3b525e54eb64",
+          "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a",
+          "plan_version": 1,
+          "notice": "从指定版本上传文件读取，复用受控统计内核计算；完整结果与预览分开保存。"
+        },
+        "errors": [],
+        "warnings": [],
+        "tasks": [
+          {
+            "task_id": "T01",
+            "status": "success",
+            "result": {
+              "result_id": "result_290b731ac1dc4ee8ae0a3d4228c2de99",
+              "columns": [
+                {
+                  "field": "field_0005",
+                  "label": "城市",
+                  "logical_type": "text",
+                  "role": "dimension",
+                  "unit": null
+                },
+                {
+                  "field": "sales_total",
+                  "label": "销售额 · 合计",
+                  "logical_type": "integer",
+                  "role": "metric",
+                  "unit": null
+                }
+              ],
+              "rows": [
+                {
+                  "field_0005": "济南",
+                  "sales_total": 21250
+                },
+                {
+                  "field_0005": "南京",
+                  "sales_total": 20250
+                },
+                {
+                  "field_0005": "上海",
+                  "sales_total": 5760
+                }
+              ],
+              "truncated": false,
+              "total_result_rows": 3,
+              "row_offset": 0,
+              "total_refs": []
+            },
+            "effective_row_count": 16,
+            "valid_sample_count": 16,
+            "sample_definition": "聚合前各最终指标的非缺失参与数；指标样本数不同时不提供统一有效样本量。",
+            "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+            "calculation": "批准操作链：filter → group_aggregate → sort → top_n",
+            "failure_reason": null,
+            "result_id": "result_290b731ac1dc4ee8ae0a3d4228c2de99",
+            "result_ref": "result_290b731ac1dc4ee8ae0a3d4228c2de99",
+            "row_count": 3,
+            "execution_metadata": {
+              "input_row_count": 60,
+              "started_at": "2026-10-27T13:53:13.576342+00:00",
+              "finished_at": "2026-10-27T13:53:13.580720+00:00",
+              "duration_ms": 4.380041005788371,
+              "preview_row_count": 3,
+              "metric_valid_counts": {
+                "sales_total": 16
+              },
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "filter",
+                  "status": "success",
+                  "input_row_count": 60,
+                  "output_row_count": 16,
+                  "duration_ms": 2.5014580169226974,
+                  "warnings": [],
+                  "error": null
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "group_aggregate",
+                  "status": "success",
+                  "input_row_count": 16,
+                  "output_row_count": 3,
+                  "duration_ms": 1.293207984417677,
+                  "warnings": [],
+                  "error": null
+                },
+                {
+                  "step_id": "S03",
+                  "operation": "sort",
+                  "status": "success",
+                  "input_row_count": 3,
+                  "output_row_count": 3,
+                  "duration_ms": 0.15441697905771434,
+                  "warnings": [],
+                  "error": null
+                },
+                {
+                  "step_id": "S04",
+                  "operation": "top_n",
+                  "status": "success",
+                  "input_row_count": 3,
+                  "output_row_count": 3,
+                  "duration_ms": 0.11645801714621484,
+                  "warnings": [],
+                  "error": null
+                }
+              ],
+              "warnings": []
+            },
+            "error": null
+          }
+        ]
+      },
+      "profile": {
+        "dataset_id": "12f95d88d57a4c5aa30f3b525e54eb64",
+        "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a",
+        "schema_version": "1.0",
+        "profiler_version": "1.1.0",
+        "content_sha256": "8f59a00be875e6fed684be4b388b579d8b0ed9bc5f302be6deb842bc1bfcdd34",
+        "file_name": "insightflow_sales_orders_test.csv",
+        "file_format": "csv",
+        "sheet_name": null,
+        "available_sheets": [],
+        "options": {
+          "header_row": 1,
+          "sheet_name": null,
+          "encoding": "utf-8-sig",
+          "delimiter": ","
+        },
+        "row_count": 60,
+        "column_count": 12,
+        "total_cell_count": 720,
+        "missing_cell_count": 0,
+        "missing_cell_rate": 0.0,
+        "duplicate_row_count": 0,
+        "duplicate_row_rate": 0.0,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "position": 1,
+            "original_name": "订单编号",
+            "display_name": "订单编号",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 60,
+            "unique_count": 60,
+            "physical_type_counts": {
+              "string": 60
+            },
+            "logical_type_counts": {
+              "text": 60
+            },
+            "samples": [
+              {
+                "value": "ORD0001",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "ORD0002",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "ORD0003",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "ORD0004",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "ORD0005",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0002",
+            "position": 2,
+            "original_name": "订单日期",
+            "display_name": "订单日期",
+            "physical_type": "string",
+            "logical_type": "date",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 60,
+            "unique_count": 60,
+            "physical_type_counts": {
+              "string": 60
+            },
+            "logical_type_counts": {
+              "date": 60
+            },
+            "samples": [
+              {
+                "value": "2026-08-12",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "2026-03-23",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "2026-10-06",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "2026-05-17",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "2026-12-28",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0003",
+            "position": 3,
+            "original_name": "地区",
+            "display_name": "地区",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 60,
+            "unique_count": 5,
+            "physical_type_counts": {
+              "string": 60
+            },
+            "logical_type_counts": {
+              "text": 60
+            },
+            "samples": [
+              {
+                "value": "华东",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "华南",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "华北",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "西南",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "华中",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0004",
+            "position": 4,
+            "original_name": "省份",
+            "display_name": "省份",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 60,
+            "unique_count": 9,
+            "physical_type_counts": {
+              "string": 60
+            },
+            "logical_type_counts": {
+              "text": 60
+            },
+            "samples": [
+              {
+                "value": "上海",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "江苏",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "浙江",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "山东",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "广东",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0005",
+            "position": 5,
+            "original_name": "城市",
+            "display_name": "城市",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 60,
+            "unique_count": 10,
+            "physical_type_counts": {
+              "string": 60
+            },
+            "logical_type_counts": {
+              "text": 60
+            },
+            "samples": [
+              {
+                "value": "上海",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "南京",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "杭州",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "济南",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "广州",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0006",
+            "position": 6,
+            "original_name": "订单状态",
+            "display_name": "订单状态",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 60,
+            "unique_count": 3,
+            "physical_type_counts": {
+              "string": 60
+            },
+            "logical_type_counts": {
+              "text": 60
+            },
+            "samples": [
+              {
+                "value": "已完成",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "退款",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "已取消",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0007",
+            "position": 7,
+            "original_name": "产品类别",
+            "display_name": "产品类别",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 60,
+            "unique_count": 3,
+            "physical_type_counts": {
+              "string": 60
+            },
+            "logical_type_counts": {
+              "text": 60
+            },
+            "samples": [
+              {
+                "value": "电子设备",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "办公用品",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "家居用品",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0008",
+            "position": 8,
+            "original_name": "产品名称",
+            "display_name": "产品名称",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 60,
+            "unique_count": 5,
+            "physical_type_counts": {
+              "string": 60
+            },
+            "logical_type_counts": {
+              "text": 60
+            },
+            "samples": [
+              {
+                "value": "键盘",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "打印纸",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "台灯",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "显示器",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "办公椅",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0009",
+            "position": 9,
+            "original_name": "数量",
+            "display_name": "数量",
+            "physical_type": "string",
+            "logical_type": "integer",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 60,
+            "unique_count": 5,
+            "physical_type_counts": {
+              "string": 60
+            },
+            "logical_type_counts": {
+              "integer": 60
+            },
+            "samples": [
+              {
+                "value": "2",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "3",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "4",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "5",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "1",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0010",
+            "position": 10,
+            "original_name": "单价",
+            "display_name": "单价",
+            "physical_type": "string",
+            "logical_type": "integer",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 60,
+            "unique_count": 5,
+            "physical_type_counts": {
+              "string": 60
+            },
+            "logical_type_counts": {
+              "integer": 60
+            },
+            "samples": [
+              {
+                "value": "480",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "1350",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "260",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "850",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "120",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0011",
+            "position": 11,
+            "original_name": "销售额",
+            "display_name": "销售额",
+            "physical_type": "string",
+            "logical_type": "integer",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 60,
+            "unique_count": 5,
+            "physical_type_counts": {
+              "string": 60
+            },
+            "logical_type_counts": {
+              "integer": 60
+            },
+            "samples": [
+              {
+                "value": "960",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "4050",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "1040",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "4250",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "120",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0012",
+            "position": 12,
+            "original_name": "销售渠道",
+            "display_name": "销售渠道",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 60,
+            "unique_count": 2,
+            "physical_type_counts": {
+              "string": 60
+            },
+            "logical_type_counts": {
+              "text": 60
+            },
+            "samples": [
+              {
+                "value": "线上",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "线下",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          }
+        ],
+        "quality_issues": [],
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "12f95d88d57a4c5aa30f3b525e54eb64",
+          "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a",
+          "plan_version": null,
+          "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+        }
+      },
+      "approved_snapshot": {
+        "approval_id": "approval_0f306d194cbd4a8dacd8d2db7c6397b9",
+        "approved_at": "2026-10-27T13:53:13.558179+00:00",
+        "status": "approved",
+        "validated_plan": {
+          "plan": {
+            "dataset_id": "12f95d88d57a4c5aa30f3b525e54eb64",
+            "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a",
+            "plan_id": "plan_5351dc40654e4af29c6c0b21481d2a17",
+            "plan_version": 1,
+            "tasks": [
+              {
+                "task_id": "T01",
+                "title": "2026年华东地区已完成订单城市销售额Top3",
+                "business_question": "在2026年、华东地区且状态为已完成的订单中，各城市的销售额总和是多少？请按销售额降序排列并取前三名。",
+                "priority": "P0",
+                "priority_reason": "删除此任务将无法回答核心问题“按城市汇总并降序排名，取前三名的销售额”，也无法支持基于该排名的任何决策。这是唯一直接满足所有核心约束（时间、地区、状态、指标、排序/TopN）的任务。",
+                "requirement_ids": [
+                  "C01",
+                  "C02",
+                  "C03",
+                  "C04",
+                  "C05"
+                ],
+                "depends_on": [],
+                "missing_inputs": [],
+                "steps": [
+                  {
+                    "step_id": "S01",
+                    "operation": "filter",
+                    "params": {
+                      "conditions": [
+                        {
+                          "field": "field_0002",
+                          "operator": "gte",
+                          "value": "2026-01-01"
+                        },
+                        {
+                          "field": "field_0002",
+                          "operator": "lt",
+                          "value": "2027-01-01"
+                        },
+                        {
+                          "field": "field_0003",
+                          "operator": "eq",
+                          "value": "华东"
+                        },
+                        {
+                          "field": "field_0006",
+                          "operator": "eq",
+                          "value": "已完成"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "step_id": "S02",
+                    "operation": "group_aggregate",
+                    "params": {
+                      "metrics": [
+                        {
+                          "function": "sum",
+                          "field": "field_0011",
+                          "alias": "sales_total"
+                        }
+                      ],
+                      "dimensions": [
+                        "field_0005"
+                      ]
+                    }
+                  },
+                  {
+                    "step_id": "S03",
+                    "operation": "sort",
+                    "params": {
+                      "field": "sales_total",
+                      "direction": "desc"
+                    }
+                  },
+                  {
+                    "step_id": "S04",
+                    "operation": "top_n",
+                    "params": {
+                      "field": "sales_total",
+                      "direction": "desc",
+                      "n": 3
+                    }
+                  }
+                ]
+              }
+            ],
+            "core_requirements": [
+              {
+                "requirement_id": "C01",
+                "description": "按城市汇总并降序排名，取前三名的销售额"
+              },
+              {
+                "requirement_id": "C02",
+                "description": "time_range：2026年"
+              },
+              {
+                "requirement_id": "C03",
+                "description": "filters：华东地区；已完成订单"
+              },
+              {
+                "requirement_id": "C04",
+                "description": "metric_requirements：销售额"
+              },
+              {
+                "requirement_id": "C05",
+                "description": "analysis_limits：按照城市汇总并降序排名，取前三名"
+              }
+            ]
+          },
+          "validation_results": [
+            {
+              "task_id": "T01",
+              "feasibility": "F2",
+              "reason_code": "READY",
+              "validation_issues": [],
+              "executable": true
+            }
+          ],
+          "unmet_core_requirements": [],
+          "coverage_status": "complete",
+          "executable_task_ids": [
+            "T01"
+          ],
+          "blocked_task_ids": [],
+          "fully_executable": true,
+          "validation_version": "1.0",
+          "registry_version": "1.0",
+          "approval_required": true,
+          "llm": null,
+          "provenance": {
+            "source": "uploaded",
+            "dataset": "12f95d88d57a4c5aa30f3b525e54eb64",
+            "dataset_version": "0fcb048be730a06701110f2cb88ee638412f7625c1f2d566ee6e419df2534c2a",
+            "plan_version": 1,
+            "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+          },
+          "intent_snapshot": {
+            "analysis_mode": "goal_driven",
+            "next_action": "proceed",
+            "analysis_goal": {
+              "analysis_object": "2026年华东地区已完成订单的销售额",
+              "business_goal": "按城市汇总并降序排名，取前三名的销售额",
+              "decision_goal": null
+            },
+            "constraints": {
+              "time_range": {
+                "raw_text": "2026年",
+                "validation_status": "unverified"
+              },
+              "filters": [
+                {
+                  "raw_text": "华东地区",
+                  "validation_status": "unverified"
+                },
+                {
+                  "raw_text": "已完成订单",
+                  "validation_status": "unverified"
+                }
+              ],
+              "metric_requirements": [
+                {
+                  "raw_text": "销售额",
+                  "validation_status": "unverified"
+                }
+              ],
+              "analysis_limits": [
+                {
+                  "raw_text": "按照城市汇总并降序排名，取前三名",
+                  "validation_status": "unverified"
+                }
+              ]
+            },
+            "uncertainties": [],
+            "clarification_questions": []
+          }
+        },
+        "intent": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "2026年华东地区已完成订单的销售额",
+            "business_goal": "按城市汇总并降序排名，取前三名的销售额",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": {
+              "raw_text": "2026年",
+              "validation_status": "unverified"
+            },
+            "filters": [
+              {
+                "raw_text": "华东地区",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "已完成订单",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "销售额",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按照城市汇总并降序排名，取前三名",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        },
+        "resolved_uncertainty_ids": [],
+        "constraints_confirmed": true,
+        "session_id": "d5d7b017255b47d284844d77aaafa331",
+        "acknowledged_warnings": []
+      },
+      "original_query": "帮我分析2026年华东地区已完成订单的销售额，按照城市汇总并降序排名，取前三名。"
+    }
+  },
+  {
+    "case_id": "S02",
+    "domain": "sales",
+    "split": "development",
+    "query": "比较各渠道销售额和订单数量，不判断利润",
+    "note": "",
+    "expected": {
+      "important_families": [
+        "difference"
+      ],
+      "unsupported_business_claims_allowed": false,
+      "no_valid_evidence": false,
+      "failed_tasks": []
+    },
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "sales数据",
+          "business_goal": "比较各渠道销售额和订单数量，不判断利润",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "validated": {
+        "plan": {
+          "dataset_id": "report-dataset",
+          "dataset_version": "300fede9ec368e1b55ca2c01794147df9798b00adb338d59eb4999252947727d",
+          "plan_id": "test_plan",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "A01",
+              "title": "各渠道销售额",
+              "business_question": "各渠道销售额",
+              "priority": "P0",
+              "priority_reason": "删除后无法比较城市岗位数量，核心问题将无法回答。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "dimensions": [
+                      "field_0001"
+                    ],
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0002",
+                        "alias": "value"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "task_id": "A02",
+              "title": "各渠道订单数量",
+              "business_question": "各渠道订单数量",
+              "priority": "P0",
+              "priority_reason": "删除后无法比较城市岗位数量，核心问题将无法回答。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "dimensions": [
+                      "field_0001"
+                    ],
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "alias": "orders"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "比较各渠道销售额和订单数量，不判断利润"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "A01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          },
+          {
+            "task_id": "A02",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "A01",
+          "A02"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "300fede9ec368e1b55ca2c01794147df9798b00adb338d59eb4999252947727d",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "sales数据",
+            "business_goal": "比较各渠道销售额和订单数量，不判断利润",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      },
+      "execution": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "300fede9ec368e1b55ca2c01794147df9798b00adb338d59eb4999252947727d",
+        "execution_id": "exec_kernel_test",
+        "plan_id": "test_plan",
+        "plan_version": 1,
+        "approved_plan_version": 1,
+        "execution_status": "success",
+        "source": "imported",
+        "producer": "deterministic-test-kernels",
+        "session_id": null,
+        "execution_request_id": null,
+        "approval_id": null,
+        "started_at": null,
+        "finished_at": null,
+        "duration_ms": null,
+        "result_view": null,
+        "provenance": null,
+        "errors": [],
+        "warnings": [],
+        "tasks": [
+          {
+            "task_id": "A01",
+            "status": "success",
+            "result": {
+              "result_id": "R001",
+              "columns": [
+                {
+                  "field": "field_0001",
+                  "label": "渠道",
+                  "logical_type": "text",
+                  "role": "dimension",
+                  "unit": null
+                },
+                {
+                  "field": "value",
+                  "label": "销售额 · 合计",
+                  "logical_type": "integer",
+                  "role": "metric",
+                  "unit": null
+                }
+              ],
+              "rows": [
+                {
+                  "field_0001": "线上",
+                  "value": 300
+                },
+                {
+                  "field_0001": "线下",
+                  "value": 280
+                },
+                {
+                  "field_0001": "合作",
+                  "value": 60
+                }
+              ],
+              "truncated": false,
+              "total_result_rows": 3,
+              "row_offset": 0,
+              "total_refs": []
+            },
+            "effective_row_count": 4,
+            "valid_sample_count": 4,
+            "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+            "scope": "比较各渠道销售额和订单数量，不判断利润；仅限当前上传数据与批准任务范围。",
+            "calculation": "按当前批准的受控操作链计算，保留缺失分组。",
+            "failure_reason": null,
+            "result_id": null,
+            "result_ref": null,
+            "row_count": null,
+            "execution_metadata": null,
+            "error": null
+          },
+          {
+            "task_id": "A02",
+            "status": "success",
+            "result": {
+              "result_id": "R002",
+              "columns": [
+                {
+                  "field": "field_0001",
+                  "label": "渠道",
+                  "logical_type": "text",
+                  "role": "dimension",
+                  "unit": null
+                },
+                {
+                  "field": "orders",
+                  "label": "记录 · 数量",
+                  "logical_type": "integer",
+                  "role": "metric",
+                  "unit": "条"
+                }
+              ],
+              "rows": [
+                {
+                  "field_0001": "线上",
+                  "orders": 2
+                },
+                {
+                  "field_0001": "线下",
+                  "orders": 1
+                },
+                {
+                  "field_0001": "合作",
+                  "orders": 1
+                }
+              ],
+              "truncated": false,
+              "total_result_rows": 3,
+              "row_offset": 0,
+              "total_refs": []
+            },
+            "effective_row_count": 4,
+            "valid_sample_count": 4,
+            "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+            "scope": "比较各渠道销售额和订单数量，不判断利润；仅限当前上传数据与批准任务范围。",
+            "calculation": "按当前批准的受控操作链计算，保留缺失分组。",
+            "failure_reason": null,
+            "result_id": null,
+            "result_ref": null,
+            "row_count": null,
+            "execution_metadata": null,
+            "error": null
+          }
+        ]
+      },
+      "profile": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "300fede9ec368e1b55ca2c01794147df9798b00adb338d59eb4999252947727d",
+        "schema_version": "1.0",
+        "profiler_version": "1.1.0",
+        "content_sha256": "010725f3ec078d3dccc78237f66a9aefb8c14076e57bdb2a7defc8a4f905061e",
+        "file_name": "sales.csv",
+        "file_format": "csv",
+        "sheet_name": null,
+        "available_sheets": [],
+        "options": {
+          "header_row": 1,
+          "sheet_name": null,
+          "encoding": "utf-8-sig",
+          "delimiter": ","
+        },
+        "row_count": 4,
+        "column_count": 2,
+        "total_cell_count": 8,
+        "missing_cell_count": 0,
+        "missing_cell_rate": 0.0,
+        "duplicate_row_count": 0,
+        "duplicate_row_rate": 0.0,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "position": 1,
+            "original_name": "渠道",
+            "display_name": "渠道",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 4,
+            "unique_count": 3,
+            "physical_type_counts": {
+              "string": 4
+            },
+            "logical_type_counts": {
+              "text": 4
+            },
+            "samples": [
+              {
+                "value": "线上",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "线下",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "合作",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0002",
+            "position": 2,
+            "original_name": "销售额",
+            "display_name": "销售额",
+            "physical_type": "string",
+            "logical_type": "integer",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 4,
+            "unique_count": 4,
+            "physical_type_counts": {
+              "string": 4
+            },
+            "logical_type_counts": {
+              "integer": 4
+            },
+            "samples": [
+              {
+                "value": "100",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "200",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "280",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "60",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          }
+        ],
+        "quality_issues": [],
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "300fede9ec368e1b55ca2c01794147df9798b00adb338d59eb4999252947727d",
+          "plan_version": null,
+          "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+        }
+      }
+    }
+  },
+  {
+    "case_id": "R01",
+    "domain": "recruiting",
+    "split": "development",
+    "query": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会",
+    "note": "",
+    "expected": {
+      "important_families": [
+        "difference"
+      ],
+      "unsupported_business_claims_allowed": false,
+      "no_valid_evidence": false,
+      "failed_tasks": []
+    },
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "recruiting数据",
+          "business_goal": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "validated": {
+        "plan": {
+          "dataset_id": "report-dataset",
+          "dataset_version": "01802e1c683207ac79c5d8f2a28119b2a1dcaec7a5b1e17829a4c07ca76217b5",
+          "plan_id": "test_plan",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "A01",
+              "title": "城市岗位数量前三名",
+              "business_question": "城市岗位数量前三名",
+              "priority": "P0",
+              "priority_reason": "删除后无法比较城市岗位数量，核心问题将无法回答。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "dimensions": [
+                      "field_0001"
+                    ],
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "alias": "value"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "top_n",
+                  "params": {
+                    "field": "value",
+                    "direction": "desc",
+                    "n": 3
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "A01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "A01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "01802e1c683207ac79c5d8f2a28119b2a1dcaec7a5b1e17829a4c07ca76217b5",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "recruiting数据",
+            "business_goal": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      },
+      "execution": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "01802e1c683207ac79c5d8f2a28119b2a1dcaec7a5b1e17829a4c07ca76217b5",
+        "execution_id": "exec_kernel_test",
+        "plan_id": "test_plan",
+        "plan_version": 1,
+        "approved_plan_version": 1,
+        "execution_status": "success",
+        "source": "imported",
+        "producer": "deterministic-test-kernels",
+        "session_id": null,
+        "execution_request_id": null,
+        "approval_id": null,
+        "started_at": null,
+        "finished_at": null,
+        "duration_ms": null,
+        "result_view": null,
+        "provenance": null,
+        "errors": [],
+        "warnings": [],
+        "tasks": [
+          {
+            "task_id": "A01",
+            "status": "success",
+            "result": {
+              "result_id": "R001",
+              "columns": [
+                {
+                  "field": "field_0001",
+                  "label": "城市",
+                  "logical_type": "text",
+                  "role": "dimension",
+                  "unit": null
+                },
+                {
+                  "field": "value",
+                  "label": "记录 · 数量",
+                  "logical_type": "integer",
+                  "role": "metric",
+                  "unit": "条"
+                }
+              ],
+              "rows": [
+                {
+                  "field_0001": "上海",
+                  "value": 3
+                },
+                {
+                  "field_0001": "北京",
+                  "value": 2
+                },
+                {
+                  "field_0001": "杭州",
+                  "value": 1
+                }
+              ],
+              "truncated": false,
+              "total_result_rows": 3,
+              "row_offset": 0,
+              "total_refs": []
+            },
+            "effective_row_count": 7,
+            "valid_sample_count": 7,
+            "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+            "scope": "比较城市岗位数量取前三名，不依据岗位数判断薪资或录用机会；仅限当前上传数据与批准任务范围。",
+            "calculation": "按当前批准的受控操作链计算，保留缺失分组。",
+            "failure_reason": null,
+            "result_id": null,
+            "result_ref": null,
+            "row_count": null,
+            "execution_metadata": null,
+            "error": null
+          }
+        ]
+      },
+      "profile": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "01802e1c683207ac79c5d8f2a28119b2a1dcaec7a5b1e17829a4c07ca76217b5",
+        "schema_version": "1.0",
+        "profiler_version": "1.1.0",
+        "content_sha256": "812fcea1314cc61af4896e51e76e7beb2a7f878b1b2625d34c87c82b5c48e63d",
+        "file_name": "recruiting.csv",
+        "file_format": "csv",
+        "sheet_name": null,
+        "available_sheets": [],
+        "options": {
+          "header_row": 1,
+          "sheet_name": null,
+          "encoding": "utf-8-sig",
+          "delimiter": ","
+        },
+        "row_count": 7,
+        "column_count": 2,
+        "total_cell_count": 14,
+        "missing_cell_count": 0,
+        "missing_cell_rate": 0.0,
+        "duplicate_row_count": 0,
+        "duplicate_row_rate": 0.0,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "position": 1,
+            "original_name": "城市",
+            "display_name": "城市",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 7,
+            "unique_count": 4,
+            "physical_type_counts": {
+              "string": 7
+            },
+            "logical_type_counts": {
+              "text": 7
+            },
+            "samples": [
+              {
+                "value": "上海",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "北京",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "杭州",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "成都",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0002",
+            "position": 2,
+            "original_name": "岗位",
+            "display_name": "岗位",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 7,
+            "unique_count": 3,
+            "physical_type_counts": {
+              "string": 7
+            },
+            "logical_type_counts": {
+              "text": 7
+            },
+            "samples": [
+              {
+                "value": "产品",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "研发",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "设计",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          }
+        ],
+        "quality_issues": [],
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "01802e1c683207ac79c5d8f2a28119b2a1dcaec7a5b1e17829a4c07ca76217b5",
+          "plan_version": null,
+          "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+        }
+      }
+    }
+  },
+  {
+    "case_id": "R02",
+    "domain": "recruiting",
+    "split": "development",
+    "query": "比较不同发布日期的岗位数量变化，不能外推市场趋势",
+    "note": "",
+    "expected": {
+      "important_families": [
+        "change_rate"
+      ],
+      "unsupported_business_claims_allowed": false,
+      "no_valid_evidence": false,
+      "failed_tasks": []
+    },
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "recruiting数据",
+          "business_goal": "比较不同发布日期的岗位数量变化，不能外推市场趋势",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "validated": {
+        "plan": {
+          "dataset_id": "report-dataset",
+          "dataset_version": "215615b53202f8211914aaf7c2d0a558e4d530312ca3d7068092aaf752c4266a",
+          "plan_id": "test_plan",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "A01",
+              "title": "不同发布日期岗位数量变化",
+              "business_question": "不同发布日期岗位数量变化",
+              "priority": "P0",
+              "priority_reason": "删除后无法比较城市岗位数量，核心问题将无法回答。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "dimensions": [
+                      "field_0001"
+                    ],
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "alias": "value"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "比较不同发布日期的岗位数量变化，不能外推市场趋势"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "A01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "A01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "215615b53202f8211914aaf7c2d0a558e4d530312ca3d7068092aaf752c4266a",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "recruiting数据",
+            "business_goal": "比较不同发布日期的岗位数量变化，不能外推市场趋势",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      },
+      "execution": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "215615b53202f8211914aaf7c2d0a558e4d530312ca3d7068092aaf752c4266a",
+        "execution_id": "exec_kernel_test",
+        "plan_id": "test_plan",
+        "plan_version": 1,
+        "approved_plan_version": 1,
+        "execution_status": "success",
+        "source": "imported",
+        "producer": "deterministic-test-kernels",
+        "session_id": null,
+        "execution_request_id": null,
+        "approval_id": null,
+        "started_at": null,
+        "finished_at": null,
+        "duration_ms": null,
+        "result_view": null,
+        "provenance": null,
+        "errors": [],
+        "warnings": [],
+        "tasks": [
+          {
+            "task_id": "A01",
+            "status": "success",
+            "result": {
+              "result_id": "R001",
+              "columns": [
+                {
+                  "field": "field_0001",
+                  "label": "发布日期",
+                  "logical_type": "date",
+                  "role": "dimension",
+                  "unit": null
+                },
+                {
+                  "field": "value",
+                  "label": "记录 · 数量",
+                  "logical_type": "integer",
+                  "role": "metric",
+                  "unit": "条"
+                }
+              ],
+              "rows": [
+                {
+                  "field_0001": "2026-01-01",
+                  "value": 1
+                },
+                {
+                  "field_0001": "2026-02-01",
+                  "value": 2
+                },
+                {
+                  "field_0001": "2026-03-01",
+                  "value": 3
+                }
+              ],
+              "truncated": false,
+              "total_result_rows": 3,
+              "row_offset": 0,
+              "total_refs": []
+            },
+            "effective_row_count": 6,
+            "valid_sample_count": 6,
+            "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+            "scope": "比较不同发布日期的岗位数量变化，不能外推市场趋势；仅限当前上传数据与批准任务范围。",
+            "calculation": "按当前批准的受控操作链计算，保留缺失分组。",
+            "failure_reason": null,
+            "result_id": null,
+            "result_ref": null,
+            "row_count": null,
+            "execution_metadata": null,
+            "error": null
+          }
+        ]
+      },
+      "profile": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "215615b53202f8211914aaf7c2d0a558e4d530312ca3d7068092aaf752c4266a",
+        "schema_version": "1.0",
+        "profiler_version": "1.1.0",
+        "content_sha256": "3552eb94f616011158b260ce9d29946b2608d2b504286ef3339d36fea5f31e4c",
+        "file_name": "recruiting.csv",
+        "file_format": "csv",
+        "sheet_name": null,
+        "available_sheets": [],
+        "options": {
+          "header_row": 1,
+          "sheet_name": null,
+          "encoding": "utf-8-sig",
+          "delimiter": ","
+        },
+        "row_count": 6,
+        "column_count": 2,
+        "total_cell_count": 12,
+        "missing_cell_count": 0,
+        "missing_cell_rate": 0.0,
+        "duplicate_row_count": 0,
+        "duplicate_row_rate": 0.0,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "position": 1,
+            "original_name": "发布日期",
+            "display_name": "发布日期",
+            "physical_type": "string",
+            "logical_type": "date",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 6,
+            "unique_count": 3,
+            "physical_type_counts": {
+              "string": 6
+            },
+            "logical_type_counts": {
+              "date": 6
+            },
+            "samples": [
+              {
+                "value": "2026-01-01",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "2026-02-01",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "2026-03-01",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0002",
+            "position": 2,
+            "original_name": "岗位",
+            "display_name": "岗位",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 6,
+            "unique_count": 3,
+            "physical_type_counts": {
+              "string": 6
+            },
+            "logical_type_counts": {
+              "text": 6
+            },
+            "samples": [
+              {
+                "value": "产品",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "研发",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "设计",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          }
+        ],
+        "quality_issues": [],
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "215615b53202f8211914aaf7c2d0a558e4d530312ca3d7068092aaf752c4266a",
+          "plan_version": null,
+          "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+        }
+      }
+    }
+  },
+  {
+    "case_id": "C01",
+    "domain": "support",
+    "split": "development",
+    "query": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因",
+    "note": "",
+    "expected": {
+      "important_families": [
+        "difference"
+      ],
+      "unsupported_business_claims_allowed": false,
+      "no_valid_evidence": false,
+      "failed_tasks": []
+    },
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "support数据",
+          "business_goal": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "validated": {
+        "plan": {
+          "dataset_id": "report-dataset",
+          "dataset_version": "91ccf842fbba69967d0e77b41460bce8d73a066cbfd813fbeaff4a8bf6523b5b",
+          "plan_id": "test_plan",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "A01",
+              "title": "工单类别平均响应分钟",
+              "business_question": "工单类别平均响应分钟",
+              "priority": "P0",
+              "priority_reason": "删除后无法比较城市岗位数量，核心问题将无法回答。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "dimensions": [
+                      "field_0001"
+                    ],
+                    "metrics": [
+                      {
+                        "function": "avg",
+                        "field": "field_0002",
+                        "alias": "value"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "A01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "A01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "91ccf842fbba69967d0e77b41460bce8d73a066cbfd813fbeaff4a8bf6523b5b",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "support数据",
+            "business_goal": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      },
+      "execution": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "91ccf842fbba69967d0e77b41460bce8d73a066cbfd813fbeaff4a8bf6523b5b",
+        "execution_id": "exec_kernel_test",
+        "plan_id": "test_plan",
+        "plan_version": 1,
+        "approved_plan_version": 1,
+        "execution_status": "success",
+        "source": "imported",
+        "producer": "deterministic-test-kernels",
+        "session_id": null,
+        "execution_request_id": null,
+        "approval_id": null,
+        "started_at": null,
+        "finished_at": null,
+        "duration_ms": null,
+        "result_view": null,
+        "provenance": null,
+        "errors": [],
+        "warnings": [],
+        "tasks": [
+          {
+            "task_id": "A01",
+            "status": "success",
+            "result": {
+              "result_id": "R001",
+              "columns": [
+                {
+                  "field": "field_0001",
+                  "label": "类别",
+                  "logical_type": "text",
+                  "role": "dimension",
+                  "unit": null
+                },
+                {
+                  "field": "value",
+                  "label": "响应分钟 · 平均值",
+                  "logical_type": "number",
+                  "role": "metric",
+                  "unit": null
+                }
+              ],
+              "rows": [
+                {
+                  "field_0001": "投诉",
+                  "value": 40.0
+                },
+                {
+                  "field_0001": "咨询",
+                  "value": 12.0
+                },
+                {
+                  "field_0001": "退款",
+                  "value": 25.0
+                }
+              ],
+              "truncated": false,
+              "total_result_rows": 3,
+              "row_offset": 0,
+              "total_refs": []
+            },
+            "effective_row_count": 5,
+            "valid_sample_count": 5,
+            "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+            "scope": "比较不同工单类别的平均响应分钟，不能认定坐席效率或原因；仅限当前上传数据与批准任务范围。",
+            "calculation": "按当前批准的受控操作链计算，保留缺失分组。",
+            "failure_reason": null,
+            "result_id": null,
+            "result_ref": null,
+            "row_count": null,
+            "execution_metadata": null,
+            "error": null
+          }
+        ]
+      },
+      "profile": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "91ccf842fbba69967d0e77b41460bce8d73a066cbfd813fbeaff4a8bf6523b5b",
+        "schema_version": "1.0",
+        "profiler_version": "1.1.0",
+        "content_sha256": "34376765b3e0a6549ed3cb771488754e5e2bf1458c58ddf6b2c1b7f817ea957a",
+        "file_name": "support.csv",
+        "file_format": "csv",
+        "sheet_name": null,
+        "available_sheets": [],
+        "options": {
+          "header_row": 1,
+          "sheet_name": null,
+          "encoding": "utf-8-sig",
+          "delimiter": ","
+        },
+        "row_count": 5,
+        "column_count": 2,
+        "total_cell_count": 10,
+        "missing_cell_count": 0,
+        "missing_cell_rate": 0.0,
+        "duplicate_row_count": 0,
+        "duplicate_row_rate": 0.0,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "position": 1,
+            "original_name": "类别",
+            "display_name": "类别",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 5,
+            "unique_count": 3,
+            "physical_type_counts": {
+              "string": 5
+            },
+            "logical_type_counts": {
+              "text": 5
+            },
+            "samples": [
+              {
+                "value": "投诉",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "咨询",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "退款",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0002",
+            "position": 2,
+            "original_name": "响应分钟",
+            "display_name": "响应分钟",
+            "physical_type": "string",
+            "logical_type": "integer",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 5,
+            "unique_count": 5,
+            "physical_type_counts": {
+              "string": 5
+            },
+            "logical_type_counts": {
+              "integer": 5
+            },
+            "samples": [
+              {
+                "value": "30",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "50",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "10",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "14",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "25",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          }
+        ],
+        "quality_issues": [],
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "91ccf842fbba69967d0e77b41460bce8d73a066cbfd813fbeaff4a8bf6523b5b",
+          "plan_version": null,
+          "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+        }
+      }
+    }
+  },
+  {
+    "case_id": "C02",
+    "domain": "support",
+    "split": "development",
+    "query": "比较渠道的平均处理分钟，并说明缺失值限制",
+    "note": "",
+    "expected": {
+      "important_families": [
+        "difference"
+      ],
+      "unsupported_business_claims_allowed": false,
+      "no_valid_evidence": false,
+      "failed_tasks": []
+    },
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "support数据",
+          "business_goal": "比较渠道的平均处理分钟，并说明缺失值限制",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "validated": {
+        "plan": {
+          "dataset_id": "report-dataset",
+          "dataset_version": "2173e719e354b77e0d2cedbb8ad80ab1bbbdb4299915fe277371f3dfd37e3eb9",
+          "plan_id": "test_plan",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "A01",
+              "title": "渠道平均处理分钟与数据缺失",
+              "business_question": "渠道平均处理分钟与数据缺失",
+              "priority": "P0",
+              "priority_reason": "删除后无法比较城市岗位数量，核心问题将无法回答。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "dimensions": [
+                      "field_0001"
+                    ],
+                    "metrics": [
+                      {
+                        "function": "avg",
+                        "field": "field_0002",
+                        "alias": "value"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "比较渠道的平均处理分钟，并说明缺失值限制"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "A01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "A01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "2173e719e354b77e0d2cedbb8ad80ab1bbbdb4299915fe277371f3dfd37e3eb9",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "support数据",
+            "business_goal": "比较渠道的平均处理分钟，并说明缺失值限制",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      },
+      "execution": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "2173e719e354b77e0d2cedbb8ad80ab1bbbdb4299915fe277371f3dfd37e3eb9",
+        "execution_id": "exec_kernel_test",
+        "plan_id": "test_plan",
+        "plan_version": 1,
+        "approved_plan_version": 1,
+        "execution_status": "success",
+        "source": "imported",
+        "producer": "deterministic-test-kernels",
+        "session_id": null,
+        "execution_request_id": null,
+        "approval_id": null,
+        "started_at": null,
+        "finished_at": null,
+        "duration_ms": null,
+        "result_view": null,
+        "provenance": null,
+        "errors": [],
+        "warnings": [],
+        "tasks": [
+          {
+            "task_id": "A01",
+            "status": "success",
+            "result": {
+              "result_id": "R001",
+              "columns": [
+                {
+                  "field": "field_0001",
+                  "label": "渠道",
+                  "logical_type": "text",
+                  "role": "dimension",
+                  "unit": null
+                },
+                {
+                  "field": "value",
+                  "label": "处理分钟 · 平均值",
+                  "logical_type": "number",
+                  "role": "metric",
+                  "unit": null
+                }
+              ],
+              "rows": [
+                {
+                  "field_0001": "在线",
+                  "value": 10.0
+                },
+                {
+                  "field_0001": "电话",
+                  "value": 25.0
+                },
+                {
+                  "field_0001": "邮件",
+                  "value": null
+                }
+              ],
+              "truncated": false,
+              "total_result_rows": 3,
+              "row_offset": 0,
+              "total_refs": []
+            },
+            "effective_row_count": 5,
+            "valid_sample_count": 5,
+            "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+            "scope": "比较渠道的平均处理分钟，并说明缺失值限制；仅限当前上传数据与批准任务范围。",
+            "calculation": "按当前批准的受控操作链计算，保留缺失分组。",
+            "failure_reason": null,
+            "result_id": null,
+            "result_ref": null,
+            "row_count": null,
+            "execution_metadata": null,
+            "error": null
+          }
+        ]
+      },
+      "profile": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "2173e719e354b77e0d2cedbb8ad80ab1bbbdb4299915fe277371f3dfd37e3eb9",
+        "schema_version": "1.0",
+        "profiler_version": "1.1.0",
+        "content_sha256": "95eab5bd673bcd8360a57c676b36f78627cce8166650936f31d7779d0a33c7c3",
+        "file_name": "support.csv",
+        "file_format": "csv",
+        "sheet_name": null,
+        "available_sheets": [],
+        "options": {
+          "header_row": 1,
+          "sheet_name": null,
+          "encoding": "utf-8-sig",
+          "delimiter": ","
+        },
+        "row_count": 5,
+        "column_count": 2,
+        "total_cell_count": 10,
+        "missing_cell_count": 2,
+        "missing_cell_rate": 0.2,
+        "duplicate_row_count": 0,
+        "duplicate_row_rate": 0.0,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "position": 1,
+            "original_name": "渠道",
+            "display_name": "渠道",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 5,
+            "unique_count": 3,
+            "physical_type_counts": {
+              "string": 5
+            },
+            "logical_type_counts": {
+              "text": 5
+            },
+            "samples": [
+              {
+                "value": "在线",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "电话",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "邮件",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0002",
+            "position": 2,
+            "original_name": "处理分钟",
+            "display_name": "处理分钟",
+            "physical_type": "string",
+            "logical_type": "integer",
+            "missing_count": 2,
+            "missing_rate": 0.4,
+            "non_missing_count": 3,
+            "unique_count": 3,
+            "physical_type_counts": {
+              "string": 3
+            },
+            "logical_type_counts": {
+              "integer": 3
+            },
+            "samples": [
+              {
+                "value": "10",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "30",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "20",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          }
+        ],
+        "quality_issues": [],
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "2173e719e354b77e0d2cedbb8ad80ab1bbbdb4299915fe277371f3dfd37e3eb9",
+          "plan_version": null,
+          "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+        }
+      }
+    }
+  },
+  {
+    "case_id": "O01",
+    "domain": "operations",
+    "split": "development",
+    "query": "比较各日期的已完成任务数量变化，不判断项目健康程度",
+    "note": "",
+    "expected": {
+      "important_families": [
+        "change_rate"
+      ],
+      "unsupported_business_claims_allowed": false,
+      "no_valid_evidence": false,
+      "failed_tasks": []
+    },
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "operations数据",
+          "business_goal": "比较各日期的已完成任务数量变化，不判断项目健康程度",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "validated": {
+        "plan": {
+          "dataset_id": "report-dataset",
+          "dataset_version": "e1fb5458649dfd5afb50e064b87567a8bd8eecc1b408317b7f5653cfbd531733",
+          "plan_id": "test_plan",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "A01",
+              "title": "各日期已完成任务数量变化",
+              "business_question": "各日期已完成任务数量变化",
+              "priority": "P0",
+              "priority_reason": "删除后无法比较城市岗位数量，核心问题将无法回答。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "dimensions": [
+                      "field_0001"
+                    ],
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "alias": "value"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "比较各日期的已完成任务数量变化，不判断项目健康程度"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "A01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "A01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "e1fb5458649dfd5afb50e064b87567a8bd8eecc1b408317b7f5653cfbd531733",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "operations数据",
+            "business_goal": "比较各日期的已完成任务数量变化，不判断项目健康程度",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      },
+      "execution": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "e1fb5458649dfd5afb50e064b87567a8bd8eecc1b408317b7f5653cfbd531733",
+        "execution_id": "exec_kernel_test",
+        "plan_id": "test_plan",
+        "plan_version": 1,
+        "approved_plan_version": 1,
+        "execution_status": "success",
+        "source": "imported",
+        "producer": "deterministic-test-kernels",
+        "session_id": null,
+        "execution_request_id": null,
+        "approval_id": null,
+        "started_at": null,
+        "finished_at": null,
+        "duration_ms": null,
+        "result_view": null,
+        "provenance": null,
+        "errors": [],
+        "warnings": [],
+        "tasks": [
+          {
+            "task_id": "A01",
+            "status": "success",
+            "result": {
+              "result_id": "R001",
+              "columns": [
+                {
+                  "field": "field_0001",
+                  "label": "日期",
+                  "logical_type": "date",
+                  "role": "dimension",
+                  "unit": null
+                },
+                {
+                  "field": "value",
+                  "label": "记录 · 数量",
+                  "logical_type": "integer",
+                  "role": "metric",
+                  "unit": "条"
+                }
+              ],
+              "rows": [
+                {
+                  "field_0001": "2026-01-01",
+                  "value": 1
+                },
+                {
+                  "field_0001": "2026-02-01",
+                  "value": 2
+                },
+                {
+                  "field_0001": "2026-03-01",
+                  "value": 1
+                }
+              ],
+              "truncated": false,
+              "total_result_rows": 3,
+              "row_offset": 0,
+              "total_refs": []
+            },
+            "effective_row_count": 4,
+            "valid_sample_count": 4,
+            "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+            "scope": "比较各日期的已完成任务数量变化，不判断项目健康程度；仅限当前上传数据与批准任务范围。",
+            "calculation": "按当前批准的受控操作链计算，保留缺失分组。",
+            "failure_reason": null,
+            "result_id": null,
+            "result_ref": null,
+            "row_count": null,
+            "execution_metadata": null,
+            "error": null
+          }
+        ]
+      },
+      "profile": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "e1fb5458649dfd5afb50e064b87567a8bd8eecc1b408317b7f5653cfbd531733",
+        "schema_version": "1.0",
+        "profiler_version": "1.1.0",
+        "content_sha256": "5968b787af6dc8c95f98346d6eb3a615d35dc1a0bb4535a28f8d398f46a46177",
+        "file_name": "operations.csv",
+        "file_format": "csv",
+        "sheet_name": null,
+        "available_sheets": [],
+        "options": {
+          "header_row": 1,
+          "sheet_name": null,
+          "encoding": "utf-8-sig",
+          "delimiter": ","
+        },
+        "row_count": 4,
+        "column_count": 2,
+        "total_cell_count": 8,
+        "missing_cell_count": 0,
+        "missing_cell_rate": 0.0,
+        "duplicate_row_count": 1,
+        "duplicate_row_rate": 0.25,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "position": 1,
+            "original_name": "日期",
+            "display_name": "日期",
+            "physical_type": "string",
+            "logical_type": "date",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 4,
+            "unique_count": 3,
+            "physical_type_counts": {
+              "string": 4
+            },
+            "logical_type_counts": {
+              "date": 4
+            },
+            "samples": [
+              {
+                "value": "2026-01-01",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "2026-02-01",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "2026-03-01",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0002",
+            "position": 2,
+            "original_name": "状态",
+            "display_name": "状态",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 4,
+            "unique_count": 1,
+            "physical_type_counts": {
+              "string": 4
+            },
+            "logical_type_counts": {
+              "text": 4
+            },
+            "samples": [
+              {
+                "value": "完成",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          }
+        ],
+        "quality_issues": [
+          {
+            "code": "DUPLICATE_ROWS",
+            "severity": "warning",
+            "message": "按解析后单元格值及类型检测到重复行；计数不含首次出现，未去重。",
+            "affected_count": 1,
+            "field_ids": [],
+            "example_row_numbers": [
+              4
+            ]
+          }
+        ],
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "e1fb5458649dfd5afb50e064b87567a8bd8eecc1b408317b7f5653cfbd531733",
+          "plan_version": null,
+          "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+        }
+      }
+    }
+  },
+  {
+    "case_id": "O02",
+    "domain": "operations",
+    "split": "development",
+    "query": "比较项目完成任务数及利润，缺少利润数据时必须披露",
+    "note": "Unsupported P0 is retained; never manufacture profit or full goal coverage.",
+    "expected": {
+      "important_families": [
+        "difference"
+      ],
+      "unsupported_business_claims_allowed": false,
+      "no_valid_evidence": false,
+      "failed_tasks": [
+        "A02"
+      ]
+    },
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "operations数据",
+          "business_goal": "比较项目完成任务数及利润，缺少利润数据时必须披露",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "validated": {
+        "plan": {
+          "dataset_id": "report-dataset",
+          "dataset_version": "d0cecd212ece11efd7e055e03455546af7627b42ce65b25f7834bdca3ac93059",
+          "plan_id": "test_plan",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "A01",
+              "title": "项目完成任务数",
+              "business_question": "项目完成任务数",
+              "priority": "P0",
+              "priority_reason": "删除后无法比较城市岗位数量，核心问题将无法回答。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "dimensions": [
+                      "field_0001"
+                    ],
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "alias": "value"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "task_id": "A02",
+              "title": "项目利润",
+              "business_question": "项目利润",
+              "priority": "P0",
+              "priority_reason": "删除后无法比较城市岗位数量，核心问题将无法回答。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "missing_profit",
+                        "alias": "profit"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "比较项目完成任务数及利润，缺少利润数据时必须披露"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "A01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          },
+          {
+            "task_id": "A02",
+            "feasibility": "F0",
+            "reason_code": "MISSING_FIELD",
+            "validation_issues": [
+              {
+                "code": "MISSING_FIELD",
+                "message": "画像和先前步骤均不存在该字段。",
+                "step_id": "S01",
+                "field": "missing_profit"
+              }
+            ],
+            "executable": false
+          }
+        ],
+        "unmet_core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "比较项目完成任务数及利润，缺少利润数据时必须披露",
+            "task_ids": [
+              "A02"
+            ],
+            "reason_codes": [
+              "MISSING_FIELD"
+            ]
+          }
+        ],
+        "coverage_status": "partial",
+        "executable_task_ids": [
+          "A01"
+        ],
+        "blocked_task_ids": [
+          "A02"
+        ],
+        "fully_executable": false,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "d0cecd212ece11efd7e055e03455546af7627b42ce65b25f7834bdca3ac93059",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "operations数据",
+            "business_goal": "比较项目完成任务数及利润，缺少利润数据时必须披露",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      },
+      "execution": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "d0cecd212ece11efd7e055e03455546af7627b42ce65b25f7834bdca3ac93059",
+        "execution_id": "exec_kernel_test",
+        "plan_id": "test_plan",
+        "plan_version": 1,
+        "approved_plan_version": 1,
+        "execution_status": "partial_success",
+        "source": "imported",
+        "producer": "deterministic-test-kernels",
+        "session_id": null,
+        "execution_request_id": null,
+        "approval_id": null,
+        "started_at": null,
+        "finished_at": null,
+        "duration_ms": null,
+        "result_view": null,
+        "provenance": null,
+        "errors": [],
+        "warnings": [],
+        "tasks": [
+          {
+            "task_id": "A01",
+            "status": "success",
+            "result": {
+              "result_id": "R001",
+              "columns": [
+                {
+                  "field": "field_0001",
+                  "label": "项目",
+                  "logical_type": "text",
+                  "role": "dimension",
+                  "unit": null
+                },
+                {
+                  "field": "value",
+                  "label": "记录 · 数量",
+                  "logical_type": "integer",
+                  "role": "metric",
+                  "unit": "条"
+                }
+              ],
+              "rows": [
+                {
+                  "field_0001": "甲",
+                  "value": 2
+                },
+                {
+                  "field_0001": "乙",
+                  "value": 1
+                }
+              ],
+              "truncated": false,
+              "total_result_rows": 2,
+              "row_offset": 0,
+              "total_refs": []
+            },
+            "effective_row_count": 3,
+            "valid_sample_count": 3,
+            "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+            "scope": "比较项目完成任务数及利润，缺少利润数据时必须披露；仅限当前上传数据与批准任务范围。",
+            "calculation": "按当前批准的受控操作链计算，保留缺失分组。",
+            "failure_reason": null,
+            "result_id": null,
+            "result_ref": null,
+            "row_count": null,
+            "execution_metadata": null,
+            "error": null
+          },
+          {
+            "task_id": "A02",
+            "status": "failed",
+            "result": null,
+            "effective_row_count": 3,
+            "valid_sample_count": 3,
+            "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+            "scope": "本次上传样本及任务筛选范围",
+            "calculation": "按当前批准的受控操作链计算，保留缺失分组。",
+            "failure_reason": "任务执行失败或不支持。",
+            "result_id": null,
+            "result_ref": null,
+            "row_count": null,
+            "execution_metadata": null,
+            "error": null
+          }
+        ]
+      },
+      "profile": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "d0cecd212ece11efd7e055e03455546af7627b42ce65b25f7834bdca3ac93059",
+        "schema_version": "1.0",
+        "profiler_version": "1.1.0",
+        "content_sha256": "e8407c14a37f3b9d013a170c07ba4556ea8628687123d2a69c11b460f69c390c",
+        "file_name": "operations.csv",
+        "file_format": "csv",
+        "sheet_name": null,
+        "available_sheets": [],
+        "options": {
+          "header_row": 1,
+          "sheet_name": null,
+          "encoding": "utf-8-sig",
+          "delimiter": ","
+        },
+        "row_count": 3,
+        "column_count": 2,
+        "total_cell_count": 6,
+        "missing_cell_count": 0,
+        "missing_cell_rate": 0.0,
+        "duplicate_row_count": 0,
+        "duplicate_row_rate": 0.0,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "position": 1,
+            "original_name": "项目",
+            "display_name": "项目",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 3,
+            "unique_count": 2,
+            "physical_type_counts": {
+              "string": 3
+            },
+            "logical_type_counts": {
+              "text": 3
+            },
+            "samples": [
+              {
+                "value": "甲",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "乙",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0002",
+            "position": 2,
+            "original_name": "任务",
+            "display_name": "任务",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 3,
+            "unique_count": 2,
+            "physical_type_counts": {
+              "string": 3
+            },
+            "logical_type_counts": {
+              "text": 3
+            },
+            "samples": [
+              {
+                "value": "发布",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "测试",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          }
+        ],
+        "quality_issues": [],
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "d0cecd212ece11efd7e055e03455546af7627b42ce65b25f7834bdca3ac93059",
+          "plan_version": null,
+          "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+        }
+      }
+    }
+  },
+  {
+    "case_id": "S03",
+    "domain": "sales",
+    "split": "development",
+    "query": "分析销售额，指标均缺失时不能生成结论",
+    "note": "Fixture correction before successful model access: original null count violated count invariant; use actual filtered missing numeric averages. Original frozen input and failed run retained.",
+    "expected": {
+      "important_families": [],
+      "unsupported_business_claims_allowed": false,
+      "no_valid_evidence": true,
+      "failed_tasks": []
+    },
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "sales数据",
+          "business_goal": "分析销售额，指标均缺失时不能生成结论",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "validated": {
+        "plan": {
+          "dataset_id": "report-dataset",
+          "dataset_version": "3676b18573bfe83397388a3cc14122b8f8abe65b269590e6f85a9b09a647f6e6",
+          "plan_id": "test_plan",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "A01",
+              "title": "筛选范围内缺失的销售额",
+              "business_question": "筛选范围内没有有效销售额时不可生成结论",
+              "priority": "P0",
+              "priority_reason": "删除后无法比较城市岗位数量，核心问题将无法回答。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "field_0003",
+                        "operator": "eq",
+                        "value": "是"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "dimensions": [
+                      "field_0001"
+                    ],
+                    "metrics": [
+                      {
+                        "function": "avg",
+                        "field": "field_0002",
+                        "alias": "sales"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "分析销售额，指标均缺失时不能生成结论"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "A01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "A01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "3676b18573bfe83397388a3cc14122b8f8abe65b269590e6f85a9b09a647f6e6",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "sales数据",
+            "business_goal": "分析销售额，指标均缺失时不能生成结论",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      },
+      "execution": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "3676b18573bfe83397388a3cc14122b8f8abe65b269590e6f85a9b09a647f6e6",
+        "execution_id": "exec_kernel_test",
+        "plan_id": "test_plan",
+        "plan_version": 1,
+        "approved_plan_version": 1,
+        "execution_status": "success",
+        "source": "imported",
+        "producer": "deterministic-test-kernels",
+        "session_id": null,
+        "execution_request_id": null,
+        "approval_id": null,
+        "started_at": null,
+        "finished_at": null,
+        "duration_ms": null,
+        "result_view": null,
+        "provenance": null,
+        "errors": [],
+        "warnings": [],
+        "tasks": [
+          {
+            "task_id": "A01",
+            "status": "success",
+            "result": {
+              "result_id": "R001",
+              "columns": [
+                {
+                  "field": "field_0001",
+                  "label": "城市",
+                  "logical_type": "text",
+                  "role": "dimension",
+                  "unit": null
+                },
+                {
+                  "field": "sales",
+                  "label": "岗位数量",
+                  "logical_type": "number",
+                  "role": "metric",
+                  "unit": null
+                }
+              ],
+              "rows": [
+                {
+                  "field_0001": "乙",
+                  "sales": null
+                }
+              ],
+              "truncated": false,
+              "total_result_rows": 1,
+              "row_offset": 0,
+              "total_refs": []
+            },
+            "effective_row_count": 1,
+            "valid_sample_count": 1,
+            "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+            "scope": "本次上传样本及任务筛选范围",
+            "calculation": "按当前批准的受控操作链计算，保留缺失分组。",
+            "failure_reason": null,
+            "result_id": null,
+            "result_ref": null,
+            "row_count": null,
+            "execution_metadata": null,
+            "error": null
+          }
+        ]
+      },
+      "profile": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "3676b18573bfe83397388a3cc14122b8f8abe65b269590e6f85a9b09a647f6e6",
+        "schema_version": "1.0",
+        "profiler_version": "1.1.0",
+        "content_sha256": "9c603b5b56aac99dd1f97f02095ff14eccfb07fa94c61f5b59732a3d53829c5e",
+        "file_name": "recruiting.csv",
+        "file_format": "csv",
+        "sheet_name": null,
+        "available_sheets": [],
+        "options": {
+          "header_row": 1,
+          "sheet_name": null,
+          "encoding": "utf-8-sig",
+          "delimiter": ","
+        },
+        "row_count": 2,
+        "column_count": 3,
+        "total_cell_count": 6,
+        "missing_cell_count": 1,
+        "missing_cell_rate": 0.16666666666666666,
+        "duplicate_row_count": 0,
+        "duplicate_row_rate": 0.0,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "position": 1,
+            "original_name": "城市",
+            "display_name": "城市",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 2,
+            "unique_count": 2,
+            "physical_type_counts": {
+              "string": 2
+            },
+            "logical_type_counts": {
+              "text": 2
+            },
+            "samples": [
+              {
+                "value": "甲",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "乙",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0002",
+            "position": 2,
+            "original_name": "销售额",
+            "display_name": "销售额",
+            "physical_type": "string",
+            "logical_type": "integer",
+            "missing_count": 1,
+            "missing_rate": 0.5,
+            "non_missing_count": 1,
+            "unique_count": 1,
+            "physical_type_counts": {
+              "string": 1
+            },
+            "logical_type_counts": {
+              "integer": 1
+            },
+            "samples": [
+              {
+                "value": "10",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0003",
+            "position": 3,
+            "original_name": "选用",
+            "display_name": "选用",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 2,
+            "unique_count": 2,
+            "physical_type_counts": {
+              "string": 2
+            },
+            "logical_type_counts": {
+              "text": 2
+            },
+            "samples": [
+              {
+                "value": "否",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "是",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          }
+        ],
+        "quality_issues": [],
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "3676b18573bfe83397388a3cc14122b8f8abe65b269590e6f85a9b09a647f6e6",
+          "plan_version": null,
+          "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+        }
+      }
+    }
+  },
+  {
+    "case_id": "R03",
+    "domain": "recruiting",
+    "split": "development",
+    "query": "比较城市岗位数量，存在并列时不编造唯一名次",
+    "note": "",
+    "expected": {
+      "important_families": [],
+      "unsupported_business_claims_allowed": false,
+      "no_valid_evidence": false,
+      "failed_tasks": []
+    },
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "recruiting数据",
+          "business_goal": "比较城市岗位数量，存在并列时不编造唯一名次",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "validated": {
+        "plan": {
+          "dataset_id": "report-dataset",
+          "dataset_version": "146e2bc7d0cef7945c7a7c74f823d3f503978c80ccd9511cf3886077b9abe634",
+          "plan_id": "test_plan",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "A01",
+              "title": "城市岗位数量与并列",
+              "business_question": "城市岗位数量与并列",
+              "priority": "P0",
+              "priority_reason": "删除后无法比较城市岗位数量，核心问题将无法回答。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "dimensions": [
+                      "field_0001"
+                    ],
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "alias": "value"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "top_n",
+                  "params": {
+                    "field": "value",
+                    "direction": "desc",
+                    "n": 3
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "比较城市岗位数量，存在并列时不编造唯一名次"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "A01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "A01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "146e2bc7d0cef7945c7a7c74f823d3f503978c80ccd9511cf3886077b9abe634",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "recruiting数据",
+            "business_goal": "比较城市岗位数量，存在并列时不编造唯一名次",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      },
+      "execution": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "146e2bc7d0cef7945c7a7c74f823d3f503978c80ccd9511cf3886077b9abe634",
+        "execution_id": "exec_kernel_test",
+        "plan_id": "test_plan",
+        "plan_version": 1,
+        "approved_plan_version": 1,
+        "execution_status": "success",
+        "source": "imported",
+        "producer": "deterministic-test-kernels",
+        "session_id": null,
+        "execution_request_id": null,
+        "approval_id": null,
+        "started_at": null,
+        "finished_at": null,
+        "duration_ms": null,
+        "result_view": null,
+        "provenance": null,
+        "errors": [],
+        "warnings": [],
+        "tasks": [
+          {
+            "task_id": "A01",
+            "status": "success",
+            "result": {
+              "result_id": "R001",
+              "columns": [
+                {
+                  "field": "field_0001",
+                  "label": "城市",
+                  "logical_type": "text",
+                  "role": "dimension",
+                  "unit": null
+                },
+                {
+                  "field": "value",
+                  "label": "记录 · 数量",
+                  "logical_type": "integer",
+                  "role": "metric",
+                  "unit": "条"
+                }
+              ],
+              "rows": [
+                {
+                  "field_0001": "甲",
+                  "value": 1
+                },
+                {
+                  "field_0001": "乙",
+                  "value": 1
+                },
+                {
+                  "field_0001": "丙",
+                  "value": 1
+                }
+              ],
+              "truncated": false,
+              "total_result_rows": 3,
+              "row_offset": 0,
+              "total_refs": []
+            },
+            "effective_row_count": 3,
+            "valid_sample_count": 3,
+            "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+            "scope": "比较城市岗位数量，存在并列时不编造唯一名次；仅限当前上传数据与批准任务范围。",
+            "calculation": "按当前批准的受控操作链计算，保留缺失分组。",
+            "failure_reason": null,
+            "result_id": null,
+            "result_ref": null,
+            "row_count": null,
+            "execution_metadata": null,
+            "error": null
+          }
+        ]
+      },
+      "profile": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "146e2bc7d0cef7945c7a7c74f823d3f503978c80ccd9511cf3886077b9abe634",
+        "schema_version": "1.0",
+        "profiler_version": "1.1.0",
+        "content_sha256": "c1bc32b64481c2c97a4de6b26e7589865bb251cc6e1cecb27df677529f0e5654",
+        "file_name": "recruiting.csv",
+        "file_format": "csv",
+        "sheet_name": null,
+        "available_sheets": [],
+        "options": {
+          "header_row": 1,
+          "sheet_name": null,
+          "encoding": "utf-8-sig",
+          "delimiter": ","
+        },
+        "row_count": 3,
+        "column_count": 2,
+        "total_cell_count": 6,
+        "missing_cell_count": 0,
+        "missing_cell_rate": 0.0,
+        "duplicate_row_count": 0,
+        "duplicate_row_rate": 0.0,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "position": 1,
+            "original_name": "城市",
+            "display_name": "城市",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 3,
+            "unique_count": 3,
+            "physical_type_counts": {
+              "string": 3
+            },
+            "logical_type_counts": {
+              "text": 3
+            },
+            "samples": [
+              {
+                "value": "甲",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "乙",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "丙",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0002",
+            "position": 2,
+            "original_name": "岗位",
+            "display_name": "岗位",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 3,
+            "unique_count": 1,
+            "physical_type_counts": {
+              "string": 3
+            },
+            "logical_type_counts": {
+              "text": 3
+            },
+            "samples": [
+              {
+                "value": "研发",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          }
+        ],
+        "quality_issues": [],
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "146e2bc7d0cef7945c7a7c74f823d3f503978c80ccd9511cf3886077b9abe634",
+          "plan_version": null,
+          "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+        }
+      }
+    }
+  },
+  {
+    "case_id": "C03",
+    "domain": "support",
+    "split": "development",
+    "query": "比较渠道净变化值，负值不生成无意义占比",
+    "note": "",
+    "expected": {
+      "important_families": [
+        "difference"
+      ],
+      "unsupported_business_claims_allowed": false,
+      "no_valid_evidence": false,
+      "failed_tasks": []
+    },
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "support数据",
+          "business_goal": "比较渠道净变化值，负值不生成无意义占比",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "validated": {
+        "plan": {
+          "dataset_id": "report-dataset",
+          "dataset_version": "b32975abd25c0970308f425c9320aeafd40961493b7f97e89908432ce3b41dce",
+          "plan_id": "test_plan",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "A01",
+              "title": "渠道净变化",
+              "business_question": "渠道净变化",
+              "priority": "P0",
+              "priority_reason": "删除后无法比较城市岗位数量，核心问题将无法回答。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "dimensions": [
+                      "field_0001"
+                    ],
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0002",
+                        "alias": "value"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "比较渠道净变化值，负值不生成无意义占比"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "A01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "A01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "b32975abd25c0970308f425c9320aeafd40961493b7f97e89908432ce3b41dce",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "support数据",
+            "business_goal": "比较渠道净变化值，负值不生成无意义占比",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      },
+      "execution": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "b32975abd25c0970308f425c9320aeafd40961493b7f97e89908432ce3b41dce",
+        "execution_id": "exec_kernel_test",
+        "plan_id": "test_plan",
+        "plan_version": 1,
+        "approved_plan_version": 1,
+        "execution_status": "success",
+        "source": "imported",
+        "producer": "deterministic-test-kernels",
+        "session_id": null,
+        "execution_request_id": null,
+        "approval_id": null,
+        "started_at": null,
+        "finished_at": null,
+        "duration_ms": null,
+        "result_view": null,
+        "provenance": null,
+        "errors": [],
+        "warnings": [],
+        "tasks": [
+          {
+            "task_id": "A01",
+            "status": "success",
+            "result": {
+              "result_id": "R001",
+              "columns": [
+                {
+                  "field": "field_0001",
+                  "label": "渠道",
+                  "logical_type": "text",
+                  "role": "dimension",
+                  "unit": null
+                },
+                {
+                  "field": "value",
+                  "label": "净变化 · 合计",
+                  "logical_type": "integer",
+                  "role": "metric",
+                  "unit": null
+                }
+              ],
+              "rows": [
+                {
+                  "field_0001": "在线",
+                  "value": 10
+                },
+                {
+                  "field_0001": "电话",
+                  "value": 0
+                },
+                {
+                  "field_0001": "邮件",
+                  "value": -5
+                }
+              ],
+              "truncated": false,
+              "total_result_rows": 3,
+              "row_offset": 0,
+              "total_refs": []
+            },
+            "effective_row_count": 3,
+            "valid_sample_count": 3,
+            "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+            "scope": "比较渠道净变化值，负值不生成无意义占比；仅限当前上传数据与批准任务范围。",
+            "calculation": "按当前批准的受控操作链计算，保留缺失分组。",
+            "failure_reason": null,
+            "result_id": null,
+            "result_ref": null,
+            "row_count": null,
+            "execution_metadata": null,
+            "error": null
+          }
+        ]
+      },
+      "profile": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "b32975abd25c0970308f425c9320aeafd40961493b7f97e89908432ce3b41dce",
+        "schema_version": "1.0",
+        "profiler_version": "1.1.0",
+        "content_sha256": "4f08c9eae3a8b0e1bb74795123f44c3eec27bcf62173c4c0aaf49e93c2cbd9d9",
+        "file_name": "support.csv",
+        "file_format": "csv",
+        "sheet_name": null,
+        "available_sheets": [],
+        "options": {
+          "header_row": 1,
+          "sheet_name": null,
+          "encoding": "utf-8-sig",
+          "delimiter": ","
+        },
+        "row_count": 3,
+        "column_count": 2,
+        "total_cell_count": 6,
+        "missing_cell_count": 0,
+        "missing_cell_rate": 0.0,
+        "duplicate_row_count": 0,
+        "duplicate_row_rate": 0.0,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "position": 1,
+            "original_name": "渠道",
+            "display_name": "渠道",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 3,
+            "unique_count": 3,
+            "physical_type_counts": {
+              "string": 3
+            },
+            "logical_type_counts": {
+              "text": 3
+            },
+            "samples": [
+              {
+                "value": "在线",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "电话",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "邮件",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0002",
+            "position": 2,
+            "original_name": "净变化",
+            "display_name": "净变化",
+            "physical_type": "string",
+            "logical_type": "integer",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 3,
+            "unique_count": 3,
+            "physical_type_counts": {
+              "string": 3
+            },
+            "logical_type_counts": {
+              "integer": 3
+            },
+            "samples": [
+              {
+                "value": "10",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "0",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "-5",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          }
+        ],
+        "quality_issues": [],
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "b32975abd25c0970308f425c9320aeafd40961493b7f97e89908432ce3b41dce",
+          "plan_version": null,
+          "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+        }
+      }
+    }
+  },
+  {
+    "case_id": "O03",
+    "domain": "operations",
+    "split": "development",
+    "query": "比较各项目投入工时与任务数量，不据此断定效率",
+    "note": "",
+    "expected": {
+      "important_families": [
+        "difference"
+      ],
+      "unsupported_business_claims_allowed": false,
+      "no_valid_evidence": false,
+      "failed_tasks": []
+    },
+    "input": {
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "operations数据",
+          "business_goal": "比较各项目投入工时与任务数量，不据此断定效率",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "validated": {
+        "plan": {
+          "dataset_id": "report-dataset",
+          "dataset_version": "60653a9c9d0b1894068f8252cd127370cd3535018e50af69975b8b93a744652f",
+          "plan_id": "test_plan",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "A01",
+              "title": "项目工时与任务数量",
+              "business_question": "项目工时与任务数量",
+              "priority": "P0",
+              "priority_reason": "删除后无法比较城市岗位数量，核心问题将无法回答。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "dimensions": [
+                      "field_0001"
+                    ],
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0002",
+                        "alias": "hours"
+                      },
+                      {
+                        "function": "count",
+                        "alias": "tasks"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "比较各项目投入工时与任务数量，不据此断定效率"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "A01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "A01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "60653a9c9d0b1894068f8252cd127370cd3535018e50af69975b8b93a744652f",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "operations数据",
+            "business_goal": "比较各项目投入工时与任务数量，不据此断定效率",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      },
+      "execution": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "60653a9c9d0b1894068f8252cd127370cd3535018e50af69975b8b93a744652f",
+        "execution_id": "exec_kernel_test",
+        "plan_id": "test_plan",
+        "plan_version": 1,
+        "approved_plan_version": 1,
+        "execution_status": "success",
+        "source": "imported",
+        "producer": "deterministic-test-kernels",
+        "session_id": null,
+        "execution_request_id": null,
+        "approval_id": null,
+        "started_at": null,
+        "finished_at": null,
+        "duration_ms": null,
+        "result_view": null,
+        "provenance": null,
+        "errors": [],
+        "warnings": [],
+        "tasks": [
+          {
+            "task_id": "A01",
+            "status": "success",
+            "result": {
+              "result_id": "R001",
+              "columns": [
+                {
+                  "field": "field_0001",
+                  "label": "项目",
+                  "logical_type": "text",
+                  "role": "dimension",
+                  "unit": null
+                },
+                {
+                  "field": "hours",
+                  "label": "工时 · 合计",
+                  "logical_type": "integer",
+                  "role": "metric",
+                  "unit": null
+                },
+                {
+                  "field": "tasks",
+                  "label": "记录 · 数量",
+                  "logical_type": "integer",
+                  "role": "metric",
+                  "unit": "条"
+                }
+              ],
+              "rows": [
+                {
+                  "field_0001": "甲",
+                  "hours": 20,
+                  "tasks": 2
+                },
+                {
+                  "field_0001": "乙",
+                  "hours": 30,
+                  "tasks": 1
+                },
+                {
+                  "field_0001": "丙",
+                  "hours": 5,
+                  "tasks": 1
+                }
+              ],
+              "truncated": false,
+              "total_result_rows": 3,
+              "row_offset": 0,
+              "total_refs": []
+            },
+            "effective_row_count": 4,
+            "valid_sample_count": 4,
+            "sample_definition": "进入聚合前的参与记录数；未针对单个指标剔除空值。",
+            "scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+            "calculation": "按当前批准的受控操作链计算，保留缺失分组。",
+            "failure_reason": null,
+            "result_id": null,
+            "result_ref": null,
+            "row_count": null,
+            "execution_metadata": null,
+            "error": null
+          }
+        ]
+      },
+      "profile": {
+        "dataset_id": "report-dataset",
+        "dataset_version": "60653a9c9d0b1894068f8252cd127370cd3535018e50af69975b8b93a744652f",
+        "schema_version": "1.0",
+        "profiler_version": "1.1.0",
+        "content_sha256": "079cd0b0980e591f4bfca259603c8ad6dfcce139cdc7bea94ae91236822d033c",
+        "file_name": "operations.csv",
+        "file_format": "csv",
+        "sheet_name": null,
+        "available_sheets": [],
+        "options": {
+          "header_row": 1,
+          "sheet_name": null,
+          "encoding": "utf-8-sig",
+          "delimiter": ","
+        },
+        "row_count": 4,
+        "column_count": 2,
+        "total_cell_count": 8,
+        "missing_cell_count": 0,
+        "missing_cell_rate": 0.0,
+        "duplicate_row_count": 0,
+        "duplicate_row_rate": 0.0,
+        "fields": [
+          {
+            "field_id": "field_0001",
+            "position": 1,
+            "original_name": "项目",
+            "display_name": "项目",
+            "physical_type": "string",
+            "logical_type": "text",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 4,
+            "unique_count": 3,
+            "physical_type_counts": {
+              "string": 4
+            },
+            "logical_type_counts": {
+              "text": 4
+            },
+            "samples": [
+              {
+                "value": "甲",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "乙",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "丙",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          },
+          {
+            "field_id": "field_0002",
+            "position": 2,
+            "original_name": "工时",
+            "display_name": "工时",
+            "physical_type": "string",
+            "logical_type": "integer",
+            "missing_count": 0,
+            "missing_rate": 0.0,
+            "non_missing_count": 4,
+            "unique_count": 4,
+            "physical_type_counts": {
+              "string": 4
+            },
+            "logical_type_counts": {
+              "integer": 4
+            },
+            "samples": [
+              {
+                "value": "8",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "12",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "30",
+                "physical_type": "string",
+                "truncated": false
+              },
+              {
+                "value": "5",
+                "physical_type": "string",
+                "truncated": false
+              }
+            ]
+          }
+        ],
+        "quality_issues": [],
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "report-dataset",
+          "dataset_version": "60653a9c9d0b1894068f8252cd127370cd3535018e50af69975b8b93a744652f",
+          "plan_version": null,
+          "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+        }
+      }
+    }
+  }
+]

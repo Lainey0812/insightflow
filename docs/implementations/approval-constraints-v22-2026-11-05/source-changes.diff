@@ -1,0 +1,489 @@
+--- before/backend/app/domain/review_presentation.py
++++ after/backend/app/domain/review_presentation.py
+@@ -15,7 +15,7 @@
+ 
+ 
+ class ConstraintAudit(PlanModel):
+-    audit_version: Literal['2.0', '2.1'] = '2.1'
++    audit_version: Literal['2.0', '2.1', '2.2'] = '2.2'
+     binding: dict[str, Any]
+     digest: str
+     all_verified: bool
+--- before/backend/app/llm/templates.py
++++ after/backend/app/llm/templates.py
+@@ -14,7 +14,7 @@
+ from app.observability.provenance import digest, git_snapshot
+ from app.storage.prompt_registry import template_content
+ 
+-COMPOSITION_VERSION = 'composition-v0.2-trace-v0.3.1'
++COMPOSITION_VERSION = 'composition-v0.4-approval-audit-v2.2'
+ MODULES = {
+     'intent_parser': ['app.intent.prompt','app.intent.context','app.intent.validation','app.domain.intent'],
+     'analysis_planner': ['app.planning.prompt','app.planning.context','app.planning.output',
+--- before/backend/app/review/bindings.py
++++ after/backend/app/review/bindings.py
+@@ -14,7 +14,7 @@
+ }
+ 
+ 
+-def record_count(text, profile):
++def record_count(text, profile, entity_context=""):
+     names = [n for field in profile.fields for n in {field.original_name, field.display_name} if n]
+     if text in names:
+         return False  # A source column named “订单数量” is not a row-count alias.
+@@ -23,7 +23,7 @@
+             # A quantity column would create a sum-vs-count ambiguity.
+             if any(name in {entity + '数量', entity + '数', entity + '总数'} for name in names):
+                 return False
+-            return any(name in identifiers for name in names)
++            return any(name in identifiers for name in names) or entity in entity_context
+     return False
+ 
+ 
+@@ -41,7 +41,7 @@
+             owners.setdefault(name, set()).add(field.field_id)
+     for field in profile.fields:
+         for name in {field.original_name, field.display_name} - {None}:
+-            explicit = r'(?:按照|按)' + re.escape(name) + r'(?:分组|汇总|统计|比较)'
++            explicit = r'(?:按照|按)' + re.escape(name) + r'(?:分组|汇总|统计|比较|计算)'
+             categorical = r'(?:各|不同)' + re.escape(name) + r'(?:的)?(?:订单|岗位|工单|任务|销售额|平均|响应|记录|数量|已解决)'
+             if re.search(explicit, goal) or re.search(categorical, goal):
+                 if len(owners[name]) != 1:
+--- before/backend/app/review/constraint_audit.py
++++ after/backend/app/review/constraint_audit.py
+@@ -11,6 +11,7 @@
+ 
+ from app.domain.review_presentation import ConstraintAudit, ConstraintProof
+ from .bindings import record_count, observed_binding, goal_dimensions
++from . import output_boundaries
+ 
+ FUNCTIONS = {'sum': '合计', 'avg': '均值', 'median': '中位数', 'min': '最小值',
+              'max': '最大值', 'count': '非空数量', 'distinct_count': '去重数量'}
+@@ -34,6 +35,7 @@
+     def __init__(self, profile):
+         self.profile = profile
+         self.fields = {f.field_id: f for f in profile.fields}
++        self.entity_context = ""
+ 
+     def named_fields(self, text):
+         return [f for f in self.profile.fields if text in {f.display_name, f.original_name}]
+@@ -50,7 +52,7 @@
+                     candidates.append(Clause('metric', f.field_id, fn))
+         if text in {'记录数', '记录数量', '记录总数', '行数', '总记录数'}:
+             candidates.append(Clause('metric', function='count'))
+-        if record_count(text, self.profile):
++        if record_count(text, self.profile, self.entity_context):
+             candidates.append(Clause('metric', function='count'))
+         # No guessing quantity sum vs order count, salary parsing, or denominators.
+         unique = {(c.field, c.function): c for c in candidates}
+@@ -58,6 +60,9 @@
+ 
+     def parse(self, text, category):
+         s = re.sub(r'\s+', '', text).strip('。；;，,')
++        restriction = output_boundaries.boundary(s) if category == 'analysis_limits' else None
++        if restriction:
++            return [Clause('output_boundary', value=restriction)]
+         # Negation is recognized as a whole expression, not a substring keyword.
+         forbidden = re.fullmatch(r'(?:(?:不要|禁止|不允许)(?:分析|计算|统计)?|不分析|不计算|不统计)(.+)', s)
+         if forbidden:
+@@ -72,13 +77,13 @@
+         if year and category == 'time_range':
+             fields = self.named_fields(year[1]) if year[1] else [f for f in self.profile.fields if f.logical_type in {'date', 'datetime'}]
+             return [Clause('year', fields[0].field_id, value=int(year[2]))] if len(fields) == 1 else None
+-        dimension = re.fullmatch(r'(?:按照|按)(.+?)(?:分组|汇总|统计|比较|分析)', s)
++        dimension = re.fullmatch(r'(?:按照|按)(.+?)(?:分组|汇总|统计|比较|分析|计算)', s)
+         if dimension:
+             fields = self.named_fields(dimension[1])
+             if len(fields) == 1:
+                 return [Clause('dimension', fields[0].field_id)]
+         # An explicit “按城市汇总销售额” has two independently proved components.
+-        grouped = re.fullmatch(r'(?:按照|按)(.+?)(?:汇总|统计)(.+)', s)
++        grouped = re.fullmatch(r'(?:按照|按)(.+?)(?:汇总|统计|计算)(.+)', s)
+         if grouped:
+             fields, metric = self.named_fields(grouped[1]), self.metric(grouped[2])
+             if len(fields) == 1 and metric:
+@@ -91,6 +96,8 @@
+                     function='extract_month' if ordered[1] == '月份' else 'extract_year',
+                     direction='desc' if ordered[2] == '降序' else 'asc')] if len(fields) == 1 else None
+             basis = Clause('metric', function='count') if ordered[1] == '数量' and not self.named_fields('数量') else self.metric(ordered[1]) if ordered[1] else None
++            if basis is None and ordered[1] in AGG_WORDS and not self.named_fields(ordered[1]):
++                basis = Clause('metric', function=AGG_WORDS[ordered[1]])
+             if ordered[1] and basis is None:
+                 return None
+             return [Clause('sort', basis.field if basis else None, basis.function if basis else None,
+@@ -107,7 +114,7 @@
+             return [Clause('top_n', value=n)] if 1 <= n <= 1000 else None
+         if category in {'filters', 'analysis_limits'}:
+             exclusion = s.startswith(('排除', '不包含', '不含'))
+-            clean = re.sub(r'^(?:排除|不包含|不含|只看|仅看|仅限|仅|只统计|仅统计|只分析|仅分析|限于)', '', s)
++            clean = re.sub(r'^(?:只统计|仅统计|只分析|仅分析|不包含|排除|不含|只看|仅看|仅限|限于|仅)', '', s)
+             explicit = []
+             for f in self.profile.fields:
+                 names = '(?:' + '|'.join(re.escape(n) for n in {f.display_name, f.original_name} if n) + ')'
+@@ -138,6 +145,13 @@
+         index, agg, filters, derives = self.task_info(task)
+         def ref(step, **values):
+             return {'task_id': task.task_id, 'step_id': step.step_id, 'operation': step.operation, **values}
++        if clause.kind == 'output_boundary':
++            if not output_boundaries.available():
++                return []
++            if clause.value == 'no_profit_analysis' and not output_boundaries.profit_references_absent(task, self.profile):
++                return []
++            return [{'task_id': task.task_id, 'check': 'enforced_report_boundary',
++                     'policy_version': output_boundaries.POLICY_VERSION, 'boundary': clause.value}]
+         if clause.kind == 'prohibited':
+             # Verify absence of structural references; task prose cannot authorize it.
+             refs = []
+@@ -221,11 +235,12 @@
+ 
+     def audit(self, checked):
+         intent = checked.intent_snapshot
++        self.entity_context = ' '.join(str(getattr(intent.analysis_goal, key) or '') for key in ('analysis_object', 'business_goal')) if intent else ''
+         binding = {'dataset_id': checked.plan.dataset_id, 'dataset_version': checked.plan.dataset_version,
+                    'plan_id': checked.plan.plan_id, 'plan_version': checked.plan.plan_version,
+                    'validation_version': checked.validation_version, 'registry_version': checked.registry_version}
+         digest = hashlib.sha256(json.dumps({'checked': checked.model_dump(mode='json'), 'profile': self.profile.model_dump(mode='json'),
+-                                           'audit_version': '2.1'}, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
++                                           'audit_version': '2.2'}, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+         items, parsed = [], []
+         tasks = [t for t in checked.plan.tasks if t.task_id in checked.executable_task_ids]
+         if intent is None:
+@@ -266,7 +281,7 @@
+                     parsed += flat
+                     matches, okay = [], bool(tasks)
+                     for clause in flat:
+-                        targets = checked.plan.tasks if clause.kind == 'prohibited' else tasks
++                        targets = checked.plan.tasks if clause.kind in {'prohibited', 'output_boundary'} else tasks
+                         proofs = [self.prove(clause, task) for task in targets]
+                         # Conservatively require the complete specified question in
+                         # every executed direction; never stitch proofs across tasks.
+@@ -275,7 +290,7 @@
+                         matches += [m for proof in proofs for m in proof]
+                     items.append(ConstraintProof(source=source, raw_text=value.raw_text, status='verified' if okay else 'mismatch',
+                         category=category, field_ids=list(dict.fromkeys(c.field for c in flat if c.field)), matches=matches,
+-                        message='已对应到当前可执行操作并核对条件。' if okay else '当前分析步骤未完整满足此条件，或存在多个可能的指标；请重新提出明确需求。'))
++                        message=('已核对受控报告表达边界。' if any(c.kind == 'output_boundary' for c in flat) else '已对应到当前可执行操作并核对条件。') if okay else '当前分析步骤未完整满足此条件，或存在多个可能的指标；请重新提出明确需求。'))
+         if items:
+             # A proved year cannot coexist with an unmentioned status restriction or
+             # premature top_n. Reject additional row restrictions, not just omissions.
+@@ -293,4 +308,4 @@
+                     items.append(ConstraintProof(source=f'plan.tasks.{task.task_id}', raw_text=task.title, status='mismatch', category='scope',
+                         message='计划中有尚未与需求完整核对的筛选、截取、分组或多次汇总，当前不能证明范围一致。',
+                         matches=[{'task_id': task.task_id, 'step_id': step} for step in dict.fromkeys(extra)]))
+-        return ConstraintAudit(binding=binding, digest=digest, items=items, all_verified=all(i.status == 'verified' for i in items))
++        return ConstraintAudit(audit_version='2.2', binding=binding, digest=digest, items=items, all_verified=all(i.status == 'verified' for i in items))
+--- before/backend/app/review/output_boundaries.py
++++ after/backend/app/review/output_boundaries.py
+@@ -0,0 +1,70 @@
++"""Finite, enforced report boundaries; never general semantic interpretation.
++
++A report-only restriction is not a missing dataset filter. Proof is conditional
++on the controlled V2 renderer, and the renderer checks the same contract again.
++Unknown expressions remain unverified. No positive inference is authorized.
++"""
++import re
++from app.domain.errors import AppError
++
++POLICY_VERSION = 'controlled-report-boundaries-v1'
++CONTROLLED_GENERATIONS = {'evidence-selection-v2.0'}
++CAUSE_PHRASES = {
++    '不要推断团队差异的原因', '不要推断差异原因', '不要推断差异的原因',
++    '不要推断原因', '不要解释差异原因', '不要解释差异的原因',
++}
++PERFORMANCE_PHRASES = {'不要推断人员绩效', '不要推断团队绩效', '不要评价人员绩效', '不要评价团队绩效'}
++PROFIT_PHRASES = {'不要分析利润', '不要计算利润', '不分析利润', '不计算利润'}
++
++
++def boundary(text):
++    value = re.sub(r'\s+', '', text).strip('。；;，,')
++    if value.startswith('也'):
++        value = value[1:]
++    if value in CAUSE_PHRASES:
++        return 'no_causal_inference'
++    if value in PERFORMANCE_PHRASES:
++        return 'no_performance_inference'
++    if value in PROFIT_PHRASES:
++        return 'no_profit_analysis'
++    return None
++
++
++def required(intent):
++    return sorted({kind for c in intent.constraints.analysis_limits
++                   for part in re.split(r'[，,；;]|并且|并|且', c.raw_text)
++                   if (kind := boundary(part)) is not None})
++
++
++def available():
++    from app.reporting.prompt import GENERATION_VERSION
++    return GENERATION_VERSION in CONTROLLED_GENERATIONS
++
++
++def enforce(intent, generation_version, tasks=None, profile=None):
++    policies = required(intent)
++    if policies and generation_version not in CONTROLLED_GENERATIONS:
++        raise AppError('REPORT_BOUNDARY_UNSUPPORTED', '当前报告生成版本不能保证已批准的表达边界，未生成报告。', 409)
++    if 'no_profit_analysis' in policies and tasks is not None:
++        if profile is None or any(not profit_references_absent(task, profile) for task in tasks):
++            raise AppError('REPORT_BOUNDARY_VIOLATION', '执行来源包含被明确禁止的利润字段、别名或未支持计算，未生成报告。', 409)
++    return policies
++
++
++def profit_references_absent(task, profile):
++    # Only structural identifiers/field labels are examined, not inferred NLU.
++    prohibited = lambda text: bool(re.search(r'利润|盈利|毛利|净利|profit|margin', str(text), re.I))
++    ids = {f.field_id for f in profile.fields if prohibited(f.original_name) or prohibited(f.display_name)}
++    for step in task.steps:
++        p = step.params
++        refs = [p.get('field'), *p.get('dimensions', [])]
++        refs += [c.get('field') for c in p.get('conditions', [])]
++        refs += [m.get('field') for m in p.get('metrics', [])]
++        aliases = [p.get('alias'), *[m.get('alias') for m in p.get('metrics', [])]]
++        if any(ref in ids for ref in refs if ref) or any(prohibited(alias) for alias in aliases if alias):
++            return False
++        if step.operation not in {'filter','group_aggregate','aggregate','sort','top_n','derive'}:
++            return False
++        if step.operation == 'derive' and p.get('function') not in {'extract_year','extract_month'}:
++            return False
++    return True
+--- before/backend/app/review/presentation.py
++++ after/backend/app/review/presentation.py
+@@ -56,6 +56,8 @@
+                              else f"{name(metric.get('field'))} · {FUNCTIONS.get(metric.get('function'), '未支持口径')}")
+                     names[metric.get('alias')] = label
+                     descriptions.append('拟用统计口径：' + label)
++                    if metric.get('field') is None and metric.get('function') == 'count':
++                        descriptions.append('按上传记录逐行计数，不代表去重后的业务实体数量。')
+             elif step.operation in {'sort', 'top_n'}:
+                 order = '从高到低' if p.get('direction') == 'desc' else '从低到高'
+                 descriptions.append(f"按{name(p.get('field'))}{order}排列" + (f"，取前 {p.get('n')} 名" if step.operation == 'top_n' else ''))
+@@ -76,7 +78,7 @@
+         checked = record.validated_plan
+         intent = checked.intent_snapshot
+         conditions = [ReviewCondition(label=CATEGORIES.get(item.category, '分析条件'), text=self.text(item.raw_text),
+-                      verification='已核对分析步骤' if item.status == 'verified' else '需要解决后才能开始', source=item.source)
++                      verification=('已核对报告表达边界' if any(m.get('check') == 'enforced_report_boundary' for m in item.matches) else '已核对分析步骤') if item.status == 'verified' else '需要解决后才能开始', source=item.source)
+                       for item in audit.items if item.category not in {'scope', 'context'}]
+         if not conditions:
+             conditions = [ReviewCondition(label='用户指定条件', text='没有单独指定时间、筛选或统计限制；请查看各方向拟用口径。',
+--- before/backend/app/services/analysis_report.py
++++ after/backend/app/services/analysis_report.py
+@@ -20,6 +20,7 @@
+ from app.reporting.draft_v2 import InsightSelection, selection_schema
+ from app.reporting.materialize_v2 import materialize_selection
+ from app.reporting.recommendations import build_catalog, NO_RECOMMENDATION
++from app.review.output_boundaries import enforce as enforce_output_boundaries
+ from app.llm.templates import pin_template
+ from app.reporting.prompt import GENERATION_VERSION
+ from app.reporting.claims import missing_metrics
+@@ -51,6 +52,7 @@
+             raise AppError("REPORT_INPUT_INVALID", "报告输入结构不正确，未生成报告。", 422) from None
+         if len(execution.model_dump_json().encode()) > 4 * 1024 * 1024:
+             raise AppError("REPORT_INPUT_TOO_LARGE", "计算结果过大，请缩小返回结果范围并明确截断信息。", 422)
++        output_policies = enforce_output_boundaries(intent, GENERATION_VERSION, validated.plan.tasks, profile)
+         checked, descriptions = prepare(intent, validated, execution, profile, self.registry)
+         tasks = {task.task_id: task for task in checked.plan.tasks}
+         with trace.span('evidence_builder') as stage:
+@@ -102,6 +104,9 @@
+         with trace.span('chart_builder') as chart_stage:
+             charts = VisualizationBuilder().build(execution, descriptions, evidence, tasks, intent)
+             chart_stage.attributes(chart_count=len(charts))
++        if output_policies:
++            for index, chart in enumerate(charts, 1):
++                chart.title = f'已验证统计结果 {index}'
+         charts.sort(key=lambda chart: (tasks[chart.task_id].priority, chart.chart_id))
+         from app.review.presentation import PlanPresentationMapper
+         mapper = PlanPresentationMapper(profile)
+@@ -146,6 +151,10 @@
+                     "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+                     for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected)],
+                 "limitations": limitations}
++            if output_policies:
++                recommendation_options = {key: option for key, option in recommendation_options.items()
++                                          if option['kind'] in {'review_source_rows', 'check_missingness'}}
++                payload['recommendation_options'] = list(recommendation_options.values())
+             instruction = json.dumps(payload, ensure_ascii=False)
+             if len(instruction.encode()) > 160 * 1024:
+                 raise AppError("REPORT_CONTEXT_TOO_LARGE", "证据上下文过大，未调用模型。", 422)
+@@ -263,10 +272,14 @@
+             metrics = leaders[:1] + comparison_metrics[:2] + metrics
+             if insights:
+                 overview += ' 比较发现及其依据见下方；业务解释与建议仍需结合实际情况核查。'
++            if output_policies:
++                headline = '已验证统计结果' if status != 'unavailable' else '暂无可生成报告的有效证据'
++                overview = '本报告仅整理已批准统计范围内的真实计算结果，不作原因或绩效推断。' if evidence else overview
+             metadata = {t.task_id: {**t.model_dump(exclude={"result"}),
+                 "insight_generation_version": GENERATION_VERSION,
+                 "draft_schema_version": "insight-selection-v2",
+                 "generation_mode": "controlled_evidence_selection",
++                "output_boundaries": output_policies,
+                 "selected_recommendations": [{"insight_id": i.insight_id, "text": i.recommendation}
+                                              for i in insights if i.task_id == t.task_id],
+                 "rejected_insights": rejected_insights,
+--- before/backend/tests/test_approval_constraints_v22.py
++++ after/backend/tests/test_approval_constraints_v22.py
+@@ -0,0 +1,127 @@
++"""Read-only saved-run replay and adversarial approval boundary regression."""
++import asyncio
++import copy
++import json
++from pathlib import Path
++
++import pytest
++from app.domain.analysis_plan import ValidatedAnalysisPlan
++from app.domain.dataset_profile import DatasetProfile
++from app.domain.intent import UnverifiedConstraint
++from app.domain.errors import AppError
++from app.review.constraint_audit import ConstraintAuditor
++from app.review.bindings import record_count
++from app.review import output_boundaries
++from app.services.analysis_report import AnalysisReportService
++from app.planning.capabilities import CapabilityRegistry
++from report_fixtures import ReportProvider, report_case
++
++ROOT=Path(__file__).resolve().parents[2]
++PATHS={
++ 'T04':'docs/evaluations/mvp-product-v1-2026-11-04/runs/draftv2-01/T04',
++ 'U02':'docs/evaluations/mvp-reliability-holdout-2026-11-04/runs/draftv2-01/U02',
++ 'W03':'docs/evaluations/report-draft-v2-2026-11-05/independent/runs/draftv2-01/W03',
++ 'W04':'docs/evaluations/report-draft-v2-2026-11-05/independent/runs/draftv2-01/W04'}
++
++
++def saved(case):
++    state=json.loads((ROOT/PATHS[case]/'prepared-session.json').read_text())
++    return ValidatedAnalysisPlan.model_validate(state['review_plan']['validated_plan']),DatasetProfile.model_validate(state['profile'])
++
++
++def constraint(text):return UnverifiedConstraint(raw_text=text, validation_status='unverified')
++
++
++@pytest.mark.parametrize('case',PATHS)
++def test_actual_four_blocked_plans_now_have_complete_proofs_without_rewriting_intent(case):
++    checked,profile=saved(case);before=checked.model_dump_json()
++    audit=ConstraintAuditor(profile).audit(checked)
++    assert audit.all_verified,[(v.raw_text,v.message) for v in audit.items if v.status!='verified']
++    assert checked.model_dump_json()==before and audit.audit_version=='2.2'
++    assert all(v.matches for v in audit.items)
++
++
++@pytest.mark.parametrize('fault',['wrong_filter','wrong_order','nonnull_count','distinct_count','extra_filter','extra_dimension','quantity_column'])
++def test_repaired_task_count_does_not_allow_different_computation(fault):
++    checked,profile=saved('W04');task=checked.plan.tasks[0]
++    agg=next(s for s in task.steps if s.operation=='group_aggregate')
++    if fault=='wrong_filter':task.steps[0].params['conditions'][0]['value']='待处理'
++    elif fault=='wrong_order':task.steps[-1].params['direction']='asc'
++    elif fault=='nonnull_count':agg.params['metrics'][0]['field']=profile.fields[2].field_id
++    elif fault=='distinct_count':agg.params['metrics'][0].update(function='distinct_count',field=profile.fields[0].field_id)
++    elif fault=='extra_dimension':agg.params['dimensions'].append(profile.fields[3].field_id)
++    elif fault=='quantity_column':profile.fields[2].display_name=profile.fields[2].original_name='任务数量'
++    else:task.steps[0].params['conditions'].append({'field':profile.fields[0].field_id,'operator':'eq','value':'星桥'})
++    assert not ConstraintAuditor(profile).audit(checked).all_verified
++
++
++def test_omitted_sort_basis_requires_unique_matching_metric():
++    checked,profile=saved('W03');agg=next(s for s in checked.plan.tasks[0].steps if s.operation=='group_aggregate')
++    agg.params['metrics'].append({**agg.params['metrics'][0],'alias':'another_mean'})
++    assert not ConstraintAuditor(profile).audit(checked).all_verified
++
++
++@pytest.mark.parametrize('field',['task_id','field_type'])
++def test_full_categorical_value_is_not_satisfied_by_ambiguous_field_or_truncated_sample(field):
++    checked,profile=saved('W04');status=next(f for f in profile.fields if f.display_name=='状态')
++    if field=='task_id':
++        other=profile.fields[-1];other.logical_type=type(other.logical_type)('text');other.samples=copy.deepcopy(status.samples)
++    else:
++        for s in status.samples:s.truncated=True
++    assert not ConstraintAuditor(profile).audit(checked).all_verified
++
++
++def test_task_entity_context_does_not_implicitly_authorize_unrelated_entity_count():
++    _,profile=saved('W04')
++    assert not record_count('任务数量',profile)
++    assert record_count('任务数量',profile,'已完成任务的项目分布')
++    assert not record_count('订单数量',profile,'已完成任务的项目分布')
++
++
++@pytest.mark.parametrize('text',['不要推断客户忠诚度','不要分析所有东西','不要求分析利润','未指定利润','不要推断团队差异的未知原因'])
++def test_unknown_optional_or_unspecified_boundary_is_not_silently_authorized(text):
++    checked,profile=saved('W03');checked.intent_snapshot.constraints.analysis_limits.append(constraint(text))
++    assert not ConstraintAuditor(profile).audit(checked).all_verified
++
++
++@pytest.mark.parametrize('fault',['alias','field','derive','old_renderer'])
++def test_report_boundary_proof_requires_no_prohibited_calculation_and_supported_renderer(fault,monkeypatch):
++    checked,profile=saved('T04');task=checked.plan.tasks[0]
++    agg=next(s for s in task.steps if s.operation=='group_aggregate')
++    if fault=='alias':agg.params['metrics'][0]['alias']='profit_total'
++    elif fault=='field':
++        profile.fields[-1].display_name='利润';agg.params['metrics'][0]['field']=profile.fields[-1].field_id
++    elif fault=='derive':
++        task.steps.insert(0,task.steps[0].model_copy(update={'operation':'derive','params':{'function':'profit','alias':'p'}}))
++    else:monkeypatch.setattr('app.reporting.prompt.GENERATION_VERSION','legacy-free-text')
++    assert not ConstraintAuditor(profile).audit(checked).all_verified
++
++
++def test_reporting_runtime_checks_policy_again_without_llm_fallback():
++    inputs=report_case();inputs[0].constraints.analysis_limits=[constraint('不要推断人员绩效')]
++    with pytest.raises(AppError) as error:output_boundaries.enforce(inputs[0],'legacy-free-text')
++    assert error.value.error.code=='REPORT_BOUNDARY_UNSUPPORTED'
++
++
++def test_actual_report_uses_controlled_titles_and_no_extra_analysis_directions():
++    inputs=report_case();inputs[0].constraints.analysis_limits=[constraint('不要推断人员绩效')]
++    inputs[1].intent_snapshot=inputs[0]
++    inputs[1].plan.tasks[0].title='不应作为事实展示的任意任务标题'
++    provider=ReportProvider()
++    report=asyncio.run(AnalysisReportService(provider,CapabilityRegistry()).generate(*inputs))
++    assert report.summary.headline=='已验证统计结果'
++    assert all(c.title.startswith('已验证统计结果') for c in report.charts)
++    payload=json.loads(provider.requests[0].instruction)
++    assert all(o['kind'] in {'review_source_rows','check_missingness'} for o in payload['recommendation_options'])
++    assert all(v['output_boundaries']==['no_performance_inference'] for v in report.execution_metadata.values())
++
++
++def test_standalone_report_cannot_bypass_profit_boundary_even_without_approval():
++    from planning_fixtures import task, step
++    inputs=report_case([task([step('group_aggregate', {'dimensions':['field_0001'], 'metrics':[{'function':'count','alias':'profit_total'}]})])])
++    inputs[0].constraints.analysis_limits=[constraint('不要分析利润')]
++    provider=ReportProvider()
++    with pytest.raises(AppError) as error:
++        asyncio.run(AnalysisReportService(provider,CapabilityRegistry()).generate(*inputs))
++    assert error.value.error.code=='REPORT_BOUNDARY_VIOLATION'
++    assert not provider.requests
+--- before/backend/tests/test_prompt_registry.py
++++ after/backend/tests/test_prompt_registry.py
+@@ -331,8 +331,14 @@
+         old_input = json.loads(expected['messages'][1]['content'])
+         new_input = json.loads(current['messages'][1]['content'])
+         assert set(new_input) == set(old_input) | {'required_core_groups', 'allowed_limitations', 'draft_schema_version', 'recommendation_options', 'limitation_pool'}
+-        for key in set(old_input) - {'limitations'}:
++        for key in set(old_input) - {'limitations', 'scope_context'}:
+             assert new_input[key] == old_input[key]
++        # REQ-0093 makes the existing row-count basis explicit; no statistical
++        # operation or other runtime input is changed by this display statement.
++        before_scope = new_input['scope_context']
++        normalized = [{**group, 'approved_steps': [line for line in group['approved_steps']
++            if line != '按上传记录逐行计数，不代表去重后的业务实体数量。']} for group in before_scope]
++        assert normalized == old_input['scope_context']
+         assert set(old_input['limitations']) <= set(new_input['limitations'])
+         assert new_input['required_core_groups']
+         schema = current['response_format']['json_schema']['schema']
+--- before/backend/tests/test_reliability_constraint_bindings.py
++++ after/backend/tests/test_reliability_constraint_bindings.py
+@@ -26,7 +26,7 @@
+     checked, profile = saved(case)
+     audit = ConstraintAuditor(profile).audit(checked)
+     assert audit.all_verified, [(i.raw_text, i.message) for i in audit.items if i.status != 'verified']
+-    assert audit.audit_version == '2.1'
++    assert audit.audit_version == '2.2'
+ 
+ 
+ @pytest.mark.parametrize('fault', ['sum_instead_of_count', 'nonnull_count', 'unique_count', 'wrong_dimension', 'wrong_direction', 'extra_filter'])
+@@ -89,6 +89,6 @@
+     assert any(p.category == 'goal_dimensions' and p.status == 'ambiguous' for p in audit.items)
+ 
+ 
+-def test_unresolved_profit_and_causal_boundary_stays_blocked():
++def test_supported_profit_and_causal_boundary_has_enforced_output_proof():
+     checked, profile = saved('T04')
+-    assert not ConstraintAuditor(profile).audit(checked).all_verified
++    assert ConstraintAuditor(profile).audit(checked).all_verified

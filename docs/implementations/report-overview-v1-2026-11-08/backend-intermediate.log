@@ -1,0 +1,35 @@
+...............F....................................                     [100%]
+=================================== FAILURES ===================================
+_______ test_export_shows_scope_and_only_matching_saved_chart_commentary _______
+
+    def test_export_shows_scope_and_only_matching_saved_chart_commentary():
+        report, profile = saved_case()
+        view = build_presentation(report, profile)
+        output = render_report_v1(report, view)
+        assert '<h2>分析范围与统计口径</h2>' in output
+        assert '<h2>各分析方向</h2>' in output
+        assert '<h4>图表解读</h4>' in output
+        assert '<summary>查看图表与结果数据</summary>' not in output
+        # A non-existent reference cannot bind commentary to a chart.
+        changed = report.model_copy(deep=True)
+        changed.insights[0].evidence_refs = ['missing']
+        changed.insights[0].finding = 'UNRELATED_COMMENTARY'
+        output = render_report_v1(changed, view)
+>       assert 'UNRELATED_COMMENTARY' not in output
+E       AssertionError: assert 'UNRELATED_COMMENTARY' not in '<!doctype h...body></html>'
+E         
+E         'UNRELATED_COMMENTARY' is contained here:
+E           ticle><h3>UNRELATED_COMMENTARY</h3><p>可能意味着：该分组在当前筛选范围内销售额表现突出，可作为进一步核查业务表现的切入点。</p><small>证据：missing</small></article><article><h3>发现 1：济南与南京的销售额比较</h3><p>济南领先南京 1,000，约为南京销售额的 4.9%。</p><small>证据：V002, V003</small></article><article><h3>发现 2：前三名城市之间的销售额差异</h3><p>上海销售额为 5,760，约为济南的 27.1%。这一数值差异值得进一步调查，当前结果不能确定差异原因。</p><small>证据：V004</small></article><article><h3>发现 3：前两名在前三名中的合计占比</h3><p>济南和南京合计占前三名销售额的 87.8%。注意，这并不是它们在整个地区或全部筛选结果中的销售额占比。</p><small>证据：V005</small></article></details><section><h2>整体总结与下一步建议</h2><p>计划内核心任务已有结果；以上结论仅适用于...
+E         
+E         ...Full output truncated (2 lines hidden), use '-vv' to show
+
+backend/tests/test_report_presentation.py:179: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_report_presentation.py::test_export_shows_scope_and_only_matching_saved_chart_commentary
+1 failed, 51 passed, 1 warning in 1.25s

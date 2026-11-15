@@ -1,0 +1,465 @@
+{
+  "$defs": {
+    "DatasetProvenance": {
+      "properties": {
+        "source": {
+          "const": "uploaded",
+          "default": "uploaded",
+          "title": "Source",
+          "type": "string"
+        },
+        "dataset": {
+          "minLength": 1,
+          "title": "Dataset",
+          "type": "string"
+        },
+        "dataset_version": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Dataset Version",
+          "type": "string"
+        },
+        "plan_version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plan Version"
+        },
+        "notice": {
+          "default": "从实际上传文件确定性计算；未清洗、未调用 LLM。",
+          "title": "Notice",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset",
+        "dataset_version"
+      ],
+      "title": "DatasetProvenance",
+      "type": "object"
+    },
+    "FieldProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "field_id": {
+          "pattern": "^field_[0-9]{4}$",
+          "title": "Field Id",
+          "type": "string"
+        },
+        "position": {
+          "minimum": 1,
+          "title": "Position",
+          "type": "integer"
+        },
+        "original_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Original Name"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "physical_type": {
+          "$ref": "#/$defs/PhysicalType"
+        },
+        "logical_type": {
+          "$ref": "#/$defs/LogicalType"
+        },
+        "missing_count": {
+          "minimum": 0,
+          "title": "Missing Count",
+          "type": "integer"
+        },
+        "missing_rate": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Missing Rate",
+          "type": "number"
+        },
+        "non_missing_count": {
+          "minimum": 0,
+          "title": "Non Missing Count",
+          "type": "integer"
+        },
+        "unique_count": {
+          "minimum": 0,
+          "title": "Unique Count",
+          "type": "integer"
+        },
+        "physical_type_counts": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/PhysicalType"
+          },
+          "title": "Physical Type Counts",
+          "type": "object"
+        },
+        "logical_type_counts": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/LogicalType"
+          },
+          "title": "Logical Type Counts",
+          "type": "object"
+        },
+        "samples": {
+          "items": {
+            "$ref": "#/$defs/FieldSample"
+          },
+          "maxItems": 5,
+          "title": "Samples",
+          "type": "array"
+        }
+      },
+      "required": [
+        "field_id",
+        "position",
+        "original_name",
+        "display_name",
+        "physical_type",
+        "logical_type",
+        "missing_count",
+        "missing_rate",
+        "non_missing_count",
+        "unique_count",
+        "physical_type_counts",
+        "logical_type_counts",
+        "samples"
+      ],
+      "title": "FieldProfile",
+      "type": "object"
+    },
+    "FieldSample": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "title": "Value"
+        },
+        "physical_type": {
+          "$ref": "#/$defs/PhysicalType"
+        },
+        "truncated": {
+          "default": false,
+          "title": "Truncated",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "value",
+        "physical_type"
+      ],
+      "title": "FieldSample",
+      "type": "object"
+    },
+    "LogicalType": {
+      "enum": [
+        "empty",
+        "boolean",
+        "integer",
+        "number",
+        "date",
+        "datetime",
+        "time",
+        "text",
+        "mixed"
+      ],
+      "title": "LogicalType",
+      "type": "string"
+    },
+    "PhysicalType": {
+      "enum": [
+        "null",
+        "boolean",
+        "integer",
+        "float",
+        "string",
+        "date",
+        "datetime",
+        "time",
+        "mixed"
+      ],
+      "title": "PhysicalType",
+      "type": "string"
+    },
+    "ProfileOptions": {
+      "additionalProperties": false,
+      "properties": {
+        "header_row": {
+          "default": 1,
+          "maximum": 100001,
+          "minimum": 1,
+          "title": "Header Row",
+          "type": "integer"
+        },
+        "sheet_name": {
+          "anyOf": [
+            {
+              "maxLength": 31,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sheet Name"
+        },
+        "encoding": {
+          "default": "utf-8-sig",
+          "enum": [
+            "utf-8-sig",
+            "gb18030"
+          ],
+          "title": "Encoding",
+          "type": "string"
+        },
+        "delimiter": {
+          "default": ",",
+          "enum": [
+            ",",
+            ";",
+            "\t",
+            "|"
+          ],
+          "title": "Delimiter",
+          "type": "string"
+        }
+      },
+      "title": "ProfileOptions",
+      "type": "object"
+    },
+    "QualityIssue": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": [
+            "DUPLICATE_COLUMN_NAMES",
+            "BLANK_COLUMN_NAMES",
+            "NON_TEXT_HEADERS",
+            "DUPLICATE_ROWS",
+            "IDENTICAL_COLUMNS",
+            "EMPTY_ROWS",
+            "EMPTY_COLUMNS",
+            "MIXED_PHYSICAL_TYPES",
+            "MIXED_LOGICAL_TYPES",
+            "REPEATED_HEADER_ROWS",
+            "FORMULA_CELLS",
+            "EXCEL_ERROR_CELLS",
+            "TRAILING_EMPTY_RANGE"
+          ],
+          "title": "Code",
+          "type": "string"
+        },
+        "severity": {
+          "default": "warning",
+          "enum": [
+            "warning",
+            "info"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "affected_count": {
+          "minimum": 1,
+          "title": "Affected Count",
+          "type": "integer"
+        },
+        "field_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Field Ids",
+          "type": "array"
+        },
+        "example_row_numbers": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 5,
+          "title": "Example Row Numbers",
+          "type": "array"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "affected_count"
+      ],
+      "title": "QualityIssue",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "dataset_id": {
+      "minLength": 1,
+      "title": "Dataset Id",
+      "type": "string"
+    },
+    "dataset_version": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Dataset Version",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "profiler_version": {
+      "default": "1.1.0",
+      "title": "Profiler Version",
+      "type": "string"
+    },
+    "content_sha256": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Content Sha256",
+      "type": "string"
+    },
+    "file_name": {
+      "title": "File Name",
+      "type": "string"
+    },
+    "file_format": {
+      "enum": [
+        "csv",
+        "xlsx"
+      ],
+      "title": "File Format",
+      "type": "string"
+    },
+    "sheet_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Sheet Name"
+    },
+    "available_sheets": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Available Sheets",
+      "type": "array"
+    },
+    "options": {
+      "$ref": "#/$defs/ProfileOptions"
+    },
+    "row_count": {
+      "exclusiveMinimum": 0,
+      "title": "Row Count",
+      "type": "integer"
+    },
+    "column_count": {
+      "exclusiveMinimum": 0,
+      "title": "Column Count",
+      "type": "integer"
+    },
+    "total_cell_count": {
+      "exclusiveMinimum": 0,
+      "title": "Total Cell Count",
+      "type": "integer"
+    },
+    "missing_cell_count": {
+      "minimum": 0,
+      "title": "Missing Cell Count",
+      "type": "integer"
+    },
+    "missing_cell_rate": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Missing Cell Rate",
+      "type": "number"
+    },
+    "duplicate_row_count": {
+      "minimum": 0,
+      "title": "Duplicate Row Count",
+      "type": "integer"
+    },
+    "duplicate_row_rate": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Duplicate Row Rate",
+      "type": "number"
+    },
+    "fields": {
+      "items": {
+        "$ref": "#/$defs/FieldProfile"
+      },
+      "title": "Fields",
+      "type": "array"
+    },
+    "quality_issues": {
+      "items": {
+        "$ref": "#/$defs/QualityIssue"
+      },
+      "title": "Quality Issues",
+      "type": "array"
+    },
+    "provenance": {
+      "$ref": "#/$defs/DatasetProvenance"
+    }
+  },
+  "required": [
+    "dataset_id",
+    "dataset_version",
+    "content_sha256",
+    "file_name",
+    "file_format",
+    "sheet_name",
+    "available_sheets",
+    "options",
+    "row_count",
+    "column_count",
+    "total_cell_count",
+    "missing_cell_count",
+    "missing_cell_rate",
+    "duplicate_row_count",
+    "duplicate_row_rate",
+    "fields",
+    "quality_issues",
+    "provenance"
+  ],
+  "title": "DatasetProfile",
+  "type": "object"
+}

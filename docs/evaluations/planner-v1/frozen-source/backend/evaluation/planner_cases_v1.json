@@ -1,0 +1,1138 @@
+{
+  "version": "planner-v1-eval-1",
+  "scoring_protocol": "planner-reference-v1",
+  "human_reviewed": false,
+  "annotation_source": "Agent-reviewed reference expectations frozen before real Planner calls; not human business signoff",
+  "datasets": {
+    "sales": {
+      "filename": "销售订单.csv",
+      "csv": "订单日期,地区,品类,销售额,成本,订单状态\n2026-01-02,华东,软件,1000,600,已完成\n2026-02-03,华南,硬件,2000,1600,未完成\n2025-03-04,华东,硬件,1500,1000,已完成\n"
+    },
+    "recruitment": {
+      "filename": "招聘岗位.csv",
+      "csv": "城市,岗位名称,薪资区间,发布日期,JD\n上海,AI产品经理,20-30K,2026-01-02,Python SQL\n北京,产品经理,30-40K,2026-02-03,需求分析\n深圳,AI产品经理,25-35K,2025-03-04,Python\n"
+    },
+    "support": {
+      "filename": "客服工单.csv",
+      "csv": "提交日期,类别,响应分钟,是否解决,客户等级,客服人员\n2026-01-01,咨询,10,true,VIP,甲\n2026-02-01,退款,30,false,普通,乙\n2025-03-01,咨询,20,true,VIP,丙\n"
+    },
+    "projects": {
+      "filename": "项目任务.csv",
+      "csv": "项目,任务,状态,截止日期,实际工时\n项目A,开发,已完成,2026-01-01,10\n项目B,测试,进行中,2026-02-01,20\n项目A,评审,已完成,2025-03-01,5\n"
+    }
+  },
+  "cases": [
+    {
+      "id": "S01",
+      "dataset": "sales",
+      "query": "按地区汇总销售额。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "按地区汇总销售额。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "销售额",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [
+          {
+            "field": "销售额",
+            "function": "sum"
+          }
+        ],
+        "dimensions": [
+          "地区"
+        ],
+        "max_tasks": 1
+      }
+    },
+    {
+      "id": "S02",
+      "dataset": "sales",
+      "query": "按地区比较销售额与成本总和。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "按地区比较销售额与成本总和。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "销售额",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "成本总和",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [
+          {
+            "field": "销售额",
+            "function": "sum"
+          },
+          {
+            "field": "成本",
+            "function": "sum"
+          }
+        ],
+        "dimensions": [
+          "地区"
+        ],
+        "max_tasks": 2
+      }
+    },
+    {
+      "id": "S03",
+      "dataset": "sales",
+      "query": "探索销售数据的主要差异和规律。",
+      "intent": {
+        "analysis_mode": "exploratory",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "探索销售数据的主要差异和规律。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [],
+        "dimensions": [],
+        "min_tasks": 2,
+        "max_tasks": 5
+      }
+    },
+    {
+      "id": "S04",
+      "dataset": "sales",
+      "query": "只看2026年华东地区已完成订单，排除硬件，按地区销售额总和降序取前三名。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "只看2026年华东地区已完成订单，排除硬件，按地区销售额总和降序取前三名。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "2026年",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "华东地区",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "已完成订单",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "排除硬件",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "销售额总和",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "降序取前三名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [
+          {
+            "field": "销售额",
+            "function": "sum"
+          }
+        ],
+        "dimensions": [
+          "地区"
+        ],
+        "filters": [
+          [
+            "地区",
+            "eq",
+            "华东"
+          ],
+          [
+            "订单状态",
+            "eq",
+            "已完成"
+          ],
+          [
+            "品类",
+            "ne",
+            "硬件"
+          ]
+        ],
+        "year": 2026,
+        "top_n": 3,
+        "direction": "desc"
+      }
+    },
+    {
+      "id": "S05",
+      "dataset": "sales",
+      "query": "计算各地区利润率，不能用销售额或订单数量替代。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "计算各地区利润率，不能用销售额或订单数量替代。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "利润率",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "不能用销售额或订单数量替代",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [],
+        "dimensions": [],
+        "coverage": "blocked",
+        "must_block": true
+      }
+    },
+    {
+      "id": "S06",
+      "dataset": "sales",
+      "query": "按地区汇总销售额，不要分析成本。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "按地区汇总销售额，不要分析成本。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "销售额",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "不要分析成本",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [
+          {
+            "field": "销售额",
+            "function": "sum"
+          }
+        ],
+        "dimensions": [
+          "地区"
+        ],
+        "forbidden_fields": [
+          "成本"
+        ],
+        "max_tasks": 1
+      }
+    },
+    {
+      "id": "R01",
+      "dataset": "recruitment",
+      "query": "统计各城市岗位数量。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "统计各城市岗位数量。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "岗位数量",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [
+          {
+            "field": null,
+            "function": "count"
+          }
+        ],
+        "dimensions": [
+          "城市"
+        ],
+        "max_tasks": 1
+      }
+    },
+    {
+      "id": "R02",
+      "dataset": "recruitment",
+      "query": "计算薪资区间的平均薪资，不接受其他指标替代。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "计算薪资区间的平均薪资，不接受其他指标替代。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "平均薪资",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "不接受其他指标替代",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [],
+        "dimensions": [],
+        "coverage": "blocked",
+        "must_block": true
+      }
+    },
+    {
+      "id": "R03",
+      "dataset": "recruitment",
+      "query": "抽取JD中的技能并比较技能频次。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "抽取JD中的技能并比较技能频次。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "技能频次",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [],
+        "dimensions": [],
+        "coverage": "blocked",
+        "must_block": true
+      }
+    },
+    {
+      "id": "R04",
+      "dataset": "recruitment",
+      "query": "只看北京和上海，按城市岗位数量降序取前两名。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "只看北京和上海，按城市岗位数量降序取前两名。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [
+            {
+              "raw_text": "北京和上海",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "岗位数量",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "降序取前两名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [
+          {
+            "field": null,
+            "function": "count"
+          }
+        ],
+        "dimensions": [
+          "城市"
+        ],
+        "filters": [
+          [
+            "城市",
+            "in",
+            [
+              "北京",
+              "上海"
+            ]
+          ]
+        ],
+        "top_n": 2,
+        "direction": "desc",
+        "max_tasks": 1
+      }
+    },
+    {
+      "id": "R05",
+      "dataset": "recruitment",
+      "query": "不排除北京，统计各城市岗位数量，不要分析薪资。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "不排除北京，统计各城市岗位数量，不要分析薪资。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "岗位数量",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "不排除北京",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "不要分析薪资",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [
+          {
+            "field": null,
+            "function": "count"
+          }
+        ],
+        "dimensions": [
+          "城市"
+        ],
+        "forbidden_fields": [
+          "薪资区间"
+        ],
+        "no_filter_fields": [
+          "城市"
+        ],
+        "max_tasks": 1
+      }
+    },
+    {
+      "id": "R06",
+      "dataset": "recruitment",
+      "query": "按城市统计AI产品经理岗位数量。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "按城市统计AI产品经理岗位数量。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [
+            {
+              "raw_text": "AI产品经理岗位",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "岗位数量",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [
+          {
+            "field": null,
+            "function": "count"
+          }
+        ],
+        "dimensions": [
+          "城市"
+        ],
+        "filters": [
+          [
+            "岗位名称",
+            "eq",
+            "AI产品经理"
+          ]
+        ],
+        "max_tasks": 1
+      }
+    },
+    {
+      "id": "C01",
+      "dataset": "support",
+      "query": "比较各类工单的平均响应分钟。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "比较各类工单的平均响应分钟。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "平均响应分钟",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [
+          {
+            "field": "响应分钟",
+            "function": "avg"
+          }
+        ],
+        "dimensions": [
+          "类别"
+        ],
+        "max_tasks": 1
+      }
+    },
+    {
+      "id": "C02",
+      "dataset": "support",
+      "query": "探索工单数据的主要特征和异常。",
+      "intent": {
+        "analysis_mode": "exploratory",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "探索工单数据的主要特征和异常。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [],
+        "dimensions": [],
+        "min_tasks": 2,
+        "max_tasks": 5
+      }
+    },
+    {
+      "id": "C03",
+      "dataset": "support",
+      "query": "只看2026年VIP客户已解决工单，按类别平均响应分钟升序取前两名。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "只看2026年VIP客户已解决工单，按类别平均响应分钟升序取前两名。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "2026年",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "VIP客户",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "已解决工单",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "平均响应分钟",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "升序取前两名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [
+          {
+            "field": "响应分钟",
+            "function": "avg"
+          }
+        ],
+        "dimensions": [
+          "类别"
+        ],
+        "filters": [
+          [
+            "客户等级",
+            "eq",
+            "VIP"
+          ],
+          [
+            "是否解决",
+            "eq",
+            true
+          ]
+        ],
+        "year": 2026,
+        "top_n": 2,
+        "direction": "asc"
+      }
+    },
+    {
+      "id": "C04",
+      "dataset": "support",
+      "query": "只统计各类别工单数量，不要求计算响应分钟，也不要按客服人员排名。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "只统计各类别工单数量，不要求计算响应分钟，也不要按客服人员排名。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "工单数量",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "不要按客服人员排名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [
+          {
+            "field": null,
+            "function": "count"
+          }
+        ],
+        "dimensions": [
+          "类别"
+        ],
+        "forbidden_fields": [
+          "响应分钟",
+          "客服人员"
+        ],
+        "max_tasks": 1
+      }
+    },
+    {
+      "id": "C05",
+      "dataset": "support",
+      "query": "比较各类别客户满意度。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "比较各类别客户满意度。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "客户满意度",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [],
+        "dimensions": [],
+        "coverage": "blocked",
+        "must_block": true
+      }
+    },
+    {
+      "id": "C06",
+      "dataset": "support",
+      "query": "比较各类别响应分钟，没有指定均值还是中位数。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "比较各类别响应分钟，没有指定均值还是中位数。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "响应分钟",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [
+          {
+            "id": "statistic_basis",
+            "issue": "均值还是中位数未定。",
+            "reason": "比较口径待用户审批确认。",
+            "action": "defer",
+            "resolve_at": "plan_approval"
+          }
+        ],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [],
+        "dimensions": [
+          "类别"
+        ],
+        "forbidden_functions": [
+          "avg",
+          "median"
+        ]
+      }
+    },
+    {
+      "id": "P01",
+      "dataset": "projects",
+      "query": "汇总各项目实际工时。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "汇总各项目实际工时。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "实际工时",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [
+          {
+            "field": "实际工时",
+            "function": "sum"
+          }
+        ],
+        "dimensions": [
+          "项目"
+        ],
+        "max_tasks": 1
+      }
+    },
+    {
+      "id": "P02",
+      "dataset": "projects",
+      "query": "比较各项目任务数量和实际工时合计。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "比较各项目任务数量和实际工时合计。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "任务数量",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "实际工时合计",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [
+          {
+            "field": null,
+            "function": "count"
+          },
+          {
+            "field": "实际工时",
+            "function": "sum"
+          }
+        ],
+        "dimensions": [
+          "项目"
+        ],
+        "max_tasks": 2
+      }
+    },
+    {
+      "id": "P03",
+      "dataset": "projects",
+      "query": "按截止年份汇总实际工时。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "按截止年份汇总实际工时。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "实际工时",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [
+          {
+            "field": "实际工时",
+            "function": "sum"
+          }
+        ],
+        "dimensions": [],
+        "derive": "extract_year",
+        "require_f1": true,
+        "max_tasks": 1
+      }
+    },
+    {
+      "id": "P04",
+      "dataset": "projects",
+      "query": "只看今年已完成任务，按项目汇总实际工时。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "只看今年已完成任务，按项目汇总实际工时。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "今年",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "已完成任务",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "实际工时",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [],
+        "dimensions": [],
+        "coverage": "blocked",
+        "must_block": true,
+        "missing_mentions": [
+          "今年"
+        ]
+      }
+    },
+    {
+      "id": "P05",
+      "dataset": "projects",
+      "query": "比较各项目任务数量，不要建议裁员。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "比较各项目任务数量，不要建议裁员。",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "任务数量",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "不要建议裁员",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [
+          {
+            "field": null,
+            "function": "count"
+          }
+        ],
+        "dimensions": [
+          "项目"
+        ],
+        "boundary_text": "不要建议裁员",
+        "max_tasks": 1
+      }
+    },
+    {
+      "id": "P06",
+      "dataset": "projects",
+      "query": "比较各项目实际工时，帮助我确定需要进一步核查的项目。",
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": "比较各项目实际工时，帮助我确定需要进一步核查的项目。",
+          "decision_goal": "帮助我确定需要进一步核查的项目"
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [
+            {
+              "raw_text": "实际工时",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": []
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "expected": {
+        "metrics": [
+          {
+            "field": "实际工时",
+            "function": "sum"
+          }
+        ],
+        "dimensions": [
+          "项目"
+        ],
+        "max_tasks": 3
+      }
+    },
+    {
+      "id": "G01",
+      "dataset": "sales",
+      "query": "帮我处理一下。",
+      "intent": {
+        "analysis_mode": "undetermined",
+        "next_action": "clarify",
+        "analysis_goal": {
+          "analysis_object": null,
+          "business_goal": null,
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": null,
+          "filters": [],
+          "metric_requirements": [],
+          "analysis_limits": []
+        },
+        "uncertainties": [
+          {
+            "id": "missing_goal",
+            "issue": "分析目标未指定。",
+            "reason": "需要分析问题。",
+            "action": "clarify",
+            "resolve_at": "before_planning"
+          }
+        ],
+        "clarification_questions": [
+          "请说明分析目标？"
+        ]
+      },
+      "expected": {
+        "clarify_rejected": true
+      }
+    }
+  ],
+  "repeat_case_ids": [
+    "S01",
+    "R01",
+    "C04",
+    "P02",
+    "P03"
+  ]
+}

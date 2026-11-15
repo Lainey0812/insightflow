@@ -1,0 +1,750 @@
+{
+  "session_id": "77d09f417d5a4c44a63eb3084bcb8f69",
+  "revision": 8,
+  "plan_id": "plan_fb7fdfe1a67747d9ae1d8f4857a23a27",
+  "plan_version": 1,
+  "goal": "探索销售数据的主要特征、规律和差异",
+  "coverage": "只能回答部分核心问题",
+  "conditions": [
+    {
+      "label": "用户指定条件",
+      "text": "没有单独指定时间、筛选或统计限制；请查看各方向拟用口径。",
+      "verification": "以当前方案为准",
+      "source": "intent.constraints"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按订单状态分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S1_1"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：销售额 · 合计",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S1_1"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：记录数",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S1_1"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按地区分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T2.steps.S2_1"
+    },
+    {
+      "label": "拟用排序与展示",
+      "text": "按销售额 · 合计从高到低排列",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T2.steps.S2_2"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按城市分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T2.steps.S2_3"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按产品类别分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T3.steps.S3_1"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按订单日期的月份分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T4.steps.S4_2"
+    },
+    {
+      "label": "拟用排序与展示",
+      "text": "按订单日期的月份从低到高排列",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T4.steps.S4_3"
+    }
+  ],
+  "directions": [
+    {
+      "task_id": "T1",
+      "title": "整体销售概况与订单状态分布",
+      "question": "总体销售额、订单数量及不同订单状态的分布情况如何？",
+      "importance": "核心分析",
+      "reason": "核心需求要求探索主要特征。获取整体规模（总销售额、总单量）和基础构成（订单状态计数）是理解数据全貌的最基本步骤，删除后无法回答“主要特征”中的总量与结构问题。",
+      "readiness": "暂时无法分析",
+      "executable": false,
+      "details": [
+        "按订单状态分组",
+        "拟用统计口径：销售额 · 合计",
+        "拟用统计口径：记录数",
+        "按上传记录逐行计数，不代表去重后的业务实体数量。",
+        "拟用统计口径：销售额 · 合计",
+        "拟用统计口径：记录数",
+        "按上传记录逐行计数，不代表去重后的业务实体数量。"
+      ],
+      "gaps": [
+        "分析步骤引用的数据已不可用，需要重新生成方案。"
+      ],
+      "can_remove": true
+    },
+    {
+      "task_id": "T2",
+      "title": "地区与城市维度的销售差异",
+      "question": "各地区和城市的销售额及订单数量有何差异？哪些地区/城市表现突出？",
+      "importance": "核心分析",
+      "reason": "核心需求要求探索“差异”。地理维度（地区、城市）通常是销售分析中最关键的分组变量，用于识别高贡献区域。删除此任务将缺失关于空间分布规律的关键洞察。",
+      "readiness": "暂时无法分析",
+      "executable": false,
+      "details": [
+        "按地区分组",
+        "拟用统计口径：销售额 · 合计",
+        "拟用统计口径：记录数",
+        "按上传记录逐行计数，不代表去重后的业务实体数量。",
+        "按销售额 · 合计从高到低排列",
+        "按城市分组",
+        "拟用统计口径：销售额 · 合计",
+        "拟用统计口径：记录数",
+        "按上传记录逐行计数，不代表去重后的业务实体数量。",
+        "按销售额 · 合计从高到低排列"
+      ],
+      "gaps": [
+        "分析步骤引用的数据已不可用，需要重新生成方案。"
+      ],
+      "can_remove": true
+    },
+    {
+      "task_id": "T3",
+      "title": "产品类别的销售表现",
+      "question": "不同产品类别的销售额和订单数量是多少？哪类产品更受欢迎或贡献更高？",
+      "importance": "核心分析",
+      "reason": "核心需求要求探索“主要特征”。产品类别是业务实体的关键属性，了解品类结构对于判断业务重心至关重要。删除此任务将无法回答关于产品组合的基础问题。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "按产品类别分组",
+        "拟用统计口径：销售额 · 合计",
+        "拟用统计口径：记录数",
+        "按上传记录逐行计数，不代表去重后的业务实体数量。",
+        "按销售额 · 合计从高到低排列"
+      ],
+      "gaps": [],
+      "can_remove": true
+    },
+    {
+      "task_id": "T4",
+      "title": "时间维度的销售趋势",
+      "question": "按月份查看销售额的变化趋势，是否存在明显的季节性或周期性规律？",
+      "importance": "辅助分析",
+      "reason": "核心需求包含探索“规律”。虽然数据集仅10行且日期唯一，可能不足以展示显著统计规律，但时间序列是销售分析的标准维度。作为补充性分析，它有助于发现潜在的时间相关特征，若删除不影响对当前静态快照的基本描述，故定为辅助分析。",
+      "readiness": "完成已支持的数据转换后可分析",
+      "executable": true,
+      "details": [
+        "从订单日期提取月份，再分析",
+        "按订单日期的月份分组",
+        "拟用统计口径：销售额 · 合计",
+        "拟用统计口径：记录数",
+        "按上传记录逐行计数，不代表去重后的业务实体数量。",
+        "按订单日期的月份从低到高排列"
+      ],
+      "gaps": [],
+      "can_remove": true
+    }
+  ],
+  "issues": [
+    {
+      "code": "CORE_NOT_COVERED",
+      "message": "尚未覆盖：探索销售数据的主要特征、规律和差异",
+      "next_step": "可在确认下方部分覆盖限制后，仅执行可用方向。"
+    }
+  ],
+  "warnings": [
+    {
+      "id": "partial_coverage",
+      "label": "我了解本方案只能回答部分核心问题。"
+    },
+    {
+      "id": "blocked_tasks",
+      "label": "我了解暂时无法分析的方向将保留，但不会参与计算。"
+    }
+  ],
+  "can_approve": true,
+  "can_execute": false,
+  "audit": {
+    "audit_version": "2.2",
+    "binding": {
+      "dataset_id": "268fbcfad3cf43c59ebb04bcc628228e",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "plan_id": "plan_fb7fdfe1a67747d9ae1d8f4857a23a27",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "registry_version": "1.0"
+    },
+    "digest": "af3812016d295f5b17d898171bb57c7c3770beca93bdccb433ec3b6141773cff",
+    "all_verified": true,
+    "items": []
+  },
+  "technical_details": {
+    "record": {
+      "session_id": "77d09f417d5a4c44a63eb3084bcb8f69",
+      "plan_id": "plan_fb7fdfe1a67747d9ae1d8f4857a23a27",
+      "plan_version": 1,
+      "dataset_id": "268fbcfad3cf43c59ebb04bcc628228e",
+      "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+      "validation_version": "1.0",
+      "created_at": "2026-11-09T08:04:23.901990+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "268fbcfad3cf43c59ebb04bcc628228e",
+          "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+          "plan_id": "plan_fb7fdfe1a67747d9ae1d8f4857a23a27",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T1",
+              "title": "整体销售概况与订单状态分布",
+              "business_question": "总体销售额、订单数量及不同订单状态的分布情况如何？",
+              "priority": "P0",
+              "priority_reason": "核心需求要求探索主要特征。获取整体规模（总销售额、总单量）和基础构成（订单状态计数）是理解数据全貌的最基本步骤，删除后无法回答“主要特征”中的总量与结构问题。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S1_1",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0005",
+                        "alias": "total_sales_by_status"
+                      },
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "order_count_by_status"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0004"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S1_2",
+                  "operation": "aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0005",
+                        "alias": "overall_total_sales"
+                      },
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "overall_order_count"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "task_id": "T2",
+              "title": "地区与城市维度的销售差异",
+              "business_question": "各地区和城市的销售额及订单数量有何差异？哪些地区/城市表现突出？",
+              "priority": "P0",
+              "priority_reason": "核心需求要求探索“差异”。地理维度（地区、城市）通常是销售分析中最关键的分组变量，用于识别高贡献区域。删除此任务将缺失关于空间分布规律的关键洞察。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S2_1",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0005",
+                        "alias": "sales_by_region"
+                      },
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "orders_by_region"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0002"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S2_2",
+                  "operation": "sort",
+                  "params": {
+                    "field": "sales_by_region",
+                    "direction": "desc"
+                  }
+                },
+                {
+                  "step_id": "S2_3",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0005",
+                        "alias": "sales_by_city"
+                      },
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "orders_by_city"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0003"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S2_4",
+                  "operation": "sort",
+                  "params": {
+                    "field": "sales_by_city",
+                    "direction": "desc"
+                  }
+                }
+              ]
+            },
+            {
+              "task_id": "T3",
+              "title": "产品类别的销售表现",
+              "business_question": "不同产品类别的销售额和订单数量是多少？哪类产品更受欢迎或贡献更高？",
+              "priority": "P0",
+              "priority_reason": "核心需求要求探索“主要特征”。产品类别是业务实体的关键属性，了解品类结构对于判断业务重心至关重要。删除此任务将无法回答关于产品组合的基础问题。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S3_1",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0005",
+                        "alias": "sales_by_category"
+                      },
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "orders_by_category"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0007"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S3_2",
+                  "operation": "sort",
+                  "params": {
+                    "field": "sales_by_category",
+                    "direction": "desc"
+                  }
+                }
+              ]
+            },
+            {
+              "task_id": "T4",
+              "title": "时间维度的销售趋势",
+              "business_question": "按月份查看销售额的变化趋势，是否存在明显的季节性或周期性规律？",
+              "priority": "P1",
+              "priority_reason": "核心需求包含探索“规律”。虽然数据集仅10行且日期唯一，可能不足以展示显著统计规律，但时间序列是销售分析的标准维度。作为补充性分析，它有助于发现潜在的时间相关特征，若删除不影响对当前静态快照的基本描述，故定为P1。",
+              "requirement_ids": [
+                "C01"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S4_1",
+                  "operation": "derive",
+                  "params": {
+                    "function": "extract_month",
+                    "field": "field_0001",
+                    "alias": "order_month"
+                  }
+                },
+                {
+                  "step_id": "S4_2",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0005",
+                        "alias": "monthly_sales"
+                      },
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "monthly_orders"
+                      }
+                    ],
+                    "dimensions": [
+                      "order_month"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S4_3",
+                  "operation": "sort",
+                  "params": {
+                    "field": "order_month",
+                    "direction": "asc"
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "探索销售数据的主要特征、规律和差异"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T1",
+            "feasibility": "F0",
+            "reason_code": "INVALID_FIELD_REFERENCE",
+            "validation_issues": [
+              {
+                "code": "INVALID_FIELD_REFERENCE",
+                "message": "字段已被先前聚合移除，不能重新访问原始数据。",
+                "step_id": "S1_2",
+                "field": "field_0005"
+              }
+            ],
+            "executable": false
+          },
+          {
+            "task_id": "T2",
+            "feasibility": "F0",
+            "reason_code": "INVALID_FIELD_REFERENCE",
+            "validation_issues": [
+              {
+                "code": "INVALID_FIELD_REFERENCE",
+                "message": "字段已被先前聚合移除，不能重新访问原始数据。",
+                "step_id": "S2_3",
+                "field": "field_0005"
+              }
+            ],
+            "executable": false
+          },
+          {
+            "task_id": "T3",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          },
+          {
+            "task_id": "T4",
+            "feasibility": "F1",
+            "reason_code": "REQUIRES_TRANSFORMATION",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "探索销售数据的主要特征、规律和差异",
+            "task_ids": [
+              "T1",
+              "T2"
+            ],
+            "reason_codes": [
+              "INVALID_FIELD_REFERENCE"
+            ]
+          }
+        ],
+        "coverage_status": "partial",
+        "executable_task_ids": [
+          "T3",
+          "T4"
+        ],
+        "blocked_task_ids": [
+          "T1",
+          "T2"
+        ],
+        "fully_executable": false,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "268fbcfad3cf43c59ebb04bcc628228e",
+          "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "exploratory",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "销售数据",
+            "business_goal": "探索销售数据的主要特征、规律和差异",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [],
+            "metric_requirements": [],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "constraint_audit": {
+      "audit_version": "2.2",
+      "binding": {
+        "dataset_id": "268fbcfad3cf43c59ebb04bcc628228e",
+        "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+        "plan_id": "plan_fb7fdfe1a67747d9ae1d8f4857a23a27",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "af3812016d295f5b17d898171bb57c7c3770beca93bdccb433ec3b6141773cff",
+      "all_verified": true,
+      "items": []
+    },
+    "session_status": "AWAITING_APPROVAL",
+    "revision": 8
+  },
+  "report_capacity": {
+    "policy_version": "report-capacity-v1",
+    "supported": true,
+    "metric_count": 4,
+    "core_metric_count": 2,
+    "estimated_batches": 1,
+    "max_groups_per_call": 8,
+    "max_groups": 64,
+    "max_batches": 8,
+    "estimated_metadata_bytes": 1875,
+    "context_estimate_only": true,
+    "message": "本方案包含 2 个核心指标、共 4 个指标，预计一次生成报告。 实际证据大小和模型生成结果将在执行后核验。"
+  },
+  "analysis_basis": {
+    "version": "analysis-basis-v1",
+    "session_id": "77d09f417d5a4c44a63eb3084bcb8f69",
+    "plan_id": "plan_fb7fdfe1a67747d9ae1d8f4857a23a27",
+    "plan_version": 1,
+    "dataset_id": "268fbcfad3cf43c59ebb04bcc628228e",
+    "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+    "plan_hash": "bb05a0857ad81a1b76bf923960640ff852f3c78340b7b90c0f652b092e2dc555",
+    "row_grain": "unknown",
+    "entity_field_id": null,
+    "metrics": [
+      {
+        "task_id": "T1",
+        "step_id": "S1_1",
+        "alias": "total_sales_by_status",
+        "field_id": "field_0005",
+        "label": "销售额",
+        "function": "sum",
+        "basis": "按该字段非空值执行指定聚合",
+        "unit_status": "not_declared"
+      },
+      {
+        "task_id": "T1",
+        "step_id": "S1_1",
+        "alias": "order_count_by_status",
+        "field_id": null,
+        "label": "记录",
+        "function": "count",
+        "basis": "逐行计数，不是业务实体去重数量",
+        "unit_status": "record_count"
+      },
+      {
+        "task_id": "T1",
+        "step_id": "S1_2",
+        "alias": "overall_total_sales",
+        "field_id": "field_0005",
+        "label": "销售额",
+        "function": "sum",
+        "basis": "按该字段非空值执行指定聚合",
+        "unit_status": "not_declared"
+      },
+      {
+        "task_id": "T1",
+        "step_id": "S1_2",
+        "alias": "overall_order_count",
+        "field_id": null,
+        "label": "记录",
+        "function": "count",
+        "basis": "逐行计数，不是业务实体去重数量",
+        "unit_status": "record_count"
+      },
+      {
+        "task_id": "T2",
+        "step_id": "S2_1",
+        "alias": "sales_by_region",
+        "field_id": "field_0005",
+        "label": "销售额",
+        "function": "sum",
+        "basis": "按该字段非空值执行指定聚合",
+        "unit_status": "not_declared"
+      },
+      {
+        "task_id": "T2",
+        "step_id": "S2_1",
+        "alias": "orders_by_region",
+        "field_id": null,
+        "label": "记录",
+        "function": "count",
+        "basis": "逐行计数，不是业务实体去重数量",
+        "unit_status": "record_count"
+      },
+      {
+        "task_id": "T2",
+        "step_id": "S2_3",
+        "alias": "sales_by_city",
+        "field_id": "field_0005",
+        "label": "销售额",
+        "function": "sum",
+        "basis": "按该字段非空值执行指定聚合",
+        "unit_status": "not_declared"
+      },
+      {
+        "task_id": "T2",
+        "step_id": "S2_3",
+        "alias": "orders_by_city",
+        "field_id": null,
+        "label": "记录",
+        "function": "count",
+        "basis": "逐行计数，不是业务实体去重数量",
+        "unit_status": "record_count"
+      },
+      {
+        "task_id": "T3",
+        "step_id": "S3_1",
+        "alias": "sales_by_category",
+        "field_id": "field_0005",
+        "label": "销售额",
+        "function": "sum",
+        "basis": "按该字段非空值执行指定聚合",
+        "unit_status": "not_declared"
+      },
+      {
+        "task_id": "T3",
+        "step_id": "S3_1",
+        "alias": "orders_by_category",
+        "field_id": null,
+        "label": "记录",
+        "function": "count",
+        "basis": "逐行计数，不是业务实体去重数量",
+        "unit_status": "record_count"
+      },
+      {
+        "task_id": "T4",
+        "step_id": "S4_2",
+        "alias": "monthly_sales",
+        "field_id": "field_0005",
+        "label": "销售额",
+        "function": "sum",
+        "basis": "按该字段非空值执行指定聚合",
+        "unit_status": "not_declared"
+      },
+      {
+        "task_id": "T4",
+        "step_id": "S4_2",
+        "alias": "monthly_orders",
+        "field_id": null,
+        "label": "记录",
+        "function": "count",
+        "basis": "逐行计数，不是业务实体去重数量",
+        "unit_status": "record_count"
+      }
+    ],
+    "entity_field_options": [
+      {
+        "field_id": "field_0001",
+        "label": "订单日期",
+        "unique_non_null": true
+      },
+      {
+        "field_id": "field_0002",
+        "label": "地区",
+        "unique_non_null": false
+      },
+      {
+        "field_id": "field_0003",
+        "label": "城市",
+        "unique_non_null": false
+      },
+      {
+        "field_id": "field_0004",
+        "label": "订单状态",
+        "unique_non_null": false
+      },
+      {
+        "field_id": "field_0005",
+        "label": "销售额",
+        "unique_non_null": true
+      },
+      {
+        "field_id": "field_0006",
+        "label": "订单编号",
+        "unique_non_null": true
+      },
+      {
+        "field_id": "field_0007",
+        "label": "产品类别",
+        "unique_non_null": false
+      }
+    ],
+    "declaration_source": "unconfirmed",
+    "created_at": "2026-11-09T08:04:23.902329+00:00",
+    "digest": "b00eec4de21c3a551d03745f51c39d4bda0a11f3c6af35f051eb836c2cd5d2fe"
+  },
+  "data_overview": {
+    "dataset_id": "268fbcfad3cf43c59ebb04bcc628228e",
+    "dataset_version": "c75e50632059c4a0a868470ce2322c94c7d33baaef97b1f2f83002f806a13106",
+    "file_name": "sales.csv",
+    "sheet_name": null,
+    "row_count": 10,
+    "column_count": 7,
+    "missing_cell_count": 0,
+    "duplicate_row_count": 0,
+    "fields_with_missing": [],
+    "quality_notes": [],
+    "cleaning_status": "not_performed",
+    "cleaning_notice": "已检查上传数据；尚未自动删除、填补或去重。疑似重复不等于错误记录。",
+    "sample_notice": "筛选后及指标有效样本量需执行后按分析方向统计，当前不将缺失单元格换算为无效行。"
+  }
+}

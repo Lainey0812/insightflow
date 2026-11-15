@@ -1,0 +1,58 @@
+{
+  "decision": "partial_implementation_blocked_for_engine_and_reporting",
+  "workflow_identity": "registered explicit WorkflowIdentity reused",
+  "implemented": [
+    "hitl.approve",
+    "hitl.denied",
+    "hitl.replay",
+    "hitl.revise"
+  ],
+  "blocks": [
+    {
+      "id": "B01",
+      "path": "backend/app/storage/execution_repository.py:86",
+      "function": "ExecutionRepository.finish",
+      "fact": "guards executions.status=running and Session.status=RUNNING only; no current execution ID/plan/revision/active key match",
+      "evidence_test": "test_engine_finish_fencing_gap_is_reproducible_in_isolated_state",
+      "classification": "verified primitive behavior under synthetic Session branch drift; not a demonstrated public-API exploit"
+    },
+    {
+      "id": "B02",
+      "path": "backend/app/storage/report_repository.py:65",
+      "function": "ReportRepository.finish",
+      "fact": "attempt/status guard and atomic Report+Generation+Session write exist; Workflow links and submission fencing metadata absent",
+      "evidence_test": "test_report_attempt_guard_does_not_fence_changed_plan",
+      "classification": "verified limited attempt guard; insufficient for frozen C19-A/B"
+    },
+    {
+      "id": "B03",
+      "path": "backend/app/workflow/reporting.py:52",
+      "function": "ReportWorkflow.generate",
+      "fact": "accepted=False correctly prevents old attempt success; no durable C19-B receipt verification after commit acknowledgment loss",
+      "classification": "existing stale-attempt safety preserved; full target not implemented"
+    },
+    {
+      "id": "B04",
+      "path": "backend/app/storage/trace_repository.py:89",
+      "function": "TraceRepository.update_run",
+      "fact": "workflow Root accepts preparation statuses only; waiting_approval has no outgoing transitions; workflow complete/partial rejected",
+      "classification": "verified compatibility boundary; not expanded blindly"
+    },
+    {
+      "id": "B05",
+      "path": "backend/app/storage/workflow_identity.py:23",
+      "function": "WorkflowIdentityRepository.create",
+      "fact": "identity-only bootstrap; WorkflowPlanVersion and ownership links not populated by runtime",
+      "classification": "no fabricated native plan_version_id"
+    },
+    {
+      "id": "B06",
+      "path": "backend/app/services/plan_review.py:276",
+      "function": "PlanReviewService.approve_v1",
+      "fact": "no user-rejection business endpoint or immutable rejection record; denied approval attempts are not user rejection",
+      "classification": "user rejection not invented"
+    }
+  ],
+  "no_switch": true,
+  "production_engine_reporting_unchanged": true
+}

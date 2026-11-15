@@ -1,0 +1,249 @@
+{
+  "case_id": "O03",
+  "query": "比较各项目投入工时与任务数量，不据此断定效率",
+  "split": "development",
+  "historical_report_error": {
+    "code": "REPORT_INVALID_EVIDENCE_REFERENCE",
+    "message": "单条洞察不能混合任务、结果、指标或筛选范围。",
+    "node_name": null,
+    "retryable": false,
+    "details": {}
+  },
+  "candidates": [
+    {
+      "candidate_number": 1,
+      "raw_candidate": {
+        "primary_evidence_id": "E0022",
+        "evidence_refs": [
+          "E0022",
+          "E0016"
+        ],
+        "finding_type": "difference",
+        "implication": "工时投入的相对差异与任务数量的绝对差值并存，值得结合具体任务构成评估资源分配结构，目前不足以判断效率高低。",
+        "recommendation": "核查对应项目的任务类型、复杂度或交付标准，比较工时差额是否由特定高耗时任务导致；补充分析尚未执行。",
+        "limitations": [
+          "结论仅适用于当前返回范围，不能外推整体市场。"
+        ]
+      },
+      "references": [
+        {
+          "evidence_id": "E0022",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "hours",
+            "source_scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "在当前返回结果中，乙的工时合计比甲高 10，相对甲领先约 50.0%。",
+          "source_row_indices": [
+            1,
+            0
+          ],
+          "value": {
+            "metric_field": "hours",
+            "dimension_field": "field_0001",
+            "source_scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+            "unit": "%",
+            "rounding": "half_up_1_decimal",
+            "left": "乙",
+            "right": "甲",
+            "left_value": "30",
+            "right_value": "20",
+            "difference": "10",
+            "formula": "(left_value - right_value) / right_value * 100",
+            "comparison_kind": "relative_lead",
+            "numerator": "10",
+            "denominator": "20",
+            "percent": "50.0"
+          }
+        },
+        {
+          "evidence_id": "E0016",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "tasks",
+            "source_scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": false,
+          "statement": "在该任务完整分组结果中，甲与乙的记录 · 数量差值为 1条。",
+          "source_row_indices": [
+            0,
+            1
+          ],
+          "value": {
+            "left": "甲",
+            "right": "乙",
+            "left_value": 2,
+            "right_value": 1,
+            "difference": 1
+          }
+        }
+      ],
+      "actual_candidate_outcome": "rejected",
+      "actual_first_error": {
+        "code": "REPORT_INVALID_EVIDENCE_REFERENCE",
+        "message": "单条洞察不能混合任务、结果、指标或筛选范围。",
+        "node_name": null,
+        "retryable": false,
+        "details": {}
+      },
+      "text_diagnostics": [
+        {
+          "role": "implication",
+          "original_text": "工时投入的相对差异与任务数量的绝对差值并存，值得结合具体任务构成评估资源分配结构，目前不足以判断效率高低。",
+          "outcome": "accepted"
+        },
+        {
+          "role": "recommendation",
+          "original_text": "核查对应项目的任务类型、复杂度或交付标准，比较工时差额是否由特定高耗时任务导致；补充分析尚未执行。",
+          "outcome": "accepted"
+        },
+        {
+          "role": "limitation",
+          "original_text": "结论仅适用于当前返回范围，不能外推整体市场。",
+          "outcome": "accepted"
+        }
+      ]
+    },
+    {
+      "candidate_number": 2,
+      "raw_candidate": {
+        "primary_evidence_id": "E0024",
+        "evidence_refs": [
+          "E0024",
+          "E0023"
+        ],
+        "finding_type": "concentration",
+        "implication": "返回分组间的工时分布呈现不均，需关注低工时项目与主要项目在规模上的差距，不能据此认定项目优先级或产出质量。",
+        "recommendation": "检查低工时项目的记录完整性及是否存在未计入的零散任务，核实其实际投入情况；补充分析尚未执行。",
+        "limitations": [
+          "分母仅为本次完整返回的分组合计，不代表全部筛选范围或整体市场占比。"
+        ]
+      },
+      "references": [
+        {
+          "evidence_id": "E0024",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "hours",
+            "source_scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "乙和甲合计占本次返回 3 个分组工时合计合计的约 90.9%；分母仅为返回分组合计，不代表全部筛选范围或整体市场占比。",
+          "source_row_indices": [
+            1,
+            0,
+            2
+          ],
+          "value": {
+            "metric_field": "hours",
+            "dimension_field": "field_0001",
+            "source_scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+            "unit": "%",
+            "rounding": "half_up_1_decimal",
+            "left": "乙",
+            "right": "甲",
+            "left_value": "30",
+            "right_value": "20",
+            "returned_group_count": 3,
+            "denominator_scope": "returned_groups_only",
+            "formula": "(left_value + right_value) / returned_group_sum * 100",
+            "comparison_kind": "returned_concentration",
+            "numerator": "50",
+            "denominator": "55",
+            "percent": "90.9"
+          }
+        },
+        {
+          "evidence_id": "E0023",
+          "binding": {
+            "task_id": "A01",
+            "data_ref": "R001",
+            "result_field": "hours",
+            "source_scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。"
+          },
+          "matches_primary_binding": true,
+          "statement": "在当前返回结果中，丙的工时合计为 5，约为乙的 16.7%。",
+          "source_row_indices": [
+            2,
+            1
+          ],
+          "value": {
+            "metric_field": "hours",
+            "dimension_field": "field_0001",
+            "source_scope": "比较各项目投入工时与任务数量，不据此断定效率；仅限当前上传数据与批准任务范围。",
+            "unit": "%",
+            "rounding": "half_up_1_decimal",
+            "left": "丙",
+            "right": "乙",
+            "left_value": "5",
+            "right_value": "30",
+            "formula": "left_value / right_value * 100",
+            "comparison_kind": "relative_ratio",
+            "numerator": "5",
+            "denominator": "30",
+            "percent": "16.7"
+          }
+        }
+      ],
+      "actual_candidate_outcome": "rejected",
+      "actual_first_error": {
+        "code": "REPORT_UNVERIFIED_FACT",
+        "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+        "node_name": null,
+        "retryable": false,
+        "details": {}
+      },
+      "text_diagnostics": [
+        {
+          "role": "implication",
+          "original_text": "返回分组间的工时分布呈现不均，需关注低工时项目与主要项目在规模上的差距，不能据此认定项目优先级或产出质量。",
+          "outcome": "accepted"
+        },
+        {
+          "role": "recommendation",
+          "original_text": "检查低工时项目的记录完整性及是否存在未计入的零散任务，核实其实际投入情况；补充分析尚未执行。",
+          "outcome": "accepted"
+        },
+        {
+          "role": "limitation",
+          "original_text": "分母仅为本次完整返回的分组合计，不代表全部筛选范围或整体市场占比。",
+          "normalized_checked_text": "分母仅为本次完整返回的分组合计，或整体市场占比。",
+          "matches": [
+            {
+              "rule": "UNSUPPORTED_ASSERTION",
+              "match": "占比",
+              "span": [
+                21,
+                23
+              ],
+              "pattern": "导致|造成|归因于|证明|必然|保证|因果|显著|最高|最低|排名|占比|翻倍|全部|所有|超过.*半|大多数"
+            }
+          ],
+          "outcome": "rejected",
+          "error": {
+            "code": "REPORT_UNVERIFIED_FACT",
+            "message": "解释或建议包含未验证数值、原因、经营判断或已证实声明。",
+            "node_name": null,
+            "retryable": false,
+            "details": {}
+          }
+        }
+      ]
+    }
+  ],
+  "assembly_replay": {
+    "status": "rejected",
+    "error": {
+      "code": "REPORT_INVALID_EVIDENCE_REFERENCE",
+      "message": "单条洞察不能混合任务、结果、指标或筛选范围。",
+      "node_name": null,
+      "retryable": false,
+      "details": {}
+    }
+  },
+  "historical_error_reproduced": true
+}

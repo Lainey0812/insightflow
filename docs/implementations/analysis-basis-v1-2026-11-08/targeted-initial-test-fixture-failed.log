@@ -1,0 +1,24 @@
+...F.................................................................... [ 88%]
+.........                                                                [100%]
+=================================== FAILURES ===================================
+_____ test_unique_entity_identifier_and_task_deletion_preserve_declaration _____
+
+client = <starlette.testclient.TestClient object at 0x1185209d0>
+app = <fastapi.applications.FastAPI object at 0x1183e6f90>
+
+    def test_unique_entity_identifier_and_task_deletion_preserve_declaration(client,app):
+        state=save(client,create(client)); sid=state['id']
+>       field=next(f for f in state['profile']['fields'] if f['unique_count']==state['profile']['row_count'] and not f['missing_count'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       StopIteration
+
+backend/tests/test_analysis_basis.py:65: StopIteration
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_analysis_basis.py::test_unique_entity_identifier_and_task_deletion_preserve_declaration
+1 failed, 80 passed, 1 warning in 6.90s

@@ -1,0 +1,1 @@
+完成只读《Runtime 节点清单与 Trace 状态映射表》，覆盖 23 个实际执行/控制边界，包含前台到后端调用顺序、Node 包装器与直接服务入口的差异、状态契约、异常处理、五个报告 Span 的真实事件规则、ID 与重试关联、恢复与持久化边界。新增说明包括 span.finished 对应失败但没有独立 span.failed 事件、事务内 validating 不等于已保存实时状态、Report Assembler complete 不代表报告完整成功、Engine 备用 Node 包装器未用于主接口。本轮未修改代码/Prompt/配置、未发起模型调用，只读 SQLite 和源码；192 份应用源文件 SHA-256 前后一致。交付完整 Markdown 文档、源码定位索引、只读计数与静态核对记录。之前真实运行审计资料仅引用并原样保留。

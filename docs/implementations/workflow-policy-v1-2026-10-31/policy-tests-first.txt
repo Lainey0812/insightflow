@@ -1,0 +1,177 @@
+........................................................................ [ 18%]
+........................................................................ [ 37%]
+..............................................................FFFF...... [ 56%]
+.....................FFFF............................................... [ 75%]
+........................................................................ [ 94%]
+......................                                                   [100%]
+=================================== FAILURES ===================================
+_ test_all_commands_reject_bad_owner_revision_key_references_and_missing_evidence[missing-POLICY_MISSING_EVIDENCE-C16-PROFILING] _
+
+code = 'C16-PROFILING', mutation = 'missing', reason = 'POLICY_MISSING_EVIDENCE'
+
+    @pytest.mark.parametrize('code',ACTIVE)
+    @pytest.mark.parametrize('mutation,reason',[
+     ('workflow','POLICY_WORKFLOW_MISMATCH'),('session','POLICY_WORKFLOW_MISMATCH'),
+     ('revision','POLICY_STALE_REVISION'),('key','POLICY_STALE_ACTIVE_KEY'),
+     ('binding','POLICY_REFERENCE_MISMATCH'),('missing','POLICY_MISSING_EVIDENCE'),
+    ])
+    def test_all_commands_reject_bad_owner_revision_key_references_and_missing_evidence(code,mutation,reason):
+        s,c=case(code)
+        changes={
+            'workflow':{'workflow_id':'other'},'session':{'session_id':'other'},
+            'revision':{'expected_revision':s.revision+1},'key':{'active_execution_key':'old-key'},
+            'binding':{'binding':c.binding.model_copy(update={'dataset_id':'other'})},'missing':{'facts':()},
+        }
+        result=policy.validate(s,c.model_copy(update=changes[mutation]))
+>       assert result.decision=='deny' and result.reason_code==reason,result
+E       AssertionError: PolicyDecision(decision='allow', reason_code='POLICY_ALLOWED', action='execute', policy_scope='native_v1.1', command_i...rce='FAILED', target='PROFILING'), required_evidence=('新活动令牌+revision+重试接纳；保留旧失败',), replay_ref=None, detail_fields=())
+E       assert ('allow' == 'deny'
+E         
+E         - deny
+E         + allow)
+
+backend/tests/test_workflow_policy.py:50: AssertionError
+_ test_all_commands_reject_bad_owner_revision_key_references_and_missing_evidence[missing-POLICY_MISSING_EVIDENCE-C16-PARSING_INTENT] _
+
+code = 'C16-PARSING_INTENT', mutation = 'missing'
+reason = 'POLICY_MISSING_EVIDENCE'
+
+    @pytest.mark.parametrize('code',ACTIVE)
+    @pytest.mark.parametrize('mutation,reason',[
+     ('workflow','POLICY_WORKFLOW_MISMATCH'),('session','POLICY_WORKFLOW_MISMATCH'),
+     ('revision','POLICY_STALE_REVISION'),('key','POLICY_STALE_ACTIVE_KEY'),
+     ('binding','POLICY_REFERENCE_MISMATCH'),('missing','POLICY_MISSING_EVIDENCE'),
+    ])
+    def test_all_commands_reject_bad_owner_revision_key_references_and_missing_evidence(code,mutation,reason):
+        s,c=case(code)
+        changes={
+            'workflow':{'workflow_id':'other'},'session':{'session_id':'other'},
+            'revision':{'expected_revision':s.revision+1},'key':{'active_execution_key':'old-key'},
+            'binding':{'binding':c.binding.model_copy(update={'dataset_id':'other'})},'missing':{'facts':()},
+        }
+        result=policy.validate(s,c.model_copy(update=changes[mutation]))
+>       assert result.decision=='deny' and result.reason_code==reason,result
+E       AssertionError: PolicyDecision(decision='allow', reason_code='POLICY_ALLOWED', action='execute', policy_scope='native_v1.1', command_i...FAILED', target='PARSING_INTENT'), required_evidence=('新活动令牌+revision+重试接纳；保留旧失败',), replay_ref=None, detail_fields=())
+E       assert ('allow' == 'deny'
+E         
+E         - deny
+E         + allow)
+
+backend/tests/test_workflow_policy.py:50: AssertionError
+_ test_all_commands_reject_bad_owner_revision_key_references_and_missing_evidence[missing-POLICY_MISSING_EVIDENCE-C16-PLANNING] _
+
+code = 'C16-PLANNING', mutation = 'missing', reason = 'POLICY_MISSING_EVIDENCE'
+
+    @pytest.mark.parametrize('code',ACTIVE)
+    @pytest.mark.parametrize('mutation,reason',[
+     ('workflow','POLICY_WORKFLOW_MISMATCH'),('session','POLICY_WORKFLOW_MISMATCH'),
+     ('revision','POLICY_STALE_REVISION'),('key','POLICY_STALE_ACTIVE_KEY'),
+     ('binding','POLICY_REFERENCE_MISMATCH'),('missing','POLICY_MISSING_EVIDENCE'),
+    ])
+    def test_all_commands_reject_bad_owner_revision_key_references_and_missing_evidence(code,mutation,reason):
+        s,c=case(code)
+        changes={
+            'workflow':{'workflow_id':'other'},'session':{'session_id':'other'},
+            'revision':{'expected_revision':s.revision+1},'key':{'active_execution_key':'old-key'},
+            'binding':{'binding':c.binding.model_copy(update={'dataset_id':'other'})},'missing':{'facts':()},
+        }
+        result=policy.validate(s,c.model_copy(update=changes[mutation]))
+>       assert result.decision=='deny' and result.reason_code==reason,result
+E       AssertionError: PolicyDecision(decision='allow', reason_code='POLICY_ALLOWED', action='execute', policy_scope='native_v1.1', command_i...urce='FAILED', target='PLANNING'), required_evidence=('新活动令牌+revision+重试接纳；保留旧失败',), replay_ref=None, detail_fields=())
+E       assert ('allow' == 'deny'
+E         
+E         - deny
+E         + allow)
+
+backend/tests/test_workflow_policy.py:50: AssertionError
+_ test_all_commands_reject_bad_owner_revision_key_references_and_missing_evidence[missing-POLICY_MISSING_EVIDENCE-C16-VALIDATING] _
+
+code = 'C16-VALIDATING', mutation = 'missing'
+reason = 'POLICY_MISSING_EVIDENCE'
+
+    @pytest.mark.parametrize('code',ACTIVE)
+    @pytest.mark.parametrize('mutation,reason',[
+     ('workflow','POLICY_WORKFLOW_MISMATCH'),('session','POLICY_WORKFLOW_MISMATCH'),
+     ('revision','POLICY_STALE_REVISION'),('key','POLICY_STALE_ACTIVE_KEY'),
+     ('binding','POLICY_REFERENCE_MISMATCH'),('missing','POLICY_MISSING_EVIDENCE'),
+    ])
+    def test_all_commands_reject_bad_owner_revision_key_references_and_missing_evidence(code,mutation,reason):
+        s,c=case(code)
+        changes={
+            'workflow':{'workflow_id':'other'},'session':{'session_id':'other'},
+            'revision':{'expected_revision':s.revision+1},'key':{'active_execution_key':'old-key'},
+            'binding':{'binding':c.binding.model_copy(update={'dataset_id':'other'})},'missing':{'facts':()},
+        }
+        result=policy.validate(s,c.model_copy(update=changes[mutation]))
+>       assert result.decision=='deny' and result.reason_code==reason,result
+E       AssertionError: PolicyDecision(decision='allow', reason_code='POLICY_ALLOWED', action='execute', policy_scope='native_v1.1', command_i...ce='FAILED', target='VALIDATING'), required_evidence=('新活动令牌+revision+重试接纳；保留旧失败',), replay_ref=None, detail_fields=())
+E       assert ('allow' == 'deny'
+E         
+E         - deny
+E         + allow)
+
+backend/tests/test_workflow_policy.py:50: AssertionError
+_______ test_all_commands_reject_cross_workflow_evidence[C16-PROFILING] ________
+
+code = 'C16-PROFILING'
+
+    @pytest.mark.parametrize('code',ACTIVE)
+    def test_all_commands_reject_cross_workflow_evidence(code):
+        s,c=case(code)
+>       changed=c.facts[0].model_copy(update={'workflow_id':'other'})
+                ^^^^^^^^^^
+E       IndexError: tuple index out of range
+
+backend/tests/test_workflow_policy.py:56: IndexError
+_____ test_all_commands_reject_cross_workflow_evidence[C16-PARSING_INTENT] _____
+
+code = 'C16-PARSING_INTENT'
+
+    @pytest.mark.parametrize('code',ACTIVE)
+    def test_all_commands_reject_cross_workflow_evidence(code):
+        s,c=case(code)
+>       changed=c.facts[0].model_copy(update={'workflow_id':'other'})
+                ^^^^^^^^^^
+E       IndexError: tuple index out of range
+
+backend/tests/test_workflow_policy.py:56: IndexError
+________ test_all_commands_reject_cross_workflow_evidence[C16-PLANNING] ________
+
+code = 'C16-PLANNING'
+
+    @pytest.mark.parametrize('code',ACTIVE)
+    def test_all_commands_reject_cross_workflow_evidence(code):
+        s,c=case(code)
+>       changed=c.facts[0].model_copy(update={'workflow_id':'other'})
+                ^^^^^^^^^^
+E       IndexError: tuple index out of range
+
+backend/tests/test_workflow_policy.py:56: IndexError
+_______ test_all_commands_reject_cross_workflow_evidence[C16-VALIDATING] _______
+
+code = 'C16-VALIDATING'
+
+    @pytest.mark.parametrize('code',ACTIVE)
+    def test_all_commands_reject_cross_workflow_evidence(code):
+        s,c=case(code)
+>       changed=c.facts[0].model_copy(update={'workflow_id':'other'})
+                ^^^^^^^^^^
+E       IndexError: tuple index out of range
+
+backend/tests/test_workflow_policy.py:56: IndexError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_workflow_policy.py::test_all_commands_reject_bad_owner_revision_key_references_and_missing_evidence[missing-POLICY_MISSING_EVIDENCE-C16-PROFILING]
+FAILED backend/tests/test_workflow_policy.py::test_all_commands_reject_bad_owner_revision_key_references_and_missing_evidence[missing-POLICY_MISSING_EVIDENCE-C16-PARSING_INTENT]
+FAILED backend/tests/test_workflow_policy.py::test_all_commands_reject_bad_owner_revision_key_references_and_missing_evidence[missing-POLICY_MISSING_EVIDENCE-C16-PLANNING]
+FAILED backend/tests/test_workflow_policy.py::test_all_commands_reject_bad_owner_revision_key_references_and_missing_evidence[missing-POLICY_MISSING_EVIDENCE-C16-VALIDATING]
+FAILED backend/tests/test_workflow_policy.py::test_all_commands_reject_cross_workflow_evidence[C16-PROFILING]
+FAILED backend/tests/test_workflow_policy.py::test_all_commands_reject_cross_workflow_evidence[C16-PARSING_INTENT]
+FAILED backend/tests/test_workflow_policy.py::test_all_commands_reject_cross_workflow_evidence[C16-PLANNING]
+FAILED backend/tests/test_workflow_policy.py::test_all_commands_reject_cross_workflow_evidence[C16-VALIDATING]
+8 failed, 374 passed, 1 warning in 0.23s

@@ -1,0 +1,235 @@
+{
+  "$defs": {
+    "AnalysisGoal": {
+      "additionalProperties": false,
+      "properties": {
+        "analysis_object": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "minLength": 1,
+              "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Analysis Object"
+        },
+        "business_goal": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "minLength": 1,
+              "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Business Goal"
+        },
+        "decision_goal": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "minLength": 1,
+              "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Decision Goal"
+        }
+      },
+      "required": [
+        "analysis_object",
+        "business_goal",
+        "decision_goal"
+      ],
+      "title": "AnalysisGoal",
+      "type": "object"
+    },
+    "AnalysisMode": {
+      "enum": [
+        "goal_driven",
+        "exploratory",
+        "undetermined"
+      ],
+      "title": "AnalysisMode",
+      "type": "string"
+    },
+    "IntentConstraints": {
+      "additionalProperties": false,
+      "properties": {
+        "time_range": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UnverifiedConstraint"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "filters": {
+          "items": {
+            "$ref": "#/$defs/UnverifiedConstraint"
+          },
+          "title": "Filters",
+          "type": "array"
+        },
+        "metric_requirements": {
+          "items": {
+            "$ref": "#/$defs/UnverifiedConstraint"
+          },
+          "title": "Metric Requirements",
+          "type": "array"
+        },
+        "analysis_limits": {
+          "items": {
+            "$ref": "#/$defs/UnverifiedConstraint"
+          },
+          "title": "Analysis Limits",
+          "type": "array"
+        }
+      },
+      "required": [
+        "time_range",
+        "filters",
+        "metric_requirements",
+        "analysis_limits"
+      ],
+      "title": "IntentConstraints",
+      "type": "object"
+    },
+    "Uncertainty": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+          "title": "Id",
+          "type": "string"
+        },
+        "issue": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+          "title": "Issue",
+          "type": "string"
+        },
+        "reason": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+          "title": "Reason",
+          "type": "string"
+        },
+        "action": {
+          "enum": [
+            "clarify",
+            "defer",
+            "annotate"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "resolve_at": {
+          "enum": [
+            "before_planning",
+            "plan_approval",
+            "before_execution"
+          ],
+          "title": "Resolve At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "issue",
+        "reason",
+        "action",
+        "resolve_at"
+      ],
+      "title": "Uncertainty",
+      "type": "object"
+    },
+    "UnverifiedConstraint": {
+      "additionalProperties": false,
+      "properties": {
+        "raw_text": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+          "title": "Raw Text",
+          "type": "string"
+        },
+        "validation_status": {
+          "const": "unverified",
+          "title": "Validation Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "raw_text",
+        "validation_status"
+      ],
+      "title": "UnverifiedConstraint",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "analysis_mode": {
+      "$ref": "#/$defs/AnalysisMode"
+    },
+    "next_action": {
+      "enum": [
+        "proceed",
+        "clarify"
+      ],
+      "title": "Next Action",
+      "type": "string"
+    },
+    "analysis_goal": {
+      "$ref": "#/$defs/AnalysisGoal"
+    },
+    "constraints": {
+      "$ref": "#/$defs/IntentConstraints"
+    },
+    "uncertainties": {
+      "items": {
+        "$ref": "#/$defs/Uncertainty"
+      },
+      "title": "Uncertainties",
+      "type": "array"
+    },
+    "clarification_questions": {
+      "items": {
+        "maxLength": 2000,
+        "minLength": 1,
+        "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+        "type": "string"
+      },
+      "maxItems": 3,
+      "title": "Clarification Questions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "analysis_mode",
+    "next_action",
+    "analysis_goal",
+    "constraints",
+    "uncertainties",
+    "clarification_questions"
+  ],
+  "title": "ParsedIntent",
+  "type": "object"
+}

@@ -1,0 +1,46 @@
+..........F.                                                             [100%]
+=================================== FAILURES ===================================
+______ test_no_evidence_records_skip_decision_without_unexecuted_llm_span ______
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-187/test_no_evidence_records_skip_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10e730140>
+
+    def test_no_evidence_records_skip_decision_without_unexecuted_llm_span(tmp_path,monkeypatch):
+        from dataclasses import replace
+        app=application(tmp_path)
+        spec=app.state.capability_registry.operations['group_aggregate']
+        def unavailable(*args,**kwargs):raise ValueError('kernel test failure')
+        monkeypatch.setitem(app.state.capability_registry.operations,'group_aggregate',replace(spec,handler=unavailable))
+        with TestClient(app) as client:
+>           _,result,session=run(client);data=trace(client,session['workflow_id'])
+                             ^^^^^^^^^^^
+
+backend/tests/test_trace_closure_c2.py:193: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_report_workflow.py:74: in run
+    response = client.post(f'/api/v1/sessions/{state["id"]}/approvals', json=approval(state))
+                                                                             ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+state = {'workflow_id': 'wf_c9a2932137af44669dc51427d39195a1', 'root_run_id': 'run_6ccc2aec73fa4102ba91b74327ed3daf', 'id': 'e72fd331e01b4d379dc2233f603f8cbe', 'title': '分析2026年华东地区已完成订单的销售额，按城市汇总并降', ...}
+warnings = None, request_id = 'user-confirmation-1'
+
+    def approval(state,warnings=None,request_id='user-confirmation-1'):
+        record=state['review_plan']
+>       return {k:record[k] for k in ('plan_id','plan_version','dataset_id','dataset_version','validation_version')} | {'expected_revision':state['revision'],'approval_request_id':request_id,'acknowledged_warnings':warnings or []}
+                  ^^^^^^^^^
+E       TypeError: 'NoneType' object is not subscriptable
+
+backend/tests/hitl_fixtures.py:32: TypeError
+------------------------------ Captured log call -------------------------------
+ERROR    app.llm.capture:prompt_registration.py:24 Loaded Prompt registration failed; model call registration checks remain enforced
+ERROR    app.llm.capture:prompt_registration.py:24 Loaded Prompt registration failed; model call registration checks remain enforced
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_trace_closure_c2.py::test_no_evidence_records_skip_decision_without_unexecuted_llm_span
+1 failed, 11 passed, 1 warning in 6.32s

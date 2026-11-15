@@ -1,0 +1,2202 @@
+{
+  "session": {
+    "id": "ff11ea163e4b4ba0a5550d7b88c3394d",
+    "title": "创建日期为2026年，工单状态为已解决，按城市计算响应分",
+    "status": "COMPLETED",
+    "revision": 11,
+    "created_at": "2026-10-27T10:54:41.625734+00:00",
+    "updated_at": "2026-10-27T10:57:20.889909+00:00",
+    "data_source": "uploaded",
+    "workflow_kind": "real_v1",
+    "profile_options": {
+      "header_row": 1,
+      "sheet_name": null,
+      "encoding": "utf-8-sig",
+      "delimiter": ","
+    },
+    "planner_result": {
+      "plan": {
+        "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+        "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+        "plan_id": "plan_d644027ffd2e448aab73159ae097f04a",
+        "plan_version": 1,
+        "tasks": [
+          {
+            "task_id": "T01",
+            "title": "2026年已解决工单城市响应均值Top3",
+            "business_question": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名。",
+            "priority": "P0",
+            "priority_reason": "直接回答核心业务目标：识别2026年处理效率最高（响应最快）的前三个城市。删除此任务将无法支持基于响应速度的城市绩效对比决策。",
+            "requirement_ids": [
+              "C01",
+              "C02",
+              "C03",
+              "C04",
+              "C05"
+            ],
+            "depends_on": [],
+            "missing_inputs": [],
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "derive",
+                "params": {
+                  "function": "extract_year",
+                  "field": "field_0001",
+                  "alias": "year_created"
+                }
+              },
+              {
+                "step_id": "S02",
+                "operation": "filter",
+                "params": {
+                  "conditions": [
+                    {
+                      "field": "year_created",
+                      "operator": "eq",
+                      "value": 2026
+                    },
+                    {
+                      "field": "field_0003",
+                      "operator": "eq",
+                      "value": "已解决"
+                    }
+                  ]
+                }
+              },
+              {
+                "step_id": "S03",
+                "operation": "group_aggregate",
+                "params": {
+                  "metrics": [
+                    {
+                      "function": "avg",
+                      "field": "field_0004",
+                      "alias": "avg_response_minutes"
+                    }
+                  ],
+                  "dimensions": [
+                    "field_0002"
+                  ]
+                }
+              },
+              {
+                "step_id": "S04",
+                "operation": "sort",
+                "params": {
+                  "field": "avg_response_minutes",
+                  "direction": "asc"
+                }
+              },
+              {
+                "step_id": "S05",
+                "operation": "top_n",
+                "params": {
+                  "field": "avg_response_minutes",
+                  "direction": "asc",
+                  "n": 3
+                }
+              }
+            ]
+          }
+        ],
+        "core_requirements": [
+          {
+            "requirement_id": "C01",
+            "description": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名"
+          },
+          {
+            "requirement_id": "C02",
+            "description": "time_range：创建日期为2026年"
+          },
+          {
+            "requirement_id": "C03",
+            "description": "filters：工单状态为已解决"
+          },
+          {
+            "requirement_id": "C04",
+            "description": "metric_requirements：响应分钟均值"
+          },
+          {
+            "requirement_id": "C05",
+            "description": "analysis_limits：按平均响应分钟升序排名；取前三名"
+          }
+        ]
+      },
+      "validation_results": [
+        {
+          "task_id": "T01",
+          "feasibility": "F1",
+          "reason_code": "REQUIRES_TRANSFORMATION",
+          "validation_issues": [],
+          "executable": true
+        }
+      ],
+      "unmet_core_requirements": [],
+      "coverage_status": "complete",
+      "executable_task_ids": [
+        "T01"
+      ],
+      "blocked_task_ids": [],
+      "fully_executable": true,
+      "validation_version": "1.0",
+      "registry_version": "1.0",
+      "approval_required": true,
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "e4a42a27e4154e3da2dd611487e06598",
+        "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+        "plan_version": 1,
+        "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+      },
+      "intent_snapshot": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "2026年已解决工单的城市响应分钟均值排名",
+          "business_goal": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "创建日期为2026年",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "工单状态为已解决",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "响应分钟均值",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按平均响应分钟升序排名",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "取前三名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      }
+    },
+    "workflow_events": [
+      {
+        "status": "CREATED",
+        "recorded_at": "2026-10-27T10:54:41.625746+00:00"
+      },
+      {
+        "status": "PROFILING",
+        "recorded_at": "2026-10-27T10:54:41.628803+00:00"
+      },
+      {
+        "status": "PARSING_INTENT",
+        "recorded_at": "2026-10-27T10:54:41.632516+00:00"
+      },
+      {
+        "status": "PLANNING",
+        "recorded_at": "2026-10-27T10:54:45.803785+00:00"
+      },
+      {
+        "status": "VALIDATING",
+        "recorded_at": "2026-10-27T10:54:52.391608+00:00"
+      },
+      {
+        "status": "AWAITING_APPROVAL",
+        "recorded_at": "2026-10-27T10:54:52.395372+00:00"
+      },
+      {
+        "status": "APPROVED",
+        "recorded_at": "2026-10-27T10:57:20.868467+00:00"
+      },
+      {
+        "status": "RUNNING",
+        "recorded_at": "2026-10-27T10:57:20.881836+00:00"
+      },
+      {
+        "status": "COMPLETED",
+        "recorded_at": "2026-10-27T10:57:20.889901+00:00"
+      }
+    ],
+    "file": {
+      "id": "e4a42a27e4154e3da2dd611487e06598",
+      "name": "tickets.csv",
+      "size": 201,
+      "extension": ".csv",
+      "content_sha256": "dd852e8f57f49975d7a01da863f4a37a9f5033ac0b3cbf200d9aa17d242d8432"
+    },
+    "user_goal": "创建日期为2026年，工单状态为已解决，按城市计算响应分钟均值，按平均响应分钟升序排名，取前三名。",
+    "analysis_mode": "goal_driven",
+    "intent": {
+      "analysis_mode": "goal_driven",
+      "next_action": "proceed",
+      "analysis_goal": {
+        "analysis_object": "2026年已解决工单的城市响应分钟均值排名",
+        "business_goal": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名",
+        "decision_goal": null
+      },
+      "constraints": {
+        "time_range": {
+          "raw_text": "创建日期为2026年",
+          "validation_status": "unverified"
+        },
+        "filters": [
+          {
+            "raw_text": "工单状态为已解决",
+            "validation_status": "unverified"
+          }
+        ],
+        "metric_requirements": [
+          {
+            "raw_text": "响应分钟均值",
+            "validation_status": "unverified"
+          }
+        ],
+        "analysis_limits": [
+          {
+            "raw_text": "按平均响应分钟升序排名",
+            "validation_status": "unverified"
+          },
+          {
+            "raw_text": "取前三名",
+            "validation_status": "unverified"
+          }
+        ]
+      },
+      "uncertainties": [],
+      "clarification_questions": [],
+      "user_query": "创建日期为2026年，工单状态为已解决，按城市计算响应分钟均值，按平均响应分钟升序排名，取前三名。",
+      "clarification_answers": [],
+      "dataset_ref": {
+        "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+        "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7"
+      },
+      "parse_origin": "llm",
+      "llm": {
+        "provider": "compatible",
+        "model": "qwen3.8-flash",
+        "is_mock": false
+      },
+      "provenance": {
+        "source": "llm",
+        "dataset": "e4a42a27e4154e3da2dd611487e06598",
+        "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+        "plan_version": null,
+        "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+      },
+      "parser_version": "1.1",
+      "prompt_version": "intent-v1.3.3",
+      "llm_attempts": 1,
+      "parse_id": "d7a5730e1fba4302977251d584dfdebc"
+    },
+    "intent_history": [
+      {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "2026年已解决工单的城市响应分钟均值排名",
+          "business_goal": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "创建日期为2026年",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "工单状态为已解决",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "响应分钟均值",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按平均响应分钟升序排名",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "取前三名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": [],
+        "user_query": "创建日期为2026年，工单状态为已解决，按城市计算响应分钟均值，按平均响应分钟升序排名，取前三名。",
+        "clarification_answers": [],
+        "dataset_ref": {
+          "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+          "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7"
+        },
+        "parse_origin": "llm",
+        "llm": {
+          "provider": "compatible",
+          "model": "qwen3.8-flash",
+          "is_mock": false
+        },
+        "provenance": {
+          "source": "llm",
+          "dataset": "e4a42a27e4154e3da2dd611487e06598",
+          "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+          "plan_version": null,
+          "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+        },
+        "parser_version": "1.1",
+        "prompt_version": "intent-v1.3.3",
+        "llm_attempts": 1,
+        "parse_id": "d7a5730e1fba4302977251d584dfdebc"
+      }
+    ],
+    "clarification_answers": [],
+    "profile": {
+      "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+      "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+      "schema_version": "1.0",
+      "profiler_version": "1.1.0",
+      "content_sha256": "dd852e8f57f49975d7a01da863f4a37a9f5033ac0b3cbf200d9aa17d242d8432",
+      "file_name": "tickets.csv",
+      "file_format": "csv",
+      "sheet_name": null,
+      "available_sheets": [],
+      "options": {
+        "header_row": 1,
+        "sheet_name": null,
+        "encoding": "utf-8-sig",
+        "delimiter": ","
+      },
+      "row_count": 5,
+      "column_count": 4,
+      "total_cell_count": 20,
+      "missing_cell_count": 0,
+      "missing_cell_rate": 0.0,
+      "duplicate_row_count": 0,
+      "duplicate_row_rate": 0.0,
+      "fields": [
+        {
+          "field_id": "field_0001",
+          "position": 1,
+          "original_name": "创建日期",
+          "display_name": "创建日期",
+          "physical_type": "string",
+          "logical_type": "date",
+          "missing_count": 0,
+          "missing_rate": 0.0,
+          "non_missing_count": 5,
+          "unique_count": 5,
+          "physical_type_counts": {
+            "string": 5
+          },
+          "logical_type_counts": {
+            "date": 5
+          },
+          "samples": [
+            {
+              "value": "2026-01-02",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "2026-02-01",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "2026-03-01",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "2025-02-01",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "2026-04-01",
+              "physical_type": "string",
+              "truncated": false
+            }
+          ]
+        },
+        {
+          "field_id": "field_0002",
+          "position": 2,
+          "original_name": "城市",
+          "display_name": "城市",
+          "physical_type": "string",
+          "logical_type": "text",
+          "missing_count": 0,
+          "missing_rate": 0.0,
+          "non_missing_count": 5,
+          "unique_count": 4,
+          "physical_type_counts": {
+            "string": 5
+          },
+          "logical_type_counts": {
+            "text": 5
+          },
+          "samples": [
+            {
+              "value": "上海",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "北京",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "杭州",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "广州",
+              "physical_type": "string",
+              "truncated": false
+            }
+          ]
+        },
+        {
+          "field_id": "field_0003",
+          "position": 3,
+          "original_name": "工单状态",
+          "display_name": "工单状态",
+          "physical_type": "string",
+          "logical_type": "text",
+          "missing_count": 0,
+          "missing_rate": 0.0,
+          "non_missing_count": 5,
+          "unique_count": 2,
+          "physical_type_counts": {
+            "string": 5
+          },
+          "logical_type_counts": {
+            "text": 5
+          },
+          "samples": [
+            {
+              "value": "已解决",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "未解决",
+              "physical_type": "string",
+              "truncated": false
+            }
+          ]
+        },
+        {
+          "field_id": "field_0004",
+          "position": 4,
+          "original_name": "响应分钟",
+          "display_name": "响应分钟",
+          "physical_type": "string",
+          "logical_type": "integer",
+          "missing_count": 0,
+          "missing_rate": 0.0,
+          "non_missing_count": 5,
+          "unique_count": 5,
+          "physical_type_counts": {
+            "string": 5
+          },
+          "logical_type_counts": {
+            "integer": 5
+          },
+          "samples": [
+            {
+              "value": "10",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "30",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "20",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "90",
+              "physical_type": "string",
+              "truncated": false
+            },
+            {
+              "value": "80",
+              "physical_type": "string",
+              "truncated": false
+            }
+          ]
+        }
+      ],
+      "quality_issues": [],
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "e4a42a27e4154e3da2dd611487e06598",
+        "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+        "plan_version": null,
+        "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+      }
+    },
+    "dataset_ref": {
+      "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+      "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7"
+    },
+    "plans": [],
+    "current_plan_version": 1,
+    "approved_plan_version": 1,
+    "node_runs": [
+      {
+        "run_id": "9181e45c113746e1948e02f126861e6d",
+        "node_name": "data_profiler",
+        "status": "success",
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "e4a42a27e4154e3da2dd611487e06598",
+          "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+          "plan_version": null,
+          "notice": "从实际上传文件确定性计算；未清洗、未调用 LLM。"
+        },
+        "error": null,
+        "finished_at": "2026-10-27T10:54:41.631429+00:00"
+      },
+      {
+        "run_id": "3073919c498c47f08655b08c11ebff66",
+        "node_name": "intent_parser",
+        "status": "success",
+        "provenance": {
+          "source": "llm",
+          "dataset": "e4a42a27e4154e3da2dd611487e06598",
+          "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+          "plan_version": null,
+          "notice": "结构化意图识别；约束未验证，未生成任务或计算结果。"
+        },
+        "error": null,
+        "finished_at": "2026-10-27T10:54:45.801433+00:00"
+      },
+      {
+        "run_id": "1d46234568f442df962c722d411029ca",
+        "node_name": "analysis_planner_v1",
+        "status": "success",
+        "provenance": {
+          "source": "llm",
+          "dataset": "e4a42a27e4154e3da2dd611487e06598",
+          "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+          "plan_version": 1,
+          "notice": "Prompt=planner-v1.2; attempts=1; 模型草案经技术校验，不代表业务约束已核实或用户批准，未执行统计。"
+        },
+        "error": null,
+        "finished_at": "2026-10-27T10:54:52.389015+00:00"
+      }
+    ],
+    "messages": [
+      {
+        "id": "ff9888d70a5f4c41a15e3851e94a3a67",
+        "role": "user",
+        "kind": "text",
+        "content": "创建日期为2026年，工单状态为已解决，按城市计算响应分钟均值，按平均响应分钟升序排名，取前三名。",
+        "plan_version": null,
+        "created_at": "2026-10-27T10:54:41.625719+00:00"
+      },
+      {
+        "id": "06f66608727b4e1b96ae27bb83e3df45",
+        "role": "assistant",
+        "kind": "status",
+        "content": "正在解析上传文件并计算真实数据画像。",
+        "plan_version": null,
+        "created_at": "2026-10-27T10:54:41.628794+00:00"
+      },
+      {
+        "id": "13e2741d338f49d98ae5d76574d37555",
+        "role": "assistant",
+        "kind": "status",
+        "content": "真实画像完成：5行、4列；正在理解分析需求。",
+        "plan_version": null,
+        "created_at": "2026-10-27T10:54:41.632506+00:00"
+      },
+      {
+        "id": "b3d16feea1b64a9e95aac0b8d75095b7",
+        "role": "assistant",
+        "kind": "status",
+        "content": "需求已理解，正在生成受控分析计划。",
+        "plan_version": null,
+        "created_at": "2026-10-27T10:54:45.803777+00:00"
+      },
+      {
+        "id": "4c0e748324cf4515a98b71ed9910a992",
+        "role": "assistant",
+        "kind": "plan",
+        "content": "真实计划已保存，目标覆盖：complete。请审核任务、未满足需求和约束；批准前不会计算。",
+        "plan_version": 1,
+        "created_at": "2026-10-27T10:54:52.395362+00:00"
+      },
+      {
+        "id": "06da7f65530445a18d453916d67d93f6",
+        "role": "user",
+        "kind": "text",
+        "content": "确认真实计划 v1 并执行；已确认限制：无。",
+        "plan_version": null,
+        "created_at": "2026-10-27T10:57:20.868462+00:00"
+      },
+      {
+        "id": "da0e9c64ab0f49d9b260b4aad8107828",
+        "role": "assistant",
+        "kind": "status",
+        "content": "已核对批准版本，正在执行真实上传数据。",
+        "plan_version": null,
+        "created_at": "2026-10-27T10:57:20.881847+00:00"
+      },
+      {
+        "id": "c18e8404e4934a3b91eff5af4788eae7",
+        "role": "assistant",
+        "kind": "status",
+        "content": "真实计算已结束，执行结果与步骤记录已保存；本阶段不自动生成报告。",
+        "plan_version": null,
+        "created_at": "2026-10-27T10:57:20.889947+00:00"
+      }
+    ],
+    "review_plan": {
+      "session_id": "ff11ea163e4b4ba0a5550d7b88c3394d",
+      "plan_id": "plan_d644027ffd2e448aab73159ae097f04a",
+      "plan_version": 1,
+      "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+      "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+      "validation_version": "1.0",
+      "created_at": "2026-10-27T10:54:52.395205+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+          "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+          "plan_id": "plan_d644027ffd2e448aab73159ae097f04a",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T01",
+              "title": "2026年已解决工单城市响应均值Top3",
+              "business_question": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名。",
+              "priority": "P0",
+              "priority_reason": "直接回答核心业务目标：识别2026年处理效率最高（响应最快）的前三个城市。删除此任务将无法支持基于响应速度的城市绩效对比决策。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03",
+                "C04",
+                "C05"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "derive",
+                  "params": {
+                    "function": "extract_year",
+                    "field": "field_0001",
+                    "alias": "year_created"
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "year_created",
+                        "operator": "eq",
+                        "value": 2026
+                      },
+                      {
+                        "field": "field_0003",
+                        "operator": "eq",
+                        "value": "已解决"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S03",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "avg",
+                        "field": "field_0004",
+                        "alias": "avg_response_minutes"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0002"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S04",
+                  "operation": "sort",
+                  "params": {
+                    "field": "avg_response_minutes",
+                    "direction": "asc"
+                  }
+                },
+                {
+                  "step_id": "S05",
+                  "operation": "top_n",
+                  "params": {
+                    "field": "avg_response_minutes",
+                    "direction": "asc",
+                    "n": 3
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "time_range：创建日期为2026年"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "filters：工单状态为已解决"
+            },
+            {
+              "requirement_id": "C04",
+              "description": "metric_requirements：响应分钟均值"
+            },
+            {
+              "requirement_id": "C05",
+              "description": "analysis_limits：按平均响应分钟升序排名；取前三名"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T01",
+            "feasibility": "F1",
+            "reason_code": "REQUIRES_TRANSFORMATION",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "e4a42a27e4154e3da2dd611487e06598",
+          "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "2026年已解决工单的城市响应分钟均值排名",
+            "business_goal": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": {
+              "raw_text": "创建日期为2026年",
+              "validation_status": "unverified"
+            },
+            "filters": [
+              {
+                "raw_text": "工单状态为已解决",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "响应分钟均值",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按平均响应分钟升序排名",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "取前三名",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "review_status": "completed",
+    "engine_approval": {
+      "approval_id": "approval_2ab777f42d694300bb98ac1c875d8d36",
+      "approved_at": "2026-10-27T10:57:20.868336+00:00",
+      "status": "approved",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+          "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+          "plan_id": "plan_d644027ffd2e448aab73159ae097f04a",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T01",
+              "title": "2026年已解决工单城市响应均值Top3",
+              "business_question": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名。",
+              "priority": "P0",
+              "priority_reason": "直接回答核心业务目标：识别2026年处理效率最高（响应最快）的前三个城市。删除此任务将无法支持基于响应速度的城市绩效对比决策。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03",
+                "C04",
+                "C05"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "derive",
+                  "params": {
+                    "function": "extract_year",
+                    "field": "field_0001",
+                    "alias": "year_created"
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "year_created",
+                        "operator": "eq",
+                        "value": 2026
+                      },
+                      {
+                        "field": "field_0003",
+                        "operator": "eq",
+                        "value": "已解决"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S03",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "avg",
+                        "field": "field_0004",
+                        "alias": "avg_response_minutes"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0002"
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S04",
+                  "operation": "sort",
+                  "params": {
+                    "field": "avg_response_minutes",
+                    "direction": "asc"
+                  }
+                },
+                {
+                  "step_id": "S05",
+                  "operation": "top_n",
+                  "params": {
+                    "field": "avg_response_minutes",
+                    "direction": "asc",
+                    "n": 3
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "time_range：创建日期为2026年"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "filters：工单状态为已解决"
+            },
+            {
+              "requirement_id": "C04",
+              "description": "metric_requirements：响应分钟均值"
+            },
+            {
+              "requirement_id": "C05",
+              "description": "analysis_limits：按平均响应分钟升序排名；取前三名"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T01",
+            "feasibility": "F1",
+            "reason_code": "REQUIRES_TRANSFORMATION",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "e4a42a27e4154e3da2dd611487e06598",
+          "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "2026年已解决工单的城市响应分钟均值排名",
+            "business_goal": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": {
+              "raw_text": "创建日期为2026年",
+              "validation_status": "unverified"
+            },
+            "filters": [
+              {
+                "raw_text": "工单状态为已解决",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "响应分钟均值",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按平均响应分钟升序排名",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "取前三名",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      },
+      "intent": {
+        "analysis_mode": "goal_driven",
+        "next_action": "proceed",
+        "analysis_goal": {
+          "analysis_object": "2026年已解决工单的城市响应分钟均值排名",
+          "business_goal": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名",
+          "decision_goal": null
+        },
+        "constraints": {
+          "time_range": {
+            "raw_text": "创建日期为2026年",
+            "validation_status": "unverified"
+          },
+          "filters": [
+            {
+              "raw_text": "工单状态为已解决",
+              "validation_status": "unverified"
+            }
+          ],
+          "metric_requirements": [
+            {
+              "raw_text": "响应分钟均值",
+              "validation_status": "unverified"
+            }
+          ],
+          "analysis_limits": [
+            {
+              "raw_text": "按平均响应分钟升序排名",
+              "validation_status": "unverified"
+            },
+            {
+              "raw_text": "取前三名",
+              "validation_status": "unverified"
+            }
+          ]
+        },
+        "uncertainties": [],
+        "clarification_questions": []
+      },
+      "resolved_uncertainty_ids": [],
+      "constraints_confirmed": true,
+      "session_id": "ff11ea163e4b4ba0a5550d7b88c3394d",
+      "acknowledged_warnings": []
+    },
+    "engine_execution_ids": [
+      "exec_e3f4ee1a1d0f427ea463c429b1e3eaac"
+    ],
+    "execution_result": null,
+    "report": null,
+    "error": null
+  },
+  "view": {
+    "session_id": "ff11ea163e4b4ba0a5550d7b88c3394d",
+    "revision": 11,
+    "plan_id": "plan_d644027ffd2e448aab73159ae097f04a",
+    "plan_version": 1,
+    "goal": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名",
+    "coverage": "已安排核心问题的分析",
+    "conditions": [
+      {
+        "label": "时间范围",
+        "text": "创建日期为2026年",
+        "verification": "已核对分析步骤",
+        "source": "intent.constraints.time_range"
+      },
+      {
+        "label": "筛选范围",
+        "text": "工单状态为已解决",
+        "verification": "已核对分析步骤",
+        "source": "intent.constraints.filters[0]"
+      },
+      {
+        "label": "统计指标",
+        "text": "响应分钟均值",
+        "verification": "已核对分析步骤",
+        "source": "intent.constraints.metric_requirements[0]"
+      },
+      {
+        "label": "分析要求",
+        "text": "按平均响应分钟升序排名",
+        "verification": "已核对分析步骤",
+        "source": "intent.constraints.analysis_limits[0]"
+      },
+      {
+        "label": "分析要求",
+        "text": "取前三名",
+        "verification": "已核对分析步骤",
+        "source": "intent.constraints.analysis_limits[1]"
+      },
+      {
+        "label": "拟用分组维度",
+        "text": "按城市分组",
+        "verification": "来自当前方案，请结合待确认事项核对",
+        "source": "plan.tasks.T01.steps.S03"
+      },
+      {
+        "label": "拟用统计口径",
+        "text": "拟用统计口径：响应分钟 · 均值",
+        "verification": "来自当前方案，请结合待确认事项核对",
+        "source": "plan.tasks.T01.steps.S03"
+      },
+      {
+        "label": "拟用排序与展示",
+        "text": "按响应分钟 · 均值从低到高排列",
+        "verification": "来自当前方案，请结合待确认事项核对",
+        "source": "plan.tasks.T01.steps.S04"
+      },
+      {
+        "label": "拟用排序与展示",
+        "text": "按响应分钟 · 均值从低到高排列，取前 3 名",
+        "verification": "来自当前方案，请结合待确认事项核对",
+        "source": "plan.tasks.T01.steps.S05"
+      }
+    ],
+    "directions": [
+      {
+        "task_id": "T01",
+        "title": "2026年已解决工单城市响应均值Top3",
+        "question": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名。",
+        "importance": "核心分析",
+        "reason": "直接回答核心业务目标：识别2026年处理效率最高（响应最快）的前三个城市。删除此任务将无法支持基于响应速度的城市绩效对比决策。",
+        "readiness": "完成已支持的数据转换后可分析",
+        "executable": true,
+        "details": [
+          "从创建日期提取年份，再分析",
+          "创建日期的年份 为 2026",
+          "工单状态 为 已解决",
+          "按城市分组",
+          "拟用统计口径：响应分钟 · 均值",
+          "按响应分钟 · 均值从低到高排列",
+          "按响应分钟 · 均值从低到高排列，取前 3 名"
+        ],
+        "gaps": [],
+        "can_remove": true
+      }
+    ],
+    "issues": [],
+    "warnings": [],
+    "can_approve": false,
+    "can_execute": false,
+    "audit": {
+      "audit_version": "2.0",
+      "binding": {
+        "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+        "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+        "plan_id": "plan_d644027ffd2e448aab73159ae097f04a",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "6ae12541a83d422036d0d821339cd4eae9f81a2629731e939fa30ee5016b690a",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.constraints.time_range",
+          "raw_text": "创建日期为2026年",
+          "status": "verified",
+          "category": "time_range",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0001"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "derive",
+              "params": {
+                "function": "extract_year",
+                "field": "field_0001",
+                "alias": "year_created"
+              }
+            },
+            {
+              "task_id": "T01",
+              "step_id": "S02",
+              "operation": "filter",
+              "condition": {
+                "field": "year_created",
+                "operator": "eq",
+                "value": 2026
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "工单状态为已解决",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S02",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0003",
+                "operator": "eq",
+                "value": "已解决"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "响应分钟均值",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S03",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "avg",
+                "field": "field_0004",
+                "alias": "avg_response_minutes"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "按平均响应分钟升序排名",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S05",
+              "operation": "top_n",
+              "metric": {
+                "function": "avg",
+                "field": "field_0004",
+                "alias": "avg_response_minutes"
+              },
+              "params": {
+                "field": "avg_response_minutes",
+                "direction": "asc",
+                "n": 3
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[1]",
+          "raw_text": "取前三名",
+          "status": "verified",
+          "category": "analysis_limits",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S05",
+              "operation": "top_n",
+              "metric": {
+                "function": "avg",
+                "field": "field_0004",
+                "alias": "avg_response_minutes"
+              },
+              "params": {
+                "field": "avg_response_minutes",
+                "direction": "asc",
+                "n": 3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "technical_details": {
+      "record": {
+        "session_id": "ff11ea163e4b4ba0a5550d7b88c3394d",
+        "plan_id": "plan_d644027ffd2e448aab73159ae097f04a",
+        "plan_version": 1,
+        "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+        "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+        "validation_version": "1.0",
+        "created_at": "2026-10-27T10:54:52.395205+00:00",
+        "change_type": "created",
+        "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+        "validated_plan": {
+          "plan": {
+            "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+            "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+            "plan_id": "plan_d644027ffd2e448aab73159ae097f04a",
+            "plan_version": 1,
+            "tasks": [
+              {
+                "task_id": "T01",
+                "title": "2026年已解决工单城市响应均值Top3",
+                "business_question": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名。",
+                "priority": "P0",
+                "priority_reason": "直接回答核心业务目标：识别2026年处理效率最高（响应最快）的前三个城市。删除此任务将无法支持基于响应速度的城市绩效对比决策。",
+                "requirement_ids": [
+                  "C01",
+                  "C02",
+                  "C03",
+                  "C04",
+                  "C05"
+                ],
+                "depends_on": [],
+                "missing_inputs": [],
+                "steps": [
+                  {
+                    "step_id": "S01",
+                    "operation": "derive",
+                    "params": {
+                      "function": "extract_year",
+                      "field": "field_0001",
+                      "alias": "year_created"
+                    }
+                  },
+                  {
+                    "step_id": "S02",
+                    "operation": "filter",
+                    "params": {
+                      "conditions": [
+                        {
+                          "field": "year_created",
+                          "operator": "eq",
+                          "value": 2026
+                        },
+                        {
+                          "field": "field_0003",
+                          "operator": "eq",
+                          "value": "已解决"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "step_id": "S03",
+                    "operation": "group_aggregate",
+                    "params": {
+                      "metrics": [
+                        {
+                          "function": "avg",
+                          "field": "field_0004",
+                          "alias": "avg_response_minutes"
+                        }
+                      ],
+                      "dimensions": [
+                        "field_0002"
+                      ]
+                    }
+                  },
+                  {
+                    "step_id": "S04",
+                    "operation": "sort",
+                    "params": {
+                      "field": "avg_response_minutes",
+                      "direction": "asc"
+                    }
+                  },
+                  {
+                    "step_id": "S05",
+                    "operation": "top_n",
+                    "params": {
+                      "field": "avg_response_minutes",
+                      "direction": "asc",
+                      "n": 3
+                    }
+                  }
+                ]
+              }
+            ],
+            "core_requirements": [
+              {
+                "requirement_id": "C01",
+                "description": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名"
+              },
+              {
+                "requirement_id": "C02",
+                "description": "time_range：创建日期为2026年"
+              },
+              {
+                "requirement_id": "C03",
+                "description": "filters：工单状态为已解决"
+              },
+              {
+                "requirement_id": "C04",
+                "description": "metric_requirements：响应分钟均值"
+              },
+              {
+                "requirement_id": "C05",
+                "description": "analysis_limits：按平均响应分钟升序排名；取前三名"
+              }
+            ]
+          },
+          "validation_results": [
+            {
+              "task_id": "T01",
+              "feasibility": "F1",
+              "reason_code": "REQUIRES_TRANSFORMATION",
+              "validation_issues": [],
+              "executable": true
+            }
+          ],
+          "unmet_core_requirements": [],
+          "coverage_status": "complete",
+          "executable_task_ids": [
+            "T01"
+          ],
+          "blocked_task_ids": [],
+          "fully_executable": true,
+          "validation_version": "1.0",
+          "registry_version": "1.0",
+          "approval_required": true,
+          "llm": null,
+          "provenance": {
+            "source": "uploaded",
+            "dataset": "e4a42a27e4154e3da2dd611487e06598",
+            "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+            "plan_version": 1,
+            "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+          },
+          "intent_snapshot": {
+            "analysis_mode": "goal_driven",
+            "next_action": "proceed",
+            "analysis_goal": {
+              "analysis_object": "2026年已解决工单的城市响应分钟均值排名",
+              "business_goal": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名",
+              "decision_goal": null
+            },
+            "constraints": {
+              "time_range": {
+                "raw_text": "创建日期为2026年",
+                "validation_status": "unverified"
+              },
+              "filters": [
+                {
+                  "raw_text": "工单状态为已解决",
+                  "validation_status": "unverified"
+                }
+              ],
+              "metric_requirements": [
+                {
+                  "raw_text": "响应分钟均值",
+                  "validation_status": "unverified"
+                }
+              ],
+              "analysis_limits": [
+                {
+                  "raw_text": "按平均响应分钟升序排名",
+                  "validation_status": "unverified"
+                },
+                {
+                  "raw_text": "取前三名",
+                  "validation_status": "unverified"
+                }
+              ]
+            },
+            "uncertainties": [],
+            "clarification_questions": []
+          }
+        }
+      },
+      "constraint_audit": {
+        "audit_version": "2.0",
+        "binding": {
+          "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+          "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+          "plan_id": "plan_d644027ffd2e448aab73159ae097f04a",
+          "plan_version": 1,
+          "validation_version": "1.0",
+          "registry_version": "1.0"
+        },
+        "digest": "6ae12541a83d422036d0d821339cd4eae9f81a2629731e939fa30ee5016b690a",
+        "all_verified": true,
+        "items": [
+          {
+            "source": "intent.constraints.time_range",
+            "raw_text": "创建日期为2026年",
+            "status": "verified",
+            "category": "time_range",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0001"
+            ],
+            "matches": [
+              {
+                "task_id": "T01",
+                "step_id": "S01",
+                "operation": "derive",
+                "params": {
+                  "function": "extract_year",
+                  "field": "field_0001",
+                  "alias": "year_created"
+                }
+              },
+              {
+                "task_id": "T01",
+                "step_id": "S02",
+                "operation": "filter",
+                "condition": {
+                  "field": "year_created",
+                  "operator": "eq",
+                  "value": 2026
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.filters[0]",
+            "raw_text": "工单状态为已解决",
+            "status": "verified",
+            "category": "filters",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0003"
+            ],
+            "matches": [
+              {
+                "task_id": "T01",
+                "step_id": "S02",
+                "operation": "filter",
+                "condition": {
+                  "field": "field_0003",
+                  "operator": "eq",
+                  "value": "已解决"
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.metric_requirements[0]",
+            "raw_text": "响应分钟均值",
+            "status": "verified",
+            "category": "metric_requirements",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0004"
+            ],
+            "matches": [
+              {
+                "task_id": "T01",
+                "step_id": "S03",
+                "operation": "group_aggregate",
+                "metric": {
+                  "function": "avg",
+                  "field": "field_0004",
+                  "alias": "avg_response_minutes"
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.analysis_limits[0]",
+            "raw_text": "按平均响应分钟升序排名",
+            "status": "verified",
+            "category": "analysis_limits",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0004"
+            ],
+            "matches": [
+              {
+                "task_id": "T01",
+                "step_id": "S05",
+                "operation": "top_n",
+                "metric": {
+                  "function": "avg",
+                  "field": "field_0004",
+                  "alias": "avg_response_minutes"
+                },
+                "params": {
+                  "field": "avg_response_minutes",
+                  "direction": "asc",
+                  "n": 3
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.analysis_limits[1]",
+            "raw_text": "取前三名",
+            "status": "verified",
+            "category": "analysis_limits",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [],
+            "matches": [
+              {
+                "task_id": "T01",
+                "step_id": "S05",
+                "operation": "top_n",
+                "metric": {
+                  "function": "avg",
+                  "field": "field_0004",
+                  "alias": "avg_response_minutes"
+                },
+                "params": {
+                  "field": "avg_response_minutes",
+                  "direction": "asc",
+                  "n": 3
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "session_status": "COMPLETED",
+      "revision": 11
+    }
+  },
+  "approvals": [
+    {
+      "approval_id": "approval_2ab777f42d694300bb98ac1c875d8d36",
+      "approval_request_id": "0b0dafab-336c-4e34-be15-0f5243f69dd9",
+      "session_id": "ff11ea163e4b4ba0a5550d7b88c3394d",
+      "plan_id": "plan_d644027ffd2e448aab73159ae097f04a",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+      "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+      "approved_at": "2026-10-27T10:57:20.868336+00:00",
+      "approval_status": "approved",
+      "acknowledged_warnings": [],
+      "snapshot": {
+        "approval_id": "approval_2ab777f42d694300bb98ac1c875d8d36",
+        "approved_at": "2026-10-27T10:57:20.868336+00:00",
+        "status": "approved",
+        "validated_plan": {
+          "plan": {
+            "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+            "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+            "plan_id": "plan_d644027ffd2e448aab73159ae097f04a",
+            "plan_version": 1,
+            "tasks": [
+              {
+                "task_id": "T01",
+                "title": "2026年已解决工单城市响应均值Top3",
+                "business_question": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名。",
+                "priority": "P0",
+                "priority_reason": "直接回答核心业务目标：识别2026年处理效率最高（响应最快）的前三个城市。删除此任务将无法支持基于响应速度的城市绩效对比决策。",
+                "requirement_ids": [
+                  "C01",
+                  "C02",
+                  "C03",
+                  "C04",
+                  "C05"
+                ],
+                "depends_on": [],
+                "missing_inputs": [],
+                "steps": [
+                  {
+                    "step_id": "S01",
+                    "operation": "derive",
+                    "params": {
+                      "function": "extract_year",
+                      "field": "field_0001",
+                      "alias": "year_created"
+                    }
+                  },
+                  {
+                    "step_id": "S02",
+                    "operation": "filter",
+                    "params": {
+                      "conditions": [
+                        {
+                          "field": "year_created",
+                          "operator": "eq",
+                          "value": 2026
+                        },
+                        {
+                          "field": "field_0003",
+                          "operator": "eq",
+                          "value": "已解决"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "step_id": "S03",
+                    "operation": "group_aggregate",
+                    "params": {
+                      "metrics": [
+                        {
+                          "function": "avg",
+                          "field": "field_0004",
+                          "alias": "avg_response_minutes"
+                        }
+                      ],
+                      "dimensions": [
+                        "field_0002"
+                      ]
+                    }
+                  },
+                  {
+                    "step_id": "S04",
+                    "operation": "sort",
+                    "params": {
+                      "field": "avg_response_minutes",
+                      "direction": "asc"
+                    }
+                  },
+                  {
+                    "step_id": "S05",
+                    "operation": "top_n",
+                    "params": {
+                      "field": "avg_response_minutes",
+                      "direction": "asc",
+                      "n": 3
+                    }
+                  }
+                ]
+              }
+            ],
+            "core_requirements": [
+              {
+                "requirement_id": "C01",
+                "description": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名"
+              },
+              {
+                "requirement_id": "C02",
+                "description": "time_range：创建日期为2026年"
+              },
+              {
+                "requirement_id": "C03",
+                "description": "filters：工单状态为已解决"
+              },
+              {
+                "requirement_id": "C04",
+                "description": "metric_requirements：响应分钟均值"
+              },
+              {
+                "requirement_id": "C05",
+                "description": "analysis_limits：按平均响应分钟升序排名；取前三名"
+              }
+            ]
+          },
+          "validation_results": [
+            {
+              "task_id": "T01",
+              "feasibility": "F1",
+              "reason_code": "REQUIRES_TRANSFORMATION",
+              "validation_issues": [],
+              "executable": true
+            }
+          ],
+          "unmet_core_requirements": [],
+          "coverage_status": "complete",
+          "executable_task_ids": [
+            "T01"
+          ],
+          "blocked_task_ids": [],
+          "fully_executable": true,
+          "validation_version": "1.0",
+          "registry_version": "1.0",
+          "approval_required": true,
+          "llm": null,
+          "provenance": {
+            "source": "uploaded",
+            "dataset": "e4a42a27e4154e3da2dd611487e06598",
+            "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+            "plan_version": 1,
+            "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+          },
+          "intent_snapshot": {
+            "analysis_mode": "goal_driven",
+            "next_action": "proceed",
+            "analysis_goal": {
+              "analysis_object": "2026年已解决工单的城市响应分钟均值排名",
+              "business_goal": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名",
+              "decision_goal": null
+            },
+            "constraints": {
+              "time_range": {
+                "raw_text": "创建日期为2026年",
+                "validation_status": "unverified"
+              },
+              "filters": [
+                {
+                  "raw_text": "工单状态为已解决",
+                  "validation_status": "unverified"
+                }
+              ],
+              "metric_requirements": [
+                {
+                  "raw_text": "响应分钟均值",
+                  "validation_status": "unverified"
+                }
+              ],
+              "analysis_limits": [
+                {
+                  "raw_text": "按平均响应分钟升序排名",
+                  "validation_status": "unverified"
+                },
+                {
+                  "raw_text": "取前三名",
+                  "validation_status": "unverified"
+                }
+              ]
+            },
+            "uncertainties": [],
+            "clarification_questions": []
+          }
+        },
+        "intent": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "2026年已解决工单的城市响应分钟均值排名",
+            "business_goal": "按城市计算2026年已解决工单的响应分钟均值，并按升序取前三名",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": {
+              "raw_text": "创建日期为2026年",
+              "validation_status": "unverified"
+            },
+            "filters": [
+              {
+                "raw_text": "工单状态为已解决",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "响应分钟均值",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "按平均响应分钟升序排名",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "取前三名",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        },
+        "resolved_uncertainty_ids": [],
+        "constraints_confirmed": true,
+        "session_id": "ff11ea163e4b4ba0a5550d7b88c3394d",
+        "acknowledged_warnings": []
+      }
+    }
+  ],
+  "constraint_audits": [
+    {
+      "approval_id": "approval_2ab777f42d694300bb98ac1c875d8d36",
+      "session_id": "ff11ea163e4b4ba0a5550d7b88c3394d",
+      "approved_at": "2026-10-27T10:57:20.868336+00:00",
+      "audit": {
+        "audit_version": "2.0",
+        "binding": {
+          "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+          "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+          "plan_id": "plan_d644027ffd2e448aab73159ae097f04a",
+          "plan_version": 1,
+          "validation_version": "1.0",
+          "registry_version": "1.0"
+        },
+        "digest": "6ae12541a83d422036d0d821339cd4eae9f81a2629731e939fa30ee5016b690a",
+        "all_verified": true,
+        "items": [
+          {
+            "source": "intent.constraints.time_range",
+            "raw_text": "创建日期为2026年",
+            "status": "verified",
+            "category": "time_range",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0001"
+            ],
+            "matches": [
+              {
+                "task_id": "T01",
+                "step_id": "S01",
+                "operation": "derive",
+                "params": {
+                  "function": "extract_year",
+                  "field": "field_0001",
+                  "alias": "year_created"
+                }
+              },
+              {
+                "task_id": "T01",
+                "step_id": "S02",
+                "operation": "filter",
+                "condition": {
+                  "field": "year_created",
+                  "operator": "eq",
+                  "value": 2026
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.filters[0]",
+            "raw_text": "工单状态为已解决",
+            "status": "verified",
+            "category": "filters",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0003"
+            ],
+            "matches": [
+              {
+                "task_id": "T01",
+                "step_id": "S02",
+                "operation": "filter",
+                "condition": {
+                  "field": "field_0003",
+                  "operator": "eq",
+                  "value": "已解决"
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.metric_requirements[0]",
+            "raw_text": "响应分钟均值",
+            "status": "verified",
+            "category": "metric_requirements",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0004"
+            ],
+            "matches": [
+              {
+                "task_id": "T01",
+                "step_id": "S03",
+                "operation": "group_aggregate",
+                "metric": {
+                  "function": "avg",
+                  "field": "field_0004",
+                  "alias": "avg_response_minutes"
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.analysis_limits[0]",
+            "raw_text": "按平均响应分钟升序排名",
+            "status": "verified",
+            "category": "analysis_limits",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [
+              "field_0004"
+            ],
+            "matches": [
+              {
+                "task_id": "T01",
+                "step_id": "S05",
+                "operation": "top_n",
+                "metric": {
+                  "function": "avg",
+                  "field": "field_0004",
+                  "alias": "avg_response_minutes"
+                },
+                "params": {
+                  "field": "avg_response_minutes",
+                  "direction": "asc",
+                  "n": 3
+                }
+              }
+            ]
+          },
+          {
+            "source": "intent.constraints.analysis_limits[1]",
+            "raw_text": "取前三名",
+            "status": "verified",
+            "category": "analysis_limits",
+            "message": "已对应到当前可执行操作并核对条件。",
+            "field_ids": [],
+            "matches": [
+              {
+                "task_id": "T01",
+                "step_id": "S05",
+                "operation": "top_n",
+                "metric": {
+                  "function": "avg",
+                  "field": "field_0004",
+                  "alias": "avg_response_minutes"
+                },
+                "params": {
+                  "field": "avg_response_minutes",
+                  "direction": "asc",
+                  "n": 3
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "executions": [
+    {
+      "dataset_id": "e4a42a27e4154e3da2dd611487e06598",
+      "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+      "execution_id": "exec_e3f4ee1a1d0f427ea463c429b1e3eaac",
+      "plan_id": "plan_d644027ffd2e448aab73159ae097f04a",
+      "plan_version": 1,
+      "approved_plan_version": 1,
+      "execution_status": "success",
+      "source": "engine",
+      "producer": "insightflow-analysis-engine-v1",
+      "session_id": "ff11ea163e4b4ba0a5550d7b88c3394d",
+      "execution_request_id": "199ed8dd-b0ea-4f45-95ae-c7d61296437b",
+      "approval_id": "approval_2ab777f42d694300bb98ac1c875d8d36",
+      "started_at": "2026-10-27T10:57:20.881776+00:00",
+      "finished_at": "2026-10-27T10:57:20.887163+00:00",
+      "duration_ms": 4.649250011425465,
+      "result_view": "complete",
+      "provenance": {
+        "source": "uploaded",
+        "dataset": "e4a42a27e4154e3da2dd611487e06598",
+        "dataset_version": "831bdd375d9e95acd2b56435135e2d9eb615daba6140c7a2ab5f983b0875dfe7",
+        "plan_version": 1,
+        "notice": "从指定版本上传文件读取，复用受控统计内核计算；完整结果与预览分开保存。"
+      },
+      "errors": [],
+      "warnings": [],
+      "tasks": [
+        {
+          "task_id": "T01",
+          "status": "success",
+          "result": {
+            "result_id": "result_bb6708f6f4c8403e8fb4d2a14faba1d0",
+            "columns": [
+              {
+                "field": "field_0002",
+                "label": "城市",
+                "logical_type": "text",
+                "role": "dimension",
+                "unit": null
+              },
+              {
+                "field": "avg_response_minutes",
+                "label": "响应分钟 · 均值",
+                "logical_type": "number",
+                "role": "metric",
+                "unit": null
+              }
+            ],
+            "rows": [
+              {
+                "field_0002": "上海",
+                "avg_response_minutes": 10.0
+              },
+              {
+                "field_0002": "杭州",
+                "avg_response_minutes": 20.0
+              },
+              {
+                "field_0002": "北京",
+                "avg_response_minutes": 30.0
+              }
+            ],
+            "truncated": false,
+            "total_result_rows": 3,
+            "row_offset": 0,
+            "total_refs": []
+          },
+          "effective_row_count": 3,
+          "valid_sample_count": 3,
+          "sample_definition": "聚合前各最终指标的非缺失参与数；指标样本数不同时不提供统一有效样本量。",
+          "scope": "指定数据集版本内，按批准任务的筛选和选择操作限定的范围。",
+          "calculation": "批准操作链：derive → filter → group_aggregate → sort → top_n",
+          "failure_reason": null,
+          "result_id": "result_bb6708f6f4c8403e8fb4d2a14faba1d0",
+          "result_ref": "result_bb6708f6f4c8403e8fb4d2a14faba1d0",
+          "row_count": 3,
+          "execution_metadata": {
+            "input_row_count": 5,
+            "started_at": "2026-10-27T10:57:20.882510+00:00",
+            "finished_at": "2026-10-27T10:57:20.885920+00:00",
+            "duration_ms": 3.4127090184483677,
+            "preview_row_count": 3,
+            "metric_valid_counts": {
+              "avg_response_minutes": 3
+            },
+            "steps": [
+              {
+                "step_id": "S01",
+                "operation": "derive",
+                "status": "success",
+                "input_row_count": 5,
+                "output_row_count": 5,
+                "duration_ms": 0.8112089999485761,
+                "warnings": [],
+                "error": null
+              },
+              {
+                "step_id": "S02",
+                "operation": "filter",
+                "status": "success",
+                "input_row_count": 5,
+                "output_row_count": 3,
+                "duration_ms": 0.9607919782865793,
+                "warnings": [],
+                "error": null
+              },
+              {
+                "step_id": "S03",
+                "operation": "group_aggregate",
+                "status": "success",
+                "input_row_count": 3,
+                "output_row_count": 3,
+                "duration_ms": 0.8185420010704547,
+                "warnings": [],
+                "error": null
+              },
+              {
+                "step_id": "S04",
+                "operation": "sort",
+                "status": "success",
+                "input_row_count": 3,
+                "output_row_count": 3,
+                "duration_ms": 0.29399999766610563,
+                "warnings": [],
+                "error": null
+              },
+              {
+                "step_id": "S05",
+                "operation": "top_n",
+                "status": "success",
+                "input_row_count": 3,
+                "output_row_count": 3,
+                "duration_ms": 0.1678749977145344,
+                "warnings": [],
+                "error": null
+              }
+            ],
+            "warnings": []
+          },
+          "error": null
+        }
+      ]
+    }
+  ]
+}

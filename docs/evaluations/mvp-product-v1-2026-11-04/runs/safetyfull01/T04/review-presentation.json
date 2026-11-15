@@ -1,0 +1,429 @@
+{
+  "session_id": "fd708269eddf40d68a15359f0b5c0f25",
+  "revision": 8,
+  "plan_id": "plan_77e4307ecbaf4ff387a9a8f688370a94",
+  "plan_version": 1,
+  "goal": "比较各团队的已解决工单数量",
+  "coverage": "已安排核心问题的分析",
+  "conditions": [
+    {
+      "label": "分析条件",
+      "text": "比较各团队的已解决工单数量",
+      "verification": "已核对分析步骤",
+      "source": "intent.analysis_goal.business_goal"
+    },
+    {
+      "label": "筛选范围",
+      "text": "已解决工单",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.filters[0]"
+    },
+    {
+      "label": "统计指标",
+      "text": "工单数量",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.metric_requirements[0]"
+    },
+    {
+      "label": "分析要求",
+      "text": "不要分析利润",
+      "verification": "需要解决后才能开始",
+      "source": "intent.constraints.analysis_limits[0]"
+    },
+    {
+      "label": "分析要求",
+      "text": "不要推断团队差异的原因",
+      "verification": "需要解决后才能开始",
+      "source": "intent.constraints.analysis_limits[1]"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按团队分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S2"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：记录数",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T1.steps.S2"
+    }
+  ],
+  "directions": [
+    {
+      "task_id": "T1",
+      "title": "各团队已解决工单数量统计",
+      "question": "比较各团队的已解决工单数量。注意：不要分析利润，不要推断团队差异的原因。",
+      "importance": "核心分析",
+      "reason": "直接回答核心问题“比较各团队的已解决工单数量”。删除此任务将无法获取任何关于团队工单分布的数据，无法支持核心决策。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "状态 为 已解决",
+        "按团队分组",
+        "拟用统计口径：记录数"
+      ],
+      "gaps": [],
+      "can_remove": true
+    }
+  ],
+  "issues": [
+    {
+      "code": "UNVERIFIED_CONSTRAINTS",
+      "message": "不要分析利润：尚不能可靠对应到唯一字段和完整统计条件；请在新需求中明确字段、取值或口径。",
+      "next_step": "请明确字段、范围或口径后重新提出需求；勾选不能解除此问题。"
+    },
+    {
+      "code": "UNVERIFIED_CONSTRAINTS",
+      "message": "不要推断团队差异的原因：尚不能可靠对应到唯一字段和完整统计条件；请在新需求中明确字段、取值或口径。",
+      "next_step": "请明确字段、范围或口径后重新提出需求；勾选不能解除此问题。"
+    }
+  ],
+  "warnings": [],
+  "can_approve": false,
+  "can_execute": false,
+  "audit": {
+    "audit_version": "2.1",
+    "binding": {
+      "dataset_id": "44cb5a219e3649bba20b976ff297557d",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+      "plan_id": "plan_77e4307ecbaf4ff387a9a8f688370a94",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "registry_version": "1.0"
+    },
+    "digest": "47d40532670c42ba4b6554fe878f91061db37988ae12b1cba701c5f415de9763",
+    "all_verified": false,
+    "items": [
+      {
+        "source": "intent.analysis_goal.business_goal",
+        "raw_text": "比较各团队的已解决工单数量",
+        "status": "verified",
+        "category": "goal_dimensions",
+        "message": "目标中的明确字段分组已核对。",
+        "field_ids": [
+          "field_0002"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S2",
+            "operation": "group_aggregate",
+            "dimensions": [
+              "field_0002"
+            ]
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.filters[0]",
+        "raw_text": "已解决工单",
+        "status": "verified",
+        "category": "filters",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0003"
+        ],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S1",
+            "operation": "filter",
+            "condition": {
+              "field": "field_0003",
+              "operator": "eq",
+              "value": "已解决"
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.metric_requirements[0]",
+        "raw_text": "工单数量",
+        "status": "verified",
+        "category": "metric_requirements",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [],
+        "matches": [
+          {
+            "task_id": "T1",
+            "step_id": "S2",
+            "operation": "group_aggregate",
+            "metric": {
+              "function": "count",
+              "field": null,
+              "alias": "resolved_ticket_count"
+            },
+            "count_basis": "uploaded_rows_not_distinct_entities"
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.analysis_limits[0]",
+        "raw_text": "不要分析利润",
+        "status": "unmapped",
+        "category": "analysis_limits",
+        "message": "尚不能可靠对应到唯一字段和完整统计条件；请在新需求中明确字段、取值或口径。",
+        "field_ids": [],
+        "matches": []
+      },
+      {
+        "source": "intent.constraints.analysis_limits[1]",
+        "raw_text": "不要推断团队差异的原因",
+        "status": "unmapped",
+        "category": "analysis_limits",
+        "message": "尚不能可靠对应到唯一字段和完整统计条件；请在新需求中明确字段、取值或口径。",
+        "field_ids": [],
+        "matches": []
+      }
+    ]
+  },
+  "technical_details": {
+    "record": {
+      "session_id": "fd708269eddf40d68a15359f0b5c0f25",
+      "plan_id": "plan_77e4307ecbaf4ff387a9a8f688370a94",
+      "plan_version": 1,
+      "dataset_id": "44cb5a219e3649bba20b976ff297557d",
+      "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+      "validation_version": "1.0",
+      "created_at": "2026-11-04T15:30:33.944357+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "44cb5a219e3649bba20b976ff297557d",
+          "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+          "plan_id": "plan_77e4307ecbaf4ff387a9a8f688370a94",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T1",
+              "title": "各团队已解决工单数量统计",
+              "business_question": "比较各团队的已解决工单数量。注意：不要分析利润，不要推断团队差异的原因。",
+              "priority": "P0",
+              "priority_reason": "直接回答核心问题“比较各团队的已解决工单数量”。删除此任务将无法获取任何关于团队工单分布的数据，无法支持核心决策。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03",
+                "C04"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S1",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "field_0003",
+                        "operator": "eq",
+                        "value": "已解决"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S2",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "count",
+                        "field": null,
+                        "alias": "resolved_ticket_count"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0002"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "比较各团队的已解决工单数量"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "filters：已解决工单"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "metric_requirements：工单数量"
+            },
+            {
+              "requirement_id": "C04",
+              "description": "analysis_limits：不要分析利润；不要推断团队差异的原因"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T1",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T1"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "44cb5a219e3649bba20b976ff297557d",
+          "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "各团队已解决工单数量",
+            "business_goal": "比较各团队的已解决工单数量",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [
+              {
+                "raw_text": "已解决工单",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "工单数量",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": [
+              {
+                "raw_text": "不要分析利润",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "不要推断团队差异的原因",
+                "validation_status": "unverified"
+              }
+            ]
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "constraint_audit": {
+      "audit_version": "2.1",
+      "binding": {
+        "dataset_id": "44cb5a219e3649bba20b976ff297557d",
+        "dataset_version": "ce3d89d40a7cc0c57d91d554dc7121076ac4f9660200c6a0924c14db54c6d7f2",
+        "plan_id": "plan_77e4307ecbaf4ff387a9a8f688370a94",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "47d40532670c42ba4b6554fe878f91061db37988ae12b1cba701c5f415de9763",
+      "all_verified": false,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "比较各团队的已解决工单数量",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0002"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0002"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "已解决工单",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S1",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0003",
+                "operator": "eq",
+                "value": "已解决"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "工单数量",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [],
+          "matches": [
+            {
+              "task_id": "T1",
+              "step_id": "S2",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "count",
+                "field": null,
+                "alias": "resolved_ticket_count"
+              },
+              "count_basis": "uploaded_rows_not_distinct_entities"
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.analysis_limits[0]",
+          "raw_text": "不要分析利润",
+          "status": "unmapped",
+          "category": "analysis_limits",
+          "message": "尚不能可靠对应到唯一字段和完整统计条件；请在新需求中明确字段、取值或口径。",
+          "field_ids": [],
+          "matches": []
+        },
+        {
+          "source": "intent.constraints.analysis_limits[1]",
+          "raw_text": "不要推断团队差异的原因",
+          "status": "unmapped",
+          "category": "analysis_limits",
+          "message": "尚不能可靠对应到唯一字段和完整统计条件；请在新需求中明确字段、取值或口径。",
+          "field_ids": [],
+          "matches": []
+        }
+      ]
+    },
+    "session_status": "AWAITING_APPROVAL",
+    "revision": 8
+  }
+}

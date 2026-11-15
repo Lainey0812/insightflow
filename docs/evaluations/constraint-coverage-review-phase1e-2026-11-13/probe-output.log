@@ -1,0 +1,15 @@
+golden_sha256 fe52a92cc77bb16fa5425f5618c7d7a9dd633f0790eaf341a3c434554a052142
+{"case": "RF-01", "probe": "correct: 岗位类型 ne 实习", "oracle": "PASS", "code": null, "table": [{"城市": "上海", "岗位数量": 3}, {"城市": "深圳", "岗位数量": 1}]}
+{"case": "RF-01", "probe": "wrong filter: 岗位名称 eq 产品经理 (keeps intern J04)", "oracle": "PASS", "code": null, "table": [{"城市": "上海", "岗位数量": 3}, {"城市": "深圳", "岗位数量": 1}]}
+{"case": "RF-01", "probe": "no exclusion, group by 城市+岗位类型, sort 岗位类型 asc (duplicate city labels)", "oracle": "PASS", "code": null, "table": [{"城市": "上海", "岗位类型": "实习", "岗位数量": 1}, {"城市": "深圳", "岗位类型": "实习", "岗位数量": 2}, {"城市": "上海", "岗位类型": "正式", "岗位数量": 3}, {"城市": "深圳", "岗位类型": "正式", "岗位数量": 1}]}
+{"case": "RF-04", "probe": "wrong filter: 岗位名称 eq 产品经理 (keeps intern J04)", "oracle": "PASS", "code": null, "table": [{"城市": "上海", "岗位数量": 3}, {"城市": "深圳", "岗位数量": 1}]}
+{"case": "RF-03", "probe": "correct: 岗位类型 eq 实习", "oracle": "PASS", "code": null, "table": [{"城市": "上海", "岗位数量": 1}, {"城市": "深圳", "岗位数量": 2}]}
+{"case": "RF-03", "probe": "wrong filter: 岗位名称 eq 分析师 (counts 正式 J03, drops intern J04)", "oracle": "PASS", "code": null, "table": [{"城市": "上海", "岗位数量": 1}, {"城市": "深圳", "岗位数量": 2}]}
+{"case": "RF-03", "probe": "no filter on type, group by 城市+岗位类型 (duplicate city labels, 正式 rows present)", "oracle": "PASS", "code": null, "table": [{"城市": "上海", "岗位类型": "正式", "岗位数量": 3}, {"城市": "上海", "岗位类型": "实习", "岗位数量": 1}, {"城市": "深圳", "岗位类型": "正式", "岗位数量": 1}, {"城市": "深圳", "岗位类型": "实习", "岗位数量": 2}]}
+{"case": "RF-02", "probe": "correct: no type filter", "oracle": "PASS", "code": null, "table": [{"城市": "上海", "岗位数量": 4}, {"城市": "深圳", "岗位数量": 3}]}
+{"case": "RF-02", "probe": "violation: 岗位类型 ne 实习", "oracle": "FAIL", "code": "F-EXTRA-CONSTRAINT", "table": [{"城市": "上海", "岗位数量": 3}, {"城市": "深圳", "岗位数量": 1}]}
+{"case": "RF-02", "probe": "violation: 岗位类型 eq 实习", "oracle": "FAIL", "code": "F-POLARITY-REVERSED", "table": [{"城市": "上海", "岗位数量": 1}, {"城市": "深圳", "岗位数量": 2}]}
+{"case": "RF-05", "probe": "correct: 城市 ne 上海", "oracle": "PASS", "code": null, "table": [{"城市": "深圳", "岗位数量": 3}, {"城市": "北京", "岗位数量": 1}, {"城市": "杭州", "岗位数量": 1}]}
+{"case": "RF-05", "probe": "equivalent whitelist: 城市 in 深圳/北京/杭州", "oracle": "PASS", "code": null, "table": [{"城市": "深圳", "岗位数量": 3}, {"城市": "北京", "岗位数量": 1}, {"城市": "杭州", "岗位数量": 1}]}
+{"case": "RF-05", "probe": "violation: also 岗位类型 ne 实习", "oracle": "FAIL", "code": "F-EXTRA-CONSTRAINT", "table": [{"城市": "深圳", "岗位数量": 1}, {"城市": "北京", "岗位数量": 1}]}
+{"case": "RF-05", "probe": "violation: by 城市+岗位类型 (duplicate city labels)", "oracle": "FAIL", "code": "F-ORACLE-MISS", "table": [{"城市": "深圳", "岗位类型": "正式", "岗位数量": 1}, {"城市": "深圳", "岗位类型": "实习", "岗位数量": 2}, {"城市": "北京", "岗位类型": "正式", "岗位数量": 1}, {"城市": "杭州", "岗位类型": "实习", "岗位数量": 1}]}

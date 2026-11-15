@@ -1,0 +1,65 @@
+...........FF..F................................F..                      [100%]
+=================================== FAILURES ===================================
+_____ test_html_export_uses_same_business_view_and_escapes_untrusted_text ______
+
+    def test_html_export_uses_same_business_view_and_escapes_untrusted_text():
+        report,profile=saved_case();view=build_presentation(report,profile)
+        html=render_report_v1(report,view)
+        for text in ['业务分析报告',view.title,'执行摘要','核心发现与业务解读','建议进一步分析','数据说明','4.9%','87.8%','27.1%','分母仅为前三名合计']:
+>           assert text in html
+E           assert '核心发现与业务解读' in '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initi...638412f7625c1f2d566ee6e419df2534c2a · 2026-10-27T13:56:06.235336+00:00</small></details></footer></main></body></html>'
+
+backend/tests/test_report_presentation.py:127: AssertionError
+_ test_presentation_and_download_are_authenticated_reads_without_rerunning_llm _
+
+tmp_path = PosixPath('/private/var/folders/yx/hfh48p292l94ym_1w4zn7mjw0000gn/T/pytest-of-lainey/pytest-235/test_presentation_and_download0')
+
+    def test_presentation_and_download_are_authenticated_reads_without_rerunning_llm(tmp_path):
+        provider=Provider();app=create_app(Settings(tmp_path),provider)
+        with TestClient(app) as client:
+            _,result,state=run(client);job=state['report_generations'][0];rid=job['report_id']
+            original=client.get('/api/v1/reports/'+rid).json();calls=len(provider.requests)
+            view=client.get('/api/v1/reports/'+rid+'/presentation')
+            assert view.status_code==200,view.text
+            assert [m['display_value'] for m in view.json()['key_metrics']]==['21,250','4.9%','87.8%']
+            html=client.get('/api/v1/reports/'+rid+'/download')
+>           assert html.status_code==200 and '核心发现与业务解读' in html.text
+E           assert (200 == 200 and '核心发现与业务解读' in '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initi...2762035fe1f8186cdd795f9387273b21283 · 2026-11-08T04:20:43.925577+00:00</small></details></footer></main></body></html>')
+E            +  where 200 = <Response [200 OK]>.status_code
+E            +  and   '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initi...2762035fe1f8186cdd795f9387273b21283 · 2026-11-08T04:20:43.925577+00:00</small></details></footer></main></body></html>' = <Response [200 OK]>.text
+
+backend/tests/test_report_presentation.py:142: AssertionError
+_______ test_export_shows_scope_and_only_matching_saved_chart_commentary _______
+
+    def test_export_shows_scope_and_only_matching_saved_chart_commentary():
+        report, profile = saved_case()
+        view = build_presentation(report, profile)
+        output = render_report_v1(report, view)
+        assert '<h2>分析范围与统计口径</h2>' in output
+>       assert '<h2>图表与分析解读</h2>' in output
+E       assert '<h2>图表与分析解读</h2>' in '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initi...638412f7625c1f2d566ee6e419df2534c2a · 2026-10-27T13:56:06.235336+00:00</small></details></footer></main></body></html>'
+
+backend/tests/test_report_presentation.py:171: AssertionError
+_____________ test_optional_offline_html_is_escaped_and_traceable ______________
+
+    def test_optional_offline_html_is_escaped_and_traceable():
+        raw = b"city\n<script>alert('x')</script>\nnormal\n"
+        report = generate(report_case([task()], raw))
+        exported = render_report_v1(report)
+        assert "<script>" not in exported and "&lt;script&gt;" in exported
+>       assert "证据与统计口径" in exported and report.execution_id in exported
+E       assert ('证据与统计口径' in '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initi...f2413e764a53c42f0566b69ec08066efcaa · 2026-11-08T04:20:44.314426+00:00</small></details></footer></main></body></html>')
+
+backend/tests/test_report_module.py:148: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/lainey/Desktop/vibe-coding/insightflow/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_report_presentation.py::test_html_export_uses_same_business_view_and_escapes_untrusted_text
+FAILED backend/tests/test_report_presentation.py::test_presentation_and_download_are_authenticated_reads_without_rerunning_llm
+FAILED backend/tests/test_report_presentation.py::test_export_shows_scope_and_only_matching_saved_chart_commentary
+FAILED backend/tests/test_report_module.py::test_optional_offline_html_is_escaped_and_traceable
+4 failed, 47 passed, 1 warning in 1.13s

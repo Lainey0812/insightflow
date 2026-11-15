@@ -1,0 +1,6 @@
+{
+  "text": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T01\",\n      \"title\": \"各团队响应分钟平均值及降序排名\",\n      \"business_question\": \"按团队统计响应分钟的算术平均值，并将结果按平均值从高到低排序。注意：不要推断人员绩效，仅关注团队层面的响应时间分布。\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"删除此任务将导致无法回答核心问题“各团队响应分钟平均值”及执行决策所需的排序比较。这是满足C01、C02、C03的唯一必要路径。\",\n      \"requirement_ids\": [\n        \"C01\",\n        \"C02\",\n        \"C03\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S01\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"avg\",\n                \"field\": \"field_0002\",\n                \"alias\": \"avg_response_minutes\"\n              }\n            ],\n            \"dimensions\": [\n              \"field_0001\"\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S02\",\n          \"operation\": \"sort\",\n          \"params\": {\n            \"field\": \"avg_response_minutes\",\n            \"direction\": \"desc\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+  "provider": "compatible",
+  "is_mock": false,
+  "model": "qwen3.8-flash"
+}

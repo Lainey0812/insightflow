@@ -1,0 +1,504 @@
+{
+  "session_id": "1d835ef2e3ec4e2c85137135da1bf896",
+  "revision": 8,
+  "plan_id": "plan_a36875548889487d91debe9401beac8f",
+  "plan_version": 1,
+  "goal": "统计已完成任务的工时总和，并按项目汇总，不包含丙项目",
+  "coverage": "已安排核心问题的分析",
+  "conditions": [
+    {
+      "label": "分析条件",
+      "text": "统计已完成任务的工时总和，并按项目汇总，不包含丙项目",
+      "verification": "已核对分析步骤",
+      "source": "intent.analysis_goal.business_goal"
+    },
+    {
+      "label": "筛选范围",
+      "text": "只统计已完成任务",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.filters[0]"
+    },
+    {
+      "label": "筛选范围",
+      "text": "不包含丙项目",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.filters[1]"
+    },
+    {
+      "label": "统计指标",
+      "text": "工时总和",
+      "verification": "已核对分析步骤",
+      "source": "intent.constraints.metric_requirements[0]"
+    },
+    {
+      "label": "拟用分组维度",
+      "text": "按项目分组",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S02"
+    },
+    {
+      "label": "拟用统计口径",
+      "text": "拟用统计口径：工时 · 合计",
+      "verification": "来自当前方案，请结合待确认事项核对",
+      "source": "plan.tasks.T01.steps.S02"
+    }
+  ],
+  "directions": [
+    {
+      "task_id": "T01",
+      "title": "已完成任务工时总和按项目汇总（排除丙）",
+      "question": "统计状态为“已完成”且项目不为“丙”的任务，其工时字段的总和是多少？请按项目分组展示。",
+      "importance": "核心分析",
+      "reason": "直接回答核心分析目标：已完成任务的工时总和按项目汇总并排除特定项目。删除此任务将无法获得任何关于工时分布或总量的有效结论。",
+      "readiness": "可以分析",
+      "executable": true,
+      "details": [
+        "状态 为 已完成",
+        "项目 排除 丙",
+        "按项目分组",
+        "拟用统计口径：工时 · 合计"
+      ],
+      "gaps": [],
+      "can_remove": true
+    }
+  ],
+  "issues": [],
+  "warnings": [],
+  "can_approve": true,
+  "can_execute": false,
+  "audit": {
+    "audit_version": "2.2",
+    "binding": {
+      "dataset_id": "c47de43602c841f6beafccd8d62980a6",
+      "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+      "plan_id": "plan_a36875548889487d91debe9401beac8f",
+      "plan_version": 1,
+      "validation_version": "1.0",
+      "registry_version": "1.0"
+    },
+    "digest": "53c98d3605a666bf6b40dd7893300165f3795d76bd14ddab7859220dd3d90f99",
+    "all_verified": true,
+    "items": [
+      {
+        "source": "intent.analysis_goal.business_goal",
+        "raw_text": "统计已完成任务的工时总和，并按项目汇总，不包含丙项目",
+        "status": "verified",
+        "category": "goal_dimensions",
+        "message": "目标中的明确字段分组已核对。",
+        "field_ids": [
+          "field_0002"
+        ],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S02",
+            "operation": "group_aggregate",
+            "dimensions": [
+              "field_0002"
+            ]
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.filters[0]",
+        "raw_text": "只统计已完成任务",
+        "status": "verified",
+        "category": "filters",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0003"
+        ],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S01",
+            "operation": "filter",
+            "condition": {
+              "field": "field_0003",
+              "operator": "eq",
+              "value": "已完成"
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.filters[1]",
+        "raw_text": "不包含丙项目",
+        "status": "verified",
+        "category": "filters",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0002"
+        ],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S01",
+            "operation": "filter",
+            "condition": {
+              "field": "field_0002",
+              "operator": "ne",
+              "value": "丙"
+            }
+          }
+        ]
+      },
+      {
+        "source": "intent.constraints.metric_requirements[0]",
+        "raw_text": "工时总和",
+        "status": "verified",
+        "category": "metric_requirements",
+        "message": "已对应到当前可执行操作并核对条件。",
+        "field_ids": [
+          "field_0004"
+        ],
+        "matches": [
+          {
+            "task_id": "T01",
+            "step_id": "S02",
+            "operation": "group_aggregate",
+            "metric": {
+              "function": "sum",
+              "field": "field_0004",
+              "alias": "total_hours"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "technical_details": {
+    "record": {
+      "session_id": "1d835ef2e3ec4e2c85137135da1bf896",
+      "plan_id": "plan_a36875548889487d91debe9401beac8f",
+      "plan_version": 1,
+      "dataset_id": "c47de43602c841f6beafccd8d62980a6",
+      "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+      "validation_version": "1.0",
+      "created_at": "2026-11-09T07:31:36.694911+00:00",
+      "change_type": "created",
+      "change_summary": "真实LLM生成计划；现有Validator重新校验，等待人工批准。",
+      "validated_plan": {
+        "plan": {
+          "dataset_id": "c47de43602c841f6beafccd8d62980a6",
+          "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+          "plan_id": "plan_a36875548889487d91debe9401beac8f",
+          "plan_version": 1,
+          "tasks": [
+            {
+              "task_id": "T01",
+              "title": "已完成任务工时总和按项目汇总（排除丙）",
+              "business_question": "统计状态为“已完成”且项目不为“丙”的任务，其工时字段的总和是多少？请按项目分组展示。",
+              "priority": "P0",
+              "priority_reason": "直接回答核心分析目标：已完成任务的工时总和按项目汇总并排除特定项目。删除此任务将无法获得任何关于工时分布或总量的有效结论。",
+              "requirement_ids": [
+                "C01",
+                "C02",
+                "C03"
+              ],
+              "depends_on": [],
+              "missing_inputs": [],
+              "steps": [
+                {
+                  "step_id": "S01",
+                  "operation": "filter",
+                  "params": {
+                    "conditions": [
+                      {
+                        "field": "field_0003",
+                        "operator": "eq",
+                        "value": "已完成"
+                      },
+                      {
+                        "field": "field_0002",
+                        "operator": "ne",
+                        "value": "丙"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "step_id": "S02",
+                  "operation": "group_aggregate",
+                  "params": {
+                    "metrics": [
+                      {
+                        "function": "sum",
+                        "field": "field_0004",
+                        "alias": "total_hours"
+                      }
+                    ],
+                    "dimensions": [
+                      "field_0002"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "core_requirements": [
+            {
+              "requirement_id": "C01",
+              "description": "统计已完成任务的工时总和，并按项目汇总，不包含丙项目"
+            },
+            {
+              "requirement_id": "C02",
+              "description": "filters：只统计已完成任务；不包含丙项目"
+            },
+            {
+              "requirement_id": "C03",
+              "description": "metric_requirements：工时总和"
+            }
+          ]
+        },
+        "validation_results": [
+          {
+            "task_id": "T01",
+            "feasibility": "F2",
+            "reason_code": "READY",
+            "validation_issues": [],
+            "executable": true
+          }
+        ],
+        "unmet_core_requirements": [],
+        "coverage_status": "complete",
+        "executable_task_ids": [
+          "T01"
+        ],
+        "blocked_task_ids": [],
+        "fully_executable": true,
+        "validation_version": "1.0",
+        "registry_version": "1.0",
+        "approval_required": true,
+        "llm": null,
+        "provenance": {
+          "source": "uploaded",
+          "dataset": "c47de43602c841f6beafccd8d62980a6",
+          "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+          "plan_version": 1,
+          "notice": "依据真实画像确定性校验；未执行统计，仍需用户审批。"
+        },
+        "intent_snapshot": {
+          "analysis_mode": "goal_driven",
+          "next_action": "proceed",
+          "analysis_goal": {
+            "analysis_object": "已完成任务的工时总和（按项目汇总，排除丙项目）",
+            "business_goal": "统计已完成任务的工时总和，并按项目汇总，不包含丙项目",
+            "decision_goal": null
+          },
+          "constraints": {
+            "time_range": null,
+            "filters": [
+              {
+                "raw_text": "只统计已完成任务",
+                "validation_status": "unverified"
+              },
+              {
+                "raw_text": "不包含丙项目",
+                "validation_status": "unverified"
+              }
+            ],
+            "metric_requirements": [
+              {
+                "raw_text": "工时总和",
+                "validation_status": "unverified"
+              }
+            ],
+            "analysis_limits": []
+          },
+          "uncertainties": [],
+          "clarification_questions": []
+        }
+      }
+    },
+    "constraint_audit": {
+      "audit_version": "2.2",
+      "binding": {
+        "dataset_id": "c47de43602c841f6beafccd8d62980a6",
+        "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+        "plan_id": "plan_a36875548889487d91debe9401beac8f",
+        "plan_version": 1,
+        "validation_version": "1.0",
+        "registry_version": "1.0"
+      },
+      "digest": "53c98d3605a666bf6b40dd7893300165f3795d76bd14ddab7859220dd3d90f99",
+      "all_verified": true,
+      "items": [
+        {
+          "source": "intent.analysis_goal.business_goal",
+          "raw_text": "统计已完成任务的工时总和，并按项目汇总，不包含丙项目",
+          "status": "verified",
+          "category": "goal_dimensions",
+          "message": "目标中的明确字段分组已核对。",
+          "field_ids": [
+            "field_0002"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "dimensions": [
+                "field_0002"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[0]",
+          "raw_text": "只统计已完成任务",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0003"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0003",
+                "operator": "eq",
+                "value": "已完成"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.filters[1]",
+          "raw_text": "不包含丙项目",
+          "status": "verified",
+          "category": "filters",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0002"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S01",
+              "operation": "filter",
+              "condition": {
+                "field": "field_0002",
+                "operator": "ne",
+                "value": "丙"
+              }
+            }
+          ]
+        },
+        {
+          "source": "intent.constraints.metric_requirements[0]",
+          "raw_text": "工时总和",
+          "status": "verified",
+          "category": "metric_requirements",
+          "message": "已对应到当前可执行操作并核对条件。",
+          "field_ids": [
+            "field_0004"
+          ],
+          "matches": [
+            {
+              "task_id": "T01",
+              "step_id": "S02",
+              "operation": "group_aggregate",
+              "metric": {
+                "function": "sum",
+                "field": "field_0004",
+                "alias": "total_hours"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "session_status": "AWAITING_APPROVAL",
+    "revision": 8
+  },
+  "report_capacity": {
+    "policy_version": "report-capacity-v1",
+    "supported": true,
+    "metric_count": 1,
+    "core_metric_count": 1,
+    "estimated_batches": 1,
+    "max_groups_per_call": 8,
+    "max_groups": 64,
+    "max_batches": 8,
+    "estimated_metadata_bytes": 1860,
+    "context_estimate_only": true,
+    "message": "本方案包含 1 个核心指标、共 1 个指标，预计一次生成报告。 实际证据大小和模型生成结果将在执行后核验。"
+  },
+  "analysis_basis": {
+    "version": "analysis-basis-v1",
+    "session_id": "1d835ef2e3ec4e2c85137135da1bf896",
+    "plan_id": "plan_a36875548889487d91debe9401beac8f",
+    "plan_version": 1,
+    "dataset_id": "c47de43602c841f6beafccd8d62980a6",
+    "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+    "plan_hash": "30e2ed1bc753f23a7ea151c47c488a128a0d3b020af1fe85e5f232a006b039fb",
+    "row_grain": "unknown",
+    "entity_field_id": null,
+    "metrics": [
+      {
+        "task_id": "T01",
+        "step_id": "S02",
+        "alias": "total_hours",
+        "field_id": "field_0004",
+        "label": "工时",
+        "function": "sum",
+        "basis": "按该字段非空值执行指定聚合",
+        "unit_status": "not_declared"
+      }
+    ],
+    "entity_field_options": [
+      {
+        "field_id": "field_0001",
+        "label": "创建日期",
+        "unique_non_null": true
+      },
+      {
+        "field_id": "field_0002",
+        "label": "项目",
+        "unique_non_null": false
+      },
+      {
+        "field_id": "field_0003",
+        "label": "状态",
+        "unique_non_null": false
+      },
+      {
+        "field_id": "field_0004",
+        "label": "工时",
+        "unique_non_null": false
+      },
+      {
+        "field_id": "field_0005",
+        "label": "任务编号",
+        "unique_non_null": true
+      }
+    ],
+    "declaration_source": "unconfirmed",
+    "created_at": "2026-11-09T07:31:36.695364+00:00",
+    "digest": "98d22afd89b81236043d148e752e07277f2b942635262cb07417071fd36cfa9f"
+  },
+  "data_overview": {
+    "dataset_id": "c47de43602c841f6beafccd8d62980a6",
+    "dataset_version": "3b5d4b7e716a3ab3158eec5176ff865014159ddf9d819a05f17bc1932912a1fd",
+    "file_name": "projects.csv",
+    "sheet_name": null,
+    "row_count": 8,
+    "column_count": 5,
+    "missing_cell_count": 1,
+    "duplicate_row_count": 0,
+    "fields_with_missing": [
+      {
+        "name": "工时",
+        "missing_count": 1
+      }
+    ],
+    "quality_notes": [],
+    "cleaning_status": "not_performed",
+    "cleaning_notice": "已检查上传数据；尚未自动删除、填补或去重。疑似重复不等于错误记录。",
+    "sample_notice": "筛选后及指标有效样本量需执行后按分析方向统计，当前不将缺失单元格换算为无效行。"
+  }
+}

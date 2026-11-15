@@ -1,0 +1,711 @@
+--- before/backend/app/domain/review_presentation.py
++++ after/backend/app/domain/review_presentation.py
+@@ -48,6 +48,20 @@
+     can_remove: bool
+ 
+ 
++class ReportCapacity(PlanModel):
++    policy_version: str
++    supported: bool
++    metric_count: int
++    core_metric_count: int
++    estimated_batches: int
++    max_groups_per_call: int
++    max_groups: int
++    max_batches: int
++    estimated_metadata_bytes: int
++    context_estimate_only: bool
++    message: str
++
++
+ class ReviewPresentation(PlanModel):
+     session_id: str
+     revision: int
+@@ -63,3 +77,4 @@
+     can_execute: bool
+     audit: ConstraintAudit
+     technical_details: dict[str, Any]
++    report_capacity: ReportCapacity | None = None
+--- before/backend/app/llm/templates.py
++++ after/backend/app/llm/templates.py
+@@ -14,7 +14,7 @@
+ from app.observability.provenance import digest, git_snapshot
+ from app.storage.prompt_registry import template_content
+ 
+-COMPOSITION_VERSION = 'composition-v0.4-approval-audit-v2.2'
++COMPOSITION_VERSION = 'composition-v0.6-report-capacity-v1'
+ MODULES = {
+     'intent_parser': ['app.intent.prompt','app.intent.context','app.intent.validation','app.domain.intent'],
+     'analysis_planner': ['app.planning.prompt','app.planning.context','app.planning.output',
+@@ -22,7 +22,7 @@
+     'insight_generator': ['app.reporting.prompt','app.reporting.contracts','app.reporting.selection',
+         'app.reporting.evidence','app.domain.analysis_report','app.review.presentation','app.review.constraint_audit',
+         'app.review.bindings','app.reporting.draft_v2','app.reporting.recommendations',
+-        'app.reporting.materialize_v2'],
++        'app.reporting.materialize_v2','app.reporting.capacity','app.reporting.batches'],
+ }
+ USER_KEYS = {
+     'intent_parser': ['user_query','clarification_answers','dataset_context','validation_feedback?'],
+--- before/backend/app/observability/recorder.py
++++ after/backend/app/observability/recorder.py
+@@ -25,7 +25,7 @@
+                   'dataset_id','dataset_version','plan_id','plan_version','validation_version'})
+ SAFE_KEYS.update({'execution_id','plan_version_id','report_attempt','report_run_id','execution_status','result_ref','result_refs','commit_sha256'})
+ SAFE_KEYS.update({'row_count','column_count','workflow_id','root_run_id','approval_id','command','outcome'})
+-SAFE_KEYS.update({'draft_schema_version','generation_mode','recommendation_id','limitation_refs'})
++SAFE_KEYS.update({'batch_index','batch_count','group_refs','report_capacity_version','draft_schema_version','generation_mode','recommendation_id','limitation_refs'})
+ 
+ def safe_error_message(code):
+     messages={'LLM_TIMEOUT':'模型调用超时。','LLM_HTTP_ERROR':'模型服务返回错误。',
+--- before/backend/app/reporting/batches.py
++++ after/backend/app/reporting/batches.py
+@@ -0,0 +1,159 @@
++"""Sequential calls of the existing selection node, followed by deterministic merge.
++
++A batch owns complete task/result/metric evidence groups. There is no model
++summary, cross-batch arithmetic, retry loop, new agent or independent Attempt.
++"""
++import asyncio
++import json
++from uuid import uuid4
++from pydantic import ValidationError
++from app.domain.errors import AppError
++from app.domain.intent import LLMMetadata
++from app.llm.base import LLMRequest
++from app.observability.snapshots import llm_projection
++from app.reporting.capacity import (GROUPS_PER_CALL, MAX_GROUPS, MAX_BATCHES,
++                                    MAX_EVIDENCE, MAX_CONTEXT_BYTES, encoded_bytes)
++from app.reporting.draft_v2 import InsightSelection, selection_schema
++from app.reporting.materialize_v2 import materialize_selection
++from app.reporting.selection import select_evidence
++from app.services.intent_parser import strict_json
++
++
++def key(e):
++    return e.task_id, e.data_ref, e.result_field
++
++
++def required_groups(items, tasks):
++    groups = {}
++    for item in items:
++        if tasks[item.task_id].priority == 'P0' and item.evidence_type != 'coverage':
++            groups.setdefault(key(item), []).append(item.evidence_id)
++    return [dict(task_id=t, data_ref=r, result_field=f, evidence_ids=ids)
++            for (t, r, f), ids in groups.items()]
++
++
++def payload_for(base, items, tasks, options, *, subset):
++    data = dict(base)
++    tids, keys = {e.task_id for e in items}, {key(e) for e in items}
++    choices = {k: v for k, v in options.items()
++               if (v['task_id'], v['data_ref'], v['result_field']) in keys}
++    groups = {}
++    for e in items:
++        groups.setdefault(key(e), []).append(e.evidence_id)
++    data.update(evidence=[e.model_dump() for e in items],
++        required_core_groups=required_groups(items, tasks),
++        evidence_groups=[dict(task_id=t, data_ref=r, result_field=f, evidence_ids=ids)
++                         for (t, r, f), ids in groups.items()], recommendation_options=list(choices.values()))
++    if subset:
++        for name in ('tasks', 'scope_context', 'task_sample_context'):
++            data[name] = [v for v in data[name] if v['task_id'] in tids]
++    return data, choices
++
++
++def partition(evidence, tasks, base, options):
++    # Coverage is selected only when a task has no statistical evidence, just
++    # like the original selector. All real metric groups are enumerated first.
++    units = {}
++    for task in sorted(tasks.values(), key=lambda t: (t.priority, t.task_id)):
++        rows = [e for e in evidence if e.task_id == task.task_id]
++        business = [e for e in rows if e.evidence_type != 'coverage']
++        for item in business or rows:
++            units.setdefault(key(item), []).append(item)
++    if len(units) > MAX_GROUPS:
++        raise AppError('REPORT_TOTAL_CAPACITY_EXCEEDED', '报告指标组超过总容量，计算结果保留，未删除核心指标。', 422)
++    original = select_evidence(evidence, tasks)
++    single, _ = payload_for(base, original, tasks, options, subset=False)
++    if len(units) <= GROUPS_PER_CALL and {key(e) for e in original} == set(units) and encoded_bytes(single) <= MAX_CONTEXT_BYTES:
++        return [original]
++    batches, current = [], []
++    for group in units.values():
++        selected = select_evidence(group, tasks)
++        proposal = current + selected
++        payload, _ = payload_for(base, proposal, tasks, options, subset=True)
++        if current and (len({key(e) for e in proposal}) > GROUPS_PER_CALL or len(proposal) > MAX_EVIDENCE or encoded_bytes(payload) > MAX_CONTEXT_BYTES):
++            batches.append(current); current = []
++        payload, _ = payload_for(base, current + selected, tasks, options, subset=True)
++        if encoded_bytes(payload) > MAX_CONTEXT_BYTES or len(selected) > MAX_EVIDENCE:
++            raise AppError('REPORT_CONTEXT_TOO_LARGE', '单个完整指标组的证据上下文过大，未拆散比较或删除指标；计算结果保留。', 422)
++        current += selected
++    if current:
++        batches.append(current)
++    if len(batches) > MAX_BATCHES:
++        raise AppError('REPORT_TOTAL_CAPACITY_EXCEEDED', '实际证据需要的批次数超过总预算，未调用模型；计算结果保留。', 422)
++    return batches
++
++
++async def generate(service, trace, evidence, tasks, tables, profile, base, options, limitation_pool):
++    from app.reporting.prompt import SYSTEM_PROMPT
++    batches = partition(evidence, tasks, base, options)
++    accepted, rejected, outcomes, outputs, responses = [], [], [], [], []
++    first_error = None
++    for index, items in enumerate(batches, 1):
++        data, choices = payload_for(base, items, tasks, options, subset=len(batches) > 1)
++        instruction = json.dumps(data, ensure_ascii=False)
++        outcome = {'batch_index': index, 'group_refs': [list(k) for k in dict.fromkeys(key(e) for e in items)], 'status': 'failed'}
++        outcomes.append(outcome)
++        try:
++            request = LLMRequest(purpose='report_insights_v1', system_prompt=SYSTEM_PROMPT,
++                instruction=instruction, response_schema=selection_schema(items, choices, limitation_pool, data['required_core_groups']),
++                enable_thinking=service.enable_thinking)
++            with trace.span('insight_generator', {'purpose': request.purpose, 'input_bytes': len(instruction.encode()),
++                    'selected_evidence_count': len(items), 'evidence_refs': [e.evidence_id for e in items], 'candidate_count': None,
++                    'batch_index': index, 'batch_count': len(batches),
++                    'timeout_seconds': service.timeout_seconds, 'enable_thinking': service.enable_thinking}) as stage:
++                if service.prompt_source:
++                    request = request.model_copy(update={'call_binding': service.prompt_source.binding(uuid4().hex, trace=trace)})
++                stage.event('llm.started', purpose=request.purpose, batch_index=index)
++                try:
++                    response = await asyncio.wait_for(service.provider.generate(request), timeout=service.timeout_seconds)
++                except TimeoutError:
++                    raise AppError('LLM_TIMEOUT', '报告洞察生成超时，未用虚构内容替代。', 504) from None
++                except AppError:
++                    raise
++                except Exception:
++                    raise AppError('REPORT_LLM_CALL_FAILED', '报告洞察生成失败。', 502) from None
++                outputs.append(response)
++                if responses and (response.provider, response.model) != (responses[0].provider, responses[0].model):
++                    raise AppError('REPORT_BATCH_MODEL_MISMATCH', '批次返回的模型来源不一致，未合并该批结果。', 502)
++                responses.append(response)
++                stage.event('llm.returned', provider=response.provider, model=response.model, is_mock=response.is_mock,
++                    output_bytes=len(response.text.encode()), call_id=response.call_id,
++                    request_snapshot_id=response.request_snapshot_id, template_snapshot_id=response.template_snapshot_id)
++                outcome.update(call_id=response.call_id, request_snapshot_id=response.request_snapshot_id)
++                try:
++                    if len(response.text.encode()) > 64 * 1024:
++                        raise ValueError('Oversized response')
++                    draft = InsightSelection.model_validate(strict_json(response.text))
++                except (ValidationError, ValueError, TypeError, AttributeError):
++                    raise AppError('REPORT_LLM_INVALID_OUTPUT', '洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。', 502) from None
++                stage.attributes(candidate_count=len(draft.insights), provider=response.provider, model=response.model, is_mock=response.is_mock)
++            with trace.span('fact_validator', {'batch_index': index, 'batch_count': len(batches)}) as stage:
++                # Only P0 tasks/metrics present in this batch are required here;
++                # the assembler verifies global coverage against full Evidence.
++                values, failures = materialize_selection(draft, items, tasks, tables, profile, choices, limitation_pool, observer=trace.candidate)
++                accepted.extend(values)
++                rejected.extend({**v, 'batch_index': index} for v in failures)
++                stage.attributes(candidate_count=len(draft.insights), accepted_count=len(values), rejected_count=len(failures))
++                outcome.update(status='partial' if failures else 'complete', accepted_count=len(values), rejected_count=len(failures))
++        except AppError as error:
++            first_error = first_error or error
++            outcome.update(error_code=error.error.code, accepted_count=0, rejected_count=len(error.error.details.get('rejected_candidates', [])))
++            trace.event('report.batch_failed', batch_index=index, error_code=error.error.code)
++    # TraceSnapshot kind is immutable per Run. Store once, not once per batch.
++    if len(batches) == 1 and outputs:
++        response = outputs[0]
++        trace.snapshot('llm_output', response.text, lambda: llm_projection(response))
++    elif len(batches) > 1:
++        trace.snapshot('llm_output', json.dumps([r.text for r in outputs], ensure_ascii=False),
++            lambda: {'batch_count': len(batches), 'count': len(outputs), 'batches': [llm_projection(r) for r in outputs],
++                     'outcomes': outcomes, 'parsed': all(llm_projection(r).get('parsed') for r in outputs) and len(outputs) == len(batches)})
++    if not accepted:
++        if first_error:
++            first_error.error.details['batch_results'] = outcomes
++            raise first_error
++        raise AppError('REPORT_NO_VALID_INSIGHTS', '所有批次均无有效洞察，计算结果保留。', 502, details={'batch_results': outcomes})
++    accepted.sort(key=lambda i: tasks[i.task_id].priority)
++    for index, insight in enumerate(accepted, 1):
++        insight.insight_id = f'I{index:03d}'
++    llm = LLMMetadata(provider=responses[0].provider, model=responses[0].model, is_mock=any(r.is_mock for r in responses))
++    return accepted, rejected, outcomes, llm
+--- before/backend/app/reporting/capacity.py
++++ after/backend/app/reporting/capacity.py
+@@ -0,0 +1,43 @@
++"""Shared, bounded report budgets. Preflight is an estimate, never a result claim."""
++import json
++import math
++from app.domain.review_presentation import ReportCapacity
++
++VERSION = 'report-capacity-v1'
++GROUPS_PER_CALL = 8
++MAX_GROUPS = 64
++MAX_BATCHES = 8
++MAX_EVIDENCE = 80
++MAX_CONTEXT_BYTES = 160 * 1024
++
++
++def encoded_bytes(value):
++    return len(json.dumps(value, ensure_ascii=False).encode())
++
++
++def preflight(checked, profile):
++    tasks = [t for t in checked.plan.tasks if t.task_id in checked.executable_task_ids]
++    groups = []
++    for task in tasks:
++        aggregates = [s for s in task.steps if s.operation in {'aggregate', 'group_aggregate'}]
++        if aggregates:
++            groups += [(task, m) for m in aggregates[-1].params.get('metrics', [])]
++    # Metadata is known; real result labels, quality context and evidence are
++    # only available after execution and will be checked before any model call.
++    intent = checked.intent_snapshot
++    context = {'analysis_goal': intent.analysis_goal.model_dump() if intent else None,
++               'constraints': intent.constraints.model_dump() if intent else {},
++               'fields': [{'field_id': f.field_id, 'name': f.display_name,
++                           'logical_type': f.logical_type} for f in profile.fields]}
++    largest = max([encoded_bytes({**context, 'task': t.model_dump()}) for t in tasks] or [encoded_bytes(context)])
++    supported = len(groups) <= MAX_GROUPS and largest < MAX_CONTEXT_BYTES
++    count = math.ceil(len(groups) / GROUPS_PER_CALL) if groups else 0
++    message = (f'本方案包含 {sum(t.priority == "P0" for t, _ in groups)} 个核心指标、共 {len(groups)} 个指标，'
++               + (f'预计分 {count} 批生成并汇总为一份报告。' if count > 1 else '预计一次生成报告。'))
++    if not supported:
++        message = '方案超出报告总容量或已知元数据预算，请明确缩小分析范围后重新生成方案；系统不会自动删除核心指标。'
++    return ReportCapacity(policy_version=VERSION, supported=supported, metric_count=len(groups),
++        core_metric_count=sum(t.priority == 'P0' for t, _ in groups), estimated_batches=count,
++        max_groups_per_call=GROUPS_PER_CALL, max_groups=MAX_GROUPS, max_batches=MAX_BATCHES,
++        estimated_metadata_bytes=largest, context_estimate_only=True,
++        message=message + ' 实际证据大小和模型生成结果将在执行后核验。')
+--- before/backend/app/services/analysis_report.py
++++ after/backend/app/services/analysis_report.py
+@@ -25,6 +25,7 @@
+ from app.reporting.prompt import GENERATION_VERSION
+ from app.reporting.claims import missing_metrics
+ from app.reporting.selection import select_evidence
++from app.reporting.batches import generate as generate_batches
+ from app.reporting.visualization import VisualizationBuilder
+ from app.services.intent_parser import strict_json
+ from app.observability.snapshots import evidence_projection, llm_projection
+@@ -113,15 +114,11 @@
+         llm, insights, rejected_insights, text_validation = None, [], [], []
+         candidate_repairs = []
+         missing_core_metrics = []
++        batch_results = []
+         if evidence:
+             # Only bounded structured evidence, never all result rows / raw dataset.
+             selected = select_evidence(evidence, tasks)
+-            required_groups = [{"task_id": tid, "data_ref": ref, "result_field": field,
+-                "evidence_ids": [e.evidence_id for e in selected if (e.task_id, e.data_ref, e.result_field) == (tid, ref, field)]}
+-                for tid, ref, field in dict.fromkeys((e.task_id, e.data_ref, e.result_field) for e in selected
+-                    if tasks[e.task_id].priority == 'P0' and e.evidence_type != 'coverage')]
+-            if len(required_groups) > 8:
+-                raise AppError('REPORT_CORE_SCOPE_TOO_LARGE', '核心指标组超过单次报告可覆盖范围，原计算结果保留；请缩小分析范围。', 422)
++            required_groups = []  # Filled from complete metric groups per actual batch.
+             allowed_limitations = list(dict.fromkeys(["结论仅适用于当前返回范围，不能外推整体市场。", *limitations]))
+             # These exact deterministic statements may contain verified quality
+             # counts. Free model prose still cannot add numeric assertions.
+@@ -155,51 +152,32 @@
+                 recommendation_options = {key: option for key, option in recommendation_options.items()
+                                           if option['kind'] in {'review_source_rows', 'check_missingness'}}
+                 payload['recommendation_options'] = list(recommendation_options.values())
+-            instruction = json.dumps(payload, ensure_ascii=False)
+-            if len(instruction.encode()) > 160 * 1024:
+-                raise AppError("REPORT_CONTEXT_TOO_LARGE", "证据上下文过大，未调用模型。", 422)
+-            request = LLMRequest(purpose="report_insights_v1", system_prompt=SYSTEM_PROMPT,
+-                instruction=instruction, response_schema=selection_schema(selected, recommendation_options, limitation_pool, required_groups), enable_thinking=self.enable_thinking)
+-            with trace.span('insight_generator', {'purpose': request.purpose, 'input_bytes': len(instruction.encode()),
+-                    'selected_evidence_count': len(selected), 'evidence_refs': [e.evidence_id for e in selected], 'candidate_count': None,
+-                    'timeout_seconds': self.timeout_seconds, 'enable_thinking': self.enable_thinking}) as generation:
+-                try:
+-                    if self.prompt_source:
+-                        request = request.model_copy(update={'call_binding':self.prompt_source.binding(uuid4().hex,trace=trace)})
+-                    generation.event('llm.started', purpose=request.purpose)
+-                    response = await asyncio.wait_for(self.provider.generate(request), timeout=self.timeout_seconds)
+-                    trace.snapshot('llm_output',response.text,lambda:llm_projection(response))
+-                    generation.event('llm.returned', provider=response.provider, model=response.model,
+-                        is_mock=response.is_mock, output_bytes=len(response.text.encode()),
+-                        call_id=response.call_id,request_snapshot_id=response.request_snapshot_id,
+-                        template_snapshot_id=response.template_snapshot_id)
+-                except TimeoutError:
+-                    raise AppError("LLM_TIMEOUT", "报告洞察生成超时，未用虚构内容替代。", 504) from None
+-                except AppError:
+-                    raise
+-                except Exception:
+-                    raise AppError("REPORT_LLM_CALL_FAILED", "报告洞察生成失败。", 502) from None
+-                try:
+-                    if len(response.text.encode()) > 64 * 1024:
+-                        raise ValueError("Oversized response")
+-                    draft = InsightSelection.model_validate(strict_json(response.text))
+-                except (ValidationError, ValueError, TypeError, AttributeError):
+-                    raise AppError("REPORT_LLM_INVALID_OUTPUT", "洞察选择不符合V2结构契约，未使用旧格式或规则结果替代。", 502) from None
+-                generation.attributes(candidate_count=len(draft.insights), provider=response.provider,
+-                    model=response.model, is_mock=response.is_mock)
+-            with trace.span('fact_validator') as validation_stage:
+-                insights, rejected_insights = materialize_selection(draft, selected, tasks,
+-                    {t.result.result_id: t.result for t in execution.tasks if t.status == 'success'},
+-                    profile, recommendation_options, limitation_pool, observer=trace.candidate)
+-                missing_core_metrics = missing_metrics(evidence, tasks, insights)
+-                if missing_core_metrics:
+-                    coverage = 'partial'
+-                    for tid, field in missing_core_metrics:
+-                        label = next(c.label for t in execution.tasks if t.task_id == tid for c in t.result.columns if c.field == field)
+-                        limitations.append(f'核心方向「{tasks[tid].title}」的指标「{label}」尚未形成有效洞察；计算结果仍可查询，目标未完整覆盖。')
+-                validation_stage.attributes(candidate_count=len(draft.insights), accepted_count=len(insights),
+-                    rejected_count=len(rejected_insights))
+-            llm = LLMMetadata(provider=response.provider, model=response.model, is_mock=response.is_mock)
++            insights, rejected_insights, batch_results, llm = await generate_batches(
++                self, trace, evidence, tasks,
++                {t.result.result_id: t.result for t in execution.tasks if t.status == 'success'},
++                profile, payload, recommendation_options, limitation_pool)
++            # Required coverage comes from the approved plan, not only the
++            # evidence that survived null/empty results or bounded selection.
++            required = {(task.task_id, metric['alias']) for task in tasks.values() if task.priority == 'P0'
++                for aggregate in [next((s for s in reversed(task.steps) if s.operation in {'aggregate','group_aggregate'}), None)]
++                if aggregate for metric in aggregate.params['metrics']}
++            by_id = {e.evidence_id: e for e in evidence}
++            covered = {(by_id[ref].task_id, by_id[ref].result_field) for insight in insights for ref in insight.evidence_refs
++                       if ref in by_id and not by_id[ref].result_field.startswith('$')}
++            missing_core_metrics = sorted(required - covered)
++            if missing_core_metrics:
++                covered_tasks = {i.task_id for i in insights if tasks[i.task_id].priority == 'P0'}
++                coverage = 'partial' if covered_tasks else 'blocked'
++                for tid, field in missing_core_metrics:
++                    label = next((c.label for t in execution.tasks if t.task_id == tid and t.result for c in t.result.columns if c.field == field), field)
++                    limitations.append(f'核心方向「{tasks[tid].title}」的指标「{label}」尚未形成有效洞察；计算结果仍可查询，目标未完整覆盖。')
++            failed_batches = [b for b in batch_results if b['status'] == 'failed']
++            for batch in failed_batches:
++                limitations.append(f'报告第 {batch["batch_index"]} 批生成失败（{batch["error_code"]}），相关计算结果保留，未生成该批洞察。')
++                for tid, _, field in batch['group_refs']:
++                    if not any(t.task_id == tid for t in uncompleted):
++                        uncompleted.append(UncompletedTask(task_id=tid, title=tasks[tid].title,
++                            priority=tasks[tid].priority, reason=f'报告批次生成失败：{batch["error_code"]}；计算结果仍可查询。'))
+         else:
+             if getattr(trace,'workflow_identity',None):
+                 # Native Root: record the actual skip decision, not an unexecuted LLM/validator node.
+@@ -211,7 +189,7 @@
+                 with trace.span('fact_validator', {'skip_reason': 'NO_EVIDENCE', 'candidate_count': 0}, skip=True):
+                     pass
+         with trace.span('report_assembler') as assembly:
+-            status = "unavailable" if not evidence else ("partial" if uncompleted or rejected_insights or missing_core_metrics or execution.execution_status == "partial_success" else "complete")
++            status = "unavailable" if not evidence else ("partial" if uncompleted or rejected_insights or missing_core_metrics or any(b['status'] != 'complete' for b in batch_results) or execution.execution_status == "partial_success" else "complete")
+             if rejected_insights:
+                 limitations.append(f'有 {len(rejected_insights)} 条模型候选洞察未通过校验，未作为事实或建议输出；本报告为部分生成，拒绝原因保留在技术详情。')
+             if not evidence:
+@@ -280,6 +258,8 @@
+                 "draft_schema_version": "insight-selection-v2",
+                 "generation_mode": "controlled_evidence_selection",
+                 "output_boundaries": output_policies,
++                "report_capacity_version": "report-capacity-v1",
++                "report_batches": batch_results,
+                 "selected_recommendations": [{"insight_id": i.insight_id, "text": i.recommendation}
+                                              for i in insights if i.task_id == t.task_id],
+                 "rejected_insights": rejected_insights,
+--- before/backend/app/services/plan_review.py
++++ after/backend/app/services/plan_review.py
+@@ -226,6 +226,11 @@
+         mapper = PlanPresentationMapper(profile)
+         audit = self.constraint_audit(checked)
+         issues = []
++        from app.reporting.capacity import preflight
++        report_capacity = preflight(checked, profile)
++        if not report_capacity.supported:
++            issues.append(ReviewIssue(code='REPORT_CAPACITY_EXCEEDED', message=report_capacity.message,
++                next_step='请重新提出更明确的分析范围；当前计划及核心指标将保留。'))
+         if checked != record.validated_plan:
+             issues.append(ReviewIssue(code='PLAN_VALIDATION_STALE', message='方案的校验依据发生变化。', next_step='请重新提出需求并生成新方案。'))
+         intent = checked.intent_snapshot
+@@ -265,6 +270,7 @@
+                 label = mapper.text(u.issue + '；影响：' + u.reason)
+             warnings.append({'id': wid, 'label': label})
+         view = mapper.build(state, audit, issues, warnings)
++        view.report_capacity = report_capacity
+         view.can_approve = not blocking and state.status == S.AWAITING_APPROVAL
+         active = state.engine_approval
+         recorded = next((a for a in self.audit.approvals(state.id) if active and a.approval_id == active.approval_id), None)
+@@ -301,6 +307,11 @@
+             intent = checked.intent_snapshot
+             if intent.next_action != "proceed" or any(u.action in {"clarify", "defer"} for u in intent.uncertainties):
+                 raise AppError("BLOCKING_UNCERTAINTY", "仍有待澄清或待解决的不确定性，不能以确认替代解决。", 409)
++            from app.reporting.capacity import preflight
++            capacity = preflight(checked, self.datasets.profile(record.dataset_id, record.dataset_version))
++            if not capacity.supported:
++                raise AppError('REPORT_CAPACITY_EXCEEDED', capacity.message, 422,
++                               details={'report_capacity': capacity.model_dump()})
+             constraints = intent.constraints
+             constraint_audit = self.constraint_audit(checked)
+             if not constraint_audit.all_verified:
+--- before/backend/app/workflow/reporting.py
++++ after/backend/app/workflow/reporting.py
+@@ -17,6 +17,9 @@
+         session = self.sessions.get(result.session_id)
+         if session.workflow_kind != 'real_v1':
+             raise AppError('REPORT_REAL_WORKFLOW_REQUIRED', '此入口仅用于真实分析会话。', 422)
++        previous = self.reports.generation(execution_id)
++        if expected_attempt is not None and previous and previous.error and not previous.error.retryable:
++            raise AppError('REPORT_RETRY_NOT_SUPPORTED', '当前失败需要调整分析范围，重复生成不能解决；计算结果仍可查看。', 409)
+         record, fresh = self.reports.queue(execution_id, result.session_id, expected_attempt)
+         if fresh:
+             self.traces.queue(result, record, lambda: self.executions.approved_snapshot(execution_id), self.service,
+@@ -78,7 +81,7 @@
+             trace.finish(report.report_status, report=report)
+             closed = True
+         except AppError as exc:
+-            error = exc.error.model_copy(update={'retryable': True})
++            error = exc.error.model_copy(update={'retryable': exc.error.code not in {'REPORT_TOTAL_CAPACITY_EXCEEDED','REPORT_CONTEXT_TOO_LARGE','REPORT_INPUT_TOO_LARGE'}})
+             accepted = False if error.code == 'REPORT_STALE_CALLBACK' else self.reports.finish(execution_id, attempt, error=error)
+             if accepted:
+                 trace.finish('failed', error=exc)
+--- before/backend/tests/test_report_capacity.py
++++ after/backend/tests/test_report_capacity.py
+@@ -0,0 +1,199 @@
++"""Capacity preflight, real kernel outputs, batching and preserved core coverage."""
++import asyncio
++import copy
++import json
++
++import pytest
++from app.domain.errors import AppError
++from app.planning.capabilities import CapabilityRegistry
++from app.reporting.capacity import preflight
++from app.reporting.batches import partition
++from app.reporting.contracts import prepare
++from app.reporting.evidence import EvidenceBuilder
++from app.services.analysis_report import AnalysisReportService
++from report_fixtures import report_case, ReportProvider
++from planning_fixtures import task, step
++
++RAW='地区,销售额,成本\n华东,100,30\n华东,200,70\n华南,300,100\n'.encode()
++
++
++def inputs(n=9, *, core=True):
++    metrics=[{'function':'count','alias':'rows'}]
++    for field in ['field_0002','field_0003']:
++        metrics += [{'function':fn,'field':field,'alias':field+'_'+fn} for fn in ['sum','avg','min','max','median','distinct_count']]
++    while len(metrics)<n:
++        metrics.append({'function':'count','alias':f'count_{len(metrics)}'})
++    tasks=[]
++    for index in range(0,n,20):
++        tasks.append(task([step('aggregate',{'metrics':metrics[index:min(index+20,n)]})],tid=f'A{index//20+1:02}',priority='P0' if core else 'P1'))
++    return report_case(tasks,RAW)
++
++
++class CountingProvider(ReportProvider):
++    def __init__(self,failed=(),omit=False):super().__init__();self.failed=set(failed);self.counter=0;self.omit=omit
++    async def generate(self,request):
++        self.counter+=1
++        if self.counter in self.failed:
++            self.requests.append(request)
++            raise AppError('LLM_TIMEOUT','declared test timeout',504)
++        response=await super().generate(request)
++        if self.omit:
++            data=json.loads(response.text);data['insights']=data['insights'][:1]
++            return response.model_copy(update={'text':json.dumps(data)})
++        return response
++
++
++def generate(case,provider=None):
++    return asyncio.run(AnalysisReportService(provider or ReportProvider(),CapabilityRegistry()).generate(*case))
++
++
++@pytest.mark.parametrize('n,batches',[(1,1),(8,1),(9,2),(17,3)])
++def test_all_core_metrics_survive_batching_and_unique_final_ids(n,batches):
++    case=inputs(n);before=case[2].model_dump_json();p=CountingProvider();r=generate(case,p)
++    assert r.report_status==r.goal_coverage=='complete'
++    assert p.counter==batches
++    assert len(r.insights)==n and len({i.insight_id for i in r.insights})==n
++    assert case[2].model_dump_json()==before
++    by_id={e.evidence_id:e for e in r.evidence}
++    covered={(by_id[ref].task_id,by_id[ref].result_field) for i in r.insights for ref in i.evidence_refs}
++    required={(e.task_id,e.result_field) for e in r.evidence if not e.result_field.startswith('$')}
++    assert covered==required
++    for request in p.requests:
++        payload=json.loads(request.instruction)
++        assert len(payload['evidence_groups'])<=8
++        assert len(payload['evidence'])<=80
++        assert len(request.instruction.encode())<=160*1024
++        assert 'result_data' not in payload
++        enum=request.response_schema['$defs']['SelectedInsight']['properties']['primary_evidence_id']['enum']
++        assert set(enum)=={e['evidence_id'] for e in payload['evidence']}
++
++
++@pytest.mark.parametrize('failed',[(1,),(2,)])
++def test_one_failed_batch_keeps_valid_results_and_declares_uncovered_metrics(failed):
++    p=CountingProvider(failed);case=inputs();r=generate(case,p)
++    assert p.counter==2 and r.report_status==r.goal_coverage=='partial'
++    metadata=r.execution_metadata['A01']
++    assert metadata['missing_core_metrics']
++    assert any('生成失败' in s for s in r.limitations)
++    assert len(r.result_data['R001'].columns)==9
++    assert r.uncompleted_tasks[0].task_id=='A01'
++    assert [b['status'] for b in metadata['report_batches']].count('failed')==1
++
++
++def test_all_batches_fail_does_not_save_an_empty_success_and_errors_are_serializable():
++    p=CountingProvider((1,2))
++    with pytest.raises(AppError) as e:generate(inputs(),p)
++    assert e.value.error.code=='LLM_TIMEOUT' and p.counter==2
++    assert len(e.value.error.details['batch_results'])==2
++    json.dumps(e.value.error.model_dump())
++
++
++def test_schema_valid_but_omitted_core_metrics_cannot_claim_complete():
++    r=generate(inputs(),CountingProvider(omit=True))
++    assert r.report_status==r.goal_coverage=='partial'
++    assert len(r.execution_metadata['A01']['missing_core_metrics'])==7
++
++
++def test_batch_ids_cannot_reference_other_batch_evidence():
++    class CrossBatch(CountingProvider):
++        ids=None
++        async def generate(self,request):
++            response=await super().generate(request)
++            payload=json.loads(request.instruction)
++            if self.ids is None:self.ids=payload['evidence'][0]['evidence_id']
++            else:
++                data=json.loads(response.text)
++                data['insights'][0]['evidence_refs']=[self.ids]
++                return response.model_copy(update={'text':json.dumps(data)})
++            return response
++    r=generate(inputs(),CrossBatch())
++    assert r.report_status=='partial'
++    assert r.execution_metadata['A01']['report_batches'][1]['error_code']=='REPORT_INVALID_EVIDENCE_REFERENCE'
++
++
++def test_total_capacity_is_checked_before_llm_and_preflight_does_not_delete_plan():
++    case=inputs(65);before=case[1].model_dump_json();capacity=preflight(case[1],case[3]);p=CountingProvider()
++    assert not capacity.supported and capacity.metric_count==65 and capacity.context_estimate_only
++    with pytest.raises(AppError) as e:generate(case,p)
++    assert e.value.error.code=='REPORT_TOTAL_CAPACITY_EXCEEDED' and not p.requests
++    assert before==case[1].model_dump_json()
++
++
++def test_runtime_bytes_limit_keeps_group_intact_and_makes_no_call():
++    case=inputs();_,descs=prepare(*case,CapabilityRegistry());evidence=EvidenceBuilder().build(case[2],case[3],descs)
++    tasks={t.task_id:t for t in case[1].plan.tasks}
++    base={'tasks':[],'scope_context':[],'task_sample_context':[],'huge':'x'*(160*1024)}
++    with pytest.raises(AppError) as e:partition(evidence,tasks,base,{})
++    assert e.value.error.code=='REPORT_CONTEXT_TOO_LARGE'
++
++
++def test_global_goal_blocked_when_only_optional_batch_survives():
++    case=inputs(9)
++    # Separate 8 core metrics and one supplemental metric, without changing any values.
++    first=case[1].plan.tasks[0].model_dump();all_metrics=first['steps'][0]['params']['metrics']
++    case=report_case([task([step('aggregate',{'metrics':all_metrics[:8]})]),
++                      task([step('aggregate',{'metrics':all_metrics[8:]})],tid='A02',priority='P1')],RAW)
++    r=generate(case,CountingProvider((1,)))
++    assert r.report_status=='partial' and r.goal_coverage=='blocked'
++
++
++def test_preflight_plan_nine_metrics_is_allowed_and_reports_two_estimated_calls():
++    case=inputs();value=preflight(case[1],case[3])
++    assert value.supported and value.metric_count==value.core_metric_count==9
++    assert value.estimated_batches==2 and '分 2 批' in value.message
++
++
++@pytest.mark.parametrize('n,allowed',[(9,True),(65,False)])
++def test_api_eligibility_and_transaction_use_same_capacity_guard(client,n,allowed):
++    case=inputs(n)
++    response=client.post('/api/v1/sessions',data={'goal':'销售概况','manual_review':'true'},files={'file':('sales.csv',RAW,'text/csv')})
++    state=response.json();client.headers['X-Session-Token']=state.pop('review_access_token')
++    plan=case[1].plan.model_dump();plan.update(state['dataset_ref'])
++    intent=case[0].model_dump();intent['analysis_goal']['business_goal']='销售概况'
++    response=client.post('/api/v1/sessions/'+state['id']+'/plans',json={'expected_revision':state['revision'],'plan':plan,'intent':intent})
++    assert response.status_code==200,response.text
++    state=response.json()
++    view=client.get('/api/v1/sessions/'+state['id']+'/review').json()
++    assert view['can_approve'] is allowed and view['report_capacity']['supported'] is allowed
++    assert view['report_capacity']['metric_count']==n
++    from hitl_fixtures import approval
++    result=client.post('/api/v1/sessions/'+state['id']+'/approvals',json=approval(state))
++    assert result.status_code==(200 if allowed else 422),result.text
++    if not allowed:assert result.json()['error']['code']=='REPORT_CAPACITY_EXCEEDED'
++
++
++def test_two_calls_share_template_but_have_distinct_requests_spans_and_one_projection(tmp_path):
++    from test_prompt_registry import provider, report_output, calls
++    from test_workflow_trace import trace_run
++    from app.storage.trace_repository import TraceRepository
++    from app.observability.recorder import TraceRecorder, TraceContext
++    llm,registry,bodies=provider(tmp_path,[report_output])
++    repository=TraceRepository(tmp_path/'traces')
++    root=trace_run(repository)
++    trace=TraceContext(TraceRecorder(repository),root)
++    report=asyncio.run(AnalysisReportService(llm,CapabilityRegistry()).generate(*inputs(),trace=trace))
++    records=calls(registry)
++    assert report.report_status=='complete' and len(records)==2
++    assert len({r.call_id for r in records})==len({r.request_snapshot_id for r in records})==2
++    assert len({r.template_snapshot_id for r in records})==1
++    assert all(r.run_id==root.run_id and r.retry_index==0 for r in records)
++    assert len({r.operation_id for r in records})==2
++    spans=repository.spans(root.run_id)
++    gen=[s for s in spans if s.name=='insight_generator'];valid=[s for s in spans if s.name=='fact_validator']
++    assert len(gen)==len(valid)==2
++    assert all(s.parent_span_id is None for s in gen+valid)
++    assert {r.span_id for r in records}=={s.span_id for s in gen}
++    output=[s for s in repository.snapshots(root.run_id) if s.kind=='llm_output']
++    assert len(output)==1 and output[0].projection['batch_count']==2
++
++
++def test_empty_filtered_numeric_metric_remains_uncovered_instead_of_silent_complete():
++    source=inputs(9)
++    metrics=source[1].plan.tasks[0].steps[0].params['metrics']
++    case=report_case([task([
++        step('filter',{'conditions':[{'field':'field_0001','operator':'eq','value':'无匹配地区'}]}),
++        step('aggregate',{'metrics':metrics},'S02')])],RAW)
++    report=generate(case)
++    assert report.report_status=='partial' and report.goal_coverage=='partial'
++    assert report.execution_metadata['A01']['missing_core_metrics']
++    assert any('尚未形成有效洞察' in x for x in report.limitations)
+--- before/frontend/src/components/BusinessPlanReview.tsx
++++ after/frontend/src/components/BusinessPlanReview.tsx
+@@ -36,6 +36,10 @@
+     {error && <div className="review-load-error" role="alert"><p>{error}</p><button className="secondary-button" onClick={() => setReload(n => n + 1)}>重新加载方案</button></div>}
+     {!view && !error && <p className="review-loading" role="status"><LoaderCircle size={17} className="spin"/>正在核对分析方案与可用条件…</p>}
+     {view && <>
++      {view.report_capacity && <section className="review-section" aria-label="报告生成容量">
++        <p className="review-eyebrow">报告生成安排</p>
++        <p role={view.report_capacity.supported ? 'status' : 'alert'}>{view.report_capacity.message}</p>
++      </section>}
+       <section className="review-section review-goal"><p className="review-eyebrow">01 · 核心分析目标</p><h4>{view.goal}</h4><p className="review-coverage">{view.coverage}</p></section>
+       <section className="review-section"><h4>02 · 分析范围与统计口径</h4><p className="review-explanation">需求条件与方案拟用口径分别标明来源；拟用口径不代表你已确认。</p><dl className="review-conditions">{view.conditions.map((condition, i) => <div key={i}><dt>{condition.label}</dt><dd><strong>{condition.text}</strong><span className={condition.verification === '已核对分析步骤' ? 'condition-verified' : condition.source.startsWith('plan.') ? 'condition-proposed' : 'condition-pending'}>{condition.verification === '已核对分析步骤' && <CheckCircle2 size={12}/>} {condition.verification}</span></dd></div>)}</dl></section>
+       <section className="review-section"><h4>03 · 分析方向</h4><p className="review-explanation">每个方向回答一个业务问题，不包含尚未计算的结论。</p><ol className="review-directions">{view.directions.map((direction, i) => <li key={direction.task_id}>
+--- before/frontend/src/components/ReportGenerationCard.tsx
++++ after/frontend/src/components/ReportGenerationCard.tsx
+@@ -20,7 +20,7 @@
+     {pending && <p role="status"><LoaderCircle className="spin" size={17}/>正在生成报告</p>}
+     {record?.error && <p role="alert">{record.error.message}</p>}{error && <p role="alert">{error}</p>}
+     {record?.report_id && <div className="report-actions"><a className="primary-button" href={`/reports/${encodeURIComponent(record.report_id)}`} target="_blank" rel="noreferrer">预览分析报告<ArrowUpRight size={15}/></a></div>}
+-    {(!record || record.status === 'failed') && <button className="secondary-button" disabled={busy} onClick={() => void generate()}>{busy ? '正在提交…' : record ? '重新生成报告' : '生成分析报告'}</button>}
++    {(!record || (record.status === 'failed' && record.error?.retryable !== false)) && <button className="secondary-button" disabled={busy} onClick={() => void generate()}>{busy ? '正在提交…' : record ? '重新生成报告' : '生成分析报告'}</button>}
+     <p className="report-disclaimer">报告可在线预览；需要保存时，可在报告页选择下载。</p>
+   </section>;
+ }
+--- before/frontend/src/tests/business-review.test.tsx
++++ after/frontend/src/tests/business-review.test.tsx
+@@ -61,3 +61,13 @@
+   resolve(reviewFixture(old));await waitFor(()=>expect(screen.getByText('新的已校验目标')).toBeInTheDocument());
+   expect(screen.getByRole('region',{name:'分析方案 第2版'})).toBeInTheDocument();
+ });
++it.each([true,false])('shows report capacity estimate without inferring approval: %s',async supported=>{
++  const current=state();const view=reviewFixture(current,{can_approve:supported});
++  view.report_capacity={policy_version:'report-capacity-v1',supported,metric_count:9,core_metric_count:9,
++    estimated_batches:2,max_groups_per_call:8,max_groups:64,max_batches:8,estimated_metadata_bytes:2000,
++    context_estimate_only:true,message:supported?'包含9个核心指标，预计分2批生成。':'方案超出报告总容量，请重新明确范围。'};
++  vi.spyOn(api,'review').mockResolvedValue(view);
++  render(<BusinessPlanReview {...props(current)}/>);
++  expect(await screen.findByRole('region',{name:'报告生成容量'})).toHaveTextContent(view.report_capacity.message);
++  expect(screen.getByRole('button',{name:'确认并开始分析'}).hasAttribute('disabled')).toBe(!supported);
++});
+--- before/frontend/src/tests/report-workflow.test.tsx
++++ after/frontend/src/tests/report-workflow.test.tsx
+@@ -61,3 +61,8 @@
+   await api.analysisReport('report_test');
+   expect(fetch.mock.calls[0][1]?.headers).toMatchObject({'X-Session-Keys':JSON.stringify({owner:'test-only-token'})});
+ });
++it('does not offer blind retry for a hard report capacity failure',()=>{
++  render(<ReportGenerationCard executionId="exec_test" sessionId="session" record={{...job,status:'failed',error:{code:'REPORT_CONTEXT_TOO_LARGE',message:'证据上下文超限，计算结果保留。',retryable:false}}}/>);
++  expect(screen.getByRole('alert')).toHaveTextContent('证据上下文超限');
++  expect(screen.queryByRole('button',{name:'重新生成报告'})).not.toBeInTheDocument();
++});
+--- before/frontend/src/types/contracts.ts
++++ after/frontend/src/types/contracts.ts
+@@ -97,6 +97,9 @@
+   created_at: string; change_type: string; change_summary: string; validated_plan: ValidatedAnalysisPlan;
+ }
+ export interface ReviewPresentation {
++  report_capacity?: {policy_version:string; supported:boolean; metric_count:number; core_metric_count:number;
++    estimated_batches:number; max_groups_per_call:number; max_groups:number; max_batches:number;
++    estimated_metadata_bytes:number; context_estimate_only:boolean; message:string} | null;
+   session_id: string; revision: number; plan_id: string; plan_version: number;
+   goal: string; coverage: string;
+   conditions: {label: string; text: string; verification: string; source: string}[];

@@ -1,0 +1,6 @@
+{
+  "text": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T1\",\n      \"title\": \"各团队平均响应分钟比较\",\n      \"business_question\": \"按团队分组，计算并比较各团队的平均响应分钟是多少？\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"核心需求为“按团队比较平均响应分钟”，删除此任务将无法回答业务目标。响应分钟字段(field_0005)为数值类型，支持avg聚合；团队字段(field_0002)为文本维度，支持group_aggregate。无明确时间或状态筛选约束，因此对全量数据进行分组统计。\",\n      \"requirement_ids\": [\n        \"C01\",\n        \"C02\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S1\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"avg\",\n                \"field\": \"field_0005\",\n                \"alias\": \"avg_response_minutes\"\n              }\n            ],\n            \"dimensions\": [\n              \"field_0002\"\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S2\",\n          \"operation\": \"sort\",\n          \"params\": {\n            \"field\": \"avg_response_minutes\",\n            \"direction\": \"asc\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+  "provider": "compatible",
+  "is_mock": false,
+  "model": "qwen3.8-flash"
+}

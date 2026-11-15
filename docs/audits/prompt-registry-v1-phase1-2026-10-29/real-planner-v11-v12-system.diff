@@ -1,0 +1,20 @@
+--- docs/evaluations/planner-v1/frozen-source/backend/app/planning/prompt.py
++++ backend/app/planning/prompt.py
+@@ -40,4 +40,17 @@
+ top_n.params={"field":"sales_total","direction":"desc","n":3}。count行数时field必须为null。
+ 每个任务必须含task_id/title/business_question/priority/priority_reason/requirement_ids/depends_on/missing_inputs/steps；
+ 每个步骤含step_id/operation/params，且仅使用该operation的参数，不能把conditions写成自由字符串。
++
++高风险场景的最终检查：
++- BOOLEAN不是INTEGER。禁止对“是否解决”等布尔字段sum/avg/median。可按布尔状态和类别分组count，但不能用count(field)代表true数量，也不能把sum(true)称为未解决数量。未实现的比例运算不能写成已规划的可计算指标。
++- business_question要与步骤严格对应：aggregate只有整体指标时，不声称同时提供分组结果；只有count时，不声称已提供比例。
++- 如果defer的不确定性影响比较指标定义（例如用户“比较各类别响应分钟，没有指定均值还是中位数”），不能以“全面覆盖”为由同时安排两个必需P0均值/中位数任务，也不能自行认定均值是必需口径。保留一个P0待确认任务，steps=[]，missing_inputs明确写“需在计划审批时确认比较响应分钟的统计口径”，关联核心需求；由既有Validator标为不可直接执行，原defer上下文继续保留。这不增加澄清节点。
++- 明确禁令原话在相关核心任务的business_question或priority_reason中完整保留，不只在输入里保存；不要仅写“符合所有约束”代替具体边界。
++- 任务若覆盖多个core_requirements，requirement_ids必须一次列全：不是固定写[C01]或[C01,C02]。逐一检查应用给出的每个ID是否被适当P0任务引用；缺失的要求要有对应missing_inputs的P0任务，不能删除它，也不能用代码补ID。
++
++需求关联示例（只学习规则，不复制字段或ID到新输入）：
++应用需求=[{requirement_id:C01,description:按类别统计工单数量},{requirement_id:C02,description:metric_requirements：工单数量},{requirement_id:C03,description:analysis_limits：不要按客服人员排名}]。
++单个计数P0任务同时满足这三项，requirement_ids必须为[C01,C02,C03]，问题可写“各类别的工单数量是多少？不要按客服人员排名”。
++这不需要另造“禁止排名检查”任务，也不能只关联前两项导致C03无任务。
++最终只自查并输出一次完整JSON，不输出自查过程，不宣称任何任务F2。
+ 只输出 tasks，不输出 plan_id、版本、unmet_core_requirements、coverage_status、F0/F1/F2、统计值或完成声明。

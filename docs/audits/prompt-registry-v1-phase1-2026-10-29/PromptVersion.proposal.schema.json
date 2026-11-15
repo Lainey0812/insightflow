@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PromptVersion V1 — proposal only, not implemented",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "prompt_id",
+    "node_id",
+    "version",
+    "content_hash",
+    "system_template",
+    "user_template",
+    "variables_schema",
+    "output_schema_ref",
+    "source_commit",
+    "change_summary",
+    "created_at",
+    "user_assembly_ref",
+    "source_refs",
+    "completeness"
+  ],
+  "properties": {
+    "prompt_id": {
+      "enum": [
+        "intent-parser",
+        "analysis-planner",
+        "insight-generator"
+      ]
+    },
+    "node_id": {
+      "enum": [
+        "intent_parser",
+        "analysis_planner",
+        "insight_generator"
+      ]
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "Canonical static-content-bundle SHA256; excludes IDs, model config, registration timestamp, provenance and summaries. Not equal to the Trace System-only hash."
+    },
+    "system_template": {
+      "type": "string",
+      "minLength": 1
+    },
+    "user_template": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Only a genuinely saved static template; current JSON builders are not invented as historical templates."
+    },
+    "variables_schema": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Verified version-specific JSON Schema; null if not available."
+    },
+    "output_schema_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Controlled immutable asset ref; can describe a dynamic builder; not a current mutable Python path."
+    },
+    "source_commit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "change_summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC first registration time, never a fabricated original creation/publication time."
+    },
+    "user_assembly_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Immutable, controlled saved builder-source asset, explicitly not rendered user request text."
+    },
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "source_ref",
+          "source_sha256"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "source_ref": {
+            "type": "string"
+          },
+          "source_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "completeness": {
+      "enum": [
+        "system_only",
+        "system_with_assembly"
+      ]
+    }
+  }
+}

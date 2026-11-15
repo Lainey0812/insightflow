@@ -1,0 +1,200 @@
+{
+  "schema_version": "golden-fidelity-case-v2",
+  "case_id": "RF-01",
+  "execution": {
+    "schema_version": "case-execution-v1",
+    "execution_id": "gf_20261113-000000_d1dddd:RF-01:1",
+    "locator": "gf_20261113-000000_d1dddd/RF-01",
+    "run_id": "gf_20261113-000000_d1dddd",
+    "case_id": "RF-01",
+    "attempt": 1,
+    "execution_status": "BLOCKED",
+    "failure_origin": null,
+    "workflow_id": "wf_1",
+    "started_at": "2026-11-13T00:00:40+00:00",
+    "finished_at": "2026-11-13T00:00:41+00:00",
+    "record_ref": "RF-01/result.json",
+    "output_ref": null,
+    "trace_ref": "RF-01/trace.json",
+    "error_code": null,
+    "blocking_stage": "hitl_approval",
+    "expect_blocked": false,
+    "provenance": "recorded",
+    "projection": {
+      "execution_status": {
+        "value": "BLOCKED",
+        "sources": [
+          "RF-01/result.json#observed.final_status",
+          "RF-01/trace.json#business_lifecycle.status",
+          "RF-01/result.json#observed.approved_by_runner",
+          "RF-01/result.json#observed.can_approve"
+        ],
+        "basis": "The case ended while the plan waited for approval and the runner did not approve it; no engine result exists. This is a gate stop, not an agent crash."
+      }
+    },
+    "unverified": [],
+    "legacy": null
+  },
+  "evaluator_results": [
+    {
+      "schema_version": "evaluator-result-v1",
+      "evaluator_id": "insightflow.golden.oracle",
+      "evaluator_version": "golden-oracle-v2",
+      "evaluator_config_hash": "295d4f83242bf9204a961f033755b3affec988d3c99cf2c12e4245b0ddf0e581",
+      "case_execution_ref": "gf_20261113-000000_d1dddd/RF-01",
+      "evaluation_scope": "e2e",
+      "required": true,
+      "verdict": "NOT_EVALUATED",
+      "score": null,
+      "failure_code": null,
+      "reason": "no_engine_result",
+      "evidence_refs": [],
+      "evaluated_at": "2026-11-13T00:00:42+00:00",
+      "provenance": "recorded",
+      "basis": null,
+      "legacy": null
+    },
+    {
+      "schema_version": "evaluator-result-v1",
+      "evaluator_id": "insightflow.golden.must_forbid",
+      "evaluator_version": "must-forbid-v1",
+      "evaluator_config_hash": "ff8958d7f570c369273b7f7ec2585a75d0042c79151fe24aebd138d5d6007963",
+      "case_execution_ref": "gf_20261113-000000_d1dddd/RF-01",
+      "evaluation_scope": "e2e",
+      "required": true,
+      "verdict": "NOT_EVALUATED",
+      "score": null,
+      "failure_code": null,
+      "reason": "rule_not_adapted:case.must_forbid[0],case.must_forbid[1],case.must_forbid[2],case.must_forbid[3]",
+      "evidence_refs": [],
+      "evaluated_at": "2026-11-13T00:00:43+00:00",
+      "provenance": "recorded",
+      "basis": null,
+      "legacy": null
+    },
+    {
+      "schema_version": "evaluator-result-v1",
+      "evaluator_id": "insightflow.node.requirement_fidelity",
+      "evaluator_version": "requirement-fidelity-v1",
+      "evaluator_config_hash": "0469c2040631843467f64d5e709eb9f9e092084b16f423f180cfcaaaf2708dc4",
+      "case_execution_ref": "gf_20261113-000000_d1dddd/RF-01",
+      "evaluation_scope": "node",
+      "required": false,
+      "verdict": "NOT_EVALUATED",
+      "score": null,
+      "failure_code": null,
+      "reason": "not_in_gold",
+      "evidence_refs": [],
+      "evaluated_at": "2026-11-13T00:00:44+00:00",
+      "provenance": "recorded",
+      "basis": null,
+      "legacy": null
+    }
+  ],
+  "e2e": {
+    "schema_version": "e2e-summary-v1",
+    "case_execution_ref": "gf_20261113-000000_d1dddd/RF-01",
+    "case_id": "RF-01",
+    "verdict": "FAIL",
+    "gate": "task_condition",
+    "reason": "task_not_completed:BLOCKED",
+    "execution_status": "BLOCKED",
+    "execution_completed": false,
+    "task_condition_met": false,
+    "required_verdicts": {
+      "insightflow.golden.oracle": "NOT_EVALUATED",
+      "insightflow.golden.must_forbid": "NOT_EVALUATED"
+    },
+    "optional_verdicts": {
+      "insightflow.node.requirement_fidelity": "NOT_EVALUATED"
+    },
+    "provenance": "recorded"
+  },
+  "observed": {
+    "final_status": "AWAITING_APPROVAL",
+    "error_code": null,
+    "execution_status": null,
+    "approved_by_runner": false,
+    "can_approve": false,
+    "runner_error": null,
+    "workflow_id": "wf_1",
+    "business_status": null,
+    "result_tables": null,
+    "plan": {
+      "tasks": [
+        {
+          "task_id": "t1",
+          "title": "不要分析薪资",
+          "business_question": "统计岗位数量，不分析薪资",
+          "steps": [
+            {
+              "step_id": "s1",
+              "operation": "filter",
+              "params": {
+                "conditions": [
+                  {
+                    "field": "f4",
+                    "operator": "ne",
+                    "value": "实习"
+                  }
+                ]
+              }
+            },
+            {
+              "step_id": "s2",
+              "operation": "group_aggregate",
+              "params": {
+                "dimensions": [
+                  "f2"
+                ],
+                "metrics": [
+                  {
+                    "function": "count",
+                    "field": null,
+                    "alias": "岗位数量"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "profile": {
+      "fields": [
+        {
+          "field_id": "f1",
+          "display_name": "编号"
+        },
+        {
+          "field_id": "f2",
+          "display_name": "城市"
+        },
+        {
+          "field_id": "f3",
+          "display_name": "岗位名称"
+        },
+        {
+          "field_id": "f4",
+          "display_name": "岗位类型"
+        }
+      ]
+    },
+    "execution_steps": null,
+    "duration_ms": null,
+    "prompt_templates": null,
+    "nodes": [
+      {
+        "name": "data_profiler",
+        "status": "success"
+      },
+      {
+        "name": "intent_parser",
+        "status": "success"
+      }
+    ],
+    "fidelity": {
+      "status": "not_in_gold"
+    }
+  }
+}

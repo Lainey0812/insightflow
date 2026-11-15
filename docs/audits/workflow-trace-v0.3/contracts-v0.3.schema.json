@@ -1,0 +1,272 @@
+{
+  "RunManifest": {
+    "additionalProperties": false,
+    "properties": {
+      "schema_version": {
+        "default": "workflow-trace-v0.1",
+        "enum": [
+          "workflow-trace-v0.1",
+          "workflow-trace-v0.3"
+        ],
+        "title": "Schema Version",
+        "type": "string"
+      },
+      "bindings": {
+        "additionalProperties": true,
+        "title": "Bindings",
+        "type": "object"
+      },
+      "versions": {
+        "additionalProperties": true,
+        "title": "Versions",
+        "type": "object"
+      },
+      "model_config_snapshot": {
+        "additionalProperties": true,
+        "title": "Model Config Snapshot",
+        "type": "object"
+      },
+      "source_sha256": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "title": "Source Sha256",
+        "type": "object"
+      },
+      "capture_scope": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Capture Scope"
+      },
+      "git": {
+        "additionalProperties": true,
+        "title": "Git",
+        "type": "object"
+      },
+      "input_sha256": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "title": "Input Sha256",
+        "type": "object"
+      },
+      "raw_content_retained": {
+        "const": false,
+        "default": false,
+        "title": "Raw Content Retained",
+        "type": "boolean"
+      }
+    },
+    "title": "RunManifest",
+    "type": "object"
+  },
+  "TraceSpan": {
+    "additionalProperties": false,
+    "properties": {
+      "span_id": {
+        "title": "Span Id",
+        "type": "string"
+      },
+      "run_id": {
+        "title": "Run Id",
+        "type": "string"
+      },
+      "parent_span_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Parent Span Id"
+      },
+      "name": {
+        "title": "Name",
+        "type": "string"
+      },
+      "node_key": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Node Key"
+      },
+      "node_attempt": {
+        "anyOf": [
+          {
+            "minimum": 1,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Node Attempt"
+      },
+      "status": {
+        "enum": [
+          "running",
+          "complete",
+          "partial",
+          "failed",
+          "skipped",
+          "interrupted"
+        ],
+        "title": "Status",
+        "type": "string"
+      },
+      "started_at": {
+        "title": "Started At",
+        "type": "string"
+      },
+      "finished_at": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Finished At"
+      },
+      "recovered_at": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Recovered At"
+      },
+      "duration_ms": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Duration Ms"
+      },
+      "error_code": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Error Code"
+      },
+      "attributes": {
+        "additionalProperties": true,
+        "title": "Attributes",
+        "type": "object"
+      }
+    },
+    "required": [
+      "span_id",
+      "run_id",
+      "name",
+      "status",
+      "started_at"
+    ],
+    "title": "TraceSpan",
+    "type": "object"
+  },
+  "TraceSnapshot": {
+    "additionalProperties": false,
+    "properties": {
+      "snapshot_id": {
+        "title": "Snapshot Id",
+        "type": "string"
+      },
+      "run_id": {
+        "title": "Run Id",
+        "type": "string"
+      },
+      "span_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Span Id"
+      },
+      "kind": {
+        "enum": [
+          "evidence",
+          "llm_output",
+          "report"
+        ],
+        "title": "Kind",
+        "type": "string"
+      },
+      "captured_at": {
+        "title": "Captured At",
+        "type": "string"
+      },
+      "content_sha256": {
+        "pattern": "^[a-f0-9]{64}$",
+        "title": "Content Sha256",
+        "type": "string"
+      },
+      "projection": {
+        "additionalProperties": true,
+        "title": "Projection",
+        "type": "object"
+      },
+      "schema_version": {
+        "const": "controlled-projection-v1",
+        "default": "controlled-projection-v1",
+        "title": "Schema Version",
+        "type": "string"
+      },
+      "raw_content_retained": {
+        "const": false,
+        "default": false,
+        "title": "Raw Content Retained",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "snapshot_id",
+      "run_id",
+      "kind",
+      "captured_at",
+      "content_sha256"
+    ],
+    "title": "TraceSnapshot",
+    "type": "object"
+  }
+}

@@ -1,0 +1,52 @@
+........................................................................ [  8%]
+........................................................................ [ 17%]
+........................................................................ [ 25%]
+........................................................................ [ 34%]
+........................................................................ [ 43%]
+........................................................................ [ 51%]
+..F........F............................................................ [ 60%]
+........................................................................ [ 69%]
+........................................................................ [ 77%]
+........................................................................ [ 86%]
+........................................................................ [ 95%]
+........................................                                 [100%]
+=================================== FAILURES ===================================
+__________________ test_empty_success_result_remains_success ___________________
+
+completed = (<fastapi.applications.FastAPI object at 0x10dc13380>, <starlette.testclient.TestClient object at 0x1130bd9d0>, {'id':...83', 'execution_id': 'exec_7d6a09e4648b4abdb648a6d2742d76e2', 'plan_id': 'plan_21a54abdbbad4e5a9baf52fe7fcece7a', ...})
+
+    def test_empty_success_result_remains_success(completed):
+        app,_,s,_=completed;snapshot=snap(app,s['id'])
+        task=snapshot.executions[0]['result']['tasks'][0]
+        task['result'].update(rows=[],total_result_rows=0,truncated=False)
+        task['row_count']=0
+        # Report is deliberately absent: empty rows do not mean Engine failed.
+        snapshot.generations=[];snapshot.session['report_generations']=[]
+        out=aggregate(snapshot,s['id'])
+        assert out.business_lifecycle.execution_status=='success',out
+>       assert out.business_lifecycle.status=='running'
+E       AssertionError: assert 'unknown' == 'running'
+E         
+E         - running
+E         + unknown
+
+backend/tests/test_lifecycle.py:338: AssertionError
+__________ test_no_report_generation_does_not_reuse_historical_report __________
+
+completed = (<fastapi.applications.FastAPI object at 0x10be0bb60>, <starlette.testclient.TestClient object at 0x10c472360>, {'id':...83', 'execution_id': 'exec_79350fcd194947f7b216c304b426e50d', 'plan_id': 'plan_5d4f7d0ee6194833ae2cdffa6ca17cb2', ...})
+
+    def test_no_report_generation_does_not_reuse_historical_report(completed):
+        app,_,s,_=completed;snapshot=snap(app,s['id'])
+        snapshot.generations=[];snapshot.session['report_generations']=[]
+        out=aggregate(snapshot,s['id'])
+>       assert out.business_lifecycle.status=='running' and out.activity=='report_not_started'
+E       AssertionError: assert ('unknown' == 'running'
+E         
+E         - running
+E         + unknown)
+
+backend/tests/test_lifecycle.py:411: AssertionError
+=========================== short test summary info ============================
+FAILED backend/tests/test_lifecycle.py::test_empty_success_result_remains_success
+FAILED backend/tests/test_lifecycle.py::test_no_report_generation_does_not_reuse_historical_report
+2 failed, 830 passed, 1 warning in 41.83s

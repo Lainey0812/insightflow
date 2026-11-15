@@ -1,0 +1,36 @@
+PASS 1-integration        1. runner calls the new evaluators, not legacy score_case
+PASS 1-integration        2. each case has its own execution status and evaluator results
+PASS 1-integration        3. run-config.json exists before the first case and manifest does not
+PASS 1-integration        4. run-manifest.json written after completion
+PASS 1-integration        5. manifest hashes equal actual file hashes
+PASS 1-integration        6. read_run reads the new run completely
+PASS 1-integration        7. metrics recomputed from read_run equal the runner summary
+PASS 1-integration        default evaluator registration recorded in config
+PASS 1-integration        8a. interruption during a case reads as INCOMPLETE with config kept
+PASS 1-integration        8b. all cases written but no manifest still reads INCOMPLETE, never FINISHED
+FAIL 5-integrity          read_run detects a case result edited after the manifest
+PASS 2-gates              aggregation: oracle PASS + required forbid PASS -> PASS
+PASS 2-gates              aggregation: oracle PASS + required forbid FAIL -> FAIL
+PASS 2-gates              aggregation: oracle PASS + required forbid NOT_EVALUATED -> NOT_EVALUATED
+PASS 2-gates              aggregation: oracle PASS + required forbid EVALUATOR_ERROR -> EVALUATOR_ERROR
+PASS 2-gates              aggregation: agent FAILED + oracle NOT_EVALUATED -> FAIL
+PASS 2-gates              aggregation: oracle PASS + optional EVALUATOR_ERROR -> PASS
+FAIL 3-rf04-must-forbid   production code reads the must_forbid field
+FAIL 3-rf04-must-forbid   a separate required must_forbid evaluator is registered
+INFO 3-rf04-must-forbid   golden data columns (a plan step on a real salary field is impossible without a salary column)
+PASS 3-rf04-must-forbid   probe: clean plan, correct result
+PASS 3-rf04-must-forbid   probe: salary result column, correct counts
+PASS 3-rf04-must-forbid   probe: step on a profiled field named 薪资
+FAIL 3-rf04-must-forbid   probe: no plan and no profile captured
+FAIL 3-rf04-must-forbid   probe: step on an invented field id 薪资 not in profile
+FAIL 3-rf04-must-forbid   runner: RF-04 with correct counts but no plan/profile evidence must not be E2E PASS
+PASS 4-history            historical sha256 unchanged by reading and equal to the Phase 1-B baseline
+PASS 4-history            RF-01 projection
+PASS 4-history            RF-02 projection
+PASS 4-history            RF-03 projection
+PASS 4-history            RF-04 projection
+PASS 4-history            RF-05 projection
+PASS 4-history            original failure labels kept only in legacy
+PASS 4-history            metrics computed from the historical read
+PASS 4-history            TC run read through the same interface
+PASS 28, FAIL 6, INFO 1; evidence in /Users/lainey/Desktop/vibe-coding/insightflow/docs/evaluations/evaluation-contracts-phase1c-2026-11-13/outputs

@@ -1,0 +1,6 @@
+{
+  "text": "{\n  \"tasks\": [\n    {\n      \"task_id\": \"T1\",\n      \"title\": \"统计各城市订单数量\",\n      \"business_question\": \"各城市的订单数量分别是多少？（约束：不分析销售额）\",\n      \"priority\": \"P0\",\n      \"priority_reason\": \"删除此任务将无法回答核心问题“各城市订单数量”，直接阻碍决策。该任务通过按城市分组计数实现，严格遵守“不分析销售额”的限制，仅使用行数统计。\",\n      \"requirement_ids\": [\n        \"C01\",\n        \"C02\",\n        \"C03\"\n      ],\n      \"depends_on\": [],\n      \"missing_inputs\": [],\n      \"steps\": [\n        {\n          \"step_id\": \"S1\",\n          \"operation\": \"group_aggregate\",\n          \"params\": {\n            \"metrics\": [\n              {\n                \"function\": \"count\",\n                \"field\": null,\n                \"alias\": \"order_count\"\n              }\n            ],\n            \"dimensions\": [\n              \"field_0003\"\n            ]\n          }\n        },\n        {\n          \"step_id\": \"S2\",\n          \"operation\": \"sort\",\n          \"params\": {\n            \"field\": \"order_count\",\n            \"direction\": \"desc\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+  "provider": "compatible",
+  "is_mock": false,
+  "model": "qwen3.8-flash"
+}

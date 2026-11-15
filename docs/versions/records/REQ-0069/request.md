@@ -1,0 +1,1 @@
+[$frontend-design](/Users/lainey/.codex/skills/frontend-design/SKILL.md) 使用这个skill来重新设计一下，insight flow数据分析的页面，主页面排版需要是左右排版（可以参考chatgpt）左边是咨询过的记录，右边是这次咨询的聊天内容，右边主要采用的是对话的形式，如果正在运行是不可以发新的内容的。右边需要反馈用户现在运行的步骤（简易展示即可）

@@ -1,0 +1,33 @@
+
+> insightflow-admin@0.3.0 test
+> vitest run
+
+
+ RUN  v4.1.12 /Users/lainey/Desktop/vibe-coding/insightflow/admin
+
+ ❯ src/tests/traces.test.tsx (16 tests | 1 failed) 1587ms
+     × restores selected span from URL and changes it with node selection 32ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/tests/traces.test.tsx > Trace Detail and Inspector > restores selected span from URL and changes it with node selection
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'span_input', +0, Any<AbortSignal> ]
+
+Number of calls: 0
+
+ ❯ src/tests/traces.test.tsx:105:29
+    103|     view('/traces/run_fixture?span=span_input');
+    104|     await screen.findByRole('heading', { name: '报告生成尝试' });
+    105|     expect(traceApi.events).toHaveBeenCalledWith('span_input', 0, expe…
+       |                             ^
+    106|     fireEvent.click(screen.getByRole('button', { name: /事实校验.*失败/s }));
+    107|     await waitFor(() => expect(traceApi.events).toHaveBeenLastCalledWi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 10 passed (11)
+      Tests  1 failed | 87 passed (88)
+   Start at  16:13:54
+   Duration  3.32s (transform 2.23s, setup 2.34s, import 3.55s, tests 4.73s, environment 8.18s)
+
