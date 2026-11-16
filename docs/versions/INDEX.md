@@ -163,4 +163,4 @@
 | [REQ-0157](records/REQ-0157/request.md) | requirement | bad-cases / repair-v1 | BadCase列表及详情归因编辑、处理中到Prompt修复待验证回流 | [bad-case-attribution-repair-return-v1](records/REQ-0157/versions/VER-0001/notes.md) |
 | [REQ-0158](records/REQ-0158/request.md) | requirement | golden-set-workspace / v1 | 黄金集冻结版本与Draft表格编辑、确认发布下一版及历史切换 | [golden-set-workspace-v1-immutable-publish](records/REQ-0158/versions/VER-0001/notes.md) |
 | [REQ-0159](records/REQ-0159/request.md) | requirement | golden-set-workspace / v1.1 | Case详情展示测试输入、预期行为与评测规则 | [case-detail-v1.1](records/REQ-0159/versions/VER-0001/notes.md) |
-| [REQ-0160](records/REQ-0160/request.md) | requirement | repository / initial | 将InsightFlow上传到GitHub公开仓库insightflow | [github-public-import-preflight](records/REQ-0160/versions/VER-0001/notes.md) |
+| [REQ-0160](records/REQ-0160/request.md) | requirement | repository / initial | 将InsightFlow上传到GitHub公开仓库insightflow | [github-public-import-preflight](records/REQ-0160/versions/VER-0001/notes.md)、[github-publication-verified](records/REQ-0160/versions/VER-0002/notes.md) |
