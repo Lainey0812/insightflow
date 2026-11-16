@@ -164,3 +164,4 @@
 | [REQ-0158](records/REQ-0158/request.md) | requirement | golden-set-workspace / v1 | 黄金集冻结版本与Draft表格编辑、确认发布下一版及历史切换 | [golden-set-workspace-v1-immutable-publish](records/REQ-0158/versions/VER-0001/notes.md) |
 | [REQ-0159](records/REQ-0159/request.md) | requirement | golden-set-workspace / v1.1 | Case详情展示测试输入、预期行为与评测规则 | [case-detail-v1.1](records/REQ-0159/versions/VER-0001/notes.md) |
 | [REQ-0160](records/REQ-0160/request.md) | requirement | repository / initial | 将InsightFlow上传到GitHub公开仓库insightflow | [github-public-import-preflight](records/REQ-0160/versions/VER-0001/notes.md)、[github-publication-verified](records/REQ-0160/versions/VER-0002/notes.md) |
+| [REQ-0161](records/REQ-0161/request.md) | requirement | documentation / readme-v2 | 重写README：两个系统用途与安装启动说明 | [readme-v2-two-system-quickstart](records/REQ-0161/versions/VER-0001/notes.md) |
